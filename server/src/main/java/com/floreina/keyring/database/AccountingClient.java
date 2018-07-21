@@ -1,0 +1,76 @@
+package com.floreina.keyring.database;
+
+import com.floreina.keyring.aspects.Annotations.EntityController;
+import com.floreina.keyring.aspects.Annotations.LocalTransaction;
+import com.floreina.keyring.entities.Activation;
+import com.floreina.keyring.entities.Activation_;
+import com.floreina.keyring.entities.User;
+import com.floreina.keyring.entities.User_;
+
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.util.Optional;
+
+public class AccountingClient implements AccountingInterface {
+  @EntityController private EntityManager entityManager;
+
+  @Override
+  @LocalTransaction
+  public User createUserWithActivation(
+      String username, String salt, String digest, String mail, String code) {
+    User user =
+        new User()
+            .setState(User.State.PENDING)
+            .setUsername(username)
+            .setSalt(salt)
+            .setDigest(digest)
+            .setMail(mail);
+    Activation activation = new Activation().setUser(user).setCode(code);
+    entityManager.persist(activation);
+    return user;
+  }
+
+  @Override
+  @LocalTransaction
+  public Optional<Activation> getActivationByUser(long identifier) {
+    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Activation> criteriaQuery = criteriaBuilder.createQuery(Activation.class);
+    Root<Activation> root = criteriaQuery.from(Activation.class);
+    criteriaQuery
+        .select(root)
+        .where(criteriaBuilder.equal(root.get(Activation_.user).get(User_.identifier), identifier));
+    return entityManager.createQuery(criteriaQuery).getResultList().stream().findFirst();
+  }
+
+  @Override
+  @LocalTransaction
+  public Optional<User> activateUser(long identifier) {
+    Optional<Activation> maybeActivation = getActivationByUser(identifier);
+    if (maybeActivation.isPresent()) {
+      Activation activation = maybeActivation.get();
+      entityManager.remove(activation);
+      User user = activation.getUser().setState(User.State.ACTIVE);
+      entityManager.persist(user);
+      return Optional.of(user);
+    }
+    return Optional.empty();
+  }
+
+  @Override
+  @LocalTransaction
+  public Optional<User> getUserByName(String username) {
+    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
+    Root<User> root = criteriaQuery.from(User.class);
+    criteriaQuery.select(root).where(criteriaBuilder.equal(root.get(User_.username), username));
+    return entityManager.createQuery(criteriaQuery).getResultList().stream().findFirst();
+  }
+
+  @Override
+  @LocalTransaction
+  public Optional<User> getUserByIdentifier(long identifier) {
+    return Optional.ofNullable(entityManager.find(User.class, identifier));
+  }
+}

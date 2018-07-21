@@ -1,0 +1,11 @@
+<aspectj>
+    <aspects>
+        <aspect name="com.floreina.keyring.aspects.ValidateUserAspect"/>
+        <aspect name="com.floreina.keyring.aspects.DatabaseManagerAspect"/>
+        <weaver>
+            <include within="com.floreina.keyring.aspects.*"/>
+            <include within="com.floreina.keyring.database.*"/>
+            <include within="com.floreina.keyring.services.*"/>
+        </weaver>
+    </aspects>
+</aspectj>

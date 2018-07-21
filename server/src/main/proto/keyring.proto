@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package keyring;
+
+option java_multiple_files = true;
+option java_package = "com.floreina.keyring";
+
+message RegisterRequest {
+    string username = 1;
+    string salt = 2;
+    string digest = 3;
+    string mail = 4;
+}
+
+message RegisterResponse {
+    enum Error {
+        NONE = 0;
+        NAME_TAKEN = 1;
+    }
+
+    oneof data {
+        Error error = 1;
+        string session_key = 2;
+    }
+}
+
+message ActivateRequest {
+    string code = 1;
+}
+
+message ActivateResponse {
+    enum Error {
+        NONE = 0;
+        CODE_MISMATCH = 1;
+    }
+
+    oneof data {
+        Error error = 1;
+    }
+}
+
+message GetSaltRequest {
+    string username = 1;
+}
+
+message GetSaltResponse {
+    enum Error {
+        NONE = 0;
+        NOT_FOUND = 1;
+    }
+
+    oneof data {
+        Error error = 1;
+        string salt = 2;
+    }
+}
+
+message LogInRequest {
+    string username = 1;
+    string digest = 2;
+}
+
+message LogInResponse {
+    enum Error {
+        NONE = 0;
+        INVALID_CREDENTIALS = 1;
+    }
+
+    message Payload {
+        string session_key = 1;
+        bool is_pending = 2;
+    }
+
+    oneof data {
+        Error error = 1;
+        Payload payload = 2;
+    }
+}
+
+service Authentication {
+    rpc Register (RegisterRequest) returns (RegisterResponse);
+    rpc GetSalt (GetSaltRequest) returns (GetSaltResponse);
+    rpc LogIn (LogInRequest) returns (LogInResponse);
+}
+
+message Password {
+    string value = 1;
+    repeated string tags = 2;
+}
+
+message IdentifiedKey {
+    int64 identifier = 1;
+    Password password = 2;
+}
+
+message CreateKeyRequest {
+    Password password = 1;
+}
+
+message CreateKeyResponse {
+    int64 identifier = 1;
+}
+
+message ReadKeysRequest {
+}
+
+message ReadKeysResponse {
+    repeated IdentifiedKey keys = 1;
+}
+
+message UpdateKeyRequest {
+    IdentifiedKey key = 1;
+}
+
+message UpdateKeyResponse {
+}
+
+message DeleteKeyRequest {
+    int64 identifier = 1;
+}
+
+message DeleteKeyResponse {
+}
+
+service Administration {
+    rpc Activate (ActivateRequest) returns (ActivateResponse);
+    rpc CreateKey (CreateKeyRequest) returns (CreateKeyResponse);
+    rpc ReadKeys (ReadKeysRequest) returns (ReadKeysResponse);
+    rpc UpdateKey (UpdateKeyRequest) returns (UpdateKeyResponse);
+    rpc DeleteKey (DeleteKeyRequest) returns (DeleteKeyResponse);
+}

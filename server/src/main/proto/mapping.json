@@ -1,0 +1,38 @@
+{
+  "keyring.Authentication": {
+    "register": {
+      "method": "post",
+      "path": "/authentication/register"
+    },
+    "getSalt": {
+      "method": "get",
+      "path": "/authentication/get-salt/:username"
+    },
+    "logIn": {
+      "method": "post",
+      "path": "/authentication/log-in"
+    }
+  },
+  "keyring.Administration": {
+    "activate": {
+      "method": "post",
+      "path": "/administration/activate"
+    },
+    "createKey": {
+      "method": "post",
+      "path": "/administration/create-key"
+    },
+    "readKeys": {
+      "method": "get",
+      "path": "/administration/read-keys"
+    },
+    "updateKey": {
+      "method": "put",
+      "path": "/administration/update-key"
+    },
+    "deleteKey": {
+      "method": "post",
+      "path": "/administration/delete-key"
+    }
+  }
+}
