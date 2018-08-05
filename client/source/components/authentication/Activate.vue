@@ -49,13 +49,17 @@
       }
     },
     validations: {
-      code: {}
+      code: {
+        fresh () {
+          return !this.invalidCodes.includes(this.code)
+        }
+      }
     },
     computed: {
       codeErrors () {
         const errors = []
         if (this.$v.code.$dirty) {
-          if (this.invalidCodes.includes(this.code)) {
+          if (!this.$v.code.fresh) {
             errors.push('Invalid code')
           }
         }

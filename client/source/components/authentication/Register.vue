@@ -45,7 +45,12 @@
       }
     },
     validations: {
-      username: { required },
+      username: {
+        required,
+        fresh () {
+          return !this.takenUserNames.includes(this.username)
+        }
+      },
       password: { required },
       repeat: { sameAs: sameAs('password') },
       mail: { email, required }
@@ -57,7 +62,7 @@
           if (!this.$v.username.required) {
             errors.push('Username cannot be empty')
           }
-          if (this.takenUserNames.includes(this.username)) {
+          if (!this.$v.username.fresh) {
             errors.push('Username is already taken')
           }
         }

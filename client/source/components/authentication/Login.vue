@@ -36,22 +36,22 @@
       }
     },
     validations: {
-      username: {},
-      password: {}
+      pair: {
+        fresh () {
+          for (let { username, password } of this.invalidPairs) {
+            if (this.username === username && this.password === password) {
+              return false
+            }
+          }
+          return true
+        }
+      }
     },
     computed: {
-      isPairInvalid () {
-        for (let { username, password } of this.invalidPairs) {
-          if (this.username === username && this.password === password) {
-            return true
-          }
-        }
-        return false
-      },
       formErrors () {
         const errors = []
         if (this.$v.$dirty) {
-          if (this.isPairInvalid) {
+          if (!this.$v.pair.fresh) {
             errors.push('Invalid username or password')
           }
         }
