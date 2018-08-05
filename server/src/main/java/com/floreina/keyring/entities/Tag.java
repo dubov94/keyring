@@ -5,7 +5,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "tags")
 public class Tag {
-  @Id @GeneratedValue private long identifier;
+  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private long identifier;
 
   @Column private String value;
 
