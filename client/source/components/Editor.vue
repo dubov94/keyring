@@ -26,6 +26,9 @@
         <v-btn icon @click="reveal = !reveal">
           <v-icon>remove_red_eye</v-icon>
         </v-btn>
+        <v-btn icon @click="generate">
+          <v-icon>autorenew</v-icon>
+        </v-btn>
         <v-btn icon @click="save">
           <v-icon>save</v-icon>
         </v-btn>
@@ -54,6 +57,7 @@
 <script>
   import Draggable from 'vuedraggable'
   import {mapActions, mapMutations} from 'vuex'
+  import {random, ALPHANUMERIC_CHARACTERS} from '../utilities'
 
   export default {
     components: {
@@ -105,6 +109,14 @@
       },
       addTag () {
         this.chips.push('')
+      },
+      generate () {
+        let suggestion = ''
+        for (let index = 0; index < 12; ++index) {
+          suggestion += ALPHANUMERIC_CHARACTERS.charAt(
+            random(0, ALPHANUMERIC_CHARACTERS.length))
+        }
+        this.secret = suggestion
       },
       async save () {
         if (this.identifier === null) {
