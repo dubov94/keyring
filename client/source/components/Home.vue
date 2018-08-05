@@ -1,6 +1,16 @@
 <style scoped>
-  .brick {
-    margin-bottom: 16px;
+  .masonry {
+    display: flex;
+    max-width: calc(1264px - 1px);
+    margin: 0 auto;
+  }
+
+  .masonry__arch {
+    flex: 1;
+  }
+
+  .masonry__brick {
+    margin: 0 8px 16px;
   }
 
   .search--desktop {
@@ -25,13 +35,19 @@
     </v-toolbar>
     <v-content>
       <v-container fluid>
-        <masonry :cols="masonrySettings" :gutter="16">
-          <div v-for="item in matches" class="brick">
-            <password :key="item.identifier" :identifier="item.identifier"
-              :value="item.value" :tags="item.tags">
-            </password>
+        <div class="masonry">
+          <div v-for="columnNumber in columnCount" :key="columnNumber"
+            class="masonry__arch">
+            <template v-for="(item, index) in matches"
+              v-if="index % columnCount == columnNumber - 1">
+              <div class="masonry__brick">
+                <password :key="item.identifier" :identifier="item.identifier"
+                  :value="item.value" :tags="item.tags">
+                </password>
+              </div>
+            </template>
           </div>
-        </masonry>
+        </div>
       </v-container>
       <v-btn fab color="error" fixed bottom right @click="addKey">
         <v-icon>add</v-icon>
@@ -56,12 +72,6 @@
     },
     data () {
       return {
-        masonrySettings: {
-          default: 4,
-          1264: 3,
-          960: 2,
-          600: 1
-        },
         query: ''
       }
     },
@@ -76,6 +86,17 @@
           return this.passwords.filter(key => key.tags.some(
             tag => tag.startsWith(this.query)))
         }
+      },
+      columnCount () {
+        let number = 1
+        for (let margin of [960, 1264]) {
+          if (this.$vuetify.breakpoint.width >= margin) {
+            number += 1
+          } else {
+            break
+          }
+        }
+        return number
       }
     },
     methods: {
