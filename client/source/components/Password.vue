@@ -3,6 +3,10 @@
     padding-top: 0;
     padding-bottom: 0;
   }
+
+  .chip >>> .chip__content {
+    cursor: pointer;
+  }
 </style>
 
 <template>
@@ -43,7 +47,8 @@
       <v-divider></v-divider>
       <v-card-text>
         <v-chip disabled v-for="(label, index) in tags" :key="index"
-          color="accent" text-color="white">
+          color="accent" text-color="white"
+          v-clipboard:copy="label" v-clipboard:success="onCopy">
           {{ label }}
         </v-chip>
       </v-card-text>
