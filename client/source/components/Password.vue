@@ -19,7 +19,7 @@
       </v-btn>
       <template v-if="$vuetify.breakpoint.smAndUp">
         <v-btn icon @click="toggleReveal">
-          <v-icon>remove_red_eye</v-icon>
+          <v-icon>{{ reveal ? 'visibility_off' : 'visibility' }}</v-icon>
         </v-btn>
         <v-btn icon @click="edit">
           <v-icon>edit</v-icon>

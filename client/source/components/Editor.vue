@@ -24,7 +24,7 @@
         <v-text-field :type="reveal ? 'text': 'password'" solo flat
           placeholder="Secret" v-model="secret" ref="secret"></v-text-field>
         <v-btn icon @click="reveal = !reveal">
-          <v-icon>remove_red_eye</v-icon>
+          <v-icon>{{ reveal ? 'visibility_off' : 'visibility' }}</v-icon>
         </v-btn>
         <v-btn icon @click="generate">
           <v-icon>autorenew</v-icon>
