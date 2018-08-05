@@ -2,16 +2,26 @@
   .brick {
     margin-bottom: 16px;
   }
+
+  .search--desktop {
+    margin: 0 128px !important;
+  }
+
+  .search--mobile {
+    margin: 0 32px !important;
+  }
 </style>
 
 <template>
   <v-app>
-    <v-toolbar app color="primary" dark>
-      <v-toolbar-title>KeyRing</v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-text-field solo-inverted flat v-model="query"
+    <v-toolbar app prominent color="primary" dark>
+      <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
+        KeyRing
+      </v-toolbar-title>
+      <v-text-field solo-inverted flat
+        :class="$vuetify.breakpoint.mdAndUp
+          ? 'search--desktop' : 'search--mobile'" v-model="query"
         prepend-icon="search" label="Search"></v-text-field>
-      <v-spacer></v-spacer>
     </v-toolbar>
     <v-content>
       <v-container fluid>
