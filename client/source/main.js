@@ -15,6 +15,12 @@ Vue.use(Vuelidate)
 
 Vue.config.productionTip = false
 
+Vue.directive('focus', {
+  inserted (element) {
+    element.focus()
+  }
+})
+
 /* eslint-disable no-new */
 new Vue({
   el: '#application',

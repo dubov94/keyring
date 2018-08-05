@@ -22,7 +22,7 @@
     <v-card>
       <v-card-title>
         <v-text-field :type="reveal ? 'text': 'password'" solo flat
-          placeholder="Secret" v-model="secret"></v-text-field>
+          placeholder="Secret" v-model="secret" ref="secret"></v-text-field>
         <v-btn icon @click="reveal = !reveal">
           <v-icon>remove_red_eye</v-icon>
         </v-btn>
@@ -37,12 +37,12 @@
       <v-card-text>
         <draggable v-model="chips" :options="draggableOptions" :move="move">
           <v-chip disabled close v-for="(_, index) in chips" :key="index"
-            v-on:input="removeTag(index)" color="accent" text-color="white">
+            @input="removeTag(index)" color="accent" text-color="white">
             <v-icon small class="tag__handle">drag_indicator</v-icon>
-            <input type="text" v-model="chips[index]" v-on:input.stop
-              v-autowidth="autoWidthSettings" class="tag__label">
+            <input type="text" v-model="chips[index]" @input.stop
+              v-autowidth="autoWidthSettings" class="tag__label" v-focus>
           </v-chip>
-          <v-btn icon v-on:click="addTag" color="accent">
+          <v-btn icon @click="addTag" color="accent">
             <v-icon>add</v-icon>
           </v-btn>
         </draggable>
@@ -126,7 +126,7 @@
       }
     },
     watch: {
-      isVisible: function (value) {
+      async isVisible (value) {
         if (value === true) {
           let editorState = this.$store.state.interface.editor
           this.reveal = editorState.reveal
@@ -140,6 +140,8 @@
             this.secret = key.value
             this.chips = key.tags.slice()
           }
+          await this.$nextTick()
+          this.$refs.secret.focus()
         }
       }
     }
