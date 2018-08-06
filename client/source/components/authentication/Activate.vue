@@ -20,8 +20,8 @@
         <v-stepper-step step="2">Activate</v-stepper-step>
         <v-stepper-content step="2">
           <v-form>
-            <v-text-field type="text" prepend-icon="verified_user" label="Code" autofocus
-              v-model="code" :error-messages="codeErrors"
+            <v-text-field type="text" prepend-icon="verified_user" label="Code"
+              v-model="code" :error-messages="codeErrors" ref="code"
               @input="$v.code.$reset()" @blur="$v.code.$touch()"></v-text-field>
           </v-form>
         </v-stepper-content>
@@ -47,6 +47,10 @@
         requestInProgress: false,
         invalidCodes: []
       }
+    },
+    async mounted () {
+      await this.$nextTick()
+      this.$refs.code.focus()
     },
     validations: {
       code: {
