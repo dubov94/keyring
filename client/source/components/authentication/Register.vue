@@ -4,7 +4,7 @@
       <v-toolbar-title>Key Ring</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
-      <v-form>
+      <v-form @keydown.native.enter="submit">
         <v-text-field type="text" prepend-icon="person" label="Username" autofocus
           v-model="username" :error-messages="usernameErrors"
           @input="$v.username.$reset()" @blur="$v.username.$touch()"></v-text-field>
@@ -104,22 +104,24 @@
         register: 'authentication/register'
       }),
       async submit () {
-        this.$v.$touch()
-        if (!this.$v.$invalid) {
-          try {
-            this.requestInProgress = true
-            let error = await this.register({
-              username: this.username,
-              password: this.password,
-              mail: this.mail
-            })
-            if (error === 'NONE') {
-              this.$router.push('/authentication/activate')
-            } else if (error === 'NAME_TAKEN') {
-              this.takenUserNames.push(this.username)
+        if (!this.requestInProgress) {
+          this.$v.$touch()
+          if (!this.$v.$invalid) {
+            try {
+              this.requestInProgress = true
+              let error = await this.register({
+                username: this.username,
+                password: this.password,
+                mail: this.mail
+              })
+              if (error === 'NONE') {
+                this.$router.push('/authentication/activate')
+              } else if (error === 'NAME_TAKEN') {
+                this.takenUserNames.push(this.username)
+              }
+            } finally {
+              this.requestInProgress = false
             }
-          } finally {
-            this.requestInProgress = false
           }
         }
       }

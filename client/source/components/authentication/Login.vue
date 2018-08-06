@@ -4,9 +4,9 @@
       <v-toolbar-title>Key Ring</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
-      <v-form>
-        <v-text-field type="text" prepend-icon="person" label="Username" autofocus
-          v-model="username" :error-messages="formErrors"
+      <v-form @keydown.native.enter="submit">
+        <v-text-field type="text" prepend-icon="person" label="Username"
+          autofocus v-model="username" :error-messages="formErrors"
           @input="$v.$reset()" @blur="$v.$touch()"></v-text-field>
         <v-text-field type="password" prepend-icon="lock" label="Password"
           v-model="password" :error-messages="formErrors"
@@ -63,28 +63,30 @@
         logIn: 'authentication/logIn'
       }),
       async submit () {
-        this.$v.$touch()
-        if (!this.$v.$invalid) {
-          try {
-            this.requestInProgress = true
-            let { success, isPending } = await this.logIn({
-              username: this.username,
-              password: this.password
-            })
-            if (success) {
-              if (isPending) {
-                this.$router.push('/authentication/activate')
-              } else {
-                this.$router.push('/')
-              }
-            } else {
-              this.invalidPairs.push({
+        if (!this.requestInProgress) {
+          this.$v.$touch()
+          if (!this.$v.$invalid) {
+            try {
+              this.requestInProgress = true
+              let { success, isPending } = await this.logIn({
                 username: this.username,
                 password: this.password
               })
+              if (success) {
+                if (isPending) {
+                  this.$router.push('/authentication/activate')
+                } else {
+                  this.$router.push('/')
+                }
+              } else {
+                this.invalidPairs.push({
+                  username: this.username,
+                  password: this.password
+                })
+              }
+            } finally {
+              this.requestInProgress = false
             }
-          } finally {
-            this.requestInProgress = false
           }
         }
       }

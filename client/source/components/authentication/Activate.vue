@@ -19,7 +19,7 @@
         <v-stepper-step :complete="true" step="1">Register</v-stepper-step>
         <v-stepper-step step="2">Activate</v-stepper-step>
         <v-stepper-content step="2">
-          <v-form>
+          <v-form @keydown.native.enter="submit">
             <v-text-field type="text" prepend-icon="verified_user" label="Code"
               v-model="code" :error-messages="codeErrors" ref="code"
               @input="$v.code.$reset()" @blur="$v.code.$touch()"></v-text-field>
@@ -75,18 +75,20 @@
         activate: 'authentication/activate'
       }),
       async submit () {
-        this.$v.$touch()
-        if (!this.$v.$invalid) {
-          try {
-            this.requestInProgress = true
-            let error = await this.activate({ code: this.code })
-            if (error === 'NONE') {
-              this.$router.push('/')
-            } else if (error === 'CODE_MISMATCH') {
-              this.invalidCodes.push(this.code)
+        if (!this.requestInProgress) {
+          this.$v.$touch()
+          if (!this.$v.$invalid) {
+            try {
+              this.requestInProgress = true
+              let error = await this.activate({ code: this.code })
+              if (error === 'NONE') {
+                this.$router.push('/')
+              } else if (error === 'CODE_MISMATCH') {
+                this.invalidCodes.push(this.code)
+              }
+            } finally {
+              this.requestInProgress = false
             }
-          } finally {
-            this.requestInProgress = false
           }
         }
       }
