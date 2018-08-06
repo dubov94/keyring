@@ -11,6 +11,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.List;
+import java.util.Optional;
 
 public class ManagementClient implements ManagementInterface {
   @EntityController private EntityManager entityManager;
@@ -38,25 +39,32 @@ public class ManagementClient implements ManagementInterface {
   @Override
   @LocalTransaction
   public void updateKey(long userIdentifier, IdentifiedKey proto) {
-    Key entity = entityManager.find(Key.class, proto.getIdentifier());
-    if (entity.getUser().getIdentifier() == userIdentifier) {
-      Key update = Utilities.passwordToKey(proto.getPassword());
-      entity.setValue(update.getValue());
-      entity.setTags(update.getTags());
-      entityManager.persist(entity);
-    } else {
-      throw new IllegalArgumentException();
+    Optional<Key> maybeEntity =
+        Optional.ofNullable(entityManager.find(Key.class, proto.getIdentifier()));
+    if (maybeEntity.isPresent()) {
+      Key entity = maybeEntity.get();
+      if (entity.getUser().getIdentifier() == userIdentifier) {
+        Key update = Utilities.passwordToKey(proto.getPassword());
+        entity.setValue(update.getValue());
+        entity.setTags(update.getTags());
+        entityManager.persist(entity);
+        return;
+      }
     }
+    throw new IllegalArgumentException();
   }
 
   @Override
   @LocalTransaction
   public void deleteKey(long userIdentifier, long keyIdentifier) {
-    Key entity = entityManager.find(Key.class, keyIdentifier);
-    if (entity.getUser().getIdentifier() == userIdentifier) {
-      entityManager.remove(entity);
-    } else {
-      throw new IllegalArgumentException();
+    Optional<Key> maybeEntity = Optional.ofNullable(entityManager.find(Key.class, keyIdentifier));
+    if (maybeEntity.isPresent()) {
+      Key entity = maybeEntity.get();
+      if (entity.getUser().getIdentifier() == userIdentifier) {
+        entityManager.remove(entity);
+        return;
+      }
     }
+    throw new IllegalArgumentException();
   }
 }
