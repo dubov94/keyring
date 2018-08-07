@@ -47,14 +47,19 @@
       </v-card-text>
       <v-divider></v-divider>
       <v-card-actions>
+        <v-progress-circular indeterminate color="green"
+          v-if="requestInProgress"></v-progress-circular>
         <v-spacer></v-spacer>
-        <v-btn flat color="error" v-if="identifier !== null" @click="remove">
+        <v-btn flat color="error" :disabled="requestInProgress"
+          v-if="identifier !== null" @click="remove">
           Remove
         </v-btn>
-        <v-btn flat color="primary" @click="cancel">
+        <v-btn flat color="primary" :disabled="requestInProgress"
+          @click="cancel">
           Cancel
         </v-btn>
-        <v-btn flat color="primary" @click="save">
+        <v-btn flat color="primary" :disabled="requestInProgress"
+          @click="save">
           Save
         </v-btn>
       </v-card-actions>
@@ -80,6 +85,7 @@
           handle: '.tag__handle',
           animation: 150
         },
+        requestInProgress: false,
         identifier: null,
         reveal: false,
         secret: '',
@@ -111,11 +117,13 @@
       },
       alter (value) {
         if (value === false) {
-          let state = this.getDefaultState()
-          if (this.secret === state.value &&
-            areArraysEqual(this.chips, state.tags) ||
-            confirm('Do you want to discard changes?')) {
-            this.closeEditor()
+          if (!this.requestInProgress) {
+            let state = this.getDefaultState()
+            if (this.secret === state.value &&
+              areArraysEqual(this.chips, state.tags) ||
+              confirm('Do you want to discard changes?')) {
+              this.closeEditor()
+            }
           }
         } else {
           throw new Error('Dialog requested a show!')
@@ -142,6 +150,7 @@
         this.secret = suggestion
       },
       async save () {
+        this.requestInProgress = true
         if (this.identifier === null) {
           await this.createKey({ value: this.secret, tags: this.chips })
         } else {
@@ -151,11 +160,14 @@
             tags: this.chips
           })
         }
+        this.requestInProgress = false
         this.closeEditor()
       },
       async remove () {
         if (confirm('Do you want to remove the key?')) {
+          this.requestInProgress = true
           await this.removeKey({ identifier: this.identifier })
+          this.requestInProgress = false
           this.closeEditor()
         }
       }
