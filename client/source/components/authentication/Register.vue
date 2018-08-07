@@ -101,7 +101,7 @@
     },
     methods: {
       ...mapActions({
-        register: 'authentication/register'
+        register: 'register'
       }),
       async submit () {
         if (!this.requestInProgress) {

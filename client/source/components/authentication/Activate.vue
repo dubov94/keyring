@@ -72,7 +72,7 @@
     },
     methods: {
       ...mapActions({
-        activate: 'authentication/activate'
+        activate: 'activate'
       }),
       async submit () {
         if (!this.requestInProgress) {

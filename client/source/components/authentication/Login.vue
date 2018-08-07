@@ -60,7 +60,7 @@
     },
     methods: {
       ...mapActions({
-        logIn: 'authentication/logIn'
+        logIn: 'logIn'
       }),
       async submit () {
         if (!this.requestInProgress) {

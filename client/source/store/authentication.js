@@ -4,17 +4,37 @@ import sha256 from 'crypto-js/sha256'
 import base64 from 'crypto-js/enc-base64'
 
 const BCRYPT_ROUNDS_LOGARITHM = 12
+const SESSION_LIFETIME_IN_SECONDS = 10 * 60
 
 const getDigest = (hash) => hash.slice(-31)
 
+const reloader = {
+  identifier: null,
+  postpone (delayInSeconds) {
+    if (this.identifier !== null) {
+      clearTimeout(this.identifier)
+    }
+    this.identifier = setTimeout(() => location.reload(), delayInSeconds * 1000)
+  }
+}
+
 export default {
-  namespaced: true,
   state: {
     sessionKey: null,
     encryptionKey: null
   },
+  getters: {
+    encryptionKey (state) {
+      return state.encryptionKey
+    },
+    sessionHeader (state) {
+      reloader.postpone(SESSION_LIFETIME_IN_SECONDS)
+      return { session: state.sessionKey }
+    }
+  },
   mutations: {
     setSessionKey (state, { sessionKey }) {
+      reloader.postpone(SESSION_LIFETIME_IN_SECONDS)
       state.sessionKey = sessionKey
     },
     setEncryptionKey (state, { password }) {
