@@ -28,9 +28,10 @@
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
         KeyRing
       </v-toolbar-title>
-      <v-text-field solo-inverted flat
-        :class="$vuetify.breakpoint.mdAndUp
-          ? 'search--desktop' : 'search--mobile'" v-model="query"
+      <v-text-field solo-inverted flat autofocus
+        v-model="query" @keydown.native.esc="query = ''"
+        :class=
+          "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
         prepend-icon="search" label="Search"></v-text-field>
     </v-toolbar>
     <v-content>
