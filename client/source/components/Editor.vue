@@ -18,7 +18,8 @@
 </style>
 
 <template>
-  <v-dialog v-model="isVisible" :width="1904 * (3 / 12)">
+  <v-dialog :value="isVisible" @input="alter"
+    :width="1904 * (3 / 12)" @keydown.esc="cancel">
     <v-card>
       <v-card-title>
         <v-text-field :type="reveal ? 'text': 'password'" solo flat
@@ -28,12 +29,6 @@
         </v-btn>
         <v-btn icon @click="generate">
           <v-icon>autorenew</v-icon>
-        </v-btn>
-        <v-btn icon @click="save">
-          <v-icon>save</v-icon>
-        </v-btn>
-        <v-btn icon @click="remove" v-if="identifier !== null">
-          <v-icon>delete</v-icon>
         </v-btn>
       </v-card-title>
       <v-divider></v-divider>
@@ -50,6 +45,19 @@
           </v-btn>
         </draggable>
       </v-card-text>
+      <v-divider></v-divider>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn flat color="error" v-if="identifier !== null" @click="remove">
+          Remove
+        </v-btn>
+        <v-btn flat color="primary" @click="cancel">
+          Cancel
+        </v-btn>
+        <v-btn flat color="primary" @click="save">
+          Save
+        </v-btn>
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
@@ -57,7 +65,7 @@
 <script>
   import Draggable from 'vuedraggable'
   import {mapActions, mapMutations} from 'vuex'
-  import {random, ALPHANUMERIC_CHARACTERS} from '../utilities'
+  import {ALPHANUMERIC_CHARACTERS, areArraysEqual, random} from '../utilities'
 
   export default {
     components: {
@@ -79,17 +87,8 @@
       }
     },
     computed: {
-      isVisible: {
-        get () {
-          return this.$store.state.interface.editor.show
-        },
-        set (value) {
-          if (value === false) {
-            this.closeEditor()
-          } else {
-            throw new Error('Dialog requested a show!')
-          }
-        }
+      isVisible () {
+        return this.$store.state.interface.editor.show
       }
     },
     methods: {
@@ -101,6 +100,30 @@
       ...mapMutations({
         closeEditor: 'interface/closeEditor'
       }),
+      getDefaultState () {
+        if (this.identifier === null) {
+          return { value: '', tags: [] }
+        } else {
+          let key = this.$store.state.administration.keys.find(
+            (item) => item.identifier === this.identifier)
+          return { value: key.value, tags: key.tags.slice() }
+        }
+      },
+      alter (value) {
+        if (value === false) {
+          let state = this.getDefaultState()
+          if (this.secret === state.value &&
+            areArraysEqual(this.chips, state.tags) ||
+            confirm('Do you want to discard changes?')) {
+            this.closeEditor()
+          }
+        } else {
+          throw new Error('Dialog requested a show!')
+        }
+      },
+      cancel () {
+        this.alter(false)
+      },
       move ({ relatedContext }) {
         return relatedContext.element !== undefined
       },
@@ -131,7 +154,7 @@
         this.closeEditor()
       },
       async remove () {
-        if (confirm('Are you sure?')) {
+        if (confirm('Do you want to remove the key?')) {
           await this.removeKey({ identifier: this.identifier })
           this.closeEditor()
         }
@@ -143,15 +166,9 @@
           let editorState = this.$store.state.interface.editor
           this.reveal = editorState.reveal
           this.identifier = editorState.identifier
-          if (this.identifier === null) {
-            this.secret = ''
-            this.chips = []
-          } else {
-            let key = this.$store.state.administration.keys.find(
-              (item) => item.identifier === this.identifier)
-            this.secret = key.value
-            this.chips = key.tags.slice()
-          }
+          let state = this.getDefaultState()
+          this.secret = state.value
+          this.chips = state.tags
           await this.$nextTick()
           this.$refs.secret.focus()
         }

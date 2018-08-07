@@ -32,3 +32,16 @@ export const ALPHANUMERIC_CHARACTERS =
   createCharacterRange('0', '9') +
   createCharacterRange('A', 'Z') +
   createCharacterRange('a', 'z')
+
+export const areArraysEqual = (left, right) => {
+  if (left.length !== right.length) {
+    return false
+  } else {
+    for (let index = 0; index < left.length; ++index) {
+      if (left[index] !== right[index]) {
+        return false
+      }
+    }
+    return true
+  }
+}
