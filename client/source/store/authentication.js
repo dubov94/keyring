@@ -58,11 +58,9 @@ export default {
       }
       return response.error
     },
-    async activate ({ state }, { code }) {
+    async activate ({ getters }, { code }) {
       return (await axios.post('/api/administration/activate', { code }, {
-        headers: {
-          session: state.sessionKey
-        }
+        headers: getters.sessionHeader
       })).data.error
     },
     async logIn ({ commit }, { username, password }) {
