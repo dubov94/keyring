@@ -3,19 +3,17 @@ import axios from 'axios'
 import encUtf8 from 'crypto-js/enc-utf8'
 import {shuffle} from '../utilities'
 
-const encryptPassword = (rootGetters, { value, tags }) => {
-  let key = rootGetters.encryptionKey
+const encryptPassword = (encryptionKey, { value, tags }) => {
   return {
-    value: aes.encrypt(value, key).toString(),
-    tags: tags.map(tag => aes.encrypt(tag, key).toString())
+    value: aes.encrypt(value, encryptionKey).toString(),
+    tags: tags.map(tag => aes.encrypt(tag, encryptionKey).toString())
   }
 }
 
-const decryptPassword = (rootGetters, { value, tags }) => {
-  let key = rootGetters.encryptionKey
+const decryptPassword = (encryptionKey, { value, tags }) => {
   return {
-    value: aes.decrypt(value, key).toString(encUtf8),
-    tags: tags.map(tag => aes.decrypt(tag, key).toString(encUtf8))
+    value: aes.decrypt(value, encryptionKey).toString(encUtf8),
+    tags: tags.map(tag => aes.decrypt(tag, encryptionKey).toString(encUtf8))
   }
 }
 
@@ -53,12 +51,13 @@ export default {
           headers: rootGetters.sessionHeader
         })
       commit('setKeys', response.keys.map(({ identifier, password }) =>
-        Object.assign({ identifier }, decryptPassword(rootGetters, password))))
+        Object.assign({ identifier },
+          decryptPassword(rootGetters.encryptionKey, password))))
     },
     async createKey ({ commit, rootGetters }, { value, tags }) {
       let { data: response } =
         await axios.post('/api/administration/create-key', {
-          password: encryptPassword(rootGetters, { value, tags })
+          password: encryptPassword(rootGetters.encryptionKey, { value, tags })
         }, { headers: rootGetters.sessionHeader })
       commit('unshiftKey', { identifier: response.identifier, value, tags })
     },
@@ -66,7 +65,7 @@ export default {
       await axios.put('/api/administration/update-key', {
         key: {
           identifier,
-          password: encryptPassword(rootGetters, { value, tags })
+          password: encryptPassword(rootGetters.encryptionKey, { value, tags })
         }
       }, { headers: rootGetters.sessionHeader })
       commit('modifyKey', { identifier, value, tags })
