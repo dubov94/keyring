@@ -22,13 +22,7 @@ class UtilitiesModule {
   @Provides
   @Singleton
   static Environment provideEnvironment() {
-    Environment environment = new Environment();
-    try {
-      environment.configureProperties();
-    } catch (IOException exception) {
-      throw new IllegalStateException(exception);
-    }
-    return environment;
+    return new Environment();
   }
 
   @Provides
