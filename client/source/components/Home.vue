@@ -81,11 +81,12 @@
         passwords: state => state.administration.keys
       }),
       matches () {
-        if (this.query === '') {
+        let prefix = this.query.trim().toLowerCase()
+        if (prefix === '') {
           return this.passwords
         } else {
           return this.passwords.filter(key => key.tags.some(
-            tag => tag.startsWith(this.query)))
+            tag => tag.toLowerCase().startsWith(prefix)))
         }
       },
       columnCount () {
