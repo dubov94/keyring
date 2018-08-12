@@ -1,0 +1,8 @@
+pwd.floreina.me {
+    proxy /api localhost:82
+    proxy / localhost:81
+
+    errors {
+        404 index.html
+    }
+}
