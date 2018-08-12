@@ -12,6 +12,6 @@ public class SessionsModule {
   @Provides
   @Singleton
   static JedisPool provideJedisPool() {
-    return new JedisPool(new JedisPoolConfig(), "localhost");
+    return new JedisPool(new JedisPoolConfig(), "redis");
   }
 }

@@ -1,0 +1,31 @@
+version: '3.1'
+services:
+  client:
+    image: dubov94/keyring-client
+    ports:
+      - '81:80'
+  gateway:
+    image: dubov94/keyring-gateway
+    environment:
+      PROXY_TARGET: 'server:591'
+    ports:
+      - '82:80'
+  server:
+    image: dubov94/keyring-server
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - '591'
+    secrets:
+      - mailgun_api_key
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: keyring
+  redis:
+    image: redis
+secrets:
+  mailgun_api_key:
+    external: true
