@@ -1,8 +1,9 @@
-# Convert secrets into environment variables.
+echo 'Converting secrets into environment variables...'
 for path in /run/secrets/*
 do
+  echo "$path"
   export `basename ${path^^}`="`cat $path`"
 done
 
-# Run the server.
+echo 'Running the server...'
 mvn exec:exec
