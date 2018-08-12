@@ -19,7 +19,7 @@
         <v-stepper-step :complete="true" step="1">Register</v-stepper-step>
         <v-stepper-step step="2">Activate</v-stepper-step>
         <v-stepper-content step="2">
-          <v-form @keydown.native.enter="submit">
+          <v-form @keydown.native.enter.prevent="submit">
             <v-text-field type="text" prepend-icon="verified_user" label="Code"
               v-model="code" :error-messages="codeErrors" ref="code"
               @input="$v.code.$reset()" @blur="$v.code.$touch()"></v-text-field>
@@ -51,6 +51,7 @@
     async mounted () {
       await this.$nextTick()
       this.$refs.code.focus()
+      window.ROUTER = this.$router
     },
     validations: {
       code: {

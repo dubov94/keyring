@@ -4,7 +4,7 @@
       <v-toolbar-title>Key Ring</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
-      <v-form @keydown.native.enter="submit">
+      <v-form @keydown.native.enter.prevent="submit">
         <v-text-field type="text" prepend-icon="person" label="Username"
           autofocus v-model="username" :error-messages="formErrors"
           @input="$v.$reset()" @blur="$v.$touch()"></v-text-field>
