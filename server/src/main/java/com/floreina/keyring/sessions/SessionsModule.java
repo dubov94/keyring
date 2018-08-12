@@ -1,5 +1,6 @@
 package com.floreina.keyring.sessions;
 
+import com.floreina.keyring.Environment;
 import dagger.Module;
 import dagger.Provides;
 import redis.clients.jedis.JedisPool;
@@ -12,6 +13,6 @@ public class SessionsModule {
   @Provides
   @Singleton
   static JedisPool provideJedisPool() {
-    return new JedisPool(new JedisPoolConfig(), "redis");
+    return new JedisPool(new JedisPoolConfig(), Environment.isProduction() ? "redis" : "localhost");
   }
 }

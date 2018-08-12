@@ -1,5 +1,6 @@
 package com.floreina.keyring.database;
 
+import com.floreina.keyring.Environment;
 import dagger.Module;
 import dagger.Provides;
 
@@ -12,7 +13,8 @@ public class DatabaseModule {
   @Provides
   @Singleton
   static EntityManagerFactory provideEntityManagerFactory() {
-    return Persistence.createEntityManagerFactory("production");
+    return Persistence.createEntityManagerFactory(
+        Environment.isProduction() ? "production" : "development");
   }
 
   @Provides

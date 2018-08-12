@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ManagementClientTest {
   private static final EntityManagerFactory entityManagerFactory =
-      Persistence.createEntityManagerFactory("development");
+      Persistence.createEntityManagerFactory("testing");
   private static Random random = new Random();
   private ManagementClient managementClient;
 

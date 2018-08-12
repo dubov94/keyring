@@ -21,12 +21,6 @@ class UtilitiesModule {
 
   @Provides
   @Singleton
-  static Environment provideEnvironment() {
-    return new Environment();
-  }
-
-  @Provides
-  @Singleton
   static Gson provideGson() {
     return new Gson();
   }

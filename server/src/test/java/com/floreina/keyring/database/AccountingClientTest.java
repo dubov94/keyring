@@ -21,7 +21,7 @@ class AccountingClientTest {
   @BeforeAll
   static void beforeAll() {
     Aspects.aspectOf(DatabaseManagerAspect.class)
-        .initialize(Persistence.createEntityManagerFactory("development"));
+        .initialize(Persistence.createEntityManagerFactory("testing"));
   }
 
   @BeforeEach
