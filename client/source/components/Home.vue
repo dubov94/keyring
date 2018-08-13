@@ -28,10 +28,9 @@
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
         Key Ring
       </v-toolbar-title>
-      <v-text-field solo-inverted flat autofocus
-        v-model="query" @keydown.native.esc="query = ''"
-        :class=
+      <v-text-field solo-inverted flat ref="search" :class=
           "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
+        v-model="query" @keydown.native.esc="query = ''"
         prepend-icon="search" label="Search"></v-text-field>
     </v-toolbar>
     <v-content>
@@ -112,8 +111,11 @@
         this.openEditor({ identifier: null, reveal: false })
       }
     },
-    mounted () {
-      this.readKeys()
+    async mounted () {
+      await this.readKeys()
+      if (this.passwords.length > 0) {
+        this.$refs.search.focus()
+      }
     }
   }
 </script>
