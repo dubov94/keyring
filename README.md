@@ -1,4 +1,4 @@
-# KeyRing
+# Key Ring
 
 ## Authentication
 

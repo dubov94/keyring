@@ -13,11 +13,16 @@ public class Post {
     configuration =
         new Configuration()
             .domain("pwd.floreina.me")
-            .apiKey(Environment.getVariable("MAILGUN_API_KEY"))
-            .from("keyring@pwd.floreina.me");
+            .apiKey(Environment.getVariable("MAILGUN_API_KEY"));
   }
 
   public void send(String address, String head, String body) {
-    Mail.using(configuration).from("KeyRing").to(address).subject(head).html(body).build().send();
+    Mail.using(configuration)
+        .from("Key Ring", "keyring@pwd.floreina.me")
+        .to(address)
+        .subject(head)
+        .html(body)
+        .build()
+        .send();
   }
 }

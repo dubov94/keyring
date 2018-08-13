@@ -26,7 +26,7 @@
   <v-app>
     <v-toolbar app prominent color="primary" dark>
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
-        KeyRing
+        Key Ring
       </v-toolbar-title>
       <v-text-field solo-inverted flat autofocus
         v-model="query" @keydown.native.esc="query = ''"
