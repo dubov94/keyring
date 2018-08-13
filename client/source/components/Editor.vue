@@ -22,8 +22,9 @@
     :width="1904 * (3 / 12)" @keydown.esc="cancel">
     <v-card>
       <v-card-title>
-        <v-text-field :type="reveal ? 'text': 'password'" solo flat
-          placeholder="Secret" v-model="secret" ref="secret"></v-text-field>
+        <v-text-field type="text" solo flat
+          placeholder="Secret" :class="{ conceal: !reveal }"
+          v-model="secret" ref="secret"></v-text-field>
         <v-btn icon @click="reveal = !reveal">
           <v-icon>{{ reveal ? 'visibility_off' : 'visibility' }}</v-icon>
         </v-btn>

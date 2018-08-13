@@ -12,8 +12,8 @@
 <template>
   <v-card>
     <v-card-title>
-      <v-text-field :type="reveal ? 'text' : 'password'"
-        :value="value" solo flat readonly></v-text-field>
+      <v-text-field type="text" solo flat readonly
+        :class="{ conceal: !reveal }" :value="value"></v-text-field>
       <v-btn icon v-clipboard:copy="value" v-clipboard:success="onCopy">
         <v-icon>file_copy</v-icon>
       </v-btn>

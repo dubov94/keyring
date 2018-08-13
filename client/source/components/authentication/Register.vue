@@ -8,11 +8,11 @@
         <v-text-field type="text" prepend-icon="person" label="Username" autofocus
           v-model="username" :error-messages="usernameErrors"
           @input="$v.username.$reset()" @blur="$v.username.$touch()"></v-text-field>
-        <v-text-field type="password" prepend-icon="lock" label="Password"
-          v-model="password" :error-messages="passwordErrors"
+        <v-text-field type="text" prepend-icon="lock" label="Password"
+          class="conceal" v-model="password" :error-messages="passwordErrors"
           @input="$v.password.$reset()" @blur="$v.password.$touch()"></v-text-field>
-        <v-text-field type="password" prepend-icon="repeat" label="Repeat password"
-          v-model="repeat" :error-messages="repeatErrors"
+        <v-text-field type="text" prepend-icon="repeat" label="Repeat password"
+          class="conceal" v-model="repeat" :error-messages="repeatErrors"
           @input="$v.repeat.$reset()" @blur="$v.repeat.$touch()"></v-text-field>
         <v-text-field type="email" prepend-icon="email" label="E-mail"
           v-model="mail" :error-messages="mailErrors"
