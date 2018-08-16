@@ -35,13 +35,13 @@ const constructMetadataFromHeaders = (headers) => {
     return metadata
 }
 
-const addRouterEntry = (router, configuration, serviceClient, methodName) => {
+const addRouterEntry = (router, configuration, doCall) => {
     const httpMethod = configuration.method
     assert(HTTP_METHODS.includes(httpMethod))
     router[httpMethod](configuration.path, (request, response) => {
         const metadata = constructMetadataFromHeaders(request.headers)
         let payload = Object.assign({}, request.body, request.params)
-        serviceClient[methodName](payload, metadata, (error, reply) => {
+        doCall(payload, metadata, (error, reply) => {
             if (error) {
                 return response.sendStatus(GRPC_TO_HTTP.get(error.code))
             } else {
@@ -57,11 +57,14 @@ module.exports = (protoPath, mappingPath, host, credentials = grpc.credentials.c
     const serviceToMethods = JSON.parse(fs.readFileSync(mappingPath))
     Object.keys(serviceToMethods).forEach((serviceName) => {
         const ClientConstructor = _.get(protoObject, serviceName, null)
-        const serviceClient = new ClientConstructor(host, credentials)
-        assert(serviceClient !== null)
+        assert(ClientConstructor !== null)
         const methodToConfiguration = serviceToMethods[serviceName]
         Object.keys(methodToConfiguration).forEach((methodName) => {
-            addRouterEntry(router, methodToConfiguration[methodName], serviceClient, methodName)
+            addRouterEntry(router, methodToConfiguration[methodName],
+                (payload, metadata, callback) => {
+                    const serviceClient = new ClientConstructor(host, credentials)
+                    serviceClient[methodName](payload, metadata, callback)
+                })
         })
     })
     return router
