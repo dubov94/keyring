@@ -43,6 +43,7 @@ const addRouterEntry = (router, configuration, doCall) => {
         let payload = Object.assign({}, request.body, request.params)
         doCall(payload, metadata, (error, reply) => {
             if (error) {
+                console.warn(error)
                 return response.sendStatus(GRPC_TO_HTTP.get(error.code))
             } else {
                 return response.json(reply)
@@ -56,9 +57,9 @@ module.exports = (protoPath, mappingPath, host, credentials = grpc.credentials.c
     const protoObject = grpc.load(protoPath)
     const serviceToMethods = JSON.parse(fs.readFileSync(mappingPath))
     Object.keys(serviceToMethods).forEach((serviceName) => {
-        const ClientConstructor = _.get(protoObject, serviceName, null)
-        assert(ClientConstructor !== null)
-        const serviceClient = new ClientConstructor(host, credentials, {
+        const ClientObject = _.get(protoObject, serviceName, null)
+        assert(ClientObject !== null)
+        const serviceClient = new ClientObject(host, credentials, {
             'grpc.keepalive_time_ms': 60 * 1000,
             'grpc.keepalive_permit_without_calls': 1
         })
