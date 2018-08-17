@@ -3,7 +3,7 @@ services:
   caddy:
     image: abiosoft/caddy
     volumes:
-      - '$(pwd)/Caddyfile:/etc/Caddyfile'
+      - '$PWD/Caddyfile:/etc/Caddyfile'
       - '$HOME/.caddy:/root/.caddy'
     ports:
       - '80'
