@@ -1,7 +1,6 @@
 import aes from 'crypto-js/aes'
 import axios from 'axios'
 import encUtf8 from 'crypto-js/enc-utf8'
-import {shuffle} from '../utilities'
 
 const encryptPassword = (encryptionKey, { value, tags }) => {
   return {
@@ -28,7 +27,19 @@ export default {
       for (let item of keys) {
         state.keys.push(item)
       }
-      shuffle(state.keys)
+      state.keys.sort((left, right) => {
+        let leftTagCount = left.tags.length
+        let rightTagCount = right.tags.length
+        if (leftTagCount > 0 && rightTagCount > 0) {
+          return left.tags[0].localeCompare(right.tags[0])
+        } else if (leftTagCount > 0 && rightTagCount === 0) {
+          return -1
+        } else if (leftTagCount === 0 && rightTagCount > 0) {
+          return 1
+        } else {
+          return left.value.localeCompare(right.value)
+        }
+      })
     },
     unshiftKey (state, key) {
       state.keys.unshift(key)
