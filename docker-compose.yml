@@ -1,19 +1,21 @@
 version: '3.2'
 services:
+  caddy:
+    image: abiosoft/caddy
+    volumes:
+      - '$(pwd)/Caddyfile:/etc/Caddyfile'
+      - '$HOME/.caddy:/root/.caddy'
+    ports:
+      - '80'
+      - '443'
   client:
     image: dubov94/keyring-client
-    ports:
-      - '81:80'
   gateway:
     image: dubov94/keyring-gateway
     environment:
       PROXY_TARGET: 'server:591'
-    ports:
-      - '82:80'
   server:
     image: dubov94/keyring-server
-    ports:
-      - '591'
     secrets:
       - mailgun_api_key
   postgres:
