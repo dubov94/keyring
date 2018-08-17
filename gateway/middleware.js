@@ -59,10 +59,7 @@ module.exports = (protoPath, mappingPath, host, credentials = grpc.credentials.c
     Object.keys(serviceToMethods).forEach((serviceName) => {
         const ClientObject = _.get(protoObject, serviceName, null)
         assert(ClientObject !== null)
-        const serviceClient = new ClientObject(host, credentials, {
-            'grpc.keepalive_time_ms': 60 * 1000,
-            'grpc.keepalive_permit_without_calls': 1
-        })
+        const serviceClient = new ClientObject(host, credentials)
         const methodToConfiguration = serviceToMethods[serviceName]
         Object.keys(methodToConfiguration).forEach((methodName) => {
             addRouterEntry(router, methodToConfiguration[methodName],
