@@ -40,5 +40,5 @@ To build the modules locally one may run
 
 Initialize the cluster by executing `docker swarm init`. Set up all the secrets
 using `docker secret create`. Create directories at `/root/postgres` and
-`/root/redis`. Finally, deploy the stack (`docker stack deploy --compose-file=docker-compose.yml keyring`) and run
-[Caddy](https://caddyserver.com/).
+`/root/redis`. Finally, deploy the stack (
+`docker stack deploy --compose-file=docker-compose.yml keyring`).
