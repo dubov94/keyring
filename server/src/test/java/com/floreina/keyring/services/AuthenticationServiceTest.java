@@ -2,6 +2,7 @@ package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
 import com.floreina.keyring.database.AccountingInterface;
+import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.sessions.SessionsClient;
 import com.floreina.keyring.templates.CodeBodyRendererFactory;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
   @Mock private AccountingInterface mockAccountingInterface;
+  @Mock private ManagementInterface mockManagementInterface;
   @Mock private Cryptography mockCryptography;
   @Mock private Post mockPost;
 
@@ -43,6 +45,7 @@ class AuthenticationServiceTest {
     authenticationService =
         new AuthenticationService(
             mockAccountingInterface,
+            mockManagementInterface,
             mockCryptography,
             mockPost,
             mockCodeHeadRendererFactory,
@@ -161,7 +164,7 @@ class AuthenticationServiceTest {
                 .setPayload(
                     LogInResponse.Payload.newBuilder()
                         .setSessionKey("identifier")
-                        .setIsPending(true)
+                        .setChallenge(LogInResponse.Payload.Challenge.ACTIVATE)
                         .build())
                 .build());
     verify(mockStreamObserver).onCompleted();

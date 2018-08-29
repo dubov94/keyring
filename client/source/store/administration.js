@@ -56,12 +56,8 @@ export default {
     }
   },
   actions: {
-    async readKeys ({ commit, rootGetters }) {
-      let { data: response } =
-        await axios.get('/api/administration/read-keys', {
-          headers: rootGetters.sessionHeader
-        })
-      commit('setKeys', response.keys.map(({ identifier, password }) =>
+    async acceptKeys ({ commit, rootGetters }, { keys }) {
+      commit('setKeys', keys.map(({ identifier, password }) =>
         Object.assign({ identifier },
           decryptPassword(rootGetters.encryptionKey, password))))
     },

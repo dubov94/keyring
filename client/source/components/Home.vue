@@ -62,7 +62,7 @@
   import Editor from './Editor'
   import Password from './Password'
   import Toast from './Toast'
-  import {mapActions, mapMutations, mapState} from 'vuex'
+  import {mapMutations, mapState} from 'vuex'
 
   export default {
     components: {
@@ -101,9 +101,6 @@
       }
     },
     methods: {
-      ...mapActions({
-        readKeys: 'administration/readKeys'
-      }),
       ...mapMutations({
         openEditor: 'interface/openEditor'
       }),
@@ -112,7 +109,6 @@
       }
     },
     async mounted () {
-      await this.readKeys()
       if (this.passwords.length > 0) {
         this.$refs.search.focus()
       }

@@ -67,8 +67,21 @@ message LogInResponse {
     }
 
     message Payload {
+        enum Challenge {
+            NONE = 0;
+            ACTIVATE = 1;
+        }
+
+        message KeySet {
+            repeated IdentifiedKey items = 1;
+        }
+
         string session_key = 1;
-        bool is_pending = 2;
+
+        oneof data {
+            Challenge challenge = 2;
+            KeySet key_set = 3;
+        }
     }
 
     oneof data {

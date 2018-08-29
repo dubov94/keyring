@@ -2,6 +2,7 @@ package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
 import com.floreina.keyring.database.AccountingInterface;
+import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.sessions.SessionsClient;
 import com.floreina.keyring.sessions.UserCast;
@@ -13,8 +14,11 @@ import javax.inject.Inject;
 import java.util.Objects;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
+
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
   private AccountingInterface accountingInterface;
+  private ManagementInterface managementInterface;
   private SessionsClient sessionsClient;
   private Cryptography cryptography;
   private Post post;
@@ -24,12 +28,14 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   @Inject
   AuthenticationService(
       AccountingInterface accountingInterface,
+      ManagementInterface managementInterface,
       Cryptography cryptography,
       Post post,
       CodeHeadRendererFactory codeHeadRendererFactory,
       CodeBodyRendererFactory codeBodyRendererFactory,
       SessionsClient sessionsClient) {
     this.accountingInterface = accountingInterface;
+    this.managementInterface = managementInterface;
     this.cryptography = cryptography;
     this.post = post;
     this.codeHeadRendererFactory = codeHeadRendererFactory;
@@ -90,14 +96,22 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         if (!sessionKey.isPresent()) {
           throw new IllegalStateException();
         } else {
-          response.onNext(
-              LogInResponse.newBuilder()
-                  .setPayload(
-                      LogInResponse.Payload.newBuilder()
-                          .setSessionKey(sessionKey.get())
-                          .setIsPending(user.getState() == User.State.PENDING)
-                          .build())
-                  .build());
+          LogInResponse.Payload.Builder payloadBuilder = LogInResponse.Payload.newBuilder();
+          payloadBuilder.setSessionKey(sessionKey.get());
+          if (user.getState() == User.State.PENDING) {
+            payloadBuilder.setChallenge(LogInResponse.Payload.Challenge.ACTIVATE);
+          } else {
+            payloadBuilder.setKeySet(
+                LogInResponse.Payload.KeySet.newBuilder()
+                    .addAllItems(
+                        managementInterface
+                            .readKeys(user.getIdentifier())
+                            .stream()
+                            .map(Utilities::entityToIdentifiedKey)
+                            .collect(toList()))
+                    .build());
+          }
+          response.onNext(LogInResponse.newBuilder().setPayload(payloadBuilder.build()).build());
         }
       }
     }

@@ -5,7 +5,6 @@ import com.floreina.keyring.aspects.Annotations.ValidateUser;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.Activation;
-import com.floreina.keyring.entities.Tag;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionKeys;
 import io.grpc.stub.StreamObserver;
@@ -72,17 +71,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         managementInterface
             .readKeys(sessionKeys.getUserIdentifier())
             .stream()
-            .map(
-                entity ->
-                    IdentifiedKey.newBuilder()
-                        .setPassword(
-                            Password.newBuilder()
-                                .setValue(entity.getValue())
-                                .addAllTags(
-                                    entity.getTags().stream().map(Tag::getValue).collect(toList()))
-                                .build())
-                        .setIdentifier(entity.getIdentifier())
-                        .build())
+            .map(Utilities::entityToIdentifiedKey)
             .collect(toList());
     response.onNext(ReadKeysResponse.newBuilder().addAllKeys(keys).build());
     response.onCompleted();

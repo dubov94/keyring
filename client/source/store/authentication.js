@@ -63,7 +63,7 @@ export default {
         headers: getters.sessionHeader
       })).data.error
     },
-    async logIn ({ commit }, { username, password }) {
+    async logIn ({ commit, dispatch }, { username, password }) {
       let { data: saltResponse } =
         await axios.get(`/api/authentication/get-salt/${username}`)
       if (saltResponse.error === 'NONE') {
@@ -77,10 +77,15 @@ export default {
           let { payload } = authResponse
           commit('setSessionKey', { sessionKey: payload.session_key })
           commit('setEncryptionKey', { password })
-          return { success: true, isPending: payload.is_pending }
+          if (payload.challenge === 'NONE') {
+            dispatch('administration/acceptKeys', {
+              keys: payload.key_set.items
+            })
+          }
+          return { success: true, challenge: payload.challenge }
         }
       }
-      return { success: false, isPending: null }
+      return { success: false, challenge: null }
     }
   }
 }

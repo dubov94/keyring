@@ -68,12 +68,12 @@
           if (!this.$v.$invalid) {
             try {
               this.requestInProgress = true
-              let { success, isPending } = await this.logIn({
+              let { success, challenge } = await this.logIn({
                 username: this.username,
                 password: this.password
               })
               if (success) {
-                if (isPending) {
+                if (challenge === 'ACTIVATE') {
                   this.$router.push('/authentication/activate')
                 } else {
                   this.$router.push('/')
