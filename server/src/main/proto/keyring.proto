@@ -67,6 +67,8 @@ message LogInResponse {
     }
 
     message Payload {
+        reserved 2;
+    
         enum Challenge {
             NONE = 0;
             ACTIVATE = 1;
@@ -79,8 +81,8 @@ message LogInResponse {
         string session_key = 1;
 
         oneof data {
-            Challenge challenge = 2;
-            KeySet key_set = 3;
+            Challenge challenge = 3;
+            KeySet key_set = 4;
         }
     }
 
