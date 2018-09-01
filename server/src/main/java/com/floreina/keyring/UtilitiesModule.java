@@ -1,5 +1,7 @@
 package com.floreina.keyring;
 
+import com.floreina.keyring.interceptors.AddressInterceptor;
+import com.floreina.keyring.interceptors.AddressKeys;
 import com.floreina.keyring.interceptors.SessionKeys;
 import com.google.gson.Gson;
 import dagger.Module;
@@ -28,5 +30,17 @@ class UtilitiesModule {
   @Singleton
   static SessionKeys provideSessionKeys() {
     return new SessionKeys();
+  }
+
+  @Provides
+  @Singleton
+  static AddressInterceptor provideIpInterceptor() {
+    return new AddressInterceptor();
+  }
+
+  @Provides
+  @Singleton
+  static AddressKeys provideIpKeys() {
+    return new AddressKeys();
   }
 }

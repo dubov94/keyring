@@ -32,10 +32,14 @@ class Launcher {
   private void start() throws IOException {
     server =
         ServerBuilder.forPort(591)
-            .addService(component.authenticationService())
             .addService(
                 ServerInterceptors.intercept(
-                    component.administrationService(), component.sessionInterceptor()))
+                    component.authenticationService(), component.addressInterceptor()))
+            .addService(
+                ServerInterceptors.intercept(
+                    component.administrationService(),
+                    component.addressInterceptor(),
+                    component.sessionInterceptor()))
             .build();
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     server.start();

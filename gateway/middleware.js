@@ -40,6 +40,7 @@ const addRouterEntry = (router, configuration, doCall) => {
     assert(HTTP_METHODS.includes(httpMethod))
     router[httpMethod](configuration.path, (request, response) => {
         const metadata = constructMetadataFromHeaders(request.headers)
+        metadata.set('ip-address', request.ip)
         let payload = Object.assign({}, request.body, request.params)
         doCall(payload, metadata, (error, reply) => {
             if (error) {
@@ -52,7 +53,8 @@ const addRouterEntry = (router, configuration, doCall) => {
     })
 }
 
-module.exports = (protoPath, mappingPath, host, credentials = grpc.credentials.createInsecure()) => {
+module.exports = (protoPath, mappingPath, host,
+        credentials = grpc.credentials.createInsecure()) => {
     const router = express.Router()
     const protoObject = grpc.load(protoPath)
     const serviceToMethods = JSON.parse(fs.readFileSync(mappingPath))

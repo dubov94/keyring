@@ -2,6 +2,8 @@ package com.floreina.keyring;
 
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.DatabaseModule;
+import com.floreina.keyring.interceptors.AddressInterceptor;
+import com.floreina.keyring.interceptors.AddressKeys;
 import com.floreina.keyring.interceptors.SessionInterceptor;
 import com.floreina.keyring.interceptors.SessionKeys;
 import com.floreina.keyring.services.AdministrationService;
@@ -33,4 +35,8 @@ interface Component {
   EntityManagerFactory entityManagerFactory();
 
   AccountingInterface accountingInterface();
+
+  AddressInterceptor addressInterceptor();
+
+  AddressKeys addressKeys();
 }
