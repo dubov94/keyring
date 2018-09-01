@@ -111,7 +111,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
         accountingInterface.changeMasterKey(
             identifier, renewal.getSalt(), renewal.getDigest(), renewal.getKeysList());
-        // TODO: Purge other sessions.
+        // TODO: Purge other cache.
         response.onNext(
             ChangeMasterKeyResponse.newBuilder()
                 .setError(ChangeMasterKeyResponse.Error.NONE)

@@ -1,11 +1,11 @@
 package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
+import com.floreina.keyring.cache.CacheClient;
+import com.floreina.keyring.cache.UserCast;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.User;
-import com.floreina.keyring.sessions.SessionsClient;
-import com.floreina.keyring.sessions.UserCast;
 import com.floreina.keyring.templates.CodeBodyRendererFactory;
 import com.floreina.keyring.templates.CodeHeadRendererFactory;
 import io.grpc.stub.StreamObserver;
@@ -19,7 +19,7 @@ import static java.util.stream.Collectors.toList;
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
   private AccountingInterface accountingInterface;
   private ManagementInterface managementInterface;
-  private SessionsClient sessionsClient;
+  private CacheClient cacheClient;
   private Cryptography cryptography;
   private Post post;
   private CodeHeadRendererFactory codeHeadRendererFactory;
@@ -33,14 +33,14 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       Post post,
       CodeHeadRendererFactory codeHeadRendererFactory,
       CodeBodyRendererFactory codeBodyRendererFactory,
-      SessionsClient sessionsClient) {
+      CacheClient cacheClient) {
     this.accountingInterface = accountingInterface;
     this.managementInterface = managementInterface;
     this.cryptography = cryptography;
     this.post = post;
     this.codeHeadRendererFactory = codeHeadRendererFactory;
     this.codeBodyRendererFactory = codeBodyRendererFactory;
-    this.sessionsClient = sessionsClient;
+    this.cacheClient = cacheClient;
   }
 
   @Override
@@ -55,7 +55,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       String mail = request.getMail();
       String code = cryptography.generateSecurityCode();
       User user = accountingInterface.createUserWithActivation(username, salt, digest, mail, code);
-      Optional<String> sessionKey = sessionsClient.create(UserCast.fromUser(user));
+      Optional<String> sessionKey = cacheClient.create(UserCast.fromUser(user));
       if (!sessionKey.isPresent()) {
         throw new IllegalStateException();
       } else {
@@ -92,7 +92,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         response.onNext(
             LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
       } else {
-        Optional<String> sessionKey = sessionsClient.create(UserCast.fromUser(user));
+        Optional<String> sessionKey = cacheClient.create(UserCast.fromUser(user));
         if (!sessionKey.isPresent()) {
           throw new IllegalStateException();
         } else {

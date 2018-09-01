@@ -1,10 +1,11 @@
 package com.floreina.keyring.services;
 
-import com.floreina.keyring.*;
+import com.floreina.keyring.Cryptography;
+import com.floreina.keyring.Post;
+import com.floreina.keyring.cache.CacheClient;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.User;
-import com.floreina.keyring.sessions.SessionsClient;
 import com.floreina.keyring.templates.CodeBodyRendererFactory;
 import com.floreina.keyring.templates.CodeHeadRendererFactory;
 import io.grpc.stub.StreamObserver;
@@ -35,7 +36,7 @@ class AuthenticationServiceTest {
   @Mock(answer = Answers.RETURNS_MOCKS)
   private CodeBodyRendererFactory mockCodeBodyRendererFactory;
 
-  @Mock private SessionsClient mockSessionsClient;
+  @Mock private CacheClient mockCacheClient;
   @Mock private StreamObserver mockStreamObserver;
 
   private AuthenticationService authenticationService;
@@ -50,7 +51,7 @@ class AuthenticationServiceTest {
             mockPost,
             mockCodeHeadRendererFactory,
             mockCodeBodyRendererFactory,
-            mockSessionsClient);
+            mockCacheClient);
   }
 
   @Test
@@ -71,7 +72,7 @@ class AuthenticationServiceTest {
     when(mockAccountingInterface.createUserWithActivation(
             "username", "salt", "digest", "mail@example.com", "0"))
         .thenReturn(new User().setIdentifier(0L));
-    when(mockSessionsClient.create(any())).thenReturn(Optional.of("identifier"));
+    when(mockCacheClient.create(any())).thenReturn(Optional.of("identifier"));
 
     authenticationService.register(
         RegisterRequest.newBuilder()
@@ -152,7 +153,7 @@ class AuthenticationServiceTest {
                     .setUsername("username")
                     .setDigest("digest")
                     .setState(User.State.PENDING)));
-    when(mockSessionsClient.create(any())).thenReturn(Optional.of("identifier"));
+    when(mockCacheClient.create(any())).thenReturn(Optional.of("identifier"));
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),

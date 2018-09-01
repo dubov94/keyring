@@ -1,4 +1,4 @@
-package com.floreina.keyring.sessions;
+package com.floreina.keyring.cache;
 
 import com.floreina.keyring.Environment;
 import dagger.Module;
@@ -9,7 +9,7 @@ import redis.clients.jedis.JedisPoolConfig;
 import javax.inject.Singleton;
 
 @Module
-public class SessionsModule {
+public class CacheModule {
   @Provides
   @Singleton
   static JedisPool provideJedisPool() {

@@ -1,26 +1,21 @@
 package com.floreina.keyring;
 
+import com.floreina.keyring.cache.CacheModule;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.DatabaseModule;
-import com.floreina.keyring.interceptors.AddressInterceptor;
-import com.floreina.keyring.interceptors.AddressKeys;
+import com.floreina.keyring.interceptors.RecognitionInterceptor;
+import com.floreina.keyring.interceptors.RecognitionKeys;
 import com.floreina.keyring.interceptors.SessionInterceptor;
 import com.floreina.keyring.interceptors.SessionKeys;
 import com.floreina.keyring.services.AdministrationService;
 import com.floreina.keyring.services.AuthenticationService;
-import com.floreina.keyring.sessions.SessionsModule;
 import com.floreina.keyring.templates.TemplatesModule;
 
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 
 @dagger.Component(
-  modules = {
-    UtilitiesModule.class,
-    TemplatesModule.class,
-    DatabaseModule.class,
-    SessionsModule.class
-  }
+  modules = {UtilitiesModule.class, TemplatesModule.class, DatabaseModule.class, CacheModule.class}
 )
 @Singleton
 interface Component {
@@ -36,7 +31,7 @@ interface Component {
 
   AccountingInterface accountingInterface();
 
-  AddressInterceptor addressInterceptor();
+  RecognitionInterceptor addressInterceptor();
 
-  AddressKeys addressKeys();
+  RecognitionKeys addressKeys();
 }

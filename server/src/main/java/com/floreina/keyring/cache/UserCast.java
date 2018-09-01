@@ -1,4 +1,4 @@
-package com.floreina.keyring.sessions;
+package com.floreina.keyring.cache;
 
 import com.floreina.keyring.entities.User;
 

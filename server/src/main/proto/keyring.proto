@@ -68,7 +68,7 @@ message LogInResponse {
 
     message Payload {
         reserved 2;
-    
+
         enum Challenge {
             NONE = 0;
             ACTIVATE = 1;
