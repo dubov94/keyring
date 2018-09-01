@@ -1,14 +1,13 @@
 package com.floreina.keyring.services;
 
-import com.floreina.keyring.ActivateRequest;
-import com.floreina.keyring.ActivateResponse;
-import com.floreina.keyring.CreateKeyRequest;
+import com.floreina.keyring.*;
 import com.floreina.keyring.aspects.ValidateUserAspect;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.Activation;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionKeys;
+import com.google.common.collect.ImmutableList;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
@@ -30,13 +29,12 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdministrationServiceTest {
-  private static long USER_IDENTIFIER = 0L;
   @Mock private ManagementInterface mockManagementInterface;
   @Mock private AccountingInterface mockAccountingInterface;
   @Mock private SessionKeys mockSessionKeys;
   @Mock private StreamObserver mockStreamObserver;
 
-  private User.State state;
+  private User user = new User().setIdentifier(0L).setState(User.State.ACTIVE).setDigest("digest");
   private AdministrationService administrationService;
 
   @BeforeEach
@@ -45,16 +43,14 @@ class AdministrationServiceTest {
     administrationService =
         new AdministrationService(
             mockManagementInterface, mockAccountingInterface, mockSessionKeys);
-    when(mockSessionKeys.getUserIdentifier()).thenReturn(USER_IDENTIFIER);
-    when(mockAccountingInterface.getUserByIdentifier(USER_IDENTIFIER))
-        .thenAnswer(
-            invocation -> Optional.of(new User().setIdentifier(USER_IDENTIFIER).setState(state)));
+    long userIdentifier = user.getIdentifier();
+    when(mockSessionKeys.getUserIdentifier()).thenReturn(userIdentifier);
+    when(mockAccountingInterface.getUserByIdentifier(userIdentifier))
+        .thenAnswer(invocation -> Optional.of(user));
   }
 
   @Test
   void activate_userAlreadyActive_repliesUnauthenticated() {
-    state = User.State.ACTIVE;
-
     administrationService.activate(ActivateRequest.getDefaultInstance(), mockStreamObserver);
 
     verifyOnErrorUnauthenticated();
@@ -62,8 +58,9 @@ class AdministrationServiceTest {
 
   @Test
   void activate_getActivationEmpty_throwsException() {
-    state = User.State.PENDING;
-    when(mockAccountingInterface.getActivationByUser(USER_IDENTIFIER)).thenReturn(Optional.empty());
+    user.setState(User.State.PENDING);
+    when(mockAccountingInterface.getActivationByUser(user.getIdentifier()))
+        .thenReturn(Optional.empty());
 
     assertThrows(
         ConcurrentModificationException.class,
@@ -74,8 +71,8 @@ class AdministrationServiceTest {
 
   @Test
   void activate_codeMismatch_repliesWithError() {
-    state = User.State.PENDING;
-    when(mockAccountingInterface.getActivationByUser(USER_IDENTIFIER))
+    user.setState(User.State.PENDING);
+    when(mockAccountingInterface.getActivationByUser(user.getIdentifier()))
         .thenReturn(Optional.of(new Activation().setCode("0")));
 
     administrationService.activate(
@@ -88,10 +85,11 @@ class AdministrationServiceTest {
 
   @Test
   void activate_activateUserEmpty_throwsException() {
-    state = User.State.PENDING;
-    when(mockAccountingInterface.getActivationByUser(USER_IDENTIFIER))
+    user.setState(User.State.PENDING);
+    long userIdentifier = user.getIdentifier();
+    when(mockAccountingInterface.getActivationByUser(userIdentifier))
         .thenReturn(Optional.of(new Activation().setCode("0")));
-    when(mockAccountingInterface.activateUser(USER_IDENTIFIER)).thenReturn(Optional.empty());
+    when(mockAccountingInterface.activateUser(userIdentifier)).thenReturn(Optional.empty());
 
     assertThrows(
         ConcurrentModificationException.class,
@@ -102,12 +100,13 @@ class AdministrationServiceTest {
 
   @Test
   void activate_codesMatch_repliesWithDefault() {
-    state = User.State.PENDING;
-    when(mockAccountingInterface.getActivationByUser(USER_IDENTIFIER))
+    user.setState(User.State.PENDING);
+    long userIdentifier = user.getIdentifier();
+    when(mockAccountingInterface.getActivationByUser(userIdentifier))
         .thenReturn(Optional.of(new Activation().setCode("0")));
-    when(mockAccountingInterface.activateUser(USER_IDENTIFIER))
+    when(mockAccountingInterface.activateUser(userIdentifier))
         .thenReturn(
-            Optional.of(new User().setIdentifier(USER_IDENTIFIER).setState(User.State.PENDING)));
+            Optional.of(new User().setIdentifier(userIdentifier).setState(User.State.PENDING)));
 
     administrationService.activate(
         ActivateRequest.newBuilder().setCode("0").build(), mockStreamObserver);
@@ -118,11 +117,57 @@ class AdministrationServiceTest {
 
   @Test
   void createKey_userNotActive_repliesUnauthenticated() {
-    state = User.State.PENDING;
+    user.setState(User.State.PENDING);
 
     administrationService.createKey(CreateKeyRequest.getDefaultInstance(), mockStreamObserver);
 
     verifyOnErrorUnauthenticated();
+  }
+
+  @Test
+  void changeMasterKey_digestMismatch_repliesWithError() {
+    administrationService.changeMasterKey(
+        ChangeMasterKeyRequest.newBuilder().setCurrentDigest("random").build(), mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            ChangeMasterKeyResponse.newBuilder()
+                .setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST)
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void changeMasterKey_digestsMatch() {
+    IdentifiedKey identifiedKey = IdentifiedKey.newBuilder().setIdentifier(0L).build();
+    when(mockAccountingInterface.changeMasterKey(
+            0L, "prefix", "suffix", ImmutableList.of(identifiedKey)))
+        .thenReturn(
+            Optional.of(
+                new User()
+                    .setIdentifier(user.getIdentifier())
+                    .setState(user.getState())
+                    .setSalt("prefix")
+                    .setDigest("suffix")));
+
+    administrationService.changeMasterKey(
+        ChangeMasterKeyRequest.newBuilder()
+            .setCurrentDigest("digest")
+            .setRenewal(
+                ChangeMasterKeyRequest.Renewal.newBuilder()
+                    .setSalt("prefix")
+                    .setDigest("suffix")
+                    .addKeys(identifiedKey)
+                    .build())
+            .build(),
+        mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            ChangeMasterKeyResponse.newBuilder()
+                .setError(ChangeMasterKeyResponse.Error.NONE)
+                .build());
+    verify(mockStreamObserver).onCompleted();
   }
 
   private void verifyOnErrorUnauthenticated() {

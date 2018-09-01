@@ -5,7 +5,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "activations")
 public class Activation {
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
 
   @OneToOne(cascade = CascadeType.PERSIST)

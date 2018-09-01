@@ -7,7 +7,8 @@ import java.util.List;
 @Entity
 @Table(name = "keys")
 public class Key {
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
 
   @ManyToOne private User user;

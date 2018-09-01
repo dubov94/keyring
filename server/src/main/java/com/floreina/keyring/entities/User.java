@@ -8,7 +8,8 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 public class User {
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
 
   @CreationTimestamp private java.sql.Timestamp timestamp;

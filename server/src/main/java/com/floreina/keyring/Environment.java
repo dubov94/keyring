@@ -1,7 +1,7 @@
 package com.floreina.keyring;
 
 public class Environment {
-   public static String getVariable(String key) {
+  public static String getVariable(String key) {
     return System.getenv(key);
   }
 

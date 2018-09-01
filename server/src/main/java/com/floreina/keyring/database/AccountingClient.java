@@ -1,17 +1,20 @@
 package com.floreina.keyring.database;
 
+import com.floreina.keyring.IdentifiedKey;
+import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.Annotations.EntityController;
 import com.floreina.keyring.aspects.Annotations.LocalTransaction;
-import com.floreina.keyring.entities.Activation;
-import com.floreina.keyring.entities.Activation_;
-import com.floreina.keyring.entities.User;
-import com.floreina.keyring.entities.User_;
+import com.floreina.keyring.entities.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import static java.util.stream.Collectors.toMap;
 
 public class AccountingClient implements AccountingInterface {
   @EntityController private EntityManager entityManager;
@@ -72,5 +75,34 @@ public class AccountingClient implements AccountingInterface {
   @LocalTransaction
   public Optional<User> getUserByIdentifier(long identifier) {
     return Optional.ofNullable(entityManager.find(User.class, identifier));
+  }
+
+  @Override
+  @LocalTransaction
+  public Optional<User> changeMasterKey(
+      long userIdentifier, String salt, String digest, List<IdentifiedKey> protos) {
+    Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
+    if (maybeUser.isPresent()) {
+      User user = maybeUser.get();
+      user.setSalt(salt);
+      user.setDigest(digest);
+      entityManager.persist(user);
+      List<Key> entities = Queries.findKeys(entityManager, userIdentifier);
+      Map<Long, Password> keyIdentifierToProto =
+          protos.stream().collect(toMap(IdentifiedKey::getIdentifier, IdentifiedKey::getPassword));
+      for (Key entity : entities) {
+        Optional<Password> maybeProto =
+            Optional.ofNullable(keyIdentifierToProto.get(entity.getIdentifier()));
+        if (!maybeProto.isPresent()) {
+          throw new IllegalArgumentException();
+        } else {
+          Password proto = maybeProto.get();
+          Utilities.updateKeyWithPassword(entity, proto);
+          entityManager.persist(entity);
+        }
+      }
+      return Optional.of(user);
+    }
+    return Optional.empty();
   }
 }

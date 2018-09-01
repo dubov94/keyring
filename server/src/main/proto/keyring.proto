@@ -135,10 +135,31 @@ message DeleteKeyRequest {
 message DeleteKeyResponse {
 }
 
+message ChangeMasterKeyRequest {
+    message Renewal {
+        string salt = 1;
+        string digest = 2;
+        repeated IdentifiedKey keys = 3;
+    }
+
+    string current_digest = 1;
+    Renewal renewal = 2;
+}
+
+message ChangeMasterKeyResponse {
+    enum Error {
+        NONE = 0;
+        INVALID_CURRENT_DIGEST = 1;
+    }
+
+    Error error = 1;
+}
+
 service Administration {
     rpc Activate (ActivateRequest) returns (ActivateResponse);
     rpc CreateKey (CreateKeyRequest) returns (CreateKeyResponse);
     rpc ReadKeys (ReadKeysRequest) returns (ReadKeysResponse);
     rpc UpdateKey (UpdateKeyRequest) returns (UpdateKeyResponse);
     rpc DeleteKey (DeleteKeyRequest) returns (DeleteKeyResponse);
+    rpc ChangeMasterKey (ChangeMasterKeyRequest) returns (ChangeMasterKeyResponse);
 }

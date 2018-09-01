@@ -22,4 +22,10 @@ public class Utilities {
                 .map(label -> new Tag().setValue(label))
                 .collect(toList()));
   }
+
+  public static void updateKeyWithPassword(Key entity, Password proto) {
+    Key key = passwordToKey(proto);
+    entity.setValue(key.getValue());
+    entity.setTags(key.getTags());
+  }
 }

@@ -12,6 +12,7 @@ import io.grpc.stub.StreamObserver;
 import javax.inject.Inject;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
@@ -90,6 +91,40 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void deleteKey(DeleteKeyRequest request, StreamObserver<DeleteKeyResponse> response) {
     managementInterface.deleteKey(sessionKeys.getUserIdentifier(), request.getIdentifier());
     response.onNext(DeleteKeyResponse.getDefaultInstance());
+    response.onCompleted();
+  }
+
+  @Override
+  @ValidateUser
+  public void changeMasterKey(
+      ChangeMasterKeyRequest request, StreamObserver<ChangeMasterKeyResponse> response) {
+    long identifier = sessionKeys.getUserIdentifier();
+    Optional<User> maybeUser = accountingInterface.getUserByIdentifier(identifier);
+    if (!maybeUser.isPresent()) {
+      throw new ConcurrentModificationException();
+    } else {
+      User user = maybeUser.get();
+      if (!Objects.equals(request.getCurrentDigest(), user.getDigest())) {
+        response.onNext(
+            ChangeMasterKeyResponse.newBuilder()
+                .setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST)
+                .build());
+      } else {
+        ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
+        if (!accountingInterface
+            .changeMasterKey(
+                identifier, renewal.getSalt(), renewal.getDigest(), renewal.getKeysList())
+            .isPresent()) {
+          throw new ConcurrentModificationException();
+        } else {
+          // TODO: Purge other sessions.
+          response.onNext(
+              ChangeMasterKeyResponse.newBuilder()
+                  .setError(ChangeMasterKeyResponse.Error.NONE)
+                  .build());
+        }
+      }
+    }
     response.onCompleted();
   }
 }

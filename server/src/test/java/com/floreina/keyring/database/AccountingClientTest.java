@@ -1,17 +1,23 @@
 package com.floreina.keyring.database;
 
+import com.floreina.keyring.IdentifiedKey;
+import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.DatabaseManagerAspect;
 import com.floreina.keyring.entities.Activation;
 import com.floreina.keyring.entities.User;
+import com.floreina.keyring.entities.Utilities;
+import com.google.common.collect.ImmutableList;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.persistence.Persistence;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -83,6 +89,53 @@ class AccountingClientTest {
   @Test
   void getUserByIdentifier_userDoesNotExist_returnsEmpty() {
     assertEquals(Optional.empty(), accountingClient.getUserByIdentifier(Long.MAX_VALUE));
+  }
+
+  @Test
+  void changeMasterKey_updatesSaltDigestAndKeys() {
+    ManagementClient managementClient = new ManagementClient();
+    String username = createUniqueName();
+    long userIdentifier =
+        accountingClient.createUserWithActivation(username, "", "", "", "").getIdentifier();
+    accountingClient.activateUser(userIdentifier);
+    long keyIdentifier =
+        managementClient
+            .createKey(userIdentifier, Password.newBuilder().setValue("").addTags("").build())
+            .getIdentifier();
+
+    Password password = Password.newBuilder().setValue("value").addTags("tag").build();
+    accountingClient.changeMasterKey(
+        userIdentifier,
+        "salt",
+        "digest",
+        ImmutableList.of(
+            IdentifiedKey.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build()));
+
+    User user = accountingClient.getUserByIdentifier(userIdentifier).get();
+    assertEquals("salt", user.getSalt());
+    assertEquals("digest", user.getDigest());
+    List<Password> passwords =
+        managementClient
+            .readKeys(userIdentifier)
+            .stream()
+            .map(Utilities::keyToPassword)
+            .collect(toList());
+    assertEquals(1, passwords.size());
+    assertEquals(password, passwords.get(0));
+  }
+
+  @Test
+  void changeMasterKey_lacksKeyUpdates_throwsException() {
+    ManagementClient managementClient = new ManagementClient();
+    String username = createUniqueName();
+    long userIdentifier =
+        accountingClient.createUserWithActivation(username, "", "", "", "").getIdentifier();
+    accountingClient.activateUser(userIdentifier);
+    managementClient.createKey(userIdentifier, Password.getDefaultInstance());
+
+    assertThrows(
+        DatabaseException.class,
+        () -> accountingClient.changeMasterKey(userIdentifier, "", "", ImmutableList.of()));
   }
 
   private String createUniqueName() {

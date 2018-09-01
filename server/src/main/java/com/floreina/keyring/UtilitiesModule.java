@@ -6,7 +6,6 @@ import dagger.Module;
 import dagger.Provides;
 
 import javax.inject.Singleton;
-import java.io.IOException;
 import java.security.SecureRandom;
 
 @Module
