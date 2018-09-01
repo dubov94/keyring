@@ -8,7 +8,11 @@ public class RecognitionInterceptor implements ServerInterceptor {
       ServerCall<I, O> call, Metadata metadata, ServerCallHandler<I, O> next) {
     Context context = Context.current();
     context.withValue(
-        RecognitionKeys.CONTEXT_ADDRESS_KEY, metadata.get(RecognitionKeys.METADATA_IP_ADDRESS_KEY));
+        RecognitionKeys.CONTEXT_IP_ADDRESS_KEY,
+        metadata.get(RecognitionKeys.METADATA_IP_ADDRESS_KEY));
+    context.withValue(
+        RecognitionKeys.CONTEXT_USER_AGENT_KEY,
+        metadata.get(RecognitionKeys.METADATA_USER_AGENT_KEY));
     return Contexts.interceptCall(context, call, metadata, next);
   }
 }
