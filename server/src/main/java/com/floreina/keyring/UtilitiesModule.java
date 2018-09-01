@@ -34,13 +34,13 @@ class UtilitiesModule {
 
   @Provides
   @Singleton
-  static RecognitionInterceptor provideIpInterceptor() {
+  static RecognitionInterceptor provideRecognitionInterceptor() {
     return new RecognitionInterceptor();
   }
 
   @Provides
   @Singleton
-  static RecognitionKeys provideIpKeys() {
+  static RecognitionKeys provideRecognitionKeys() {
     return new RecognitionKeys();
   }
 }

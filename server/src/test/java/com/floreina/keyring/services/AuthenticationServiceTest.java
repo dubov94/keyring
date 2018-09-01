@@ -1,11 +1,11 @@
 package com.floreina.keyring.services;
 
-import com.floreina.keyring.Cryptography;
-import com.floreina.keyring.Post;
+import com.floreina.keyring.*;
 import com.floreina.keyring.cache.CacheClient;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.User;
+import com.floreina.keyring.interceptors.RecognitionKeys;
 import com.floreina.keyring.templates.CodeBodyRendererFactory;
 import com.floreina.keyring.templates.CodeHeadRendererFactory;
 import io.grpc.stub.StreamObserver;
@@ -37,6 +37,7 @@ class AuthenticationServiceTest {
   private CodeBodyRendererFactory mockCodeBodyRendererFactory;
 
   @Mock private CacheClient mockCacheClient;
+  @Mock private RecognitionKeys mockRecognitionKeys;
   @Mock private StreamObserver mockStreamObserver;
 
   private AuthenticationService authenticationService;
@@ -51,7 +52,8 @@ class AuthenticationServiceTest {
             mockPost,
             mockCodeHeadRendererFactory,
             mockCodeBodyRendererFactory,
-            mockCacheClient);
+            mockCacheClient,
+            mockRecognitionKeys);
   }
 
   @Test
@@ -73,6 +75,8 @@ class AuthenticationServiceTest {
             "username", "salt", "digest", "mail@example.com", "0"))
         .thenReturn(new User().setIdentifier(0L));
     when(mockCacheClient.create(any())).thenReturn(Optional.of("identifier"));
+    when(mockRecognitionKeys.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockRecognitionKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
 
     authenticationService.register(
         RegisterRequest.newBuilder()
@@ -85,6 +89,7 @@ class AuthenticationServiceTest {
 
     verify(mockAccountingInterface)
         .createUserWithActivation("username", "salt", "digest", "mail@example.com", "0");
+    verify(mockAccountingInterface).createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
     verify(mockPost).send(eq("mail@example.com"), any(), any());
     verify(mockStreamObserver)
         .onNext(RegisterResponse.newBuilder().setSessionKey("identifier").build());
@@ -154,11 +159,14 @@ class AuthenticationServiceTest {
                     .setDigest("digest")
                     .setState(User.State.PENDING)));
     when(mockCacheClient.create(any())).thenReturn(Optional.of("identifier"));
+    when(mockRecognitionKeys.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockRecognitionKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),
         mockStreamObserver);
 
+    verify(mockAccountingInterface).createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
     verify(mockStreamObserver)
         .onNext(
             LogInResponse.newBuilder()

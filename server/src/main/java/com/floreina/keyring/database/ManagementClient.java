@@ -5,6 +5,7 @@ import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.Annotations.EntityController;
 import com.floreina.keyring.aspects.Annotations.LocalTransaction;
 import com.floreina.keyring.entities.Key;
+import com.floreina.keyring.entities.Key_;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.entities.Utilities;
 
@@ -26,7 +27,7 @@ public class ManagementClient implements ManagementInterface {
   @Override
   @LocalTransaction
   public List<Key> readKeys(long userIdentifier) {
-    return Queries.findKeys(entityManager, userIdentifier);
+    return Queries.findByUser(entityManager, Key.class, Key_.user, userIdentifier);
   }
 
   @Override

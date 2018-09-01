@@ -4,6 +4,7 @@ import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.DatabaseManagerAspect;
 import com.floreina.keyring.entities.Activation;
+import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.entities.Utilities;
 import com.google.common.collect.ImmutableList;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AccountingClientTest {
   private AccountingClient accountingClient;
+  private ManagementClient managementClient;
 
   @BeforeAll
   static void beforeAll() {
@@ -33,6 +35,7 @@ class AccountingClientTest {
   @BeforeEach
   void beforeEach() {
     accountingClient = new AccountingClient();
+    managementClient = new ManagementClient();
   }
 
   @Test
@@ -93,11 +96,7 @@ class AccountingClientTest {
 
   @Test
   void changeMasterKey_updatesSaltDigestAndKeys() {
-    ManagementClient managementClient = new ManagementClient();
-    String username = createUniqueName();
-    long userIdentifier =
-        accountingClient.createUserWithActivation(username, "", "", "", "").getIdentifier();
-    accountingClient.activateUser(userIdentifier);
+    long userIdentifier = createActiveUser();
     long keyIdentifier =
         managementClient
             .createKey(userIdentifier, Password.newBuilder().setValue("").addTags("").build())
@@ -126,16 +125,34 @@ class AccountingClientTest {
 
   @Test
   void changeMasterKey_lacksKeyUpdates_throwsException() {
-    ManagementClient managementClient = new ManagementClient();
-    String username = createUniqueName();
-    long userIdentifier =
-        accountingClient.createUserWithActivation(username, "", "", "", "").getIdentifier();
-    accountingClient.activateUser(userIdentifier);
+    long userIdentifier = createActiveUser();
     managementClient.createKey(userIdentifier, Password.getDefaultInstance());
 
     assertThrows(
         DatabaseException.class,
         () -> accountingClient.changeMasterKey(userIdentifier, "", "", ImmutableList.of()));
+  }
+
+  @Test
+  void createSession_putsSession() {
+    long userIdentifier = createActiveUser();
+
+    accountingClient.createSession(userIdentifier, "key", "127.0.0.1", "Chrome/0.0.0");
+
+    List<Session> list = accountingClient.readSessions(userIdentifier);
+    assertEquals(1, list.size());
+    Session session = list.get(0);
+    assertEquals("key", session.getKey());
+    assertEquals("127.0.0.1", session.getIpAddress());
+    assertEquals("Chrome/0.0.0", session.getUserAgent());
+  }
+
+  private long createActiveUser() {
+    String username = createUniqueName();
+    long userIdentifier =
+        accountingClient.createUserWithActivation(username, "", "", "", "").getIdentifier();
+    accountingClient.activateUser(userIdentifier);
+    return userIdentifier;
   }
 
   private String createUniqueName() {

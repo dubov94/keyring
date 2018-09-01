@@ -34,11 +34,11 @@ class Launcher {
         ServerBuilder.forPort(591)
             .addService(
                 ServerInterceptors.intercept(
-                    component.authenticationService(), component.addressInterceptor()))
+                    component.authenticationService(), component.recognitionInterceptor()))
             .addService(
                 ServerInterceptors.intercept(
                     component.administrationService(),
-                    component.addressInterceptor(),
+                    component.recognitionInterceptor(),
                     component.sessionInterceptor()))
             .build();
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));

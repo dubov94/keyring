@@ -31,7 +31,7 @@ interface Component {
 
   AccountingInterface accountingInterface();
 
-  RecognitionInterceptor addressInterceptor();
+  RecognitionInterceptor recognitionInterceptor();
 
-  RecognitionKeys addressKeys();
+  RecognitionKeys recognitionKeys();
 }

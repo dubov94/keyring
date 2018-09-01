@@ -6,6 +6,7 @@ import com.floreina.keyring.cache.UserCast;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.User;
+import com.floreina.keyring.interceptors.RecognitionKeys;
 import com.floreina.keyring.templates.CodeBodyRendererFactory;
 import com.floreina.keyring.templates.CodeHeadRendererFactory;
 import io.grpc.stub.StreamObserver;
@@ -24,6 +25,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private Post post;
   private CodeHeadRendererFactory codeHeadRendererFactory;
   private CodeBodyRendererFactory codeBodyRendererFactory;
+  private RecognitionKeys recognitionKeys;
 
   @Inject
   AuthenticationService(
@@ -33,7 +35,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       Post post,
       CodeHeadRendererFactory codeHeadRendererFactory,
       CodeBodyRendererFactory codeBodyRendererFactory,
-      CacheClient cacheClient) {
+      CacheClient cacheClient,
+      RecognitionKeys recognitionKeys) {
     this.accountingInterface = accountingInterface;
     this.managementInterface = managementInterface;
     this.cryptography = cryptography;
@@ -41,6 +44,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.codeHeadRendererFactory = codeHeadRendererFactory;
     this.codeBodyRendererFactory = codeBodyRendererFactory;
     this.cacheClient = cacheClient;
+    this.recognitionKeys = recognitionKeys;
   }
 
   @Override
@@ -59,6 +63,11 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       if (!sessionKey.isPresent()) {
         throw new IllegalStateException();
       } else {
+        accountingInterface.createSession(
+            user.getIdentifier(),
+            sessionKey.get(),
+            recognitionKeys.getIpAddress(),
+            recognitionKeys.getUserAgent());
         String head = codeHeadRendererFactory.newRenderer().setCode(code).render();
         String body = codeBodyRendererFactory.newRenderer().setCode(code).render();
         post.send(mail, head, body);
@@ -96,6 +105,11 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         if (!sessionKey.isPresent()) {
           throw new IllegalStateException();
         } else {
+          accountingInterface.createSession(
+              user.getIdentifier(),
+              sessionKey.get(),
+              recognitionKeys.getIpAddress(),
+              recognitionKeys.getUserAgent());
           LogInResponse.Payload.Builder payloadBuilder = LogInResponse.Payload.newBuilder();
           payloadBuilder.setSessionKey(sessionKey.get());
           if (user.getState() == User.State.PENDING) {

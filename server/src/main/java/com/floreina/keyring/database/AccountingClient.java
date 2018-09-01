@@ -38,13 +38,9 @@ public class AccountingClient implements AccountingInterface {
   @Override
   @LocalTransaction
   public Optional<Activation> getActivationByUser(long identifier) {
-    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<Activation> criteriaQuery = criteriaBuilder.createQuery(Activation.class);
-    Root<Activation> root = criteriaQuery.from(Activation.class);
-    criteriaQuery
-        .select(root)
-        .where(criteriaBuilder.equal(root.get(Activation_.user).get(User_.identifier), identifier));
-    return entityManager.createQuery(criteriaQuery).getResultList().stream().findFirst();
+    return Queries.findByUser(entityManager, Activation.class, Activation_.user, identifier)
+        .stream()
+        .findFirst();
   }
 
   @Override
@@ -87,7 +83,7 @@ public class AccountingClient implements AccountingInterface {
       user.setSalt(salt);
       user.setDigest(digest);
       entityManager.persist(user);
-      List<Key> entities = Queries.findKeys(entityManager, userIdentifier);
+      List<Key> entities = Queries.findByUser(entityManager, Key.class, Key_.user, userIdentifier);
       Map<Long, Password> keyIdentifierToProto =
           protos.stream().collect(toMap(IdentifiedKey::getIdentifier, IdentifiedKey::getPassword));
       for (Key entity : entities) {
@@ -104,5 +100,23 @@ public class AccountingClient implements AccountingInterface {
       return;
     }
     throw new IllegalArgumentException();
+  }
+
+  @Override
+  @LocalTransaction
+  public void createSession(long userIdentifier, String key, String ipAddress, String userAgent) {
+    Session session =
+        new Session()
+            .setUser(new User().setIdentifier(userIdentifier))
+            .setKey(key)
+            .setIpAddress(ipAddress)
+            .setUserAgent(userAgent);
+    entityManager.persist(session);
+  }
+
+  @Override
+  @LocalTransaction
+  public List<Session> readSessions(long userIdentifier) {
+    return Queries.findByUser(entityManager, Session.class, Session_.user, userIdentifier);
   }
 }
