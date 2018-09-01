@@ -2,9 +2,11 @@ package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
 import com.floreina.keyring.aspects.Annotations.ValidateUser;
+import com.floreina.keyring.cache.CacheClient;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.Activation;
+import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionKeys;
 import io.grpc.stub.StreamObserver;
@@ -21,15 +23,18 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private ManagementInterface managementInterface;
   private AccountingInterface accountingInterface;
   private SessionKeys sessionKeys;
+  private CacheClient cacheClient;
 
   @Inject
   AdministrationService(
       ManagementInterface managementInterface,
       AccountingInterface accountingInterface,
-      SessionKeys sessionKeys) {
+      SessionKeys sessionKeys,
+      CacheClient cacheClient) {
     this.managementInterface = managementInterface;
     this.accountingInterface = accountingInterface;
     this.sessionKeys = sessionKeys;
+    this.cacheClient = cacheClient;
   }
 
   @Override
@@ -111,7 +116,13 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
         accountingInterface.changeMasterKey(
             identifier, renewal.getSalt(), renewal.getDigest(), renewal.getKeysList());
-        // TODO: Purge other cache.
+        List<Session> sessions = accountingInterface.readSessions(identifier);
+        cacheClient.drop(
+            sessions
+                .stream()
+                .map(Session::getKey)
+                .filter(key -> !Objects.equals(key, sessionKeys.getSessionIdentifier()))
+                .collect(toList()));
         response.onNext(
             ChangeMasterKeyResponse.newBuilder()
                 .setError(ChangeMasterKeyResponse.Error.NONE)

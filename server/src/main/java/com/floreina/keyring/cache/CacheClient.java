@@ -9,6 +9,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 
 import javax.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 
 public class CacheClient {
@@ -56,6 +57,12 @@ public class CacheClient {
       transaction.exec();
       return Optional.ofNullable(userIdentifier.get())
           .map(string -> gson.fromJson(string, UserCast.class));
+    }
+  }
+
+  public void drop(List<String> identifierList) {
+    try (Jedis jedis = jedisPool.getResource()) {
+      jedis.del(identifierList.stream().toArray(String[]::new));
     }
   }
 

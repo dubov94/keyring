@@ -2,9 +2,11 @@ package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
 import com.floreina.keyring.aspects.ValidateUserAspect;
+import com.floreina.keyring.cache.CacheClient;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.Activation;
+import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionKeys;
 import com.google.common.collect.ImmutableList;
@@ -31,6 +33,7 @@ class AdministrationServiceTest {
   @Mock private ManagementInterface mockManagementInterface;
   @Mock private AccountingInterface mockAccountingInterface;
   @Mock private SessionKeys mockSessionKeys;
+  @Mock private CacheClient mockCacheClient;
   @Mock private StreamObserver mockStreamObserver;
 
   private User user = new User().setIdentifier(0L).setState(User.State.ACTIVE).setDigest("digest");
@@ -41,7 +44,7 @@ class AdministrationServiceTest {
     Aspects.aspectOf(ValidateUserAspect.class).initialize(mockSessionKeys, mockAccountingInterface);
     administrationService =
         new AdministrationService(
-            mockManagementInterface, mockAccountingInterface, mockSessionKeys);
+            mockManagementInterface, mockAccountingInterface, mockSessionKeys, mockCacheClient);
     long userIdentifier = user.getIdentifier();
     when(mockSessionKeys.getUserIdentifier()).thenReturn(userIdentifier);
     when(mockAccountingInterface.getUserByIdentifier(userIdentifier))
@@ -139,6 +142,10 @@ class AdministrationServiceTest {
   @Test
   void changeMasterKey_digestsMatch() {
     IdentifiedKey identifiedKey = IdentifiedKey.newBuilder().setIdentifier(0L).build();
+    when(mockAccountingInterface.readSessions(0L))
+        .thenReturn(
+            ImmutableList.of(new Session().setKey("random"), new Session().setKey("session")));
+    when(mockSessionKeys.getSessionIdentifier()).thenReturn("session");
 
     administrationService.changeMasterKey(
         ChangeMasterKeyRequest.newBuilder()
@@ -154,6 +161,7 @@ class AdministrationServiceTest {
 
     verify(mockAccountingInterface)
         .changeMasterKey(0L, "prefix", "suffix", ImmutableList.of(identifiedKey));
+    verify(mockCacheClient).drop(ImmutableList.of("random"));
     verify(mockStreamObserver)
         .onNext(
             ChangeMasterKeyResponse.newBuilder()
