@@ -24,8 +24,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AdministrationServiceTest {
@@ -89,10 +88,12 @@ class AdministrationServiceTest {
     long userIdentifier = user.getIdentifier();
     when(mockAccountingInterface.getActivationByUser(userIdentifier))
         .thenReturn(Optional.of(new Activation().setCode("0")));
-    when(mockAccountingInterface.activateUser(userIdentifier)).thenReturn(Optional.empty());
+    doThrow(IllegalArgumentException.class)
+        .when(mockAccountingInterface)
+        .activateUser(userIdentifier);
 
     assertThrows(
-        ConcurrentModificationException.class,
+        IllegalArgumentException.class,
         () ->
             administrationService.activate(
                 ActivateRequest.newBuilder().setCode("0").build(), mockStreamObserver));
@@ -104,13 +105,11 @@ class AdministrationServiceTest {
     long userIdentifier = user.getIdentifier();
     when(mockAccountingInterface.getActivationByUser(userIdentifier))
         .thenReturn(Optional.of(new Activation().setCode("0")));
-    when(mockAccountingInterface.activateUser(userIdentifier))
-        .thenReturn(
-            Optional.of(new User().setIdentifier(userIdentifier).setState(User.State.PENDING)));
 
     administrationService.activate(
         ActivateRequest.newBuilder().setCode("0").build(), mockStreamObserver);
 
+    verify(mockAccountingInterface).activateUser(userIdentifier);
     verify(mockStreamObserver).onNext(ActivateResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
   }
@@ -140,15 +139,6 @@ class AdministrationServiceTest {
   @Test
   void changeMasterKey_digestsMatch() {
     IdentifiedKey identifiedKey = IdentifiedKey.newBuilder().setIdentifier(0L).build();
-    when(mockAccountingInterface.changeMasterKey(
-            0L, "prefix", "suffix", ImmutableList.of(identifiedKey)))
-        .thenReturn(
-            Optional.of(
-                new User()
-                    .setIdentifier(user.getIdentifier())
-                    .setState(user.getState())
-                    .setSalt("prefix")
-                    .setDigest("suffix")));
 
     administrationService.changeMasterKey(
         ChangeMasterKeyRequest.newBuilder()
@@ -162,6 +152,8 @@ class AdministrationServiceTest {
             .build(),
         mockStreamObserver);
 
+    verify(mockAccountingInterface)
+        .changeMasterKey(0L, "prefix", "suffix", ImmutableList.of(identifiedKey));
     verify(mockStreamObserver)
         .onNext(
             ChangeMasterKeyResponse.newBuilder()

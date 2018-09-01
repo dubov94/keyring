@@ -13,12 +13,11 @@ public interface AccountingInterface {
 
   Optional<Activation> getActivationByUser(long identifier);
 
-  Optional<User> activateUser(long identifier);
+  void activateUser(long identifier);
 
   Optional<User> getUserByName(String username);
 
   Optional<User> getUserByIdentifier(long identifier);
 
-  Optional<User> changeMasterKey(
-      long userIdentifier, String salt, String digest, List<IdentifiedKey> protos);
+  void changeMasterKey(long userIdentifier, String salt, String digest, List<IdentifiedKey> protos);
 }

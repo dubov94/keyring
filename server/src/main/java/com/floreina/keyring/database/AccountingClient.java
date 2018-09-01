@@ -49,16 +49,16 @@ public class AccountingClient implements AccountingInterface {
 
   @Override
   @LocalTransaction
-  public Optional<User> activateUser(long identifier) {
+  public void activateUser(long identifier) {
     Optional<Activation> maybeActivation = getActivationByUser(identifier);
     if (maybeActivation.isPresent()) {
       Activation activation = maybeActivation.get();
       entityManager.remove(activation);
       User user = activation.getUser().setState(User.State.ACTIVE);
       entityManager.persist(user);
-      return Optional.of(user);
+      return;
     }
-    return Optional.empty();
+    throw new IllegalArgumentException();
   }
 
   @Override
@@ -79,7 +79,7 @@ public class AccountingClient implements AccountingInterface {
 
   @Override
   @LocalTransaction
-  public Optional<User> changeMasterKey(
+  public void changeMasterKey(
       long userIdentifier, String salt, String digest, List<IdentifiedKey> protos) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
     if (maybeUser.isPresent()) {
@@ -101,8 +101,8 @@ public class AccountingClient implements AccountingInterface {
           entityManager.persist(entity);
         }
       }
-      return Optional.of(user);
+      return;
     }
-    return Optional.empty();
+    throw new IllegalArgumentException();
   }
 }

@@ -45,9 +45,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         response.onNext(
             ActivateResponse.newBuilder().setError(ActivateResponse.Error.CODE_MISMATCH).build());
       } else {
-        if (!accountingInterface.activateUser(identifier).isPresent()) {
-          throw new ConcurrentModificationException();
-        }
+        accountingInterface.activateUser(identifier);
         response.onNext(ActivateResponse.getDefaultInstance());
       }
     }
@@ -111,18 +109,13 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
                 .build());
       } else {
         ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
-        if (!accountingInterface
-            .changeMasterKey(
-                identifier, renewal.getSalt(), renewal.getDigest(), renewal.getKeysList())
-            .isPresent()) {
-          throw new ConcurrentModificationException();
-        } else {
-          // TODO: Purge other sessions.
-          response.onNext(
-              ChangeMasterKeyResponse.newBuilder()
-                  .setError(ChangeMasterKeyResponse.Error.NONE)
-                  .build());
-        }
+        accountingInterface.changeMasterKey(
+            identifier, renewal.getSalt(), renewal.getDigest(), renewal.getKeysList());
+        // TODO: Purge other sessions.
+        response.onNext(
+            ChangeMasterKeyResponse.newBuilder()
+                .setError(ChangeMasterKeyResponse.Error.NONE)
+                .build());
       }
     }
     response.onCompleted();
