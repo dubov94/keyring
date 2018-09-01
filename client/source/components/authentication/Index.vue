@@ -9,5 +9,16 @@
         </v-layout>
       </v-container>
     </v-content>
+    <reload></reload>
   </v-app>
 </template>
+
+<script>
+  import Reload from '../Reload'
+
+  export default {
+    components: {
+      reload: Reload
+    }
+  }
+</script>

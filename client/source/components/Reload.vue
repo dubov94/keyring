@@ -1,0 +1,32 @@
+<template>
+  <v-dialog v-model="externs.askForReload"
+    persistent :max-width="dialogMaximalWidth">
+    <v-card>
+      <v-card-text>A new version is available!</v-card-text>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn flat color="success" @click="reload">
+          Reload
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+</template>
+
+<script>
+  import {DIALOG_MAXIMAL_WIDTH} from './constants'
+
+  export default {
+    data () {
+      return {
+        dialogMaximalWidth: DIALOG_MAXIMAL_WIDTH / 2,
+        externs: window.externs
+      }
+    },
+    methods: {
+      reload () {
+        location.reload()
+      }
+    }
+  }
+</script>

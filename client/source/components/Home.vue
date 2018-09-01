@@ -55,12 +55,14 @@
     </v-content>
     <editor></editor>
     <toast></toast>
+    <reload></reload>
   </v-app>
 </template>
 
 <script>
   import Editor from './Editor'
   import Password from './Password'
+  import Reload from './Reload'
   import Toast from './Toast'
   import {mapMutations, mapState} from 'vuex'
 
@@ -68,6 +70,7 @@
     components: {
       editor: Editor,
       password: Password,
+      reload: Reload,
       toast: Toast
     },
     data () {

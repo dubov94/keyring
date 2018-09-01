@@ -28,6 +28,11 @@
     <div id="application">
       <Application></Application>
     </div>
+    <script>
+      window.externs = {
+        askForReload: false
+      };
+    </script>
     <%= htmlWebpackPlugin.options.serviceWorkerLoader %>
   </body>
 </html>

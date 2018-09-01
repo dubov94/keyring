@@ -21,7 +21,7 @@
               const worker = registration.installing;
               worker.onstatechange = function () {
                 if (worker.state === 'installed') {
-                  console.warn('Using an outdated version!')
+                  window.externs.askForReload = true;
                 }
               };
             }
