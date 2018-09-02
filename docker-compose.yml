@@ -6,8 +6,14 @@ services:
       - '$PWD/Caddyfile:/etc/Caddyfile'
       - '$HOME/.caddy:/root/.caddy'
     ports:
-      - '80:80'
-      - '443:443'
+      - mode: host
+        protocol: tcp
+        published: 80
+        target: 80
+      - mode: host
+        protocol: tcp
+        published: 443
+        target: 443
   client:
     image: dubov94/keyring-client
   gateway:
