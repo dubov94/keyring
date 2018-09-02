@@ -1,1 +1,1 @@
-export const DIALOG_MAXIMAL_WIDTH = 1904 * (3 / 12)
+export const XL_MINIMAL_WIDTH = 1904

@@ -19,7 +19,7 @@
 
 <template>
   <v-dialog :value="isVisible" @input="alter"
-    :width="dialogMaximalWidth" @keydown.esc="cancel">
+    :max-width="dialogMaximalWidth" @keydown.esc="cancel">
     <v-card>
       <v-card-title>
         <v-text-field type="text" solo flat
@@ -71,7 +71,7 @@
 <script>
   import Draggable from 'vuedraggable'
   import {mapActions, mapMutations} from 'vuex'
-  import {DIALOG_MAXIMAL_WIDTH} from './constants'
+  import {XL_MINIMAL_WIDTH} from './constants'
   import {ALPHANUMERIC_CHARACTERS, areArraysEqual, random} from '../utilities'
 
   export default {
@@ -87,7 +87,7 @@
           handle: '.tag__handle',
           animation: 150
         },
-        dialogMaximalWidth: DIALOG_MAXIMAL_WIDTH,
+        dialogMaximalWidth: XL_MINIMAL_WIDTH * (3 / 12),
         requestInProgress: false,
         identifier: null,
         reveal: false,

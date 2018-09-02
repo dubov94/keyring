@@ -14,12 +14,12 @@
 </template>
 
 <script>
-  import {DIALOG_MAXIMAL_WIDTH} from './constants'
+  import {XL_MINIMAL_WIDTH} from './constants'
 
   export default {
     data () {
       return {
-        dialogMaximalWidth: DIALOG_MAXIMAL_WIDTH / 2,
+        dialogMaximalWidth: XL_MINIMAL_WIDTH * (2 / 12),
         externs: window.externs
       }
     },
