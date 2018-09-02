@@ -19,7 +19,7 @@
   export default {
     data () {
       return {
-        dialogMaximalWidth: XL_MINIMAL_WIDTH * (2 / 12),
+        dialogMaximalWidth: XL_MINIMAL_WIDTH * (1.5 / 12),
         externs: window.externs
       }
     },
