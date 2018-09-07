@@ -11,6 +11,10 @@
     "logIn": {
       "method": "post",
       "path": "/authentication/log-in"
+    },
+    "keepAlive": {
+      "method": "put",
+      "path": "/authentication/keep-alive"
     }
   },
   "keyring.Administration": {

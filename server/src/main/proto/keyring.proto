@@ -92,10 +92,24 @@ message LogInResponse {
     }
 }
 
+message KeepAliveRequest {
+    string session_key = 1;
+}
+
+message KeepAliveResponse {
+    enum Error {
+        NONE = 0;
+        INVALID_KEY = 1;
+    }
+
+    Error error = 1;
+}
+
 service Authentication {
     rpc Register (RegisterRequest) returns (RegisterResponse);
     rpc GetSalt (GetSaltRequest) returns (GetSaltResponse);
     rpc LogIn (LogInRequest) returns (LogInResponse);
+    rpc KeepAlive (KeepAliveRequest) returns (KeepAliveResponse);
 }
 
 message Password {

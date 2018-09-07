@@ -131,4 +131,16 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
     response.onCompleted();
   }
+
+  @Override
+  public void keepAlive(KeepAliveRequest request, StreamObserver<KeepAliveResponse> response) {
+    Optional<UserCast> maybeUserCast =
+        cacheClient.readAndUpdateExpirationTime(request.getSessionKey());
+    KeepAliveResponse.Builder builder = KeepAliveResponse.newBuilder();
+    if (!maybeUserCast.isPresent()) {
+      builder.setError(KeepAliveResponse.Error.INVALID_KEY);
+    }
+    response.onNext(builder.build());
+    response.onCompleted();
+  }
 }

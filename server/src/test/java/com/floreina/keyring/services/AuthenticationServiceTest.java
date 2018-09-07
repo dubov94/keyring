@@ -2,6 +2,7 @@ package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
 import com.floreina.keyring.cache.CacheClient;
+import com.floreina.keyring.cache.UserCast;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.User;
@@ -177,5 +178,28 @@ class AuthenticationServiceTest {
                         .build())
                 .build());
     verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void keepAlive_invalidSessionKey_repliesWithError() {
+    when(mockCacheClient.readAndUpdateExpirationTime("identifier")).thenReturn(Optional.empty());
+
+    authenticationService.keepAlive(
+        KeepAliveRequest.newBuilder().setSessionKey("identifier").build(), mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            KeepAliveResponse.newBuilder().setError(KeepAliveResponse.Error.INVALID_KEY).build());
+  }
+
+  @Test
+  void keepAlive_validSessionKey_repliesWithDefault() {
+    when(mockCacheClient.readAndUpdateExpirationTime("identifier"))
+        .thenReturn(Optional.of(new UserCast().setIdentifier(0L)));
+
+    authenticationService.keepAlive(
+        KeepAliveRequest.newBuilder().setSessionKey("identifier").build(), mockStreamObserver);
+
+    verify(mockStreamObserver).onNext(KeepAliveResponse.getDefaultInstance());
   }
 }
