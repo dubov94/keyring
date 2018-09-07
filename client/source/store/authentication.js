@@ -2,21 +2,11 @@ import axios from 'axios'
 import bcrypt from 'bcryptjs'
 import sha256 from 'crypto-js/sha256'
 import base64 from 'crypto-js/enc-base64'
+import {SESSION_LIFETIME_IN_MS} from '../constants'
 
 const BCRYPT_ROUNDS_LOGARITHM = 12
-const SESSION_LIFETIME_IN_SECONDS = 10 * 60
 
 const getDigest = (hash) => hash.slice(-31)
-
-const reloader = {
-  identifier: null,
-  postpone (delayInSeconds) {
-    if (this.identifier !== null) {
-      clearTimeout(this.identifier)
-    }
-    this.identifier = setTimeout(() => location.reload(), delayInSeconds * 1000)
-  }
-}
 
 export default {
   state: {
@@ -28,13 +18,11 @@ export default {
       return state.encryptionKey
     },
     sessionHeader (state) {
-      reloader.postpone(SESSION_LIFETIME_IN_SECONDS)
       return { session: state.sessionKey }
     }
   },
   mutations: {
     setSessionKey (state, { sessionKey }) {
-      reloader.postpone(SESSION_LIFETIME_IN_SECONDS)
       state.sessionKey = sessionKey
     },
     setEncryptionKey (state, { password }) {
@@ -42,7 +30,7 @@ export default {
     }
   },
   actions: {
-    async register ({ commit }, { username, password, mail }) {
+    async register ({ dispatch }, { username, password, mail }) {
       let salt = await bcrypt.genSalt(BCRYPT_ROUNDS_LOGARITHM)
       let hash = await bcrypt.hash(password, salt)
       let { data: response } =
@@ -53,8 +41,7 @@ export default {
           mail
         })
       if (response.error === 'NONE') {
-        commit('setSessionKey', { sessionKey: response.session_key })
-        commit('setEncryptionKey', { password })
+        dispatch('importKeys', { sessionKey: response.session_key, password })
       }
       return response.error
     },
@@ -75,8 +62,7 @@ export default {
           })
         if (authResponse.error === 'NONE') {
           let { payload } = authResponse
-          commit('setSessionKey', { sessionKey: payload.session_key })
-          commit('setEncryptionKey', { password })
+          dispatch('importKeys', { sessionKey: payload.session_key, password })
           if (payload.challenge === 'NONE') {
             dispatch('administration/acceptKeys', {
               keys: payload.key_set.items
@@ -86,6 +72,22 @@ export default {
         }
       }
       return { success: false, challenge: null }
+    },
+    importKeys ({ commit, dispatch }, { sessionKey, password }) {
+      commit('setSessionKey', { sessionKey })
+      commit('setEncryptionKey', { password })
+      dispatch('scheduleBeat')
+    },
+    scheduleBeat ({ dispatch }) {
+      setTimeout(() => {
+        dispatch('keepAlive')
+      }, SESSION_LIFETIME_IN_MS / 2)
+    },
+    async keepAlive ({ state, dispatch }) {
+      await axios.put('/api/authentication/keep-alive', {
+        session_key: state.sessionKey
+      })
+      dispatch('scheduleBeat')
     }
   }
 }

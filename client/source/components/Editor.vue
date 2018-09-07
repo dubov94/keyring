@@ -71,7 +71,8 @@
   import Draggable from 'vuedraggable'
   import {mapActions, mapMutations} from 'vuex'
   import {XL_MINIMAL_WIDTH} from './constants'
-  import {ALPHANUMERIC_CHARACTERS, areArraysEqual, random} from '../utilities'
+  import {ALPHANUMERIC_CHARACTERS} from '../constants'
+  import {areArraysEqual, random} from '../utilities'
 
   export default {
     components: {
@@ -152,25 +153,31 @@
         this.secret = suggestion
       },
       async save () {
-        this.requestInProgress = true
-        if (this.identifier === null) {
-          await this.createKey({ value: this.secret, tags: this.chips })
-        } else {
-          await this.updateKey({
-            identifier: this.identifier,
-            value: this.secret,
-            tags: this.chips
-          })
+        try {
+          this.requestInProgress = true
+          if (this.identifier === null) {
+            await this.createKey({ value: this.secret, tags: this.chips })
+          } else {
+            await this.updateKey({
+              identifier: this.identifier,
+              value: this.secret,
+              tags: this.chips
+            })
+          }
+          this.closeEditor()
+        } finally {
+          this.requestInProgress = false
         }
-        this.requestInProgress = false
-        this.closeEditor()
       },
       async remove () {
         if (confirm('Do you want to remove the key?')) {
-          this.requestInProgress = true
-          await this.removeKey({ identifier: this.identifier })
-          this.requestInProgress = false
-          this.closeEditor()
+          try {
+            this.requestInProgress = true
+            await this.removeKey({ identifier: this.identifier })
+            this.closeEditor()
+          } finally {
+            this.requestInProgress = false
+          }
         }
       }
     },

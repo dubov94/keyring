@@ -18,7 +18,7 @@ export const random = (lower, upper) => {
   return lower + buffer[0] % count
 }
 
-const createCharacterRange = (first, last) => {
+export const createCharacterRange = (first, last) => {
   let range = ''
   let firstCode = first.charCodeAt(0)
   let lastCode = last.charCodeAt(0)
@@ -27,11 +27,6 @@ const createCharacterRange = (first, last) => {
   }
   return range
 }
-
-export const ALPHANUMERIC_CHARACTERS =
-  createCharacterRange('0', '9') +
-  createCharacterRange('A', 'Z') +
-  createCharacterRange('a', 'z')
 
 export const areArraysEqual = (left, right) => {
   if (left.length !== right.length) {

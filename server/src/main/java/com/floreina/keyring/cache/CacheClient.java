@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class CacheClient {
-  private static final int SESSION_LIFETIME_IN_SECONDS = 10 * 60;
+  private static final int SESSION_LIFETIME_IN_SECONDS = 5 * 60;
   private static final ImmutableMap<SettingStrategy, String> SETTING_STRATEGY_TO_PARAMETER =
       new ImmutableMap.Builder<SettingStrategy, String>()
           .put(SettingStrategy.MUST_ABSENT, "nx")

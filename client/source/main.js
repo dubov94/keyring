@@ -8,6 +8,7 @@ import Vuetify from 'vuetify'
 import axios from 'axios'
 import router from './router'
 import store from './store'
+import {SESSION_LIFETIME_IN_MS} from './constants'
 
 Vue.use(VueClipboard)
 Vue.use(VueInputAutoWidth)
@@ -15,6 +16,17 @@ Vue.use(Vuetify)
 Vue.use(Vuelidate)
 
 Vue.config.productionTip = false
+
+let visibilityTimer = null
+document.addEventListener('visibilitychange', (event) => {
+  if (document.visibilityState) {
+    clearTimeout(visibilityTimer)
+  } else {
+    visibilityTimer = setTimeout(() => {
+      location.reload()
+    }, SESSION_LIFETIME_IN_MS)
+  }
+})
 
 Vue.directive('focus', {
   inserted (element) {
