@@ -8,8 +8,8 @@
         <v-text-field type="text" prepend-icon="person" label="Username"
           autofocus v-model="username" :error-messages="formErrors"
           @input="$v.$reset()" @blur="$v.$touch()"></v-text-field>
-        <v-text-field type="text" prepend-icon="lock" label="Password"
-          class="conceal" v-model="password" :error-messages="formErrors"
+        <v-text-field type="password" prepend-icon="lock" label="Password"
+          v-model="password" :error-messages="formErrors"
           @input="$v.$reset()" @blur="$v.$touch()"></v-text-field>
       </v-form>
     </v-card-text>
