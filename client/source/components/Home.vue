@@ -23,7 +23,7 @@
 </style>
 
 <template>
-  <v-app>
+  <page>
     <v-toolbar app prominent color="primary" dark>
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
         Key Ring
@@ -54,24 +54,20 @@
       </v-btn>
     </v-content>
     <editor></editor>
-    <toast></toast>
-    <reload></reload>
-  </v-app>
+  </page>
 </template>
 
 <script>
   import Editor from './Editor'
   import Password from './Password'
-  import Reload from './Reload'
-  import Toast from './Toast'
+  import Page from './Page'
   import {mapMutations, mapState} from 'vuex'
 
   export default {
     components: {
       editor: Editor,
       password: Password,
-      reload: Reload,
-      toast: Toast
+      page: Page
     },
     data () {
       return {

@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <page>
     <v-content>
       <v-container fluid fill-height>
         <v-layout align-center justify-center>
@@ -12,19 +12,15 @@
         </v-layout>
       </v-container>
     </v-content>
-    <toast></toast>
-    <reload></reload>
-  </v-app>
+  </page>
 </template>
 
 <script>
-  import Toast from '../Toast'
-  import Reload from '../Reload'
+  import Page from '../Page'
 
   export default {
     components: {
-      toast: Toast,
-      reload: Reload
+      page: Page
     }
   }
 </script>
