@@ -109,15 +109,16 @@
           if (!this.$v.$invalid) {
             try {
               this.requestInProgress = true
+              let username = this.username
               let error = await this.register({
-                username: this.username,
+                username,
                 password: this.password,
                 mail: this.mail
               })
               if (error === 'NONE') {
                 this.$router.push('/authentication/activate')
               } else if (error === 'NAME_TAKEN') {
-                this.takenUserNames.push(this.username)
+                this.takenUserNames.push(username)
               }
             } finally {
               this.requestInProgress = false

@@ -87,10 +87,9 @@
           if (!this.$v.$invalid) {
             try {
               this.requestInProgress = true
-              let { success, challenge } = await this.logIn({
-                username: this.username,
-                password: this.password
-              })
+              let [username, password] = [this.username, this.password]
+              let { success, challenge } =
+                await this.logIn({ username, password })
               if (success) {
                 if (challenge === 'ACTIVATE') {
                   this.$router.push('/authentication/activate')
@@ -98,10 +97,7 @@
                   this.$router.push('/dashboard')
                 }
               } else {
-                this.invalidPairs.push({
-                  username: this.username,
-                  password: this.password
-                })
+                this.invalidPairs.push({ username, password })
               }
             } finally {
               this.requestInProgress = false

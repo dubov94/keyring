@@ -3,10 +3,16 @@ import actions from './root/actions'
 import Interface from './modules/interface'
 import Vue from 'vue'
 import Vuex from 'vuex'
+import VuexPersist from 'vuex-persist'
 
 Vue.use(Vuex)
 
+let vuexLocal = new VuexPersist({
+  modules: ['preferences']
+})
+
 const store = new Vuex.Store({
+  plugins: [vuexLocal.plugin],
   state,
   mutations,
   actions,
