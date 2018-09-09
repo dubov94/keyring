@@ -7,10 +7,10 @@
       <v-form @keydown.native.enter.prevent="submit">
         <v-text-field type="text" prepend-icon="person" label="Username"
           autofocus v-model="username" :error-messages="usernameErrors"
-          @input="$v.$reset()" @blur="$v.$touch()"></v-text-field>
+          @input="$v.$reset()"></v-text-field>
         <v-text-field type="password" prepend-icon="lock" label="Password"
           v-model="password" :error-messages="passwordErrors"
-          @input="$v.$reset()" @blur="$v.$touch()"></v-text-field>
+          @input="$v.$reset()"></v-text-field>
       </v-form>
     </v-card-text>
     <v-card-actions>
