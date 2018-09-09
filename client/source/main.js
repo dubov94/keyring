@@ -19,12 +19,12 @@ Vue.config.productionTip = false
 
 let visibilityTimer = null
 document.addEventListener('visibilitychange', (event) => {
-  if (document.visibilityState) {
-    clearTimeout(visibilityTimer)
-  } else {
+  if (document.visibilityState === 'hidden') {
     visibilityTimer = setTimeout(() => {
       location.reload()
     }, SESSION_LIFETIME_IN_MS)
+  } else {
+    clearTimeout(visibilityTimer)
   }
 })
 
