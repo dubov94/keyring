@@ -1,6 +1,6 @@
 <template>
   <v-dialog :value="value" @input="close"
-    :max-width="maxWidth" @keydown.esc="cancel">
+    :max-width="maxWidth" @keydown.esc="deny" @keydown.enter="allow">
     <v-card>
       <v-card-text class="text-xs-center">{{ message }}</v-card-text>
       <v-card-actions>
@@ -32,9 +32,6 @@
       },
       affirm () {
         this.$emit('affirm')
-      },
-      cancel () {
-        this.close()
       },
       deny () {
         this.close()
