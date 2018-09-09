@@ -18,8 +18,7 @@
 </style>
 
 <template>
-  <v-dialog :value="isVisible" @input="alter"
-    :max-width="dialogMaximalWidth" @keydown.esc="cancel">
+  <v-dialog :value="isVisible" persistent :max-width="maxWidth">
     <v-card>
       <v-card-title>
         <v-text-field :type="reveal ? 'text' : 'password'" solo flat
@@ -51,11 +50,11 @@
           v-if="requestInProgress"></v-progress-circular>
         <v-spacer></v-spacer>
         <v-btn flat color="error" :disabled="requestInProgress"
-          v-if="identifier !== null" @click="remove">
+          v-if="identifier !== null" @click="maybeRemove">
           Remove
         </v-btn>
         <v-btn flat color="primary" :disabled="requestInProgress"
-          @click="cancel">
+          @click="maybeDiscard">
           Cancel
         </v-btn>
         <v-btn flat color="primary" :disabled="requestInProgress"
@@ -64,11 +63,16 @@
         </v-btn>
       </v-card-actions>
     </v-card>
+    <confirm v-model="removeConfirmation" @affirm="doRemove"
+      message="Are you sure?"></confirm>
+    <confirm v-model="discardConfirmation" @affirm="doDiscard"
+      message="Discard changes?"></confirm>
   </v-dialog>
 </template>
 
 <script>
   import Draggable from 'vuedraggable'
+  import Confirm from './Confirm'
   import {mapActions, mapMutations} from 'vuex'
   import {XL_MINIMAL_WIDTH} from './constants'
   import {ALPHANUMERIC_CHARACTERS} from '../constants'
@@ -76,7 +80,8 @@
 
   export default {
     components: {
-      draggable: Draggable
+      draggable: Draggable,
+      confirm: Confirm
     },
     data () {
       return {
@@ -87,8 +92,10 @@
           handle: '.tag__handle',
           animation: 150
         },
-        dialogMaximalWidth: XL_MINIMAL_WIDTH * (3 / 12),
+        maxWidth: XL_MINIMAL_WIDTH * (3 / 12),
         requestInProgress: false,
+        discardConfirmation: false,
+        removeConfirmation: false,
         identifier: null,
         reveal: false,
         secret: '',
@@ -118,22 +125,19 @@
           return { value: key.value, tags: key.tags.slice() }
         }
       },
-      alter (value) {
-        if (value === false) {
-          if (!this.requestInProgress) {
-            let state = this.getDefaultState()
-            if (this.secret === state.value &&
-              areArraysEqual(this.chips, state.tags) ||
-              confirm('Do you want to discard changes?')) {
-              this.closeEditor()
-            }
-          }
-        } else {
-          throw new Error('Dialog requested a show!')
-        }
+      doDiscard () {
+        this.closeEditor()
       },
-      cancel () {
-        this.alter(false)
+      maybeDiscard () {
+        if (!this.requestInProgress) {
+          let state = this.getDefaultState()
+          if (this.secret === state.value &&
+            areArraysEqual(this.chips, state.tags)) {
+            this.closeEditor()
+          } else {
+            this.discardConfirmation = true
+          }
+        }
       },
       move ({ relatedContext }) {
         return relatedContext.element !== undefined
@@ -169,16 +173,17 @@
           this.requestInProgress = false
         }
       },
-      async remove () {
-        if (confirm('Do you want to remove the key?')) {
-          try {
-            this.requestInProgress = true
-            await this.removeKey({ identifier: this.identifier })
-            this.closeEditor()
-          } finally {
-            this.requestInProgress = false
-          }
+      async doRemove () {
+        try {
+          this.requestInProgress = true
+          await this.removeKey({ identifier: this.identifier })
+          this.closeEditor()
+        } finally {
+          this.requestInProgress = false
         }
+      },
+      maybeRemove () {
+        this.removeConfirmation = true
       }
     },
     watch: {

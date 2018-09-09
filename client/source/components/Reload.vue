@@ -1,6 +1,5 @@
 <template>
-  <v-dialog v-model="externs.askForReload"
-    persistent :max-width="dialogMaximalWidth">
+  <v-dialog v-model="externs.askForReload" persistent :max-width="maxWidth">
     <v-card>
       <v-card-text>A new version is available!</v-card-text>
       <v-card-actions>
@@ -19,7 +18,7 @@
   export default {
     data () {
       return {
-        dialogMaximalWidth: XL_MINIMAL_WIDTH * (1.5 / 12),
+        maxWidth: XL_MINIMAL_WIDTH * (1.5 / 12),
         externs: window.externs
       }
     },
