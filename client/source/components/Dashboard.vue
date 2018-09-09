@@ -18,7 +18,7 @@
   }
 
   .search--mobile {
-    margin: 0 32px !important;
+    margin: 0 32px 0 4px !important;
   }
 
   .toolbar {
@@ -47,8 +47,7 @@
       </v-toolbar-title>
       <v-text-field solo-inverted flat ref="search" :class=
           "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
-        v-model="query" @keydown.native.esc="query = ''"
-        prepend-icon="search" label="Search"></v-text-field>
+        v-model="query" prepend-icon="search" label="Search"></v-text-field>
     </v-toolbar>
     <v-content>
       <v-container fluid>
