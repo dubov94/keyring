@@ -109,9 +109,9 @@
     },
     methods: {
       ...mapActions({
-        createKey: 'administration/createKey',
-        updateKey: 'administration/updateKey',
-        removeKey: 'administration/removeKey'
+        createKey: 'createUserKey',
+        updateKey: 'updateUserKey',
+        removeKey: 'removeUserKey'
       }),
       ...mapMutations({
         closeEditor: 'interface/closeEditor'
@@ -120,7 +120,7 @@
         if (this.identifier === null) {
           return { value: '', tags: [] }
         } else {
-          let key = this.$store.state.administration.keys.find(
+          let key = this.$store.state.userKeys.find(
             (item) => item.identifier === this.identifier)
           return { value: key.value, tags: key.tags.slice() }
         }

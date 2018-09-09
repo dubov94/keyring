@@ -94,14 +94,14 @@
     },
     computed: {
       ...mapState({
-        passwords: state => state.administration.keys
+        userKeys: state => state.userKeys
       }),
       matches () {
         let prefix = this.query.trim().toLowerCase()
         if (prefix === '') {
-          return this.passwords
+          return this.userKeys
         } else {
-          return this.passwords.filter(key => key.tags.some(
+          return this.userKeys.filter(key => key.tags.some(
             tag => tag.toLowerCase().startsWith(prefix)))
         }
       },
@@ -132,7 +132,7 @@
       }
     },
     async mounted () {
-      if (this.passwords.length > 0) {
+      if (this.userKeys.length > 0) {
         this.$refs.search.focus()
       }
     }
