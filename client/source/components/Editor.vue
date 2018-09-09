@@ -76,7 +76,7 @@
   import {mapActions, mapMutations} from 'vuex'
   import {XL_MINIMAL_WIDTH} from './constants'
   import {ALPHANUMERIC_CHARACTERS} from '../constants'
-  import {areArraysEqual, random} from '../utilities'
+  import {areArraysEqual, sleep, random} from '../utilities'
 
   export default {
     components: {
@@ -129,14 +129,12 @@
         this.closeEditor()
       },
       maybeDiscard () {
-        if (!this.requestInProgress) {
-          let state = this.getDefaultState()
-          if (this.secret === state.value &&
-            areArraysEqual(this.chips, state.tags)) {
-            this.closeEditor()
-          } else {
-            this.discardConfirmation = true
-          }
+        let state = this.getDefaultState()
+        if (this.secret === state.value &&
+          areArraysEqual(this.chips, state.tags)) {
+          this.closeEditor()
+        } else {
+          this.discardConfirmation = true
         }
       },
       move ({ relatedContext }) {
@@ -148,13 +146,22 @@
       addTag () {
         this.chips.push('')
       },
-      generate () {
+      async generate () {
         let suggestion = ''
         for (let index = 0; index < 12; ++index) {
           suggestion += ALPHANUMERIC_CHARACTERS.charAt(
             random(0, ALPHANUMERIC_CHARACTERS.length))
         }
-        this.secret = suggestion
+        this.requestInProgress = true
+        while (this.secret.length > 0) {
+          await sleep(50)
+          this.secret = this.secret.slice(0, -1)
+        }
+        for (let length = 1; length <= suggestion.length; ++length) {
+          await sleep(50)
+          this.secret = suggestion.slice(0, length)
+        }
+        this.requestInProgress = false
       },
       async save () {
         try {
