@@ -15,7 +15,7 @@
     </v-card-text>
     <v-card-actions>
       <v-btn block color="primary" class="mx-4"
-        @click="submit" :loading="requestInProgress">Login</v-btn>
+        @click="submit" :loading="requestInProgress">Log in</v-btn>
     </v-card-actions>
     <v-layout justify-center py-2>
       <router-link to="/authentication/register">Register</router-link>
@@ -95,7 +95,7 @@
                 if (challenge === 'ACTIVATE') {
                   this.$router.push('/authentication/activate')
                 } else {
-                  this.$router.push('/')
+                  this.$router.push('/dashboard')
                 }
               } else {
                 this.invalidPairs.push({

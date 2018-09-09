@@ -1,8 +1,8 @@
-import Activate from '../components/authentication/Activate'
-import Authentication from '../components/authentication/Index'
-import Home from '../components/Home'
-import Login from '../components/authentication/Login'
-import Register from '../components/authentication/Register'
+import Activate from './components/authentication/Activate'
+import Authentication from './components/authentication/Index'
+import Dashboard from './components/Dashboard'
+import LogIn from './components/authentication/LogIn'
+import Register from './components/authentication/Register'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
@@ -16,8 +16,8 @@ const router = new VueRouter({
       component: Authentication,
       children: [
         {
-          path: 'login',
-          component: Login
+          path: 'log-in',
+          component: LogIn
         },
         {
           path: 'register',
@@ -29,12 +29,12 @@ const router = new VueRouter({
         }
       ]
     }, {
-      path: '/',
-      component: Home
+      path: '/dashboard',
+      component: Dashboard
     }
   ]
 })
 
-router.replace('/authentication/login')
+router.replace('/authentication/log-in')
 
 export default router

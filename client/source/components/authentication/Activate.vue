@@ -83,7 +83,7 @@
               this.requestInProgress = true
               let error = await this.activate({ code: this.code })
               if (error === 'NONE') {
-                this.$router.push('/')
+                this.$router.push('/dashboard')
               } else if (error === 'CODE_MISMATCH') {
                 this.invalidCodes.push(this.code)
               }
