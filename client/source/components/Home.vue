@@ -20,13 +20,30 @@
   .search--mobile {
     margin: 0 32px !important;
   }
+
+  .toolbar {
+    z-index: 5 !important;
+  }
 </style>
 
 <template>
   <page>
-    <v-toolbar app prominent color="primary" dark>
+    <v-navigation-drawer app v-model="showDrawer" temporary clipped floating>
+      <v-list>
+        <v-list-tile @click="logOut">
+          <v-list-tile-action>
+            <v-icon>exit_to_app</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            Log out
+          </v-list-tile-content>
+        </v-list-tile>
+      </v-list>
+    </v-navigation-drawer>
+    <v-toolbar app clipped-left prominent color="primary" dark>
+      <v-toolbar-side-icon @click="toggleDrawer"></v-toolbar-side-icon>
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
-        Key Ring
+          Key Ring
       </v-toolbar-title>
       <v-text-field solo-inverted flat ref="search" :class=
           "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
@@ -71,6 +88,7 @@
     },
     data () {
       return {
+        showDrawer: false,
         query: ''
       }
     },
@@ -103,6 +121,12 @@
       ...mapMutations({
         openEditor: 'interface/openEditor'
       }),
+      toggleDrawer () {
+        this.showDrawer = !this.showDrawer
+      },
+      logOut () {
+        location.reload()
+      },
       addKey () {
         this.openEditor({ identifier: null, reveal: false })
       }
