@@ -1,3 +1,11 @@
+<style scoped>
+  .switch {
+    flex: none;
+    width: auto;
+    margin: 0 0 8px 16px;
+  }
+</style>
+
 <template>
   <v-card>
     <v-toolbar color="primary" dark>
@@ -5,11 +13,15 @@
     </v-toolbar>
     <v-card-text>
       <v-form @keydown.native.enter.prevent="submit">
-        <v-text-field type="text" prepend-icon="person" label="Username"
-          autofocus v-model="username" :error-messages="usernameErrors"
-          @input="$v.$reset()"></v-text-field>
+        <v-layout align-center>
+          <v-text-field type="text" prepend-icon="person" label="Username"
+            v-model="username" :error-messages="usernameErrors" ref="username"
+            @input="$v.$reset()"></v-text-field>
+          <v-switch slot="activator" hide-details color="primary"
+            class="switch" v-model="persistanceSwitch"></v-switch>
+        </v-layout>
         <v-text-field type="password" prepend-icon="lock" label="Password"
-          v-model="password" :error-messages="passwordErrors"
+          v-model="password" :error-messages="passwordErrors" ref="password"
           @input="$v.$reset()"></v-text-field>
       </v-form>
     </v-card-text>
@@ -30,12 +42,22 @@
   const INVALID_CREDENTIALS_MESSAGE = 'Invalid username or password!'
 
   export default {
+    mounted () {
+      if (this.username === '') {
+        this.$refs.username.focus()
+      } else {
+        this.$refs.password.focus()
+      }
+    },
     data () {
+      let storageUsername = this.$store.state.preferences.username
+
       return {
-        username: '',
+        username: storageUsername === null ? '' : storageUsername,
         password: '',
         requestInProgress: false,
-        invalidPairs: []
+        invalidPairs: [],
+        persistanceSwitch: storageUsername !== null
       }
     },
     validations: {
@@ -79,7 +101,10 @@
     },
     methods: {
       ...mapActions({
-        logIn: 'logIn'
+        logIn: 'logIn',
+        rememberUsername: 'preferences/rememberUsername',
+        forgetUsername: 'preferences/forgetUsername',
+        displaySnackbar: 'interface/displaySnackbar'
       }),
       async submit () {
         if (!this.requestInProgress) {
@@ -91,6 +116,9 @@
               let { success, challenge } =
                 await this.logIn({ username, password })
               if (success) {
+                if (this.persistanceSwitch) {
+                  this.rememberUsername(username)
+                }
                 if (challenge === 'ACTIVATE') {
                   this.$router.push('/authentication/activate')
                 } else {
@@ -103,6 +131,14 @@
               this.requestInProgress = false
             }
           }
+        }
+      }
+    },
+    watch: {
+      persistanceSwitch (value) {
+        if (value === false) {
+          this.forgetUsername()
+          this.displaySnackbar({ message: 'Username erased!', timeout: 1500 })
         }
       }
     }

@@ -1,4 +1,19 @@
 export default {
   namespaced: true,
-  state: {}
+  state: {
+    username: null
+  },
+  mutations: {
+    setUsername (state, value) {
+      state.username = value
+    }
+  },
+  actions: {
+    rememberUsername ({ commit }, username) {
+      commit('setUsername', username)
+    },
+    forgetUsername ({ commit }) {
+      commit('setUsername', null)
+    }
+  }
 }
