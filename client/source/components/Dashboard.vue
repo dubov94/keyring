@@ -30,6 +30,14 @@
   <page>
     <v-navigation-drawer app v-model="showDrawer" temporary clipped floating>
       <v-list>
+        <v-list-tile @click="$router.push('/account')">
+          <v-list-tile-action>
+            <v-icon>settings</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            Account
+          </v-list-tile-content>
+        </v-list-tile>
         <v-list-tile @click="logOut">
           <v-list-tile-action>
             <v-icon>exit_to_app</v-icon>

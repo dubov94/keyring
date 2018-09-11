@@ -41,6 +41,7 @@ export default {
       })
     if (response.error === 'NONE') {
       dispatch('importCredentials', {
+        salt,
         sessionKey: response.session_key,
         masterKey: password
       })
@@ -56,7 +57,8 @@ export default {
     let { data: saltResponse } =
       await axios.get(`/api/authentication/get-salt/${username}`)
     if (saltResponse.error === 'NONE') {
-      let hash = await bcrypt.hash(password, saltResponse.salt)
+      let { salt } = saltResponse
+      let hash = await bcrypt.hash(password, salt)
       let { data: authResponse } =
         await axios.post('/api/authentication/log-in', {
           username,
@@ -65,6 +67,7 @@ export default {
       if (authResponse.error === 'NONE') {
         let { payload } = authResponse
         dispatch('importCredentials', {
+          salt,
           sessionKey: payload.session_key,
           masterKey: password
         })
@@ -78,7 +81,8 @@ export default {
     }
     return { success: false, challenge: null }
   },
-  importCredentials ({ commit, dispatch }, { sessionKey, masterKey }) {
+  importCredentials ({ commit, dispatch }, { salt, sessionKey, masterKey }) {
+    commit('setSalt', salt)
     commit('setSessionKey', sessionKey)
     commit('setEncryptionKey', base64.stringify(sha256(masterKey)))
     dispatch('scheduleBeat')
@@ -120,5 +124,33 @@ export default {
       headers: createSessionHeader(state.sessionKey)
     })
     commit('deleteUserKey', identifier)
+  },
+  async changeMasterKey ({ commit, state }, { current, renewal }) {
+    let newSalt = await bcrypt.genSalt(BCRYPT_ROUNDS_LOGARITHM)
+    let curDigest = getDigest(await bcrypt.hash(current, state.salt))
+    let newDigest = getDigest(await bcrypt.hash(renewal, newSalt))
+    let newEncryptionKey = base64.stringify(sha256(renewal))
+    let { data: { error } } =
+      await axios.put('/api/administration/master-key', {
+        current_digest: curDigest,
+        renewal: {
+          salt: newSalt,
+          digest: newDigest,
+          keys: state.userKeys.map((key) => ({
+            identifier: key.identifier,
+            password: encryptPassword(newEncryptionKey, {
+              value: key.value,
+              tags: key.tags
+            })
+          }))
+        }
+      }, {
+        headers: createSessionHeader(state.sessionKey)
+      })
+    if (error === 'NONE') {
+      commit('setSalt', newSalt)
+      commit('setEncryptionKey', newEncryptionKey)
+    }
+    return error
   }
 }

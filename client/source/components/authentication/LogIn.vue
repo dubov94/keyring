@@ -39,7 +39,7 @@
   import {mapActions} from 'vuex'
   import {required} from 'vuelidate/lib/validators'
 
-  const INVALID_CREDENTIALS_MESSAGE = 'Invalid username or password!'
+  const INVALID_CREDENTIALS_MESSAGE = 'Invalid username or password'
 
   export default {
     mounted () {
@@ -81,7 +81,7 @@
         const errors = []
         if (this.$v.username.$dirty) {
           if (!this.$v.username.required) {
-            errors.push('Username is required!')
+            errors.push('Username is required')
           }
           if (!this.$v.pair.fresh) {
             errors.push(INVALID_CREDENTIALS_MESSAGE)

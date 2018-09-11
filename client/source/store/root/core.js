@@ -1,10 +1,14 @@
 export const state = {
+  salt: null,
   encryptionKey: null,
   sessionKey: null,
   userKeys: []
 }
 
 export const mutations = {
+  setSalt (state, salt) {
+    state.salt = salt
+  },
   setSessionKey (state, sessionKey) {
     state.sessionKey = sessionKey
   },

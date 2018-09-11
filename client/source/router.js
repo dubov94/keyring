@@ -1,3 +1,4 @@
+import Account from './components/Account'
 import Activate from './components/authentication/Activate'
 import Authentication from './components/authentication/Index'
 import Dashboard from './components/Dashboard'
@@ -31,6 +32,9 @@ const router = new VueRouter({
     }, {
       path: '/dashboard',
       component: Dashboard
+    }, {
+      path: '/account',
+      component: Account
     }
   ]
 })

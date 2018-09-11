@@ -37,6 +37,10 @@
     "deleteKey": {
       "method": "post",
       "path": "/administration/delete-key"
+    },
+    "changeMasterKey": {
+      "method": "put",
+      "path": "/administration/master-key"
     }
   }
 }
