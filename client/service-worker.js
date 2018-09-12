@@ -3,16 +3,13 @@ self.addEventListener('install', () => {
 })
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((names) => {
-        return Promise.all(names.map((name) => caches.delete(name)))
-      })
-  )
-
-  self.registration.unregister()
-    .then(() => self.clients.matchAll())
-    .then((clients) => {
-      clients.forEach(client => client.navigate(client.url))
-    })
+  event.waitUntil(destroy())
 })
+
+async function destroy() {
+  self.registration.unregister()
+  const keys = await self.caches.keys()
+  await Promise.all(keys.map((key) => self.caches.delete(key)))
+  const clients = await self.clients.matchAll({ type: 'window' })
+  clients.forEach((client) => client.navigate(client.url))
+}
