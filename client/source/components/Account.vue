@@ -6,7 +6,7 @@
 
 <template>
   <page>
-    <v-toolbar app clipped-left prominent color="primary" dark>
+    <v-toolbar app prominent color="primary" dark>
       <v-btn icon @click="$router.go(-1)">
         <v-icon>arrow_back</v-icon>
       </v-btn>
