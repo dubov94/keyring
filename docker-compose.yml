@@ -25,7 +25,7 @@ services:
     secrets:
       - mailgun_api_key
   postgres:
-    image: postgres
+    image: 'postgres:10'
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: keyring
