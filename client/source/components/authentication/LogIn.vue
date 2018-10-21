@@ -17,8 +17,11 @@
           <v-text-field type="text" prepend-icon="person" label="Username"
             v-model="username" :error-messages="usernameErrors" ref="username"
             @input="$v.$reset()"></v-text-field>
-          <v-switch slot="activator" hide-details color="primary"
-            class="switch" v-model="persistanceSwitch"></v-switch>
+          <v-tooltip bottom>
+            <v-switch slot="activator" hide-details color="primary"
+              class="switch" v-model="persistanceSwitch"></v-switch>
+            <span>Remember</span>
+          </v-tooltip>
         </v-layout>
         <v-text-field type="password" prepend-icon="lock" label="Password"
           v-model="password" :error-messages="passwordErrors" ref="password"

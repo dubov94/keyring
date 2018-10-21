@@ -83,12 +83,19 @@
         </div>
       </v-container>
       <div class="dial">
-        <v-btn fab color="error" @click="addKey">
-          <v-icon>add</v-icon>
-        </v-btn>
-        <v-btn fab color="success" small dark @click="clearClipboard">
-          <v-icon>layers_clear</v-icon>
-        </v-btn>
+        <v-tooltip left>
+          <v-btn slot="activator" fab color="error" @click="addKey">
+            <v-icon>add</v-icon>
+          </v-btn>
+          <span>Create a new secret</span>
+        </v-tooltip>
+        <v-tooltip left>
+          <v-btn slot="activator" fab color="success" small dark
+            @click="clearClipboard">
+            <v-icon>layers_clear</v-icon>
+          </v-btn>
+          <span>Empty the clipboard</span>
+        </v-tooltip>
       </div>
     </v-content>
     <editor></editor>
