@@ -14,7 +14,7 @@
     <v-card-title>
       <v-text-field :type="reveal ? 'text' : 'password'" solo flat readonly
         :value="value"></v-text-field>
-      <v-btn icon v-clipboard:copy="value" v-clipboard:success="onCopy">
+      <v-btn icon @click="copyText(value)">
         <v-icon>file_copy</v-icon>
       </v-btn>
       <template v-if="$vuetify.breakpoint.smAndUp">
@@ -47,8 +47,7 @@
       <v-divider></v-divider>
       <v-card-text>
         <v-chip disabled v-for="(label, index) in tags" :key="index"
-          color="accent" text-color="white"
-          v-clipboard:copy="label" v-clipboard:success="onCopy">
+          color="accent" text-color="white" @click="copyText(label)">
           {{ label }}
         </v-chip>
       </v-card-text>
@@ -72,14 +71,11 @@
     },
     methods: {
       ...mapActions({
-        displaySnackbar: 'interface/displaySnackbar'
+        copyText: 'interface/copyText'
       }),
       ...mapMutations({
         openEditor: 'interface/openEditor'
       }),
-      onCopy () {
-        this.displaySnackbar({ message: 'Copied!', timeout: 1500 })
-      },
       toggleReveal () {
         this.reveal = !this.reveal
       },

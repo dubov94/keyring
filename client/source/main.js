@@ -1,7 +1,6 @@
 import 'vuetify/dist/vuetify.min.css'
 import Application from './Application'
 import Vue from 'vue'
-import VueClipboard from 'vue-clipboard2'
 import VueInputAutoWidth from 'vue-input-autowidth'
 import Vuelidate from 'vuelidate'
 import Vuetify from 'vuetify'
@@ -10,7 +9,6 @@ import router from './router'
 import store from './store'
 import {SESSION_LIFETIME_IN_MS} from './constants'
 
-Vue.use(VueClipboard)
 Vue.use(VueInputAutoWidth)
 Vue.use(Vuetify)
 Vue.use(Vuelidate)

@@ -41,6 +41,10 @@ export default {
       commit('hideToast')
       await Vue.nextTick()
       commit('showToast', configuration)
+    },
+    async copyText ({ dispatch }, string) {
+      await navigator.clipboard.writeText(string)
+      dispatch('displaySnackbar', { message: 'Copied!', timeout: 1500 })
     }
   }
 }
