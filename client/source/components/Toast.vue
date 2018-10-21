@@ -1,5 +1,5 @@
 <template>
-  <v-snackbar v-model="isVisible" :timeout="timeout">
+  <v-snackbar v-model="isVisible" auto-height :timeout="timeout">
     {{ message }}
     <v-btn color="warning" flat @click="hideToast">Close</v-btn>
   </v-snackbar>

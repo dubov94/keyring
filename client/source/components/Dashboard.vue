@@ -47,14 +47,6 @@
             Account
           </v-list-tile-content>
         </v-list-tile>
-        <v-list-tile @click="logOut">
-          <v-list-tile-action>
-            <v-icon>exit_to_app</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            Log out
-          </v-list-tile-content>
-        </v-list-tile>
       </v-list>
     </v-navigation-drawer>
     <v-toolbar app clipped-left prominent color="primary" dark>
@@ -83,19 +75,13 @@
         </div>
       </v-container>
       <div class="dial">
-        <v-tooltip left>
-          <v-btn slot="activator" fab color="error" @click="addKey">
-            <v-icon>add</v-icon>
-          </v-btn>
-          <span>Create a new secret</span>
-        </v-tooltip>
-        <v-tooltip left>
-          <v-btn slot="activator" fab color="success" small dark
-            @click="clearClipboard">
-            <v-icon>layers_clear</v-icon>
-          </v-btn>
-          <span>Empty the clipboard</span>
-        </v-tooltip>
+        <v-btn fab color="error" @click="addKey">
+          <v-icon>add</v-icon>
+        </v-btn>
+        <v-btn fab color="success" small dark
+          @click="clearClipboard">
+          <v-icon>layers_clear</v-icon>
+        </v-btn>
       </div>
     </v-content>
     <editor></editor>
@@ -155,17 +141,15 @@
       toggleDrawer () {
         this.showDrawer = !this.showDrawer
       },
-      logOut () {
-        location.reload()
-      },
       addKey () {
         this.openEditor({ identifier: null, reveal: false })
       },
       async clearClipboard () {
         await navigator.clipboard.writeText('')
         this.displaySnackbar({
-          message: 'Clipboard is emptied',
-          timeout: 1500
+          message: 'Clipboard is cleared. Watch out for tools that may keep ' +
+            'the history of copied items anyway!',
+          timeout: 4500
         })
       }
     },
