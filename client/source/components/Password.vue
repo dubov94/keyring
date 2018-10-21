@@ -71,11 +71,15 @@
     },
     methods: {
       ...mapActions({
-        copyText: 'interface/copyText'
+        displaySnackbar: 'interface/displaySnackbar'
       }),
       ...mapMutations({
         openEditor: 'interface/openEditor'
       }),
+      async copyText (string) {
+        await navigator.clipboard.writeText(string)
+        this.displaySnackbar({ message: 'Copied!', timeout: 1500 })
+      },
       toggleReveal () {
         this.reveal = !this.reveal
       },

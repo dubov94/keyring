@@ -138,7 +138,10 @@
       persistanceSwitch (value) {
         if (value === false) {
           this.forgetUsername()
-          this.displaySnackbar({ message: 'Username erased!', timeout: 1500 })
+          this.displaySnackbar({
+            message: 'Username is erased',
+            timeout: 1500
+          })
         }
       }
     }

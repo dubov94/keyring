@@ -24,6 +24,15 @@
   .toolbar {
     z-index: 5 !important;
   }
+
+  .dial {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+  }
 </style>
 
 <template>
@@ -73,9 +82,14 @@
           </div>
         </div>
       </v-container>
-      <v-btn fab color="error" fixed bottom right @click="addKey">
-        <v-icon>add</v-icon>
-      </v-btn>
+      <div class="dial">
+        <v-btn fab color="error" @click="addKey">
+          <v-icon>add</v-icon>
+        </v-btn>
+        <v-btn fab color="success" small dark @click="clearClipboard">
+          <v-icon>layers_clear</v-icon>
+        </v-btn>
+      </div>
     </v-content>
     <editor></editor>
   </page>
@@ -85,7 +99,7 @@
   import Editor from './Editor'
   import Password from './Password'
   import Page from './Page'
-  import {mapMutations, mapState} from 'vuex'
+  import {mapActions, mapMutations, mapState} from 'vuex'
 
   export default {
     components: {
@@ -125,6 +139,9 @@
       }
     },
     methods: {
+      ...mapActions({
+        displaySnackbar: 'interface/displaySnackbar'
+      }),
       ...mapMutations({
         openEditor: 'interface/openEditor'
       }),
@@ -136,6 +153,13 @@
       },
       addKey () {
         this.openEditor({ identifier: null, reveal: false })
+      },
+      async clearClipboard () {
+        await navigator.clipboard.writeText('')
+        this.displaySnackbar({
+          message: 'Clipboard is emptied',
+          timeout: 1500
+        })
       }
     },
     async mounted () {
