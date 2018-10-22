@@ -12,8 +12,20 @@
     cursor: move;
   }
 
+  .tag__content {
+    position: relative;
+    margin-right: 2px;
+  }
+
+  .tag__input {
+    position: absolute;
+    width: 100%;
+    padding-left: 4px;
+  }
+
   .tag__label {
-    padding-left: 8px;
+    visibility: hidden;
+    padding: 0 12px 0 4px;
   }
 </style>
 
@@ -36,8 +48,11 @@
           <v-chip disabled close v-for="(_, index) in chips" :key="index"
             @input="removeTag(index)" color="accent" text-color="white">
             <v-icon small class="tag__handle">drag_indicator</v-icon>
-            <input type="text" v-model="chips[index]" @input.stop
-              v-autowidth="autoWidthSettings" class="tag__label" v-focus>
+            <div class="tag__content">
+              <input type="text" v-model="chips[index]" @input.stop
+                class="tag__input" v-focus>
+              <span class="tag__label">{{ chips[index] }}</span>
+            </div>
           </v-chip>
           <v-btn icon @click="addTag" color="accent">
             <v-icon>add</v-icon>
@@ -85,9 +100,6 @@
     },
     data () {
       return {
-        autoWidthSettings: {
-          comfortZone: 8
-        },
         draggableOptions: {
           handle: '.tag__handle',
           animation: 150
