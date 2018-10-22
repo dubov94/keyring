@@ -33,7 +33,7 @@
         @click="submit" :loading="requestInProgress">Log in</v-btn>
     </v-card-actions>
     <v-layout justify-center py-2>
-      <router-link to="/authentication/register">Register</router-link>
+      <router-link to="/register">Register</router-link>
     </v-layout>
   </v-card>
 </template>
@@ -119,7 +119,7 @@
                   this.rememberUsername(username)
                 }
                 if (challenge === 'ACTIVATE') {
-                  this.$router.push('/authentication/activate')
+                  this.$router.push('/activate')
                 } else {
                   this.$router.push('/dashboard')
                 }

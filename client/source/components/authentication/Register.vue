@@ -24,7 +24,7 @@
         @click="submit" :loading="requestInProgress">Register</v-btn>
     </v-card-actions>
     <v-layout justify-center py-2>
-      <router-link to="/authentication/log-in">Log in</router-link>
+      <router-link to="/log-in">Log in</router-link>
     </v-layout>
   </v-card>
 </template>
@@ -116,7 +116,7 @@
                 mail: this.mail
               })
               if (error === 'NONE') {
-                this.$router.push('/authentication/activate')
+                this.$router.push('/activate')
               } else if (error === 'NAME_TAKEN') {
                 this.takenUserNames.push(username)
               }
