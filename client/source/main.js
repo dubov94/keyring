@@ -17,7 +17,10 @@ let visibilityTimer = null
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     visibilityTimer = setTimeout(() => {
-      location.reload()
+      if (store.getters.hasSessionKey) {
+        sessionStorage.clear()
+        location.assign('/log-in')
+      }
     }, SESSION_LIFETIME_IN_MS)
   } else {
     clearTimeout(visibilityTimer)

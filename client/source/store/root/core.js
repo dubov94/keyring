@@ -5,6 +5,10 @@ export const state = {
   userKeys: []
 }
 
+export const getters = {
+  hasSessionKey: (state) => state.sessionKey !== null
+}
+
 export const mutations = {
   setSalt (state, salt) {
     state.salt = salt

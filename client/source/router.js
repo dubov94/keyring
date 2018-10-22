@@ -1,4 +1,4 @@
-import Account from './components/Account'
+import Settings from './components/Settings'
 import Activate from './components/authentication/Activate'
 import Authentication from './components/authentication/Index'
 import Dashboard from './components/Dashboard'
@@ -6,15 +6,25 @@ import LogIn from './components/authentication/LogIn'
 import Register from './components/authentication/Register'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import store from './store'
 
 Vue.use(VueRouter)
 
+const tokenGuard = (to, from, next) => {
+  if (store.getters.hasSessionKey) {
+    next()
+  } else {
+    next('/log-in')
+  }
+}
+
 const router = new VueRouter({
-  mode: 'abstract',
+  mode: 'history',
   routes: [
     {
-      path: '/authentication',
+      path: '/',
       component: Authentication,
+      redirect: () => store.getters.hasSessionKey ? '/dashboard' : '/log-in',
       children: [
         {
           path: 'log-in',
@@ -31,14 +41,14 @@ const router = new VueRouter({
       ]
     }, {
       path: '/dashboard',
-      component: Dashboard
+      component: Dashboard,
+      beforeEnter: tokenGuard
     }, {
-      path: '/account',
-      component: Account
+      path: '/settings',
+      component: Settings,
+      beforeEnter: tokenGuard
     }
   ]
 })
-
-router.replace('/authentication/log-in')
 
 export default router

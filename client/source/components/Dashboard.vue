@@ -39,12 +39,12 @@
   <page>
     <v-navigation-drawer app v-model="showDrawer" temporary clipped floating>
       <v-list>
-        <v-list-tile @click="$router.push('/account')">
+        <v-list-tile @click="$router.push('/settings')">
           <v-list-tile-action>
             <v-icon>settings</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
-            Account
+            Settings
           </v-list-tile-content>
         </v-list-tile>
       </v-list>
