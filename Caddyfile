@@ -1,8 +1,4 @@
 pwd.floreina.me {
     proxy /api gateway:80
     proxy / client:80
-
-    errors {
-        404 index.html
-    }
 }
