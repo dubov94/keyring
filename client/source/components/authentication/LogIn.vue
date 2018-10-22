@@ -15,8 +15,8 @@
       <v-form @keydown.native.enter.prevent="submit">
         <v-layout align-center>
           <v-text-field type="text" prepend-icon="person" label="Username"
-            v-model="username" :error-messages="usernameErrors" ref="username"
-            @input="$v.$reset()"></v-text-field>
+            v-model="username" :error-messages="usernameErrors"
+            @input="$v.$reset()" :autofocus="!hasUsername"></v-text-field>
           <v-tooltip bottom>
             <v-switch slot="activator" hide-details color="primary"
               class="switch" v-model="persistanceSwitch"></v-switch>
@@ -24,8 +24,8 @@
           </v-tooltip>
         </v-layout>
         <v-text-field type="password" prepend-icon="lock" label="Password"
-          v-model="password" :error-messages="passwordErrors" ref="password"
-          @input="$v.$reset()"></v-text-field>
+          v-model="password" :error-messages="passwordErrors"
+          @input="$v.$reset()" :autofocus="hasUsername"></v-text-field>
       </v-form>
     </v-card-text>
     <v-card-actions>
@@ -45,13 +45,6 @@
   const INVALID_CREDENTIALS_MESSAGE = 'Invalid username or password'
 
   export default {
-    mounted () {
-      if (this.username === '') {
-        this.$refs.username.focus()
-      } else {
-        this.$refs.password.focus()
-      }
-    },
     data () {
       let storageUsername = this.$store.state.preferences.username
 
@@ -80,6 +73,9 @@
       }
     },
     computed: {
+      hasUsername () {
+        return this.username !== ''
+      },
       usernameErrors () {
         const errors = []
         if (this.$v.username.$dirty) {
