@@ -47,6 +47,9 @@ const router = new VueRouter({
       path: '/settings',
       component: Settings,
       beforeEnter: tokenGuard
+    }, {
+      path: '*',
+      redirect: () => '/'
     }
   ]
 })
