@@ -78,8 +78,7 @@
         <v-btn fab color="error" @click="addKey">
           <v-icon>add</v-icon>
         </v-btn>
-        <v-btn fab color="success" small dark
-          @click="clearClipboard">
+        <v-btn fab small @click="clearClipboard">
           <v-icon>layers_clear</v-icon>
         </v-btn>
       </div>

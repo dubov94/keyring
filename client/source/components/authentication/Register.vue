@@ -116,7 +116,7 @@
                 mail: this.mail
               })
               if (error === 'NONE') {
-                this.$router.push('/activate')
+                this.$router.replace('/activate')
               } else if (error === 'NAME_TAKEN') {
                 this.takenUserNames.push(username)
               }

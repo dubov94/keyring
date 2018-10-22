@@ -119,9 +119,9 @@
                   this.rememberUsername(username)
                 }
                 if (challenge === 'ACTIVATE') {
-                  this.$router.push('/activate')
+                  this.$router.replace('/activate')
                 } else {
-                  this.$router.push('/dashboard')
+                  this.$router.replace('/dashboard')
                 }
               } else {
                 this.invalidPairs.push({ username, password })
