@@ -10,7 +10,7 @@ run npm install
 copy ./client ./
 run npm run build
 
-run ln -s ./dist/index.html ./dist/404.html
+run ln -s index.html ./dist/404.html
 
 expose 80
 cmd ["http-server", "-p", "80", "./dist"]
