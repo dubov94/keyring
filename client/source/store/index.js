@@ -29,7 +29,6 @@ const heartBeatPlugin = (store) => {
   let identifier = null
 
   const scheduleBeat = () => {
-    console.warn('scheduleBeat')
     clearTimeout(identifier)
     identifier = setTimeout(async () => {
       await axios.put('/api/authentication/keep-alive', {
