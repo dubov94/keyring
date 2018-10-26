@@ -4,7 +4,6 @@ import aes from 'crypto-js/aes'
 import base64 from 'crypto-js/enc-base64'
 import encUtf8 from 'crypto-js/enc-utf8'
 import sha256 from 'crypto-js/sha256'
-import {SESSION_LIFETIME_IN_MS} from '../../constants'
 
 const BCRYPT_ROUNDS_LOGARITHM = 12
 
@@ -81,22 +80,10 @@ export default {
     }
     return { success: false, challenge: null }
   },
-  importCredentials ({ commit, dispatch }, { salt, sessionKey, masterKey }) {
+  importCredentials ({ commit }, { salt, sessionKey, masterKey }) {
     commit('setSalt', salt)
     commit('setSessionKey', sessionKey)
     commit('setEncryptionKey', base64.stringify(sha256(masterKey)))
-    dispatch('scheduleBeat')
-  },
-  scheduleBeat ({ dispatch }) {
-    setTimeout(() => {
-      dispatch('keepAlive')
-    }, SESSION_LIFETIME_IN_MS / 2)
-  },
-  async keepAlive ({ state, dispatch }) {
-    await axios.put('/api/authentication/keep-alive', {
-      session_key: state.sessionKey
-    })
-    dispatch('scheduleBeat')
   },
   async acceptUserKeys ({ commit, state }, { userKeys }) {
     commit('setUserKeys', userKeys.map(({ identifier, password }) =>

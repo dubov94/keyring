@@ -7,6 +7,7 @@ import axios from 'axios'
 import router from './router'
 import store from './store'
 import {SESSION_LIFETIME_IN_MS} from './constants'
+import {logOut} from './utilities'
 
 Vue.use(Vuetify)
 Vue.use(Vuelidate)
@@ -18,8 +19,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
     visibilityTimer = setTimeout(() => {
       if (store.getters.hasSessionKey) {
-        sessionStorage.clear()
-        location.assign('/log-in')
+        logOut()
       }
     }, SESSION_LIFETIME_IN_MS)
   } else {

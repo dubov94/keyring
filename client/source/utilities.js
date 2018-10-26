@@ -47,3 +47,8 @@ export const sleep = (timeInMs) =>
       resolve()
     }, timeInMs)
   })
+
+export const logOut = () => {
+  sessionStorage.clear()
+  location.assign('/log-in')
+}

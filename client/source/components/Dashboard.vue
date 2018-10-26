@@ -47,6 +47,14 @@
             Settings
           </v-list-tile-content>
         </v-list-tile>
+        <v-list-tile @click="logOut">
+          <v-list-tile-action>
+            <v-icon>exit_to_app</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            Log out
+          </v-list-tile-content>
+        </v-list-tile>
       </v-list>
     </v-navigation-drawer>
     <v-toolbar app clipped-left prominent color="primary" dark>
@@ -92,6 +100,7 @@
   import Password from './Password'
   import Page from './Page'
   import {mapActions, mapMutations, mapState} from 'vuex'
+  import {logOut} from '../utilities'
 
   export default {
     components: {
@@ -142,6 +151,9 @@
       },
       addKey () {
         this.openEditor({ identifier: null, reveal: false })
+      },
+      logOut () {
+        logOut()
       },
       async clearClipboard () {
         await navigator.clipboard.writeText('')
