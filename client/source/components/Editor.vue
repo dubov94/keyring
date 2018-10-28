@@ -21,11 +21,11 @@
     position: absolute;
     width: 100%;
     padding-left: 4px;
+    color: transparent;
   }
 
   .tag__label {
-    visibility: hidden;
-    padding: 0 12px 0 4px;
+    padding: 0 4px;
   }
 </style>
 
@@ -45,13 +45,13 @@
       <v-divider></v-divider>
       <v-card-text>
         <draggable v-model="chips" :options="draggableOptions" :move="move">
-          <v-chip disabled close v-for="(_, index) in chips" :key="index"
+          <v-chip disabled close v-for="(value, index) in chips" :key="index"
             @input="removeTag(index)" color="accent" text-color="white">
             <v-icon small class="tag__handle">drag_indicator</v-icon>
             <div class="tag__content">
-              <input type="text" v-model="chips[index]" @input.stop
-                class="tag__input" v-focus>
-              <span class="tag__label">{{ chips[index] }}</span>
+              <input type="text" :value="value" class="tag__input" v-focus
+                @input.stop="setTag(index, $event.target.value)">
+              <span class="tag__label">{{ value }}</span>
             </div>
           </v-chip>
           <v-btn icon @click="addTag" color="accent">
@@ -151,6 +151,9 @@
       },
       move ({ relatedContext }) {
         return relatedContext.element !== undefined
+      },
+      setTag (index, value) {
+        this.$set(this.chips, index, value)
       },
       removeTag (index) {
         this.chips.splice(index, 1)
