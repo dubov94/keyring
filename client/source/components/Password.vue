@@ -56,13 +56,9 @@
 </template>
 
 <script>
-  import Editor from './Editor'
   import {mapActions, mapMutations} from 'vuex'
 
   export default {
-    components: {
-      editor: Editor
-    },
     props: ['identifier', 'value', 'tags'],
     data () {
       return {

@@ -62,9 +62,9 @@
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
           Key Ring
       </v-toolbar-title>
-      <v-text-field solo-inverted flat ref="search" :class=
+      <v-text-field solo-inverted flat ref="search" :value="query" :class=
           "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
-        v-model="query" prepend-icon="search" label="Search"></v-text-field>
+        prepend-icon="search" label="Search" @input="queryInput"></v-text-field>
     </v-toolbar>
     <v-content>
       <v-container fluid>
@@ -96,6 +96,7 @@
 </template>
 
 <script>
+  import debounce from 'lodash.debounce'
   import Editor from './Editor'
   import Password from './Password'
   import Page from './Page'
@@ -164,7 +165,12 @@
         })
       }
     },
-    async mounted () {
+    created () {
+      this.queryInput = debounce((text) => {
+        this.query = text
+      }, 300)
+    },
+    mounted () {
       if (this.userKeys.length > 0) {
         this.$refs.search.focus()
       }
