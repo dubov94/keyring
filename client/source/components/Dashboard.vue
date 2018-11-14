@@ -203,6 +203,8 @@
       cardsCount (current, previous) {
         if (current > previous) {
           this.resetNavigation()
+        } else if (this.pageNumber > this.pageCount) {
+          this.pageNumber = this.pageCount
         }
       },
       normalizedQuery () {
