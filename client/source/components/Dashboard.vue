@@ -1,4 +1,9 @@
 <style scoped>
+  .navigation {
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
   .masonry {
     display: flex;
     max-width: calc(1264px - 1px);
@@ -62,23 +67,25 @@
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
           Key Ring
       </v-toolbar-title>
-      <v-text-field solo-inverted flat ref="search" :value="query" :class=
-          "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
-        prepend-icon="search" label="Search" @input="queryInput"></v-text-field>
+      <v-text-field solo-inverted flat ref="search" v-model="query" :class=
+        "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
+        prepend-icon="search" label="Search"></v-text-field>
     </v-toolbar>
     <v-content>
       <v-container fluid>
+        <div class="navigation">
+          <v-pagination v-model="pageNumber" :length="pageCount"
+            :total-visible="7" circle></v-pagination>
+        </div>
         <div class="masonry">
-          <div v-for="columnNumber in columnCount" :key="columnNumber"
-            class="masonry__arch">
-            <template v-for="(item, index) in matches"
-              v-if="index % columnCount == columnNumber - 1">
-              <div class="masonry__brick">
-                <password :key="item.identifier" :identifier="item.identifier"
-                  :value="item.value" :tags="item.tags">
-                </password>
-              </div>
-            </template>
+          <div v-for="columnNumber in columnCount"
+            :key="columnNumber" class="masonry__arch">
+            <div v-for="card in generateSlice(columnNumber)"
+              :key="card.identifier" class="masonry__brick">
+              <password :identifier="card.identifier" 
+                :value="card.value" :tags="card.tags">
+              </password>
+            </div>
           </div>
         </div>
       </v-container>
@@ -96,12 +103,13 @@
 </template>
 
 <script>
-  import debounce from 'lodash.debounce'
   import Editor from './Editor'
   import Password from './Password'
   import Page from './Page'
   import {mapActions, mapMutations, mapState} from 'vuex'
   import {logOut} from '../utilities'
+
+  const CARDS_PER_PAGE = 12
 
   export default {
     components: {
@@ -112,6 +120,7 @@
     data () {
       return {
         showDrawer: false,
+        pageNumber: 1,
         query: ''
       }
     },
@@ -119,14 +128,24 @@
       ...mapState({
         userKeys: state => state.userKeys
       }),
-      matches () {
-        let prefix = this.query.trim().toLowerCase()
-        if (prefix === '') {
-          return this.userKeys
-        } else {
-          return this.userKeys.filter(key => key.tags.some(
-            tag => tag.toLowerCase().startsWith(prefix)))
+      pageCount () {
+        return Math.max(Math.floor(
+          (this.matchingCards.length + CARDS_PER_PAGE - 1) / CARDS_PER_PAGE), 1)
+      },
+      normalizedQuery () {
+        return this.query.trim().toLowerCase()
+      },
+      matchingCards () {
+        let prefix = this.normalizedQuery
+        let list = this.userKeys
+        if (prefix !== '') {
+          list = list.filter(key =>
+            key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
         }
+        return list
+      },
+      cardsCount () {
+        return this.matchingCards.length
       },
       columnCount () {
         let number = 1
@@ -138,6 +157,9 @@
           }
         }
         return number
+      },
+      cardsPerColumn () {
+        return CARDS_PER_PAGE / this.columnCount
       }
     },
     methods: {
@@ -147,11 +169,23 @@
       ...mapMutations({
         openEditor: 'interface/openEditor'
       }),
+      generateSlice (columnNumber) {
+        let slice = []
+        let index = (this.pageNumber - 1) * CARDS_PER_PAGE + columnNumber - 1
+        for (; index < this.matchingCards.length &&
+          slice.length < this.cardsPerColumn; index += this.columnCount) {
+          slice.push(this.matchingCards[index])
+        }
+        return slice
+      },
       toggleDrawer () {
         this.showDrawer = !this.showDrawer
       },
       addKey () {
         this.openEditor({ identifier: null, reveal: false })
+      },
+      resetNavigation () {
+        this.pageNumber = 1
       },
       logOut () {
         logOut()
@@ -165,10 +199,15 @@
         })
       }
     },
-    created () {
-      this.queryInput = debounce((text) => {
-        this.query = text
-      }, 300)
+    watch: {
+      cardsCount (current, previous) {
+        if (current > previous) {
+          this.resetNavigation()
+        }
+      },
+      normalizedQuery () {
+        this.resetNavigation()
+      }
     },
     mounted () {
       if (this.userKeys.length > 0) {

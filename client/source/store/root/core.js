@@ -20,23 +20,25 @@ export const mutations = {
     state.encryptionKey = encryptionKey
   },
   setUserKeys (state, userKeys) {
-    state.userKeys.length = 0
-    for (let item of userKeys) {
-      state.userKeys.push(item)
-    }
-    state.userKeys.sort((left, right) => {
-      let leftTagCount = left.tags.length
-      let rightTagCount = right.tags.length
-      if (leftTagCount > 0 && rightTagCount > 0) {
-        return left.tags[0].localeCompare(right.tags[0])
-      } else if (leftTagCount > 0 && rightTagCount === 0) {
-        return -1
-      } else if (leftTagCount === 0 && rightTagCount > 0) {
-        return 1
+    userKeys.sort((left, right) => {
+      let [leftTagIndex, rightTagIndex] = [0, 0]
+      let [leftTagCount, rightTagCount] = [left.tags.length, right.tags.length]
+      while (leftTagIndex < leftTagCount && rightTagIndex < rightTagCount) {
+        let tagsComparison = String.prototype.localeCompare.call(
+          left.tags[leftTagIndex], right.tags[rightTagIndex])
+        if (tagsComparison !== 0) {
+          return tagsComparison
+        }
+        leftTagIndex += 1
+        rightTagIndex += 1
+      }
+      if (leftTagIndex === leftTagCount && rightTagIndex === rightTagCount) {
+        return String.prototype.localeCompare.call(left.value, right.value)
       } else {
-        return left.value.localeCompare(right.value)
+        return leftTagCount - leftTagIndex + rightTagIndex - rightTagCount
       }
     })
+    state.userKeys = userKeys
   },
   unshiftUserKey (state, userKey) {
     state.userKeys.unshift(userKey)
