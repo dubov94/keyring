@@ -1,15 +1,11 @@
-self.addEventListener('install', () => {
-  self.skipWaiting()
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting())
 })
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(destroy())
+  event.waitUntil(self.clients.claim())
 })
 
-async function destroy() {
-  self.registration.unregister()
-  const keys = await self.caches.keys()
-  await Promise.all(keys.map((key) => self.caches.delete(key)))
-  const clients = await self.clients.matchAll({ type: 'window' })
-  clients.forEach((client) => client.navigate(client.url))
-}
+self.addEventListener('fetch', (event) => {
+  event.respondWith(fetch(event.request))
+})
