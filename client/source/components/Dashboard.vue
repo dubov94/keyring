@@ -75,7 +75,7 @@
       <v-container fluid>
         <div class="navigation">
           <v-pagination v-model="pageNumber" :length="pageCount"
-            :total-visible="7" circle></v-pagination>
+            :total-visible="paginationVisibleCount" circle></v-pagination>
         </div>
         <div class="masonry">
           <div v-for="columnNumber in columnCount"
@@ -131,6 +131,9 @@
       pageCount () {
         return Math.max(Math.floor(
           (this.matchingCards.length + CARDS_PER_PAGE - 1) / CARDS_PER_PAGE), 1)
+      },
+      paginationVisibleCount () {
+        return this.$vuetify.breakpoint.smAndUp ? 7 : 5
       },
       normalizedQuery () {
         return this.query.trim().toLowerCase()
