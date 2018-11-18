@@ -71,7 +71,7 @@ var webpackConfig = merge(baseWebpackConfig, {
       // necessary to consistently work with multiple chunks via CommonsChunkPlugin
       chunksSortMode: 'dependency',
       serviceWorkerLoader: `<script>${fs.readFileSync(path.join(__dirname,	
-        './service-worker-prod.js'), 'utf-8')}</script>`
+        './service-worker-loader.js'), 'utf-8')}</script>`
     }),
     // split vendor js into its own file
     new webpack.optimize.CommonsChunkPlugin({
@@ -101,8 +101,8 @@ var webpackConfig = merge(baseWebpackConfig, {
         ignore: ['.*']
       },
       {
-        from: path.resolve(__dirname, '../service-worker.js'),
-        to: config.build.assetsRoot
+        from: path.resolve(__dirname, '../service-worker-prod.js'),
+        to: path.join(config.build.assetsRoot, 'service-worker.js')
       }
     ])
   ]

@@ -5,6 +5,7 @@ var webpack = require('webpack')
 var config = require('../config')
 var merge = require('webpack-merge')
 var baseWebpackConfig = require('./webpack.base.conf')
+var CopyWebpackPlugin = require('copy-webpack-plugin')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 
@@ -32,8 +33,14 @@ module.exports = merge(baseWebpackConfig, {
       template: 'index.html',
       inject: true,
       serviceWorkerLoader: `<script>${fs.readFileSync(path.join(__dirname,	
-        './service-worker-dev.js'), 'utf-8')}</script>`
+        './service-worker-loader.js'), 'utf-8')}</script>`
     }),
-    new FriendlyErrorsPlugin()
+    new FriendlyErrorsPlugin(),
+    new CopyWebpackPlugin([
+      {
+        from: path.resolve(__dirname, '../service-worker-dev.js'),
+        to: 'service-worker.js'
+      }
+    ])
   ]
 })
