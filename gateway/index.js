@@ -11,7 +11,7 @@ application.use('/api', middleware(
 application.listen(80)
 
 setInterval(() => {
-    request(`http://localhost/api${process.argv[4]}`, (error, response) => {
+    request(`http://localhost/api${process.argv[4]}`, (error) => {
         if (error !== null) {
             console.error(error)
         }
