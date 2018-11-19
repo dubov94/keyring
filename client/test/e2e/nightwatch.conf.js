@@ -1,8 +1,8 @@
 require('babel-register')
-var config = require('../../config')
 
 module.exports = {
   src_folders: ['test/e2e/scenarios'],
+  page_objects_path: 'test/e2e/pages',
   output_folder: 'test/e2e/reports',
   selenium: {
     start_process: true,
@@ -15,11 +15,13 @@ module.exports = {
   },
   test_settings: {
     default: {
+      launch_url: 'http://localhost:8080',
       selenium_port: 4444,
       selenium_host: 'localhost',
       silent: true,
       globals: {
-        devServerURL: 'http://localhost:' + (process.env.PORT || config.dev.port)
+        waitForConditionTimeout: 12 * 1000,
+        retryAssertionTimeout: 12 * 1000
       }
     },
     chrome: {

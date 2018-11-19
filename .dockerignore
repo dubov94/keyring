@@ -7,7 +7,7 @@ client/**/yarn-debug.log*
 client/**/yarn-error.log*
 client/**/test/unit/coverage
 client/**/test/e2e/reports
-client/**/selenium-debug.log
+client/**/selenium-*.log
 
 gateway/**/node_modules
 
