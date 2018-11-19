@@ -19,7 +19,8 @@
         for (var file of chunk.files) {
           if (file.match(/\.(js|css)$/)) { %>
     <link rel="<%= chunk.initial?'preload':'prefetch' %>" href="<%= htmlWebpackPlugin.files.publicPath + file %>" as="<%= file.match(/\.css$/)?'style':'script' %>"><% }}} %>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
+    <!-- https://github.com/google/fonts/issues/358 -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Material+Icons">
   </head>
   <body>
     <noscript>
