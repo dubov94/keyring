@@ -10,7 +10,7 @@ module.exports = {
     assetsPublicPath: '/',
     productionSourceMap: true,
     // Uses compression-webpack-plugin.
-    productionGzip: true,
+    productionGzip: false,
     productionGzipExtensions: ['js', 'css'],
     // Run the build command with an extra argument to view the bundle analyzer
     // report after build finishes: `npm run build --report`. Set to `true` or

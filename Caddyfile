@@ -1,4 +1,5 @@
 pwd.floreina.me {
+    gzip
     proxy /api gateway:80
     proxy / client:80
 }
