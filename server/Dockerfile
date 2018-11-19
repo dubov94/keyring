@@ -2,7 +2,7 @@ from maven
 
 workdir /root/keyring/server
 
-copy ./server .
+copy ./server ./
 run mvn compile
 
 env MODULE_STATE="production"
