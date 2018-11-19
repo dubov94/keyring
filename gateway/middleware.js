@@ -41,7 +41,7 @@ const addRouterEntry = (router, configuration, doCall) => {
     router[httpMethod](configuration.path, (request, response) => {
         const metadata = constructMetadataFromHeaders(request.headers)
         metadata.set('x-ip-address', request.ip)
-        metadata.set('x-user-agent', request.get('user-agent'))
+        metadata.set('x-user-agent', request.get('user-agent') || '')
         let payload = Object.assign({}, request.body, request.params)
         doCall(payload, metadata, (error, reply) => {
             if (error) {
