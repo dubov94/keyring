@@ -5,7 +5,7 @@ import com.floreina.keyring.aspects.ValidateUserAspect;
 import com.floreina.keyring.cache.CacheClient;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
-import com.floreina.keyring.entities.Activation;
+import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionKeys;
@@ -21,12 +21,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
-import java.util.ConcurrentModificationException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdministrationServiceTest {
@@ -36,7 +35,7 @@ class AdministrationServiceTest {
   @Mock private CacheClient mockCacheClient;
   @Mock private StreamObserver mockStreamObserver;
 
-  private User user = new User().setIdentifier(0L).setState(User.State.ACTIVE).setDigest("digest");
+  private User user = new User().setIdentifier(0L).setDigest("digest").setMail("mail@domain.com");
   private AdministrationService administrationService;
 
   @BeforeEach
@@ -52,74 +51,37 @@ class AdministrationServiceTest {
   }
 
   @Test
-  void activate_userAlreadyActive_repliesUnauthenticated() {
-    administrationService.activate(ActivateRequest.getDefaultInstance(), mockStreamObserver);
-
-    verifyOnErrorUnauthenticated();
-  }
-
-  @Test
-  void activate_getActivationEmpty_throwsException() {
-    user.setState(User.State.PENDING);
-    when(mockAccountingInterface.getActivationByUser(user.getIdentifier()))
+  void releaseMailToken_codeDoesNotExist_repliesWithError() {
+    when(mockAccountingInterface.getMailToken(user.getIdentifier(), "0"))
         .thenReturn(Optional.empty());
 
-    assertThrows(
-        ConcurrentModificationException.class,
-        () ->
-            administrationService.activate(
-                ActivateRequest.getDefaultInstance(), mockStreamObserver));
-  }
-
-  @Test
-  void activate_codeMismatch_repliesWithError() {
-    user.setState(User.State.PENDING);
-    when(mockAccountingInterface.getActivationByUser(user.getIdentifier()))
-        .thenReturn(Optional.of(new Activation().setCode("0")));
-
-    administrationService.activate(
-        ActivateRequest.newBuilder().setCode("X").build(), mockStreamObserver);
+    administrationService.releaseMailToken(
+        ReleaseMailTokenRequest.newBuilder().setCode("0").build(), mockStreamObserver);
 
     verify(mockStreamObserver)
         .onNext(
-            ActivateResponse.newBuilder().setError(ActivateResponse.Error.CODE_MISMATCH).build());
+            ReleaseMailTokenResponse.newBuilder()
+                .setError(ReleaseMailTokenResponse.Error.INVALID_CODE)
+                .build());
   }
 
   @Test
-  void activate_activateUserEmpty_throwsException() {
-    user.setState(User.State.PENDING);
+  void releaseMailToken_codeExists_repliesWithDefault() {
     long userIdentifier = user.getIdentifier();
-    when(mockAccountingInterface.getActivationByUser(userIdentifier))
-        .thenReturn(Optional.of(new Activation().setCode("0")));
-    doThrow(IllegalArgumentException.class)
-        .when(mockAccountingInterface)
-        .activateUser(userIdentifier);
+    when(mockAccountingInterface.getMailToken(userIdentifier, "0"))
+        .thenReturn(Optional.of(new MailToken().setIdentifier(1)));
 
-    assertThrows(
-        IllegalArgumentException.class,
-        () ->
-            administrationService.activate(
-                ActivateRequest.newBuilder().setCode("0").build(), mockStreamObserver));
-  }
+    administrationService.releaseMailToken(
+        ReleaseMailTokenRequest.newBuilder().setCode("0").build(), mockStreamObserver);
 
-  @Test
-  void activate_codesMatch_repliesWithDefault() {
-    user.setState(User.State.PENDING);
-    long userIdentifier = user.getIdentifier();
-    when(mockAccountingInterface.getActivationByUser(userIdentifier))
-        .thenReturn(Optional.of(new Activation().setCode("0")));
-
-    administrationService.activate(
-        ActivateRequest.newBuilder().setCode("0").build(), mockStreamObserver);
-
-    verify(mockAccountingInterface).activateUser(userIdentifier);
-    verify(mockStreamObserver).onNext(ActivateResponse.getDefaultInstance());
+    verify(mockAccountingInterface).releaseMailToken(1);
+    verify(mockStreamObserver).onNext(ReleaseMailTokenResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
   }
 
   @Test
   void createKey_userNotActive_repliesUnauthenticated() {
-    user.setState(User.State.PENDING);
+    user.setMail(null);
 
     administrationService.createKey(CreateKeyRequest.getDefaultInstance(), mockStreamObserver);
 

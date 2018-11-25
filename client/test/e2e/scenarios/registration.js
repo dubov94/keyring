@@ -46,12 +46,12 @@ module.exports = {
       .click('@registerButton')
   },
   'Wait for the activation page': function (client) {
-    client.assert.urlContains('/activate')
+    client.assert.urlContains('/set-up')
   },
   'Get an activation code': function () {
     this.state.pendingPromise = this.state.pgPool.query(
-      'select code from activations ' +
-      'inner join users on activations.user_identifier = users.identifier ' +
+      'select code from mail_tokens ' +
+      'inner join users on mail_tokens.user_identifier = users.identifier ' +
       'where username = $1',
       [this.state.username]
     ).then((result) => {
@@ -59,7 +59,7 @@ module.exports = {
     })
   },
   'Enter the activation code': function (client) {
-    client.page['activate']()
+    client.page['set-up']()
       .setValue('@codeInput', this.state.code)
       .click('@activateButton')
   },

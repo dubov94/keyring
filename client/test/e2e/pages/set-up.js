@@ -1,6 +1,6 @@
 module.exports = {
 	url: function () {
-		return `${this.api.launchUrl}/activate`
+		return `${this.api.launchUrl}/set-up`
 	},
 	elements: {
 		codeInput: 'input[aria-label="Code"]',

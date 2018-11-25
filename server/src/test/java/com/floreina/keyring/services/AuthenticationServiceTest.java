@@ -72,8 +72,7 @@ class AuthenticationServiceTest {
   void register_getsValidRequest_persistsAndSendsMail() {
     when(mockAccountingInterface.getUserByName("username")).thenReturn(Optional.empty());
     when(mockCryptography.generateSecurityCode()).thenReturn("0");
-    when(mockAccountingInterface.createUserWithActivation(
-            "username", "salt", "digest", "mail@example.com", "0"))
+    when(mockAccountingInterface.createUser("username", "salt", "digest", "mail@example.com", "0"))
         .thenReturn(new User().setIdentifier(0L));
     when(mockCacheClient.create(any())).thenReturn(Optional.of("identifier"));
     when(mockRecognitionKeys.getIpAddress()).thenReturn("127.0.0.1");
@@ -89,7 +88,7 @@ class AuthenticationServiceTest {
         mockStreamObserver);
 
     verify(mockAccountingInterface)
-        .createUserWithActivation("username", "salt", "digest", "mail@example.com", "0");
+        .createUser("username", "salt", "digest", "mail@example.com", "0");
     verify(mockAccountingInterface).createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
     verify(mockPost).send(eq("mail@example.com"), any(), any());
     verify(mockStreamObserver)
@@ -153,12 +152,7 @@ class AuthenticationServiceTest {
   void logIn_validPair_repliesWithSessionKeyAndState() {
     when(mockAccountingInterface.getUserByName("username"))
         .thenReturn(
-            Optional.of(
-                new User()
-                    .setIdentifier(0L)
-                    .setUsername("username")
-                    .setDigest("digest")
-                    .setState(User.State.PENDING)));
+            Optional.of(new User().setIdentifier(0L).setUsername("username").setDigest("digest")));
     when(mockCacheClient.create(any())).thenReturn(Optional.of("identifier"));
     when(mockRecognitionKeys.getIpAddress()).thenReturn("127.0.0.1");
     when(mockRecognitionKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
@@ -174,7 +168,7 @@ class AuthenticationServiceTest {
                 .setPayload(
                     LogInResponse.Payload.newBuilder()
                         .setSessionKey("identifier")
-                        .setChallenge(LogInResponse.Payload.Challenge.ACTIVATE)
+                        .addRequirements(LogInResponse.Payload.Requirement.MAIL)
                         .build())
                 .build());
     verify(mockStreamObserver).onCompleted();

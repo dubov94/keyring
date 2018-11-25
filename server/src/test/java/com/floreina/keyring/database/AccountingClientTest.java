@@ -3,7 +3,7 @@ package com.floreina.keyring.database;
 import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.DatabaseManagerAspect;
-import com.floreina.keyring.entities.Activation;
+import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.entities.Utilities;
@@ -19,8 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class AccountingClientTest {
   private AccountingClient accountingClient;
@@ -39,49 +38,49 @@ class AccountingClientTest {
   }
 
   @Test
-  void createUserWithActivation_getsUniqueUsername_putsActivationWithUser() {
+  void createUser_getsUniqueUsername_postsUserAndMailToken() {
     String username = createUniqueName();
-    long identifier =
+    long userIdentifier =
         accountingClient
-            .createUserWithActivation(username, "salt", "digest", "mail@example.com", "0")
+            .createUser(username, "salt", "digest", "mail@example.com", "0")
             .getIdentifier();
 
-    Activation activation = accountingClient.getActivationByUser(identifier).get();
-    assertEquals("0", activation.getCode());
-    User user = activation.getUser();
-    assertEquals(User.State.PENDING, user.getState());
+    MailToken mailToken = accountingClient.getMailToken(userIdentifier, "0").get();
+    assertEquals("0", mailToken.getCode());
+    assertEquals("mail@example.com", mailToken.getMail());
+    User user = mailToken.getUser();
     assertEquals(username, user.getUsername());
     assertEquals("salt", user.getSalt());
     assertEquals("digest", user.getDigest());
-    assertEquals("mail@example.com", user.getMail());
+    assertNull(user.getMail());
   }
 
   @Test
-  void createUserWithActivation_getsExistingUsername_throwsException() {
+  void createUser_getsExistingUsername_throwsException() {
     String username = createUniqueName();
-    accountingClient.createUserWithActivation(username, "", "", "", "");
+    accountingClient.createUser(username, "", "", "", "0");
 
     assertThrows(
-        DatabaseException.class,
-        () -> accountingClient.createUserWithActivation(username, "", "", "", ""));
+        DatabaseException.class, () -> accountingClient.createUser(username, "", "", "", "X"));
   }
 
   @Test
-  void getActivationByUser_activationDoesNotExist_returnsEmpty() {
-    assertEquals(Optional.empty(), accountingClient.getActivationByUser(Long.MAX_VALUE));
+  void getMailToken_DoesNotExist_returnsEmpty() {
+    assertEquals(Optional.empty(), accountingClient.getMailToken(Long.MAX_VALUE, ""));
   }
 
   @Test
-  void activateUser_removesActivationMakesUserActive() {
+  void releaseMailToken_removesTokenSetsMail() {
     String username = createUniqueName();
-    User user = accountingClient.createUserWithActivation(username, "", "", "", "");
-    assertEquals(User.State.PENDING, accountingClient.getUserByName(username).get().getState());
-    long identifier = user.getIdentifier();
+    long userIdentifier =
+        accountingClient.createUser(username, "", "", "mail@domain.com", "0").getIdentifier();
+    MailToken mailToken = accountingClient.getMailToken(userIdentifier, "0").get();
 
-    accountingClient.activateUser(identifier);
+    accountingClient.releaseMailToken(mailToken.getIdentifier());
 
-    assertEquals(Optional.empty(), accountingClient.getActivationByUser(identifier));
-    assertEquals(User.State.ACTIVE, accountingClient.getUserByName(username).get().getState());
+    assertEquals(Optional.empty(), accountingClient.getMailToken(userIdentifier, "0"));
+    assertEquals(
+        "mail@domain.com", accountingClient.getUserByIdentifier(userIdentifier).get().getMail());
   }
 
   @Test
@@ -149,9 +148,9 @@ class AccountingClientTest {
 
   private long createActiveUser() {
     String username = createUniqueName();
-    long userIdentifier =
-        accountingClient.createUserWithActivation(username, "", "", "", "").getIdentifier();
-    accountingClient.activateUser(userIdentifier);
+    long userIdentifier = accountingClient.createUser(username, "", "", "", "").getIdentifier();
+    MailToken mailToken = accountingClient.getMailToken(userIdentifier, "").get();
+    accountingClient.releaseMailToken(mailToken.getIdentifier());
     return userIdentifier;
   }
 

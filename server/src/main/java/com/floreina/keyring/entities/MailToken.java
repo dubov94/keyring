@@ -1,0 +1,56 @@
+package com.floreina.keyring.entities;
+
+import javax.persistence.*;
+
+@Entity
+@Table(
+  name = "mail_tokens",
+  uniqueConstraints = {@UniqueConstraint(columnNames = {"user_identifier", "code"})}
+)
+public class MailToken {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private long identifier;
+
+  @ManyToOne private User user;
+
+  @Column private String code;
+
+  @Column private String mail;
+
+  public long getIdentifier() {
+    return identifier;
+  }
+
+  public MailToken setIdentifier(long identifier) {
+    this.identifier = identifier;
+    return this;
+  }
+
+  public User getUser() {
+    return user;
+  }
+
+  public MailToken setUser(User user) {
+    this.user = user;
+    return this;
+  }
+
+  public String getCode() {
+    return code;
+  }
+
+  public MailToken setCode(String code) {
+    this.code = code;
+    return this;
+  }
+
+  public String getMail() {
+    return mail;
+  }
+
+  public MailToken setMail(String mail) {
+    this.mail = mail;
+    return this;
+  }
+}

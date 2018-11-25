@@ -10,6 +10,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 @Aspect
@@ -26,7 +27,9 @@ public class ValidateUserAspect {
   public void around(ValidateUser validateUser, ProceedingJoinPoint proceedingJoinPoint)
       throws Throwable {
     Optional<User> user = accountingInterface.getUserByIdentifier(sessionKeys.getUserIdentifier());
-    if (user.isPresent() && user.get().getState() == validateUser.state()) {
+    if (user.isPresent()
+        && (Arrays.asList(validateUser.states()).contains(ValidateUser.UserState.PENDING)
+            || Utilities.isUserActive(user.get()))) {
       proceedingJoinPoint.proceed();
     } else {
       StreamObserver streamObserver = (StreamObserver) proceedingJoinPoint.getArgs()[1];

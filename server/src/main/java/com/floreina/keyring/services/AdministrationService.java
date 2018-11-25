@@ -5,7 +5,7 @@ import com.floreina.keyring.aspects.Annotations.ValidateUser;
 import com.floreina.keyring.cache.CacheClient;
 import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.database.ManagementInterface;
-import com.floreina.keyring.entities.Activation;
+import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionKeys;
@@ -38,21 +38,20 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
-  @ValidateUser(state = User.State.PENDING)
-  public void activate(ActivateRequest request, StreamObserver<ActivateResponse> response) {
-    long identifier = sessionKeys.getUserIdentifier();
-    Optional<Activation> maybeActivation = accountingInterface.getActivationByUser(identifier);
-    if (!maybeActivation.isPresent()) {
-      throw new ConcurrentModificationException();
+  @ValidateUser(states = {ValidateUser.UserState.PENDING, ValidateUser.UserState.ACTIVE})
+  public void releaseMailToken(
+      ReleaseMailTokenRequest request, StreamObserver<ReleaseMailTokenResponse> response) {
+    long userIdentifier = sessionKeys.getUserIdentifier();
+    Optional<MailToken> maybeMailToken =
+        accountingInterface.getMailToken(userIdentifier, request.getCode());
+    if (!maybeMailToken.isPresent()) {
+      response.onNext(
+          ReleaseMailTokenResponse.newBuilder()
+              .setError(ReleaseMailTokenResponse.Error.INVALID_CODE)
+              .build());
     } else {
-      Activation activation = maybeActivation.get();
-      if (!request.getCode().equals(activation.getCode())) {
-        response.onNext(
-            ActivateResponse.newBuilder().setError(ActivateResponse.Error.CODE_MISMATCH).build());
-      } else {
-        accountingInterface.activateUser(identifier);
-        response.onNext(ActivateResponse.getDefaultInstance());
-      }
+      accountingInterface.releaseMailToken(maybeMailToken.get().getIdentifier());
+      response.onNext(ReleaseMailTokenResponse.getDefaultInstance());
     }
     response.onCompleted();
   }

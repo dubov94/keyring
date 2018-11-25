@@ -12,6 +12,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
@@ -21,38 +22,38 @@ public class AccountingClient implements AccountingInterface {
 
   @Override
   @LocalTransaction
-  public User createUserWithActivation(
-      String username, String salt, String digest, String mail, String code) {
-    User user =
-        new User()
-            .setState(User.State.PENDING)
-            .setUsername(username)
-            .setSalt(salt)
-            .setDigest(digest)
-            .setMail(mail);
-    Activation activation = new Activation().setUser(user).setCode(code);
-    entityManager.persist(activation);
+  public User createUser(String username, String salt, String digest, String mail, String code) {
+    User user = new User().setUsername(username).setSalt(salt).setDigest(digest);
+    MailToken mailToken = new MailToken().setUser(user).setMail(mail).setCode(code);
+    entityManager.persist(user);
+    entityManager.persist(mailToken);
     return user;
   }
 
   @Override
   @LocalTransaction
-  public Optional<Activation> getActivationByUser(long identifier) {
-    return Queries.findByUser(entityManager, Activation.class, Activation_.user, identifier)
+  public Optional<MailToken> getMailToken(long userIdentifier, String token) {
+    return Queries.findByUser(entityManager, MailToken.class, MailToken_.user, userIdentifier)
         .stream()
+        .filter(mailToken -> Objects.equals(mailToken.getCode(), token))
         .findFirst();
   }
 
   @Override
   @LocalTransaction
-  public void activateUser(long identifier) {
-    Optional<Activation> maybeActivation = getActivationByUser(identifier);
-    if (maybeActivation.isPresent()) {
-      Activation activation = maybeActivation.get();
-      entityManager.remove(activation);
-      User user = activation.getUser().setState(User.State.ACTIVE);
-      entityManager.persist(user);
-      return;
+  public void releaseMailToken(long tokenIdentifier) {
+    Optional<MailToken> maybeMailToken =
+        Optional.ofNullable(entityManager.find(MailToken.class, tokenIdentifier));
+    if (maybeMailToken.isPresent()) {
+      MailToken mailToken = maybeMailToken.get();
+      Optional<User> maybeUser = Optional.ofNullable(mailToken.getUser());
+      if (maybeUser.isPresent()) {
+        User user = maybeUser.get();
+        user.setMail(mailToken.getMail());
+        entityManager.persist(user);
+        entityManager.remove(mailToken);
+        return;
+      }
     }
     throw new IllegalArgumentException();
   }

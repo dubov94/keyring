@@ -3,7 +3,6 @@ package com.floreina.keyring.entities;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -14,8 +13,6 @@ public class User {
 
   @CreationTimestamp private java.sql.Timestamp timestamp;
 
-  @Enumerated private State state;
-
   @Column(unique = true)
   private String username;
 
@@ -25,23 +22,12 @@ public class User {
 
   @Column private String mail;
 
-  @OneToMany private List<Key> keys;
-
   public long getIdentifier() {
     return identifier;
   }
 
   public User setIdentifier(long identifier) {
     this.identifier = identifier;
-    return this;
-  }
-
-  public State getState() {
-    return state;
-  }
-
-  public User setState(State state) {
-    this.state = state;
     return this;
   }
 
@@ -79,10 +65,5 @@ public class User {
   public User setMail(String mail) {
     this.mail = mail;
     return this;
-  }
-
-  public enum State {
-    PENDING,
-    ACTIVE
   }
 }

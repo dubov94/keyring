@@ -58,7 +58,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       String digest = request.getDigest();
       String mail = request.getMail();
       String code = cryptography.generateSecurityCode();
-      User user = accountingInterface.createUserWithActivation(username, salt, digest, mail, code);
+      User user = accountingInterface.createUser(username, salt, digest, mail, code);
       Optional<String> sessionKey = cacheClient.create(UserCast.fromUser(user));
       if (!sessionKey.isPresent()) {
         throw new IllegalStateException();
@@ -112,8 +112,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
               recognitionKeys.getUserAgent());
           LogInResponse.Payload.Builder payloadBuilder = LogInResponse.Payload.newBuilder();
           payloadBuilder.setSessionKey(sessionKey.get());
-          if (user.getState() == User.State.PENDING) {
-            payloadBuilder.setChallenge(LogInResponse.Payload.Challenge.ACTIVATE);
+          if (user.getMail() == null) {
+            payloadBuilder.addRequirements(LogInResponse.Payload.Requirement.MAIL);
           } else {
             payloadBuilder.setKeySet(
                 LogInResponse.Payload.KeySet.newBuilder()

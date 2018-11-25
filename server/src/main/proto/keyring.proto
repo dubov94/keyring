@@ -24,14 +24,14 @@ message RegisterResponse {
     }
 }
 
-message ActivateRequest {
+message ReleaseMailTokenRequest {
     string code = 1;
 }
 
-message ActivateResponse {
+message ReleaseMailTokenResponse {
     enum Error {
         NONE = 0;
-        CODE_MISMATCH = 1;
+        INVALID_CODE = 1;
     }
 
     oneof data {
@@ -67,11 +67,11 @@ message LogInResponse {
     }
 
     message Payload {
-        reserved 2;
+        reserved 2, 3;
 
-        enum Challenge {
+        enum Requirement {
             NONE = 0;
-            ACTIVATE = 1;
+            MAIL = 1;
         }
 
         message KeySet {
@@ -80,10 +80,8 @@ message LogInResponse {
 
         string session_key = 1;
 
-        oneof data {
-            Challenge challenge = 3;
-            KeySet key_set = 4;
-        }
+        repeated Requirement requirements = 5;
+        KeySet key_set = 4;
     }
 
     oneof data {
@@ -172,7 +170,7 @@ message ChangeMasterKeyResponse {
 }
 
 service Administration {
-    rpc Activate (ActivateRequest) returns (ActivateResponse);
+    rpc ReleaseMailToken (ReleaseMailTokenRequest) returns (ReleaseMailTokenResponse);
     rpc CreateKey (CreateKeyRequest) returns (CreateKeyResponse);
     rpc ReadKeys (ReadKeysRequest) returns (ReadKeysResponse);
     rpc UpdateKey (UpdateKeyRequest) returns (UpdateKeyResponse);

@@ -18,9 +18,9 @@
     }
   },
   "keyring.Administration": {
-    "activate": {
+    "releaseMailToken": {
       "method": "post",
-      "path": "/administration/activate"
+      "path": "/administration/release-mail-token"
     },
     "createKey": {
       "method": "post",

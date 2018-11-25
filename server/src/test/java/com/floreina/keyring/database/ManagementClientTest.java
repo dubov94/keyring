@@ -94,11 +94,8 @@ class ManagementClientTest {
 
   private long createUniqueUser() {
     AccountingClient accountingClient = new AccountingClient();
-    long identifier =
-        accountingClient
-            .createUserWithActivation(UUID.randomUUID().toString(), "", "", "", "")
-            .getIdentifier();
-    accountingClient.activateUser(identifier);
-    return identifier;
+    return accountingClient
+        .createUser(UUID.randomUUID().toString(), "", "", "", "")
+        .getIdentifier();
   }
 }

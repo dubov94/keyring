@@ -1,5 +1,5 @@
 import Settings from './components/Settings'
-import Activate from './components/authentication/Activate'
+import SetUp from './components/authentication/SetUp'
 import Authentication from './components/authentication/Index'
 import Dashboard from './components/Dashboard'
 import LogIn from './components/authentication/LogIn'
@@ -35,8 +35,8 @@ const router = new VueRouter({
           component: Register
         },
         {
-          path: 'activate',
-          component: Activate
+          path: 'set-up',
+          component: SetUp
         }
       ]
     }, {

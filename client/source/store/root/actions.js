@@ -47,10 +47,12 @@ export default {
     }
     return response.error
   },
-  async activate ({ state }, { code }) {
-    return (await axios.post('/api/administration/activate', { code }, {
-      headers: createSessionHeader(state.sessionKey)
-    })).data.error
+  async releaseMailToken ({ state }, { code }) {
+    return (
+      await axios.post('/api/administration/release-mail-token', { code }, {
+        headers: createSessionHeader(state.sessionKey)
+      })
+    ).data.error
   },
   async logIn ({ dispatch }, { username, password }) {
     let { data: saltResponse } =
@@ -70,15 +72,15 @@ export default {
           sessionKey: payload.session_key,
           masterKey: password
         })
-        if (payload.challenge === 'NONE') {
+        if (payload.requirements.length === 0) {
           dispatch('acceptUserKeys', {
             userKeys: payload.key_set.items
           })
         }
-        return { success: true, challenge: payload.challenge }
+        return { success: true, requirements: payload.requirements }
       }
     }
-    return { success: false, challenge: null }
+    return { success: false }
   },
   importCredentials ({ commit }, { salt, sessionKey, masterKey }) {
     commit('setSalt', salt)

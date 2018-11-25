@@ -43,8 +43,7 @@ class ValidateUserAspectTest {
     when(mockAccountingInterface.getUserByIdentifier(0L)).thenReturn(Optional.empty());
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
-    validateUserAspect.around(
-        createValidateUserAnnotation(User.State.ACTIVE), mockProceedingJoinPoint);
+    validateUserAspect.around(createValidateUserAnnotation(), mockProceedingJoinPoint);
 
     ArgumentCaptor<StatusException> argumentCaptor = ArgumentCaptor.forClass(StatusException.class);
     verify(mockStreamObserver).onError(argumentCaptor.capture());
@@ -52,14 +51,12 @@ class ValidateUserAspectTest {
   }
 
   @Test
-  void around_getsUserWithDifferentState_returnsUnauthenticated() throws Throwable {
+  void around_getsUserWithNoMail_returnsUnauthenticated() throws Throwable {
     when(mockSessionKeys.getUserIdentifier()).thenReturn(0L);
-    when(mockAccountingInterface.getUserByIdentifier(0L))
-        .thenReturn(Optional.of(new User().setState(User.State.PENDING)));
+    when(mockAccountingInterface.getUserByIdentifier(0L)).thenReturn(Optional.of(new User()));
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
-    validateUserAspect.around(
-        createValidateUserAnnotation(User.State.ACTIVE), mockProceedingJoinPoint);
+    validateUserAspect.around(createValidateUserAnnotation(), mockProceedingJoinPoint);
 
     ArgumentCaptor<StatusException> argumentCaptor = ArgumentCaptor.forClass(StatusException.class);
     verify(mockStreamObserver).onError(argumentCaptor.capture());
@@ -67,18 +64,17 @@ class ValidateUserAspectTest {
   }
 
   @Test
-  void around_getsUserWithMatchingState_callsJoinPoint() throws Throwable {
+  void around_getsUserWithMail_callsJoinPoint() throws Throwable {
     when(mockSessionKeys.getUserIdentifier()).thenReturn(0L);
     when(mockAccountingInterface.getUserByIdentifier(0L))
-        .thenReturn(Optional.of(new User().setState(User.State.ACTIVE)));
+        .thenReturn(Optional.of(new User().setMail("mail@domain.com")));
 
-    validateUserAspect.around(
-        createValidateUserAnnotation(User.State.ACTIVE), mockProceedingJoinPoint);
+    validateUserAspect.around(createValidateUserAnnotation(), mockProceedingJoinPoint);
 
     verify(mockProceedingJoinPoint).proceed();
   }
 
-  private ValidateUser createValidateUserAnnotation(User.State state) {
+  private ValidateUser createValidateUserAnnotation() {
     return new ValidateUser() {
       @Override
       public Class<? extends Annotation> annotationType() {
@@ -86,8 +82,8 @@ class ValidateUserAspectTest {
       }
 
       @Override
-      public User.State state() {
-        return state;
+      public UserState[] states() {
+        return new UserState[] {UserState.ACTIVE};
       }
     };
   }

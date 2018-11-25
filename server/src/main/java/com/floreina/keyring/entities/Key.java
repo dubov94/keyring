@@ -44,7 +44,7 @@ public class Key {
     return tags;
   }
 
-  public Key setTags(List<Tag> tags) {
+  Key setTags(List<Tag> tags) {
     if (this.tags == null) {
       this.tags = new ArrayList<>();
     } else {

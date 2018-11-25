@@ -1,7 +1,7 @@
 package com.floreina.keyring.database;
 
 import com.floreina.keyring.IdentifiedKey;
-import com.floreina.keyring.entities.Activation;
+import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 
@@ -9,12 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AccountingInterface {
-  User createUserWithActivation(
-      String username, String salt, String digest, String mail, String code);
+  User createUser(String username, String salt, String digest, String mail, String code);
 
-  Optional<Activation> getActivationByUser(long identifier);
+  Optional<MailToken> getMailToken(long userIdentifier, String token);
 
-  void activateUser(long identifier);
+  void releaseMailToken(long tokenIdentifier);
 
   Optional<User> getUserByName(String username);
 

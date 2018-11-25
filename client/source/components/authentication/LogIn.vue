@@ -112,14 +112,14 @@
             try {
               this.requestInProgress = true
               let [username, password] = [this.username, this.password]
-              let { success, challenge } =
+              let { success, requirements } =
                 await this.logIn({ username, password })
               if (success) {
                 if (this.persistanceSwitch) {
                   this.rememberUsername(username)
                 }
-                if (challenge === 'ACTIVATE') {
-                  this.$router.replace('/activate')
+                if (requirements.length > 0) {
+                  this.$router.replace('/set-up')
                 } else {
                   this.$router.replace('/dashboard')
                 }

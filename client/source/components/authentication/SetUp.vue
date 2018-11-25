@@ -73,7 +73,7 @@
     },
     methods: {
       ...mapActions({
-        activate: 'activate'
+        releaseMailToken: 'releaseMailToken'
       }),
       async submit () {
         if (!this.requestInProgress) {
@@ -81,10 +81,10 @@
           if (!this.$v.$invalid) {
             try {
               this.requestInProgress = true
-              let error = await this.activate({ code: this.code })
+              let error = await this.releaseMailToken({ code: this.code })
               if (error === 'NONE') {
                 this.$router.replace('/dashboard')
-              } else if (error === 'CODE_MISMATCH') {
+              } else if (error === 'INVALID_CODE') {
                 this.invalidCodes.push(this.code)
               }
             } finally {
