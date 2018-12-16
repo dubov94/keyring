@@ -1,8 +1,8 @@
 package com.floreina.keyring;
 
-import com.floreina.keyring.interceptors.SessionKeys;
-import com.floreina.keyring.interceptors.UserMetadataInterceptor;
-import com.floreina.keyring.interceptors.UserMetadataKeys;
+import com.floreina.keyring.interceptors.RequestMetadataInterceptor;
+import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
+import com.floreina.keyring.interceptors.SessionInterceptorKeys;
 import com.google.gson.Gson;
 import dagger.Module;
 import dagger.Provides;
@@ -28,19 +28,19 @@ class UtilitiesModule {
 
   @Provides
   @Singleton
-  static SessionKeys provideSessionKeys() {
-    return new SessionKeys();
+  static SessionInterceptorKeys provideSessionKeys() {
+    return new SessionInterceptorKeys();
   }
 
   @Provides
   @Singleton
-  static UserMetadataInterceptor provideUserMetadataInterceptor() {
-    return new UserMetadataInterceptor();
+  static RequestMetadataInterceptor provideUserMetadataInterceptor() {
+    return new RequestMetadataInterceptor();
   }
 
   @Provides
   @Singleton
-  static UserMetadataKeys provideUserMetadataKeys() {
-    return new UserMetadataKeys();
+  static RequestMetadataInterceptorKeys provideUserMetadataKeys() {
+    return new RequestMetadataInterceptorKeys();
   }
 }

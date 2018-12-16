@@ -5,8 +5,8 @@ import com.floreina.keyring.aspects.ValidateUserAspect;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
-import com.floreina.keyring.interceptors.SessionKeys;
-import com.floreina.keyring.sessions.SessionClient;
+import com.floreina.keyring.interceptors.SessionInterceptorKeys;
+import com.floreina.keyring.keyvalue.KeyValueClient;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import com.google.common.collect.ImmutableList;
@@ -31,8 +31,8 @@ import static org.mockito.Mockito.when;
 class AdministrationServiceTest {
   @Mock private KeyOperationsInterface mockKeyOperationsInterface;
   @Mock private AccountOperationsInterface mockAccountOperationsInterface;
-  @Mock private SessionKeys mockSessionKeys;
-  @Mock private SessionClient mockSessionClient;
+  @Mock private SessionInterceptorKeys mockSessionInterceptorKeys;
+  @Mock private KeyValueClient mockKeyValueClient;
   @Mock private StreamObserver mockStreamObserver;
   @Mock private Cryptography mockCryptography;
   @Mock private Post mockPost;
@@ -43,17 +43,17 @@ class AdministrationServiceTest {
   @BeforeEach
   void beforeEach() {
     Aspects.aspectOf(ValidateUserAspect.class)
-        .initialize(mockSessionKeys, mockAccountOperationsInterface);
+        .initialize(mockSessionInterceptorKeys, mockAccountOperationsInterface);
     administrationService =
         new AdministrationService(
             mockKeyOperationsInterface,
             mockAccountOperationsInterface,
-            mockSessionKeys,
-            mockSessionClient,
+            mockSessionInterceptorKeys,
+            mockKeyValueClient,
             mockCryptography,
             mockPost);
     long userIdentifier = user.getIdentifier();
-    when(mockSessionKeys.getUserIdentifier()).thenReturn(userIdentifier);
+    when(mockSessionInterceptorKeys.getUserIdentifier()).thenReturn(userIdentifier);
     when(mockAccountOperationsInterface.getUserByIdentifier(userIdentifier))
         .thenAnswer(invocation -> Optional.of(user));
   }
@@ -115,7 +115,7 @@ class AdministrationServiceTest {
     when(mockAccountOperationsInterface.readSessions(0L))
         .thenReturn(
             ImmutableList.of(new Session().setKey("random"), new Session().setKey("session")));
-    when(mockSessionKeys.getSessionIdentifier()).thenReturn("session");
+    when(mockSessionInterceptorKeys.getSessionIdentifier()).thenReturn("session");
 
     administrationService.changeMasterKey(
         ChangeMasterKeyRequest.newBuilder()
@@ -131,7 +131,7 @@ class AdministrationServiceTest {
 
     verify(mockAccountOperationsInterface)
         .changeMasterKey(0L, "prefix", "suffix", ImmutableList.of(identifiedKey));
-    verify(mockSessionClient).drop(ImmutableList.of("random"));
+    verify(mockKeyValueClient).drop(ImmutableList.of("random"));
     verify(mockStreamObserver)
         .onNext(
             ChangeMasterKeyResponse.newBuilder()

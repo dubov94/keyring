@@ -1,11 +1,11 @@
 package com.floreina.keyring;
 
+import com.floreina.keyring.interceptors.RequestMetadataInterceptor;
 import com.floreina.keyring.interceptors.SessionInterceptor;
-import com.floreina.keyring.interceptors.SessionKeys;
-import com.floreina.keyring.interceptors.UserMetadataInterceptor;
+import com.floreina.keyring.interceptors.SessionInterceptorKeys;
+import com.floreina.keyring.keyvalue.KeyValueModule;
 import com.floreina.keyring.services.AdministrationService;
 import com.floreina.keyring.services.AuthenticationService;
-import com.floreina.keyring.sessions.SessionModule;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.StorageModule;
 import com.floreina.keyring.templates.TemplatesModule;
@@ -14,7 +14,12 @@ import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 
 @dagger.Component(
-  modules = {UtilitiesModule.class, TemplatesModule.class, StorageModule.class, SessionModule.class}
+  modules = {
+    UtilitiesModule.class,
+    TemplatesModule.class,
+    StorageModule.class,
+    KeyValueModule.class
+  }
 )
 @Singleton
 interface Component {
@@ -24,11 +29,11 @@ interface Component {
 
   SessionInterceptor sessionInterceptor();
 
-  SessionKeys sessionKeys();
+  SessionInterceptorKeys sessionInterceptorKeys();
 
   EntityManagerFactory entityManagerFactory();
 
   AccountOperationsInterface accountOperationsInterface();
 
-  UserMetadataInterceptor userMetadataInterceptor();
+  RequestMetadataInterceptor requestMetadataInterceptor();
 }

@@ -1,4 +1,4 @@
-package com.floreina.keyring.sessions;
+package com.floreina.keyring.keyvalue;
 
 import com.floreina.keyring.Environment;
 import dagger.Module;
@@ -12,7 +12,7 @@ import static redis.clients.jedis.Protocol.DEFAULT_PORT;
 import static redis.clients.jedis.Protocol.DEFAULT_TIMEOUT;
 
 @Module
-public class SessionModule {
+public class KeyValueModule {
   @Provides
   @Singleton
   static JedisPool provideJedisPool() {

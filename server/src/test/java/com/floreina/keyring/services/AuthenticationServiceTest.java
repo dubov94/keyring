@@ -2,9 +2,9 @@ package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
 import com.floreina.keyring.entities.User;
-import com.floreina.keyring.interceptors.UserMetadataKeys;
-import com.floreina.keyring.sessions.SessionClient;
-import com.floreina.keyring.sessions.UserCast;
+import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
+import com.floreina.keyring.keyvalue.KeyValueClient;
+import com.floreina.keyring.keyvalue.UserCast;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;
@@ -26,8 +26,8 @@ class AuthenticationServiceTest {
   @Mock private KeyOperationsInterface mockKeyOperationsInterface;
   @Mock private Cryptography mockCryptography;
   @Mock private Post mockPost;
-  @Mock private SessionClient mockSessionClient;
-  @Mock private UserMetadataKeys mockUserMetadataKeys;
+  @Mock private KeyValueClient mockKeyValueClient;
+  @Mock private RequestMetadataInterceptorKeys mockRequestMetadataInterceptorKeys;
   @Mock private StreamObserver mockStreamObserver;
 
   private AuthenticationService authenticationService;
@@ -40,8 +40,8 @@ class AuthenticationServiceTest {
             mockKeyOperationsInterface,
             mockCryptography,
             mockPost,
-            mockSessionClient,
-            mockUserMetadataKeys);
+            mockKeyValueClient,
+            mockRequestMetadataInterceptorKeys);
   }
 
   @Test
@@ -63,9 +63,9 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.createUser(
             "username", "salt", "digest", "mail@example.com", "0"))
         .thenReturn(new User().setIdentifier(0L));
-    when(mockSessionClient.create(any())).thenReturn(Optional.of("identifier"));
-    when(mockUserMetadataKeys.getIpAddress()).thenReturn("127.0.0.1");
-    when(mockUserMetadataKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
+    when(mockKeyValueClient.create(any())).thenReturn(Optional.of("identifier"));
+    when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockRequestMetadataInterceptorKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
 
     authenticationService.register(
         RegisterRequest.newBuilder()
@@ -143,9 +143,9 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(new User().setIdentifier(0L).setUsername("username").setDigest("digest")));
-    when(mockSessionClient.create(any())).thenReturn(Optional.of("identifier"));
-    when(mockUserMetadataKeys.getIpAddress()).thenReturn("127.0.0.1");
-    when(mockUserMetadataKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
+    when(mockKeyValueClient.create(any())).thenReturn(Optional.of("identifier"));
+    when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockRequestMetadataInterceptorKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),
@@ -167,7 +167,7 @@ class AuthenticationServiceTest {
 
   @Test
   void keepAlive_invalidSessionKey_repliesWithError() {
-    when(mockSessionClient.readAndUpdateExpirationTime("identifier")).thenReturn(Optional.empty());
+    when(mockKeyValueClient.readAndUpdateExpirationTime("identifier")).thenReturn(Optional.empty());
 
     authenticationService.keepAlive(
         KeepAliveRequest.newBuilder().setSessionKey("identifier").build(), mockStreamObserver);
@@ -179,7 +179,7 @@ class AuthenticationServiceTest {
 
   @Test
   void keepAlive_validSessionKey_repliesWithDefault() {
-    when(mockSessionClient.readAndUpdateExpirationTime("identifier"))
+    when(mockKeyValueClient.readAndUpdateExpirationTime("identifier"))
         .thenReturn(Optional.of(new UserCast().setIdentifier(0L)));
 
     authenticationService.keepAlive(

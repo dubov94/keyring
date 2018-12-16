@@ -2,7 +2,7 @@ package com.floreina.keyring.aspects;
 
 import com.floreina.keyring.aspects.Annotations.ValidateUser;
 import com.floreina.keyring.entities.User;
-import com.floreina.keyring.interceptors.SessionKeys;
+import com.floreina.keyring.interceptors.SessionInterceptorKeys;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -15,12 +15,13 @@ import java.util.Optional;
 
 @Aspect
 public class ValidateUserAspect {
-  private SessionKeys sessionKeys;
+  private SessionInterceptorKeys sessionInterceptorKeys;
   private AccountOperationsInterface accountOperationsInterface;
 
   public void initialize(
-      SessionKeys sessionKeys, AccountOperationsInterface accountOperationsInterface) {
-    this.sessionKeys = sessionKeys;
+      SessionInterceptorKeys sessionInterceptorKeys,
+      AccountOperationsInterface accountOperationsInterface) {
+    this.sessionInterceptorKeys = sessionInterceptorKeys;
     this.accountOperationsInterface = accountOperationsInterface;
   }
 
@@ -28,7 +29,7 @@ public class ValidateUserAspect {
   public void around(ValidateUser validateUser, ProceedingJoinPoint proceedingJoinPoint)
       throws Throwable {
     Optional<User> user =
-        accountOperationsInterface.getUserByIdentifier(sessionKeys.getUserIdentifier());
+        accountOperationsInterface.getUserByIdentifier(sessionInterceptorKeys.getUserIdentifier());
     if (user.isPresent()
         && (Arrays.asList(validateUser.states()).contains(ValidateUser.UserState.PENDING)
             || Utilities.isUserActive(user.get()))) {

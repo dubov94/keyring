@@ -2,13 +2,11 @@ package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
 import com.floreina.keyring.entities.User;
-import com.floreina.keyring.interceptors.UserMetadataKeys;
-import com.floreina.keyring.sessions.SessionClient;
-import com.floreina.keyring.sessions.UserCast;
+import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
+import com.floreina.keyring.keyvalue.KeyValueClient;
+import com.floreina.keyring.keyvalue.UserCast;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
-import com.floreina.keyring.templates.CodeBodyRendererFactory;
-import com.floreina.keyring.templates.CodeHeadRendererFactory;
 import io.grpc.stub.StreamObserver;
 
 import javax.inject.Inject;
@@ -20,10 +18,10 @@ import static java.util.stream.Collectors.toList;
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
   private AccountOperationsInterface accountOperationsInterface;
   private KeyOperationsInterface keyOperationsInterface;
-  private SessionClient sessionClient;
+  private KeyValueClient keyValueClient;
   private Cryptography cryptography;
   private Post post;
-  private UserMetadataKeys userMetadataKeys;
+  private RequestMetadataInterceptorKeys requestMetadataInterceptorKeys;
 
   @Inject
   AuthenticationService(
@@ -31,14 +29,14 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       KeyOperationsInterface keyOperationsInterface,
       Cryptography cryptography,
       Post post,
-      SessionClient sessionClient,
-      UserMetadataKeys userMetadataKeys) {
+      KeyValueClient keyValueClient,
+      RequestMetadataInterceptorKeys requestMetadataInterceptorKeys) {
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
     this.cryptography = cryptography;
     this.post = post;
-    this.sessionClient = sessionClient;
-    this.userMetadataKeys = userMetadataKeys;
+    this.keyValueClient = keyValueClient;
+    this.requestMetadataInterceptorKeys = requestMetadataInterceptorKeys;
   }
 
   @Override
@@ -53,15 +51,15 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       String mail = request.getMail();
       String code = cryptography.generateSecurityCode();
       User user = accountOperationsInterface.createUser(username, salt, digest, mail, code);
-      Optional<String> sessionKey = sessionClient.create(UserCast.fromUser(user));
+      Optional<String> sessionKey = keyValueClient.create(UserCast.fromUser(user));
       if (!sessionKey.isPresent()) {
         throw new IllegalStateException();
       } else {
         accountOperationsInterface.createSession(
             user.getIdentifier(),
             sessionKey.get(),
-            userMetadataKeys.getIpAddress(),
-            userMetadataKeys.getUserAgent());
+            requestMetadataInterceptorKeys.getIpAddress(),
+            requestMetadataInterceptorKeys.getUserAgent());
         post.sendCode(mail, code);
         response.onNext(RegisterResponse.newBuilder().setSessionKey(sessionKey.get()).build());
       }
@@ -93,15 +91,15 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         response.onNext(
             LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
       } else {
-        Optional<String> sessionKey = sessionClient.create(UserCast.fromUser(user));
+        Optional<String> sessionKey = keyValueClient.create(UserCast.fromUser(user));
         if (!sessionKey.isPresent()) {
           throw new IllegalStateException();
         } else {
           accountOperationsInterface.createSession(
               user.getIdentifier(),
               sessionKey.get(),
-              userMetadataKeys.getIpAddress(),
-              userMetadataKeys.getUserAgent());
+              requestMetadataInterceptorKeys.getIpAddress(),
+              requestMetadataInterceptorKeys.getUserAgent());
           LogInResponse.Payload.Builder payloadBuilder = LogInResponse.Payload.newBuilder();
           payloadBuilder.setSessionKey(sessionKey.get());
           if (user.getMail() == null) {
@@ -127,7 +125,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   @Override
   public void keepAlive(KeepAliveRequest request, StreamObserver<KeepAliveResponse> response) {
     Optional<UserCast> maybeUserCast =
-        sessionClient.readAndUpdateExpirationTime(request.getSessionKey());
+        keyValueClient.readAndUpdateExpirationTime(request.getSessionKey());
     KeepAliveResponse.Builder builder = KeepAliveResponse.newBuilder();
     if (!maybeUserCast.isPresent()) {
       builder.setError(KeepAliveResponse.Error.INVALID_KEY);

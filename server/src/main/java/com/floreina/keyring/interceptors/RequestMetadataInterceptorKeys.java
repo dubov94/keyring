@@ -3,7 +3,7 @@ package com.floreina.keyring.interceptors;
 import io.grpc.Context;
 import io.grpc.Metadata;
 
-public class UserMetadataKeys {
+public class RequestMetadataInterceptorKeys {
   static final Context.Key<String> CONTEXT_IP_ADDRESS_KEY = Context.key("ip-address");
   static final Context.Key<String> CONTEXT_USER_AGENT_KEY = Context.key("user-agent");
   static final Metadata.Key<String> METADATA_IP_ADDRESS_KEY =

@@ -13,16 +13,21 @@ public class Post {
   private CodeBodyRendererFactory codeBodyRendererFactory;
 
   @Inject
-  Post() {
+  Post(
+      CodeHeadRendererFactory codeHeadRendererFactory,
+      CodeBodyRendererFactory codeBodyRendererFactory) {
     configuration =
         new Configuration()
             .domain("pwd.floreina.me")
             .apiKey(Environment.getVariable("MAILGUN_API_KEY"));
+    this.codeHeadRendererFactory = codeHeadRendererFactory;
+    this.codeBodyRendererFactory = codeBodyRendererFactory;
   }
 
   public void sendCode(String address, String code) {
     String head = codeHeadRendererFactory.newRenderer().setCode(code).render();
     String body = codeBodyRendererFactory.newRenderer().setCode(code).render();
+
     Mail.using(configuration)
         .from("Key Ring", "keyring@pwd.floreina.me")
         .to(address)

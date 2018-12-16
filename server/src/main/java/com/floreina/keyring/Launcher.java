@@ -25,7 +25,7 @@ class Launcher {
   private void initialize() {
     component = DaggerComponent.create();
     Aspects.aspectOf(ValidateUserAspect.class)
-        .initialize(component.sessionKeys(), component.accountOperationsInterface());
+        .initialize(component.sessionInterceptorKeys(), component.accountOperationsInterface());
     Aspects.aspectOf(StorageManagerAspect.class).initialize(component.entityManagerFactory());
   }
 
@@ -34,11 +34,11 @@ class Launcher {
         ServerBuilder.forPort(591)
             .addService(
                 ServerInterceptors.intercept(
-                    component.authenticationService(), component.userMetadataInterceptor()))
+                    component.authenticationService(), component.requestMetadataInterceptor()))
             .addService(
                 ServerInterceptors.intercept(
                     component.administrationService(),
-                    component.userMetadataInterceptor(),
+                    component.requestMetadataInterceptor(),
                     component.sessionInterceptor()))
             .build();
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));

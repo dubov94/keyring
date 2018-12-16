@@ -1,31 +1,34 @@
 package com.floreina.keyring.interceptors;
 
-import com.floreina.keyring.sessions.SessionClient;
-import com.floreina.keyring.sessions.UserCast;
+import com.floreina.keyring.keyvalue.KeyValueClient;
+import com.floreina.keyring.keyvalue.UserCast;
 import io.grpc.*;
 
 import javax.inject.Inject;
 import java.util.Optional;
 
 public class SessionInterceptor implements ServerInterceptor {
-  private SessionClient sessionClient;
+  private KeyValueClient keyValueClient;
 
   @Inject
-  SessionInterceptor(SessionClient sessionClient) {
-    this.sessionClient = sessionClient;
+  SessionInterceptor(KeyValueClient keyValueClient) {
+    this.keyValueClient = keyValueClient;
   }
 
   @Override
   public <I, O> ServerCall.Listener<I> interceptCall(
       ServerCall<I, O> call, Metadata metadata, ServerCallHandler<I, O> next) {
     Context context = Context.current();
-    String sessionIdentifier = metadata.get(SessionKeys.METADATA_SESSION_IDENTIFIER_KEY);
+    String sessionIdentifier = metadata.get(SessionInterceptorKeys.METADATA_SESSION_IDENTIFIER_KEY);
     if (sessionIdentifier != null) {
       Optional<UserCast> maybeUserCast =
-          sessionClient.readAndUpdateExpirationTime(sessionIdentifier);
+          keyValueClient.readAndUpdateExpirationTime(sessionIdentifier);
       if (maybeUserCast.isPresent()) {
-        context = context.withValue(SessionKeys.CONTEXT_SESSION_IDENTIFIER_KEY, sessionIdentifier);
-        context = context.withValue(SessionKeys.CONTEXT_USER_CAST_KEY, maybeUserCast.get());
+        context =
+            context.withValue(
+                SessionInterceptorKeys.CONTEXT_SESSION_IDENTIFIER_KEY, sessionIdentifier);
+        context =
+            context.withValue(SessionInterceptorKeys.CONTEXT_USER_CAST_KEY, maybeUserCast.get());
         return Contexts.interceptCall(context, call, metadata, next);
       }
     }

@@ -5,7 +5,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "sessions")
+@Table(name = "keyvalue")
 public class Session {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

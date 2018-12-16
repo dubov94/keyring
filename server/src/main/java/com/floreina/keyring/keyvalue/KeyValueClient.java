@@ -1,4 +1,4 @@
-package com.floreina.keyring.sessions;
+package com.floreina.keyring.keyvalue;
 
 import com.floreina.keyring.Cryptography;
 import com.google.common.collect.ImmutableMap;
@@ -12,7 +12,7 @@ import javax.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 
-public class SessionClient {
+public class KeyValueClient {
   private static final int SESSION_LIFETIME_IN_SECONDS = 5 * 60;
   private static final ImmutableMap<SettingStrategy, String> SETTING_STRATEGY_TO_PARAMETER =
       new ImmutableMap.Builder<SettingStrategy, String>()
@@ -24,7 +24,7 @@ public class SessionClient {
   private Gson gson;
 
   @Inject
-  SessionClient(JedisPool jedisPool, Cryptography cryptography, Gson gson) {
+  KeyValueClient(JedisPool jedisPool, Cryptography cryptography, Gson gson) {
     this.jedisPool = jedisPool;
     this.cryptography = cryptography;
     this.gson = gson;

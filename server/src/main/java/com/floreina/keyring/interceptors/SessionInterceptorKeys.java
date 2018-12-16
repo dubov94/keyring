@@ -1,10 +1,10 @@
 package com.floreina.keyring.interceptors;
 
-import com.floreina.keyring.sessions.UserCast;
+import com.floreina.keyring.keyvalue.UserCast;
 import io.grpc.Context;
 import io.grpc.Metadata;
 
-public class SessionKeys {
+public class SessionInterceptorKeys {
   static final Context.Key<UserCast> CONTEXT_USER_CAST_KEY = Context.key("user");
   static final Context.Key<String> CONTEXT_SESSION_IDENTIFIER_KEY = Context.key("session");
   static final Metadata.Key<String> METADATA_SESSION_IDENTIFIER_KEY =
