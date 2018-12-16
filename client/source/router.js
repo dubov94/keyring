@@ -36,7 +36,8 @@ const router = new VueRouter({
         },
         {
           path: 'set-up',
-          component: SetUp
+          component: SetUp,
+          beforeEnter: tokenGuard
         }
       ]
     }, {
