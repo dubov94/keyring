@@ -1,4 +1,4 @@
-import Settings from './components/Settings'
+import Settings from './components/settings/Index'
 import SetUp from './components/authentication/SetUp'
 import Authentication from './components/authentication/Index'
 import Dashboard from './components/Dashboard'

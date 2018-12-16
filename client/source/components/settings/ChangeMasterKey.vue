@@ -1,64 +1,36 @@
-<style scoped>
-  .card__title {
-    padding-bottom: 0;
-  }
-</style>
-
 <template>
-  <page>
-    <v-toolbar app prominent color="primary" dark>
-      <v-btn icon @click="$router.go(-1)">
-        <v-icon>arrow_back</v-icon>
-      </v-btn>
-      <v-toolbar-title>
-        Key Ring
-      </v-toolbar-title>
+  <v-card class="mt-4">
+    <v-toolbar color="primary" dark>
+      <v-toolbar-title>Change password</v-toolbar-title>
     </v-toolbar>
-    <v-content>
-      <v-container fluid>
-        <v-layout justify-center>
-          <v-flex xs12 sm8 md6 lg4 xl3>
-            <v-card class="mt-4">
-              <v-card-title>
-                <h2 class="headline">Change password</h2>  
-              </v-card-title>
-              <v-card-text>
-                <v-form ref="form" @keydown.native.enter.prevent="submit">
-                  <v-text-field v-model="current" label="Current"
-                    type="password" :error-messages="currentErrors"
-                    @input="$v.current.$reset()"
-                    @blur="$v.current.$touch()"></v-text-field>
-                  <v-text-field v-model="renewal" label="Renewal"
-                    type="password" :error-messages="renewalErrors"
-                    @input="$v.renewal.$reset()"
-                    @blur="$v.renewal.$touch()"></v-text-field>
-                  <v-text-field v-model="repeat" label="Repeat"
-                    type="password" :error-messages="repeatErrors"
-                    @input="$v.repeat.$reset()"
-                    @blur="$v.repeat.$touch()"></v-text-field>
-                  <div class="text-xs-right">
-                    <v-btn class="mr-0" :loading="requestInProgress"
-                      color="error" @click="submit">Submit</v-btn>
-                  </div>
-                </v-form>
-              </v-card-text>
-            </v-card>
-          </v-flex>
-        </v-layout>
-      </v-container>
-    </v-content>
-  </page>
+    <v-card-text>
+      <v-form ref="form" @keydown.native.enter.prevent="submit">
+        <v-text-field v-model="current" label="Current"
+          type="password" :error-messages="currentErrors"
+          prepend-icon="lock" @input="$v.current.$reset()"
+          @blur="$v.current.$touch()"></v-text-field>
+        <v-text-field v-model="renewal" label="Renewal"
+          type="password" :error-messages="renewalErrors"
+          prepend-icon="lock_open" @input="$v.renewal.$reset()"
+          @blur="$v.renewal.$touch()"></v-text-field>
+        <v-text-field v-model="repeat" label="Repeat"
+          type="password" :error-messages="repeatErrors"
+          prepend-icon="repeat" @input="$v.repeat.$reset()"
+          @blur="$v.repeat.$touch()"></v-text-field>
+        <div class="text-xs-right">
+          <v-btn class="mr-0" :loading="requestInProgress"
+            color="primary" @click="submit">Submit</v-btn>
+        </div>
+      </v-form>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script>
-  import Page from './Page'
   import {mapActions} from 'vuex'
   import {required, sameAs} from 'vuelidate/lib/validators'
 
   export default {
-    components: {
-      page: Page
-    },
     validations: {
       current: {
         valid () {
