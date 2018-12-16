@@ -22,10 +22,16 @@
     width: 100%;
     padding-left: 4px;
     color: transparent;
+    caret-color: black;
   }
 
   .tag__label {
     padding: 0 4px;
+  }
+
+  .new_tag_button {
+    margin: 4px;
+    border-radius: 28px;
   }
 </style>
 
@@ -46,7 +52,7 @@
       <v-card-text>
         <draggable v-model="chips" :options="draggableOptions" :move="move">
           <v-chip disabled close v-for="(value, index) in chips" :key="index"
-            @input="removeTag(index)" color="accent" text-color="white">
+            @input="removeTag(index)" color="white" class="elevation-3">
             <v-icon small class="tag__handle">drag_indicator</v-icon>
             <div class="tag__content">
               <input type="text" :value="value" class="tag__input" v-focus
@@ -54,8 +60,8 @@
               <span class="tag__label">{{ value }}</span>
             </div>
           </v-chip>
-          <v-btn icon @click="addTag" color="accent">
-            <v-icon>add</v-icon>
+          <v-btn @click="addTag" color="white" class="new_tag_button">
+            Add tag
           </v-btn>
         </draggable>
       </v-card-text>

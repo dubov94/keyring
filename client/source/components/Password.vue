@@ -47,7 +47,7 @@
       <v-divider></v-divider>
       <v-card-text>
         <v-chip disabled v-for="(label, index) in tags" :key="index"
-          color="accent" text-color="white" @click="copyText(label)">
+          color="white" class="elevation-3" @click="copyText(label)">
           {{ label }}
         </v-chip>
       </v-card-text>
