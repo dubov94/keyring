@@ -11,6 +11,8 @@ import java.util.Optional;
 public interface AccountOperationsInterface {
   User createUser(String username, String salt, String digest, String mail, String code);
 
+  void createMailToken(long userIdentifier, String mail, String code);
+
   Optional<MailToken> getMailToken(long userIdentifier, String token);
 
   void releaseMailToken(long tokenIdentifier);

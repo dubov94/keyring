@@ -7,20 +7,16 @@ import com.floreina.keyring.sessions.SessionClient;
 import com.floreina.keyring.sessions.UserCast;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
-import com.floreina.keyring.templates.CodeBodyRendererFactory;
-import com.floreina.keyring.templates.CodeHeadRendererFactory;
 import io.grpc.stub.StreamObserver;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.mockito.Mock;
 
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -30,13 +26,6 @@ class AuthenticationServiceTest {
   @Mock private KeyOperationsInterface mockKeyOperationsInterface;
   @Mock private Cryptography mockCryptography;
   @Mock private Post mockPost;
-
-  @Mock(answer = Answers.RETURNS_MOCKS)
-  private CodeHeadRendererFactory mockCodeHeadRendererFactory;
-
-  @Mock(answer = Answers.RETURNS_MOCKS)
-  private CodeBodyRendererFactory mockCodeBodyRendererFactory;
-
   @Mock private SessionClient mockSessionClient;
   @Mock private UserMetadataKeys mockUserMetadataKeys;
   @Mock private StreamObserver mockStreamObserver;
@@ -51,8 +40,6 @@ class AuthenticationServiceTest {
             mockKeyOperationsInterface,
             mockCryptography,
             mockPost,
-            mockCodeHeadRendererFactory,
-            mockCodeBodyRendererFactory,
             mockSessionClient,
             mockUserMetadataKeys);
   }
@@ -93,7 +80,7 @@ class AuthenticationServiceTest {
         .createUser("username", "salt", "digest", "mail@example.com", "0");
     verify(mockAccountOperationsInterface)
         .createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
-    verify(mockPost).send(eq("mail@example.com"), any(), any());
+    verify(mockPost).sendCode("mail@example.com", "0");
     verify(mockStreamObserver)
         .onNext(RegisterResponse.newBuilder().setSessionKey("identifier").build());
     verify(mockStreamObserver).onCompleted();

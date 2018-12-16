@@ -1,5 +1,7 @@
 package com.floreina.keyring.entities;
 
+import org.hibernate.annotations.CreationTimestamp;
+
 import javax.persistence.*;
 
 @Entity
@@ -11,6 +13,8 @@ public class MailToken {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
+
+  @CreationTimestamp private java.sql.Timestamp timestamp;
 
   @ManyToOne private User user;
 

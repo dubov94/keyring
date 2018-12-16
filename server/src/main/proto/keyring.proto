@@ -169,7 +169,22 @@ message ChangeMasterKeyResponse {
     Error error = 1;
 }
 
+message AcquireMailTokenRequest {
+    string digest = 1;
+    string mail = 2;
+}
+
+message AcquireMailTokenResponse {
+    enum Error {
+        NONE = 0;
+        INVALID_DIGEST = 1;
+    }
+
+    Error error = 1;
+}
+
 service Administration {
+    rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse);
     rpc ReleaseMailToken (ReleaseMailTokenRequest) returns (ReleaseMailTokenResponse);
     rpc CreateKey (CreateKeyRequest) returns (CreateKeyResponse);
     rpc ReadKeys (ReadKeysRequest) returns (ReadKeysResponse);

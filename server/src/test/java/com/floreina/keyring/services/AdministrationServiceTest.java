@@ -34,6 +34,8 @@ class AdministrationServiceTest {
   @Mock private SessionKeys mockSessionKeys;
   @Mock private SessionClient mockSessionClient;
   @Mock private StreamObserver mockStreamObserver;
+  @Mock private Cryptography mockCryptography;
+  @Mock private Post mockPost;
 
   private User user = new User().setIdentifier(0L).setDigest("digest").setMail("mail@domain.com");
   private AdministrationService administrationService;
@@ -47,7 +49,9 @@ class AdministrationServiceTest {
             mockKeyOperationsInterface,
             mockAccountOperationsInterface,
             mockSessionKeys,
-            mockSessionClient);
+            mockSessionClient,
+            mockCryptography,
+            mockPost);
     long userIdentifier = user.getIdentifier();
     when(mockSessionKeys.getUserIdentifier()).thenReturn(userIdentifier);
     when(mockAccountOperationsInterface.getUserByIdentifier(userIdentifier))
@@ -93,7 +97,7 @@ class AdministrationServiceTest {
   }
 
   @Test
-  void changeMasterKey_digestMismatch_repliesWithError() {
+  void changeMasterKey_digestsMismatch_repliesWithError() {
     administrationService.changeMasterKey(
         ChangeMasterKeyRequest.newBuilder().setCurrentDigest("random").build(), mockStreamObserver);
 
@@ -106,7 +110,7 @@ class AdministrationServiceTest {
   }
 
   @Test
-  void changeMasterKey_digestsMatch() {
+  void changeMasterKey_digestsMatch_repliesWithDefault() {
     IdentifiedKey identifiedKey = IdentifiedKey.newBuilder().setIdentifier(0L).build();
     when(mockAccountOperationsInterface.readSessions(0L))
         .thenReturn(
@@ -133,6 +137,33 @@ class AdministrationServiceTest {
             ChangeMasterKeyResponse.newBuilder()
                 .setError(ChangeMasterKeyResponse.Error.NONE)
                 .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void acquireMailToken_digestsMismatch_repliesWithError() {
+    administrationService.acquireMailToken(
+        AcquireMailTokenRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            AcquireMailTokenResponse.newBuilder()
+                .setError(AcquireMailTokenResponse.Error.INVALID_DIGEST)
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void acquireMailToken_digestsMatch_repliesWithDefault() {
+    when(mockCryptography.generateSecurityCode()).thenReturn("0");
+
+    administrationService.acquireMailToken(
+        AcquireMailTokenRequest.newBuilder().setDigest("digest").setMail("user@mail.com").build(),
+        mockStreamObserver);
+
+    verify(mockAccountOperationsInterface).createMailToken(0L, "user@mail.com", "0");
+    verify(mockPost).sendCode("user@mail.com", "0");
+    verify(mockStreamObserver).onNext(AcquireMailTokenResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
   }
 

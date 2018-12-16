@@ -32,6 +32,17 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @LocalTransaction
+  public void createMailToken(long userIdentifier, String mail, String code) {
+    MailToken mailToken =
+        new MailToken()
+            .setUser(entityManager.getReference(User.class, userIdentifier))
+            .setMail(mail)
+            .setCode(code);
+    entityManager.persist(mailToken);
+  }
+
+  @Override
+  @LocalTransaction
   public Optional<MailToken> getMailToken(long userIdentifier, String token) {
     return Queries.findByUser(entityManager, MailToken.class, MailToken_.user, userIdentifier)
         .stream()

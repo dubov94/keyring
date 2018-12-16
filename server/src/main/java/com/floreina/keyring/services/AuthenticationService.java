@@ -23,8 +23,6 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private SessionClient sessionClient;
   private Cryptography cryptography;
   private Post post;
-  private CodeHeadRendererFactory codeHeadRendererFactory;
-  private CodeBodyRendererFactory codeBodyRendererFactory;
   private UserMetadataKeys userMetadataKeys;
 
   @Inject
@@ -33,16 +31,12 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       KeyOperationsInterface keyOperationsInterface,
       Cryptography cryptography,
       Post post,
-      CodeHeadRendererFactory codeHeadRendererFactory,
-      CodeBodyRendererFactory codeBodyRendererFactory,
       SessionClient sessionClient,
       UserMetadataKeys userMetadataKeys) {
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
     this.cryptography = cryptography;
     this.post = post;
-    this.codeHeadRendererFactory = codeHeadRendererFactory;
-    this.codeBodyRendererFactory = codeBodyRendererFactory;
     this.sessionClient = sessionClient;
     this.userMetadataKeys = userMetadataKeys;
   }
@@ -68,9 +62,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
             sessionKey.get(),
             userMetadataKeys.getIpAddress(),
             userMetadataKeys.getUserAgent());
-        String head = codeHeadRendererFactory.newRenderer().setCode(code).render();
-        String body = codeBodyRendererFactory.newRenderer().setCode(code).render();
-        post.send(mail, head, body);
+        post.sendCode(mail, code);
         response.onNext(RegisterResponse.newBuilder().setSessionKey(sessionKey.get()).build());
       }
     }

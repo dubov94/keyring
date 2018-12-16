@@ -24,17 +24,49 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private AccountOperationsInterface accountOperationsInterface;
   private SessionKeys sessionKeys;
   private SessionClient sessionClient;
+  private Cryptography cryptography;
+  private Post post;
 
   @Inject
   AdministrationService(
       KeyOperationsInterface keyOperationsInterface,
       AccountOperationsInterface accountOperationsInterface,
       SessionKeys sessionKeys,
-      SessionClient sessionClient) {
+      SessionClient sessionClient,
+      Cryptography cryptography,
+      Post post) {
     this.keyOperationsInterface = keyOperationsInterface;
     this.accountOperationsInterface = accountOperationsInterface;
     this.sessionKeys = sessionKeys;
     this.sessionClient = sessionClient;
+    this.cryptography = cryptography;
+    this.post = post;
+  }
+
+  @Override
+  @ValidateUser
+  public void acquireMailToken(
+      AcquireMailTokenRequest request, StreamObserver<AcquireMailTokenResponse> response) {
+    long userIdentifier = sessionKeys.getUserIdentifier();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
+    if (!maybeUser.isPresent()) {
+      throw new ConcurrentModificationException();
+    } else {
+      User user = maybeUser.get();
+      if (!Objects.equals(request.getDigest(), user.getDigest())) {
+        response.onNext(
+            AcquireMailTokenResponse.newBuilder()
+                .setError(AcquireMailTokenResponse.Error.INVALID_DIGEST)
+                .build());
+      } else {
+        String mail = request.getMail();
+        String code = cryptography.generateSecurityCode();
+        accountOperationsInterface.createMailToken(userIdentifier, mail, code);
+        post.sendCode(mail, code);
+        response.onNext(AcquireMailTokenResponse.getDefaultInstance());
+      }
+    }
+    response.onCompleted();
   }
 
   @Override

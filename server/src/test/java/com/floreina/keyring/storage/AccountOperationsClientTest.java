@@ -150,6 +150,19 @@ class AccountOperationsClientTest {
     assertEquals("Chrome/0.0.0", session.getUserAgent());
   }
 
+  @Test
+  void createMailToken_putsMailToken() {
+    long userIdentifier = createActiveUser();
+
+    accountOperationsClient.createMailToken(userIdentifier, "user@mail.com", "0");
+
+    Optional<MailToken> maybeMailToken = accountOperationsClient.getMailToken(userIdentifier, "0");
+    assertTrue(maybeMailToken.isPresent());
+    MailToken mailToken = maybeMailToken.get();
+    assertEquals("user@mail.com", mailToken.getMail());
+    assertEquals("0", mailToken.getCode());
+  }
+
   private long createActiveUser() {
     String username = createUniqueName();
     long userIdentifier =

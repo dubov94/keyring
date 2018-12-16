@@ -18,6 +18,10 @@
     }
   },
   "keyring.Administration": {
+    "acquireMailToken": {
+      "method": "post",
+      "path": "/administration/acquire-mail-token"
+    },
     "releaseMailToken": {
       "method": "post",
       "path": "/administration/release-mail-token"
