@@ -78,16 +78,16 @@
         </v-btn>
       </v-card-actions>
     </v-card>
-    <confirm v-model="removeConfirmation" @affirm="doRemove"
-      message="Are you sure?"></confirm>
-    <confirm v-model="discardConfirmation" @affirm="doDiscard"
-      message="Discard changes?"></confirm>
+    <yes-no-dialog v-model="removeConfirmation" @affirm="doRemove"
+      message="Are you sure?"></yes-no-dialog>
+    <yes-no-dialog v-model="discardConfirmation" @affirm="doDiscard"
+      message="Discard changes?"></yes-no-dialog>
   </v-dialog>
 </template>
 
 <script>
   import Draggable from 'vuedraggable'
-  import Confirm from './Confirm'
+  import YesNoDialog from './YesNoDialog'
   import {mapActions, mapMutations} from 'vuex'
   import {XL_MINIMAL_WIDTH} from './constants'
   import {ALPHANUMERIC_CHARACTERS} from '../constants'
@@ -96,7 +96,7 @@
   export default {
     components: {
       draggable: Draggable,
-      confirm: Confirm
+      yesNoDialog: YesNoDialog
     },
     data () {
       return {
