@@ -2,7 +2,7 @@ package com.floreina.keyring.aspects;
 
 import com.floreina.keyring.aspects.Annotations.EntityController;
 import com.floreina.keyring.aspects.Annotations.LocalTransaction;
-import com.floreina.keyring.database.DatabaseException;
+import com.floreina.keyring.storage.StorageException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -14,8 +14,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Aspect
-public class DatabaseManagerAspect {
-  private static final Logger logger = Logger.getLogger(DatabaseManagerAspect.class.getName());
+public class StorageManagerAspect {
+  private static final Logger logger = Logger.getLogger(StorageManagerAspect.class.getName());
   private EntityManagerFactory entityManagerFactory;
   private ThreadLocal<EntityManager> threadLocalEntityManager;
 
@@ -49,7 +49,7 @@ public class DatabaseManagerAspect {
         } catch (Throwable exception) {
           logger.log(Level.WARNING, "Unable to rollback", exception);
         }
-        throw new DatabaseException(throwable);
+        throw new StorageException(throwable);
       } finally {
         threadLocalEntityManager.get().close();
         threadLocalEntityManager.remove();

@@ -1,4 +1,4 @@
-package com.floreina.keyring.database;
+package com.floreina.keyring.storage;
 
 import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.Password;
@@ -17,7 +17,7 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.toMap;
 
-public class AccountingClient implements AccountingInterface {
+public class AccountOperationsClient implements AccountOperationsInterface {
   @EntityController private EntityManager entityManager;
 
   @Override

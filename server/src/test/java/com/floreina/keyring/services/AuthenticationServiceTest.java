@@ -1,12 +1,12 @@
 package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
-import com.floreina.keyring.cache.CacheClient;
-import com.floreina.keyring.cache.UserCast;
-import com.floreina.keyring.database.AccountingInterface;
-import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.User;
-import com.floreina.keyring.interceptors.RecognitionKeys;
+import com.floreina.keyring.interceptors.UserMetadataKeys;
+import com.floreina.keyring.sessions.SessionClient;
+import com.floreina.keyring.sessions.UserCast;
+import com.floreina.keyring.storage.AccountOperationsInterface;
+import com.floreina.keyring.storage.KeyOperationsInterface;
 import com.floreina.keyring.templates.CodeBodyRendererFactory;
 import com.floreina.keyring.templates.CodeHeadRendererFactory;
 import io.grpc.stub.StreamObserver;
@@ -26,8 +26,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
-  @Mock private AccountingInterface mockAccountingInterface;
-  @Mock private ManagementInterface mockManagementInterface;
+  @Mock private AccountOperationsInterface mockAccountOperationsInterface;
+  @Mock private KeyOperationsInterface mockKeyOperationsInterface;
   @Mock private Cryptography mockCryptography;
   @Mock private Post mockPost;
 
@@ -37,8 +37,8 @@ class AuthenticationServiceTest {
   @Mock(answer = Answers.RETURNS_MOCKS)
   private CodeBodyRendererFactory mockCodeBodyRendererFactory;
 
-  @Mock private CacheClient mockCacheClient;
-  @Mock private RecognitionKeys mockRecognitionKeys;
+  @Mock private SessionClient mockSessionClient;
+  @Mock private UserMetadataKeys mockUserMetadataKeys;
   @Mock private StreamObserver mockStreamObserver;
 
   private AuthenticationService authenticationService;
@@ -47,19 +47,20 @@ class AuthenticationServiceTest {
   void beforeEach() {
     authenticationService =
         new AuthenticationService(
-            mockAccountingInterface,
-            mockManagementInterface,
+            mockAccountOperationsInterface,
+            mockKeyOperationsInterface,
             mockCryptography,
             mockPost,
             mockCodeHeadRendererFactory,
             mockCodeBodyRendererFactory,
-            mockCacheClient,
-            mockRecognitionKeys);
+            mockSessionClient,
+            mockUserMetadataKeys);
   }
 
   @Test
   void register_duplicateUsername_repliesWithError() {
-    when(mockAccountingInterface.getUserByName("username")).thenReturn(Optional.of(new User()));
+    when(mockAccountOperationsInterface.getUserByName("username"))
+        .thenReturn(Optional.of(new User()));
 
     authenticationService.register(
         RegisterRequest.newBuilder().setUsername("username").build(), mockStreamObserver);
@@ -70,13 +71,14 @@ class AuthenticationServiceTest {
 
   @Test
   void register_getsValidRequest_persistsAndSendsMail() {
-    when(mockAccountingInterface.getUserByName("username")).thenReturn(Optional.empty());
+    when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
     when(mockCryptography.generateSecurityCode()).thenReturn("0");
-    when(mockAccountingInterface.createUser("username", "salt", "digest", "mail@example.com", "0"))
+    when(mockAccountOperationsInterface.createUser(
+            "username", "salt", "digest", "mail@example.com", "0"))
         .thenReturn(new User().setIdentifier(0L));
-    when(mockCacheClient.create(any())).thenReturn(Optional.of("identifier"));
-    when(mockRecognitionKeys.getIpAddress()).thenReturn("127.0.0.1");
-    when(mockRecognitionKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
+    when(mockSessionClient.create(any())).thenReturn(Optional.of("identifier"));
+    when(mockUserMetadataKeys.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockUserMetadataKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
 
     authenticationService.register(
         RegisterRequest.newBuilder()
@@ -87,9 +89,10 @@ class AuthenticationServiceTest {
             .build(),
         mockStreamObserver);
 
-    verify(mockAccountingInterface)
+    verify(mockAccountOperationsInterface)
         .createUser("username", "salt", "digest", "mail@example.com", "0");
-    verify(mockAccountingInterface).createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
+    verify(mockAccountOperationsInterface)
+        .createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
     verify(mockPost).send(eq("mail@example.com"), any(), any());
     verify(mockStreamObserver)
         .onNext(RegisterResponse.newBuilder().setSessionKey("identifier").build());
@@ -98,7 +101,7 @@ class AuthenticationServiceTest {
 
   @Test
   void getSalt_invalidUsername_repliesWithError() {
-    when(mockAccountingInterface.getUserByName("username")).thenReturn(Optional.empty());
+    when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
 
     authenticationService.getSalt(
         GetSaltRequest.newBuilder().setUsername("username").build(), mockStreamObserver);
@@ -109,7 +112,7 @@ class AuthenticationServiceTest {
 
   @Test
   void getSalt_validUsername_repliesWithAuthenticationSalt() {
-    when(mockAccountingInterface.getUserByName("username"))
+    when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(new User().setIdentifier(0L).setUsername("username").setSalt("salt")));
 
@@ -121,7 +124,7 @@ class AuthenticationServiceTest {
 
   @Test
   void logIn_invalidUsername_repliesWithError() {
-    when(mockAccountingInterface.getUserByName("username")).thenReturn(Optional.empty());
+    when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").build(), mockStreamObserver);
@@ -134,7 +137,7 @@ class AuthenticationServiceTest {
 
   @Test
   void logIn_invalidDigest_repliesWithError() {
-    when(mockAccountingInterface.getUserByName("username"))
+    when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(new User().setIdentifier(0L).setUsername("username").setDigest("digest")));
 
@@ -150,18 +153,19 @@ class AuthenticationServiceTest {
 
   @Test
   void logIn_validPair_repliesWithSessionKeyAndState() {
-    when(mockAccountingInterface.getUserByName("username"))
+    when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(new User().setIdentifier(0L).setUsername("username").setDigest("digest")));
-    when(mockCacheClient.create(any())).thenReturn(Optional.of("identifier"));
-    when(mockRecognitionKeys.getIpAddress()).thenReturn("127.0.0.1");
-    when(mockRecognitionKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
+    when(mockSessionClient.create(any())).thenReturn(Optional.of("identifier"));
+    when(mockUserMetadataKeys.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockUserMetadataKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),
         mockStreamObserver);
 
-    verify(mockAccountingInterface).createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
+    verify(mockAccountOperationsInterface)
+        .createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
     verify(mockStreamObserver)
         .onNext(
             LogInResponse.newBuilder()
@@ -176,7 +180,7 @@ class AuthenticationServiceTest {
 
   @Test
   void keepAlive_invalidSessionKey_repliesWithError() {
-    when(mockCacheClient.readAndUpdateExpirationTime("identifier")).thenReturn(Optional.empty());
+    when(mockSessionClient.readAndUpdateExpirationTime("identifier")).thenReturn(Optional.empty());
 
     authenticationService.keepAlive(
         KeepAliveRequest.newBuilder().setSessionKey("identifier").build(), mockStreamObserver);
@@ -188,7 +192,7 @@ class AuthenticationServiceTest {
 
   @Test
   void keepAlive_validSessionKey_repliesWithDefault() {
-    when(mockCacheClient.readAndUpdateExpirationTime("identifier"))
+    when(mockSessionClient.readAndUpdateExpirationTime("identifier"))
         .thenReturn(Optional.of(new UserCast().setIdentifier(0L)));
 
     authenticationService.keepAlive(

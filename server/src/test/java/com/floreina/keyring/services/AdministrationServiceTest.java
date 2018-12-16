@@ -2,13 +2,13 @@ package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
 import com.floreina.keyring.aspects.ValidateUserAspect;
-import com.floreina.keyring.cache.CacheClient;
-import com.floreina.keyring.database.AccountingInterface;
-import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionKeys;
+import com.floreina.keyring.sessions.SessionClient;
+import com.floreina.keyring.storage.AccountOperationsInterface;
+import com.floreina.keyring.storage.KeyOperationsInterface;
 import com.google.common.collect.ImmutableList;
 import io.grpc.Status;
 import io.grpc.StatusException;
@@ -29,10 +29,10 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdministrationServiceTest {
-  @Mock private ManagementInterface mockManagementInterface;
-  @Mock private AccountingInterface mockAccountingInterface;
+  @Mock private KeyOperationsInterface mockKeyOperationsInterface;
+  @Mock private AccountOperationsInterface mockAccountOperationsInterface;
   @Mock private SessionKeys mockSessionKeys;
-  @Mock private CacheClient mockCacheClient;
+  @Mock private SessionClient mockSessionClient;
   @Mock private StreamObserver mockStreamObserver;
 
   private User user = new User().setIdentifier(0L).setDigest("digest").setMail("mail@domain.com");
@@ -40,19 +40,23 @@ class AdministrationServiceTest {
 
   @BeforeEach
   void beforeEach() {
-    Aspects.aspectOf(ValidateUserAspect.class).initialize(mockSessionKeys, mockAccountingInterface);
+    Aspects.aspectOf(ValidateUserAspect.class)
+        .initialize(mockSessionKeys, mockAccountOperationsInterface);
     administrationService =
         new AdministrationService(
-            mockManagementInterface, mockAccountingInterface, mockSessionKeys, mockCacheClient);
+            mockKeyOperationsInterface,
+            mockAccountOperationsInterface,
+            mockSessionKeys,
+            mockSessionClient);
     long userIdentifier = user.getIdentifier();
     when(mockSessionKeys.getUserIdentifier()).thenReturn(userIdentifier);
-    when(mockAccountingInterface.getUserByIdentifier(userIdentifier))
+    when(mockAccountOperationsInterface.getUserByIdentifier(userIdentifier))
         .thenAnswer(invocation -> Optional.of(user));
   }
 
   @Test
   void releaseMailToken_codeDoesNotExist_repliesWithError() {
-    when(mockAccountingInterface.getMailToken(user.getIdentifier(), "0"))
+    when(mockAccountOperationsInterface.getMailToken(user.getIdentifier(), "0"))
         .thenReturn(Optional.empty());
 
     administrationService.releaseMailToken(
@@ -68,13 +72,13 @@ class AdministrationServiceTest {
   @Test
   void releaseMailToken_codeExists_repliesWithDefault() {
     long userIdentifier = user.getIdentifier();
-    when(mockAccountingInterface.getMailToken(userIdentifier, "0"))
+    when(mockAccountOperationsInterface.getMailToken(userIdentifier, "0"))
         .thenReturn(Optional.of(new MailToken().setIdentifier(1)));
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder().setCode("0").build(), mockStreamObserver);
 
-    verify(mockAccountingInterface).releaseMailToken(1);
+    verify(mockAccountOperationsInterface).releaseMailToken(1);
     verify(mockStreamObserver).onNext(ReleaseMailTokenResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
   }
@@ -104,7 +108,7 @@ class AdministrationServiceTest {
   @Test
   void changeMasterKey_digestsMatch() {
     IdentifiedKey identifiedKey = IdentifiedKey.newBuilder().setIdentifier(0L).build();
-    when(mockAccountingInterface.readSessions(0L))
+    when(mockAccountOperationsInterface.readSessions(0L))
         .thenReturn(
             ImmutableList.of(new Session().setKey("random"), new Session().setKey("session")));
     when(mockSessionKeys.getSessionIdentifier()).thenReturn("session");
@@ -121,9 +125,9 @@ class AdministrationServiceTest {
             .build(),
         mockStreamObserver);
 
-    verify(mockAccountingInterface)
+    verify(mockAccountOperationsInterface)
         .changeMasterKey(0L, "prefix", "suffix", ImmutableList.of(identifiedKey));
-    verify(mockCacheClient).drop(ImmutableList.of("random"));
+    verify(mockSessionClient).drop(ImmutableList.of("random"));
     verify(mockStreamObserver)
         .onNext(
             ChangeMasterKeyResponse.newBuilder()

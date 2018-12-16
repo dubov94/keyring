@@ -1,8 +1,8 @@
-package com.floreina.keyring.database;
+package com.floreina.keyring.storage;
 
 import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.Password;
-import com.floreina.keyring.aspects.DatabaseManagerAspect;
+import com.floreina.keyring.aspects.StorageManagerAspect;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
@@ -21,31 +21,31 @@ import java.util.UUID;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 
-class AccountingClientTest {
-  private AccountingClient accountingClient;
-  private ManagementClient managementClient;
+class AccountOperationsClientTest {
+  private AccountOperationsClient accountOperationsClient;
+  private KeyOperationsClient keyOperationsClient;
 
   @BeforeAll
   static void beforeAll() {
-    Aspects.aspectOf(DatabaseManagerAspect.class)
+    Aspects.aspectOf(StorageManagerAspect.class)
         .initialize(Persistence.createEntityManagerFactory("testing"));
   }
 
   @BeforeEach
   void beforeEach() {
-    accountingClient = new AccountingClient();
-    managementClient = new ManagementClient();
+    accountOperationsClient = new AccountOperationsClient();
+    keyOperationsClient = new KeyOperationsClient();
   }
 
   @Test
   void createUser_getsUniqueUsername_postsUserAndMailToken() {
     String username = createUniqueName();
     long userIdentifier =
-        accountingClient
+        accountOperationsClient
             .createUser(username, "salt", "digest", "mail@example.com", "0")
             .getIdentifier();
 
-    MailToken mailToken = accountingClient.getMailToken(userIdentifier, "0").get();
+    MailToken mailToken = accountOperationsClient.getMailToken(userIdentifier, "0").get();
     assertEquals("0", mailToken.getCode());
     assertEquals("mail@example.com", mailToken.getMail());
     User user = mailToken.getUser();
@@ -58,62 +58,66 @@ class AccountingClientTest {
   @Test
   void createUser_getsExistingUsername_throwsException() {
     String username = createUniqueName();
-    accountingClient.createUser(username, "", "", "", "0");
+    accountOperationsClient.createUser(username, "", "", "", "0");
 
     assertThrows(
-        DatabaseException.class, () -> accountingClient.createUser(username, "", "", "", "X"));
+        StorageException.class,
+        () -> accountOperationsClient.createUser(username, "", "", "", "X"));
   }
 
   @Test
   void getMailToken_DoesNotExist_returnsEmpty() {
-    assertEquals(Optional.empty(), accountingClient.getMailToken(Long.MAX_VALUE, ""));
+    assertEquals(Optional.empty(), accountOperationsClient.getMailToken(Long.MAX_VALUE, ""));
   }
 
   @Test
   void releaseMailToken_removesTokenSetsMail() {
     String username = createUniqueName();
     long userIdentifier =
-        accountingClient.createUser(username, "", "", "mail@domain.com", "0").getIdentifier();
-    MailToken mailToken = accountingClient.getMailToken(userIdentifier, "0").get();
+        accountOperationsClient
+            .createUser(username, "", "", "mail@domain.com", "0")
+            .getIdentifier();
+    MailToken mailToken = accountOperationsClient.getMailToken(userIdentifier, "0").get();
 
-    accountingClient.releaseMailToken(mailToken.getIdentifier());
+    accountOperationsClient.releaseMailToken(mailToken.getIdentifier());
 
-    assertEquals(Optional.empty(), accountingClient.getMailToken(userIdentifier, "0"));
+    assertEquals(Optional.empty(), accountOperationsClient.getMailToken(userIdentifier, "0"));
     assertEquals(
-        "mail@domain.com", accountingClient.getUserByIdentifier(userIdentifier).get().getMail());
+        "mail@domain.com",
+        accountOperationsClient.getUserByIdentifier(userIdentifier).get().getMail());
   }
 
   @Test
   void getUserByName_userDoesNotExist_returnsEmpty() {
-    assertEquals(Optional.empty(), accountingClient.getUserByName(""));
+    assertEquals(Optional.empty(), accountOperationsClient.getUserByName(""));
   }
 
   @Test
   void getUserByIdentifier_userDoesNotExist_returnsEmpty() {
-    assertEquals(Optional.empty(), accountingClient.getUserByIdentifier(Long.MAX_VALUE));
+    assertEquals(Optional.empty(), accountOperationsClient.getUserByIdentifier(Long.MAX_VALUE));
   }
 
   @Test
   void changeMasterKey_updatesSaltDigestAndKeys() {
     long userIdentifier = createActiveUser();
     long keyIdentifier =
-        managementClient
+        keyOperationsClient
             .createKey(userIdentifier, Password.newBuilder().setValue("").addTags("").build())
             .getIdentifier();
 
     Password password = Password.newBuilder().setValue("value").addTags("tag").build();
-    accountingClient.changeMasterKey(
+    accountOperationsClient.changeMasterKey(
         userIdentifier,
         "salt",
         "digest",
         ImmutableList.of(
             IdentifiedKey.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build()));
 
-    User user = accountingClient.getUserByIdentifier(userIdentifier).get();
+    User user = accountOperationsClient.getUserByIdentifier(userIdentifier).get();
     assertEquals("salt", user.getSalt());
     assertEquals("digest", user.getDigest());
     List<Password> passwords =
-        managementClient
+        keyOperationsClient
             .readKeys(userIdentifier)
             .stream()
             .map(Utilities::keyToPassword)
@@ -125,20 +129,20 @@ class AccountingClientTest {
   @Test
   void changeMasterKey_lacksKeyUpdates_throwsException() {
     long userIdentifier = createActiveUser();
-    managementClient.createKey(userIdentifier, Password.getDefaultInstance());
+    keyOperationsClient.createKey(userIdentifier, Password.getDefaultInstance());
 
     assertThrows(
-        DatabaseException.class,
-        () -> accountingClient.changeMasterKey(userIdentifier, "", "", ImmutableList.of()));
+        StorageException.class,
+        () -> accountOperationsClient.changeMasterKey(userIdentifier, "", "", ImmutableList.of()));
   }
 
   @Test
   void createSession_putsSession() {
     long userIdentifier = createActiveUser();
 
-    accountingClient.createSession(userIdentifier, "key", "127.0.0.1", "Chrome/0.0.0");
+    accountOperationsClient.createSession(userIdentifier, "key", "127.0.0.1", "Chrome/0.0.0");
 
-    List<Session> list = accountingClient.readSessions(userIdentifier);
+    List<Session> list = accountOperationsClient.readSessions(userIdentifier);
     assertEquals(1, list.size());
     Session session = list.get(0);
     assertEquals("key", session.getKey());
@@ -148,9 +152,10 @@ class AccountingClientTest {
 
   private long createActiveUser() {
     String username = createUniqueName();
-    long userIdentifier = accountingClient.createUser(username, "", "", "", "").getIdentifier();
-    MailToken mailToken = accountingClient.getMailToken(userIdentifier, "").get();
-    accountingClient.releaseMailToken(mailToken.getIdentifier());
+    long userIdentifier =
+        accountOperationsClient.createUser(username, "", "", "", "").getIdentifier();
+    MailToken mailToken = accountOperationsClient.getMailToken(userIdentifier, "").get();
+    accountOperationsClient.releaseMailToken(mailToken.getIdentifier());
     return userIdentifier;
   }
 

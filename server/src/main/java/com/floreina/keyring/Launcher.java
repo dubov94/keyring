@@ -1,6 +1,6 @@
 package com.floreina.keyring;
 
-import com.floreina.keyring.aspects.DatabaseManagerAspect;
+import com.floreina.keyring.aspects.StorageManagerAspect;
 import com.floreina.keyring.aspects.ValidateUserAspect;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -25,8 +25,8 @@ class Launcher {
   private void initialize() {
     component = DaggerComponent.create();
     Aspects.aspectOf(ValidateUserAspect.class)
-        .initialize(component.sessionKeys(), component.accountingInterface());
-    Aspects.aspectOf(DatabaseManagerAspect.class).initialize(component.entityManagerFactory());
+        .initialize(component.sessionKeys(), component.accountOperationsInterface());
+    Aspects.aspectOf(StorageManagerAspect.class).initialize(component.entityManagerFactory());
   }
 
   private void start() throws IOException {
@@ -34,11 +34,11 @@ class Launcher {
         ServerBuilder.forPort(591)
             .addService(
                 ServerInterceptors.intercept(
-                    component.authenticationService(), component.recognitionInterceptor()))
+                    component.authenticationService(), component.userMetadataInterceptor()))
             .addService(
                 ServerInterceptors.intercept(
                     component.administrationService(),
-                    component.recognitionInterceptor(),
+                    component.userMetadataInterceptor(),
                     component.sessionInterceptor()))
             .build();
     Runtime.getRuntime().addShutdownHook(new Thread(this::stop));

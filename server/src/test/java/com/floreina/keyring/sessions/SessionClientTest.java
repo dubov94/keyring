@@ -1,4 +1,4 @@
-package com.floreina.keyring.cache;
+package com.floreina.keyring.sessions;
 
 import com.floreina.keyring.Cryptography;
 import com.google.gson.Gson;
@@ -22,12 +22,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CacheClientTest {
+class SessionClientTest {
   private static RedisServer redisServer;
   private static JedisPool jedisPool;
   private static Gson gson;
   @Mock private Cryptography mockCryptography;
-  private CacheClient cacheClient;
+  private SessionClient sessionClient;
 
   @BeforeAll
   static void beforeAll() throws IOException {
@@ -44,7 +44,7 @@ class CacheClientTest {
 
   @BeforeEach
   void beforeEach() {
-    cacheClient = new CacheClient(jedisPool, mockCryptography, gson);
+    sessionClient = new SessionClient(jedisPool, mockCryptography, gson);
   }
 
   @Test
@@ -52,26 +52,26 @@ class CacheClientTest {
     String identifier = generateUniqueIdentifier();
     when(mockCryptography.generateSessionKey()).thenReturn(identifier);
 
-    Optional<String> reply = cacheClient.create(new UserCast().setIdentifier(0L));
+    Optional<String> reply = sessionClient.create(new UserCast().setIdentifier(0L));
 
     assertEquals(identifier, reply.get());
-    assertEquals(0L, cacheClient.readAndUpdateExpirationTime(identifier).get().getIdentifier());
+    assertEquals(0L, sessionClient.readAndUpdateExpirationTime(identifier).get().getIdentifier());
   }
 
   @Test
   void create_getsDuplicateIdentifier_returnsEmpty() {
     String identifier = generateUniqueIdentifier();
     when(mockCryptography.generateSessionKey()).thenReturn(identifier);
-    cacheClient.create(new UserCast().setIdentifier(0L));
+    sessionClient.create(new UserCast().setIdentifier(0L));
 
-    assertFalse(cacheClient.create(new UserCast().setIdentifier(1L)).isPresent());
+    assertFalse(sessionClient.create(new UserCast().setIdentifier(1L)).isPresent());
   }
 
   @Test
   void readAndUpdateExpirationTime_noSuchIdentifier_returnsEmpty() {
     String identifier = generateUniqueIdentifier();
 
-    assertFalse(cacheClient.readAndUpdateExpirationTime(identifier).isPresent());
+    assertFalse(sessionClient.readAndUpdateExpirationTime(identifier).isPresent());
   }
 
   @Test
@@ -79,11 +79,11 @@ class CacheClientTest {
     try (Jedis jedis = jedisPool.getResource()) {
       String identifier = generateUniqueIdentifier();
       when(mockCryptography.generateSessionKey()).thenReturn(identifier);
-      cacheClient.create(new UserCast().setIdentifier(0L));
+      sessionClient.create(new UserCast().setIdentifier(0L));
       Thread.sleep(10);
       long ttlBefore = jedis.pttl(identifier);
 
-      Optional<UserCast> reply = cacheClient.readAndUpdateExpirationTime(identifier);
+      Optional<UserCast> reply = sessionClient.readAndUpdateExpirationTime(identifier);
       long ttlAfter = jedis.pttl(identifier);
 
       assertEquals(0L, reply.get().getIdentifier());

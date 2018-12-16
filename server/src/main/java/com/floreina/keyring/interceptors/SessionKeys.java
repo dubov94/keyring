@@ -1,6 +1,6 @@
 package com.floreina.keyring.interceptors;
 
-import com.floreina.keyring.cache.UserCast;
+import com.floreina.keyring.sessions.UserCast;
 import io.grpc.Context;
 import io.grpc.Metadata;
 

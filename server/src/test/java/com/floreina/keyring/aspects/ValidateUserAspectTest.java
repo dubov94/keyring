@@ -1,9 +1,9 @@
 package com.floreina.keyring.aspects;
 
 import com.floreina.keyring.aspects.Annotations.ValidateUser;
-import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionKeys;
+import com.floreina.keyring.storage.AccountOperationsInterface;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ValidateUserAspectTest {
-  @Mock private AccountingInterface mockAccountingInterface;
+  @Mock private AccountOperationsInterface mockAccountOperationsInterface;
   @Mock private SessionKeys mockSessionKeys;
   @Mock private ProceedingJoinPoint mockProceedingJoinPoint;
   @Mock private StreamObserver mockStreamObserver;
@@ -34,13 +34,13 @@ class ValidateUserAspectTest {
   @BeforeEach
   void beforeEach() {
     validateUserAspect = new ValidateUserAspect();
-    validateUserAspect.initialize(mockSessionKeys, mockAccountingInterface);
+    validateUserAspect.initialize(mockSessionKeys, mockAccountOperationsInterface);
   }
 
   @Test
   void around_getsAbsentUser_returnsUnauthenticated() throws Throwable {
     when(mockSessionKeys.getUserIdentifier()).thenReturn(0L);
-    when(mockAccountingInterface.getUserByIdentifier(0L)).thenReturn(Optional.empty());
+    when(mockAccountOperationsInterface.getUserByIdentifier(0L)).thenReturn(Optional.empty());
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
     validateUserAspect.around(createValidateUserAnnotation(), mockProceedingJoinPoint);
@@ -53,7 +53,8 @@ class ValidateUserAspectTest {
   @Test
   void around_getsUserWithNoMail_returnsUnauthenticated() throws Throwable {
     when(mockSessionKeys.getUserIdentifier()).thenReturn(0L);
-    when(mockAccountingInterface.getUserByIdentifier(0L)).thenReturn(Optional.of(new User()));
+    when(mockAccountOperationsInterface.getUserByIdentifier(0L))
+        .thenReturn(Optional.of(new User()));
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
     validateUserAspect.around(createValidateUserAnnotation(), mockProceedingJoinPoint);
@@ -66,7 +67,7 @@ class ValidateUserAspectTest {
   @Test
   void around_getsUserWithMail_callsJoinPoint() throws Throwable {
     when(mockSessionKeys.getUserIdentifier()).thenReturn(0L);
-    when(mockAccountingInterface.getUserByIdentifier(0L))
+    when(mockAccountOperationsInterface.getUserByIdentifier(0L))
         .thenReturn(Optional.of(new User().setMail("mail@domain.com")));
 
     validateUserAspect.around(createValidateUserAnnotation(), mockProceedingJoinPoint);

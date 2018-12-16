@@ -1,4 +1,4 @@
-package com.floreina.keyring.database;
+package com.floreina.keyring.storage;
 
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.entities.User_;

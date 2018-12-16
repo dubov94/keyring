@@ -1,4 +1,4 @@
-package com.floreina.keyring.database;
+package com.floreina.keyring.storage;
 
 import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.Password;
@@ -6,7 +6,7 @@ import com.floreina.keyring.entities.Key;
 
 import java.util.List;
 
-public interface ManagementInterface {
+public interface KeyOperationsInterface {
   Key createKey(long userIdentifier, Password proto);
 
   List<Key> readKeys(long userIdentifier);

@@ -2,13 +2,13 @@ package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
 import com.floreina.keyring.aspects.Annotations.ValidateUser;
-import com.floreina.keyring.cache.CacheClient;
-import com.floreina.keyring.database.AccountingInterface;
-import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionKeys;
+import com.floreina.keyring.sessions.SessionClient;
+import com.floreina.keyring.storage.AccountOperationsInterface;
+import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;
 
 import javax.inject.Inject;
@@ -20,21 +20,21 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 public class AdministrationService extends AdministrationGrpc.AdministrationImplBase {
-  private ManagementInterface managementInterface;
-  private AccountingInterface accountingInterface;
+  private KeyOperationsInterface keyOperationsInterface;
+  private AccountOperationsInterface accountOperationsInterface;
   private SessionKeys sessionKeys;
-  private CacheClient cacheClient;
+  private SessionClient sessionClient;
 
   @Inject
   AdministrationService(
-      ManagementInterface managementInterface,
-      AccountingInterface accountingInterface,
+      KeyOperationsInterface keyOperationsInterface,
+      AccountOperationsInterface accountOperationsInterface,
       SessionKeys sessionKeys,
-      CacheClient cacheClient) {
-    this.managementInterface = managementInterface;
-    this.accountingInterface = accountingInterface;
+      SessionClient sessionClient) {
+    this.keyOperationsInterface = keyOperationsInterface;
+    this.accountOperationsInterface = accountOperationsInterface;
     this.sessionKeys = sessionKeys;
-    this.cacheClient = cacheClient;
+    this.sessionClient = sessionClient;
   }
 
   @Override
@@ -43,14 +43,14 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       ReleaseMailTokenRequest request, StreamObserver<ReleaseMailTokenResponse> response) {
     long userIdentifier = sessionKeys.getUserIdentifier();
     Optional<MailToken> maybeMailToken =
-        accountingInterface.getMailToken(userIdentifier, request.getCode());
+        accountOperationsInterface.getMailToken(userIdentifier, request.getCode());
     if (!maybeMailToken.isPresent()) {
       response.onNext(
           ReleaseMailTokenResponse.newBuilder()
               .setError(ReleaseMailTokenResponse.Error.INVALID_CODE)
               .build());
     } else {
-      accountingInterface.releaseMailToken(maybeMailToken.get().getIdentifier());
+      accountOperationsInterface.releaseMailToken(maybeMailToken.get().getIdentifier());
       response.onNext(ReleaseMailTokenResponse.getDefaultInstance());
     }
     response.onCompleted();
@@ -60,7 +60,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void createKey(CreateKeyRequest request, StreamObserver<CreateKeyResponse> response) {
     long identifier =
-        managementInterface
+        keyOperationsInterface
             .createKey(sessionKeys.getUserIdentifier(), request.getPassword())
             .getIdentifier();
     response.onNext(CreateKeyResponse.newBuilder().setIdentifier(identifier).build());
@@ -71,7 +71,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void readKeys(ReadKeysRequest request, StreamObserver<ReadKeysResponse> response) {
     List<IdentifiedKey> keys =
-        managementInterface
+        keyOperationsInterface
             .readKeys(sessionKeys.getUserIdentifier())
             .stream()
             .map(Utilities::entityToIdentifiedKey)
@@ -83,7 +83,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @Override
   @ValidateUser
   public void updateKey(UpdateKeyRequest request, StreamObserver<UpdateKeyResponse> response) {
-    managementInterface.updateKey(sessionKeys.getUserIdentifier(), request.getKey());
+    keyOperationsInterface.updateKey(sessionKeys.getUserIdentifier(), request.getKey());
     response.onNext(UpdateKeyResponse.getDefaultInstance());
     response.onCompleted();
   }
@@ -91,7 +91,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @Override
   @ValidateUser
   public void deleteKey(DeleteKeyRequest request, StreamObserver<DeleteKeyResponse> response) {
-    managementInterface.deleteKey(sessionKeys.getUserIdentifier(), request.getIdentifier());
+    keyOperationsInterface.deleteKey(sessionKeys.getUserIdentifier(), request.getIdentifier());
     response.onNext(DeleteKeyResponse.getDefaultInstance());
     response.onCompleted();
   }
@@ -101,7 +101,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void changeMasterKey(
       ChangeMasterKeyRequest request, StreamObserver<ChangeMasterKeyResponse> response) {
     long identifier = sessionKeys.getUserIdentifier();
-    Optional<User> maybeUser = accountingInterface.getUserByIdentifier(identifier);
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(identifier);
     if (!maybeUser.isPresent()) {
       throw new ConcurrentModificationException();
     } else {
@@ -113,10 +113,10 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
                 .build());
       } else {
         ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
-        accountingInterface.changeMasterKey(
+        accountOperationsInterface.changeMasterKey(
             identifier, renewal.getSalt(), renewal.getDigest(), renewal.getKeysList());
-        List<Session> sessions = accountingInterface.readSessions(identifier);
-        cacheClient.drop(
+        List<Session> sessions = accountOperationsInterface.readSessions(identifier);
+        sessionClient.drop(
             sessions
                 .stream()
                 .map(Session::getKey)

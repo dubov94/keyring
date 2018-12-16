@@ -1,9 +1,9 @@
 package com.floreina.keyring.aspects;
 
 import com.floreina.keyring.aspects.Annotations.ValidateUser;
-import com.floreina.keyring.database.AccountingInterface;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionKeys;
+import com.floreina.keyring.storage.AccountOperationsInterface;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -16,17 +16,19 @@ import java.util.Optional;
 @Aspect
 public class ValidateUserAspect {
   private SessionKeys sessionKeys;
-  private AccountingInterface accountingInterface;
+  private AccountOperationsInterface accountOperationsInterface;
 
-  public void initialize(SessionKeys sessionKeys, AccountingInterface accountingInterface) {
+  public void initialize(
+      SessionKeys sessionKeys, AccountOperationsInterface accountOperationsInterface) {
     this.sessionKeys = sessionKeys;
-    this.accountingInterface = accountingInterface;
+    this.accountOperationsInterface = accountOperationsInterface;
   }
 
   @Around("@annotation(validateUser) && execution(* *(..))")
   public void around(ValidateUser validateUser, ProceedingJoinPoint proceedingJoinPoint)
       throws Throwable {
-    Optional<User> user = accountingInterface.getUserByIdentifier(sessionKeys.getUserIdentifier());
+    Optional<User> user =
+        accountOperationsInterface.getUserByIdentifier(sessionKeys.getUserIdentifier());
     if (user.isPresent()
         && (Arrays.asList(validateUser.states()).contains(ValidateUser.UserState.PENDING)
             || Utilities.isUserActive(user.get()))) {

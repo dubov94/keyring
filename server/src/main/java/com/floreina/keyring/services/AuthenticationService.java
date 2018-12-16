@@ -1,12 +1,12 @@
 package com.floreina.keyring.services;
 
 import com.floreina.keyring.*;
-import com.floreina.keyring.cache.CacheClient;
-import com.floreina.keyring.cache.UserCast;
-import com.floreina.keyring.database.AccountingInterface;
-import com.floreina.keyring.database.ManagementInterface;
 import com.floreina.keyring.entities.User;
-import com.floreina.keyring.interceptors.RecognitionKeys;
+import com.floreina.keyring.interceptors.UserMetadataKeys;
+import com.floreina.keyring.sessions.SessionClient;
+import com.floreina.keyring.sessions.UserCast;
+import com.floreina.keyring.storage.AccountOperationsInterface;
+import com.floreina.keyring.storage.KeyOperationsInterface;
 import com.floreina.keyring.templates.CodeBodyRendererFactory;
 import com.floreina.keyring.templates.CodeHeadRendererFactory;
 import io.grpc.stub.StreamObserver;
@@ -18,39 +18,39 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
-  private AccountingInterface accountingInterface;
-  private ManagementInterface managementInterface;
-  private CacheClient cacheClient;
+  private AccountOperationsInterface accountOperationsInterface;
+  private KeyOperationsInterface keyOperationsInterface;
+  private SessionClient sessionClient;
   private Cryptography cryptography;
   private Post post;
   private CodeHeadRendererFactory codeHeadRendererFactory;
   private CodeBodyRendererFactory codeBodyRendererFactory;
-  private RecognitionKeys recognitionKeys;
+  private UserMetadataKeys userMetadataKeys;
 
   @Inject
   AuthenticationService(
-      AccountingInterface accountingInterface,
-      ManagementInterface managementInterface,
+      AccountOperationsInterface accountOperationsInterface,
+      KeyOperationsInterface keyOperationsInterface,
       Cryptography cryptography,
       Post post,
       CodeHeadRendererFactory codeHeadRendererFactory,
       CodeBodyRendererFactory codeBodyRendererFactory,
-      CacheClient cacheClient,
-      RecognitionKeys recognitionKeys) {
-    this.accountingInterface = accountingInterface;
-    this.managementInterface = managementInterface;
+      SessionClient sessionClient,
+      UserMetadataKeys userMetadataKeys) {
+    this.accountOperationsInterface = accountOperationsInterface;
+    this.keyOperationsInterface = keyOperationsInterface;
     this.cryptography = cryptography;
     this.post = post;
     this.codeHeadRendererFactory = codeHeadRendererFactory;
     this.codeBodyRendererFactory = codeBodyRendererFactory;
-    this.cacheClient = cacheClient;
-    this.recognitionKeys = recognitionKeys;
+    this.sessionClient = sessionClient;
+    this.userMetadataKeys = userMetadataKeys;
   }
 
   @Override
   public void register(RegisterRequest request, StreamObserver<RegisterResponse> response) {
     String username = request.getUsername();
-    if (accountingInterface.getUserByName(username).isPresent()) {
+    if (accountOperationsInterface.getUserByName(username).isPresent()) {
       response.onNext(
           RegisterResponse.newBuilder().setError(RegisterResponse.Error.NAME_TAKEN).build());
     } else {
@@ -58,16 +58,16 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       String digest = request.getDigest();
       String mail = request.getMail();
       String code = cryptography.generateSecurityCode();
-      User user = accountingInterface.createUser(username, salt, digest, mail, code);
-      Optional<String> sessionKey = cacheClient.create(UserCast.fromUser(user));
+      User user = accountOperationsInterface.createUser(username, salt, digest, mail, code);
+      Optional<String> sessionKey = sessionClient.create(UserCast.fromUser(user));
       if (!sessionKey.isPresent()) {
         throw new IllegalStateException();
       } else {
-        accountingInterface.createSession(
+        accountOperationsInterface.createSession(
             user.getIdentifier(),
             sessionKey.get(),
-            recognitionKeys.getIpAddress(),
-            recognitionKeys.getUserAgent());
+            userMetadataKeys.getIpAddress(),
+            userMetadataKeys.getUserAgent());
         String head = codeHeadRendererFactory.newRenderer().setCode(code).render();
         String body = codeBodyRendererFactory.newRenderer().setCode(code).render();
         post.send(mail, head, body);
@@ -79,7 +79,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
 
   @Override
   public void getSalt(GetSaltRequest request, StreamObserver<GetSaltResponse> response) {
-    Optional<User> maybeUser = accountingInterface.getUserByName(request.getUsername());
+    Optional<User> maybeUser = accountOperationsInterface.getUserByName(request.getUsername());
     if (!maybeUser.isPresent()) {
       response.onNext(
           GetSaltResponse.newBuilder().setError(GetSaltResponse.Error.NOT_FOUND).build());
@@ -91,7 +91,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
 
   @Override
   public void logIn(LogInRequest request, StreamObserver<LogInResponse> response) {
-    Optional<User> maybeUser = accountingInterface.getUserByName(request.getUsername());
+    Optional<User> maybeUser = accountOperationsInterface.getUserByName(request.getUsername());
     if (!maybeUser.isPresent()) {
       response.onNext(
           LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
@@ -101,15 +101,15 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         response.onNext(
             LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
       } else {
-        Optional<String> sessionKey = cacheClient.create(UserCast.fromUser(user));
+        Optional<String> sessionKey = sessionClient.create(UserCast.fromUser(user));
         if (!sessionKey.isPresent()) {
           throw new IllegalStateException();
         } else {
-          accountingInterface.createSession(
+          accountOperationsInterface.createSession(
               user.getIdentifier(),
               sessionKey.get(),
-              recognitionKeys.getIpAddress(),
-              recognitionKeys.getUserAgent());
+              userMetadataKeys.getIpAddress(),
+              userMetadataKeys.getUserAgent());
           LogInResponse.Payload.Builder payloadBuilder = LogInResponse.Payload.newBuilder();
           payloadBuilder.setSessionKey(sessionKey.get());
           if (user.getMail() == null) {
@@ -118,7 +118,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
             payloadBuilder.setKeySet(
                 LogInResponse.Payload.KeySet.newBuilder()
                     .addAllItems(
-                        managementInterface
+                        keyOperationsInterface
                             .readKeys(user.getIdentifier())
                             .stream()
                             .map(Utilities::entityToIdentifiedKey)
@@ -135,7 +135,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   @Override
   public void keepAlive(KeepAliveRequest request, StreamObserver<KeepAliveResponse> response) {
     Optional<UserCast> maybeUserCast =
-        cacheClient.readAndUpdateExpirationTime(request.getSessionKey());
+        sessionClient.readAndUpdateExpirationTime(request.getSessionKey());
     KeepAliveResponse.Builder builder = KeepAliveResponse.newBuilder();
     if (!maybeUserCast.isPresent()) {
       builder.setError(KeepAliveResponse.Error.INVALID_KEY);

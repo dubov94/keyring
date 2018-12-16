@@ -1,6 +1,6 @@
 package com.floreina.keyring.aspects;
 
-import com.floreina.keyring.database.DatabaseException;
+import com.floreina.keyring.storage.StorageException;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,18 +17,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DatabaseManagerAspectTest {
+class StorageManagerAspectTest {
   @Mock private EntityManagerFactory mockEntityManagerFactory;
   @Mock private EntityManager mockEntityManager;
   @Mock private EntityTransaction mockEntityTransaction;
   @Mock private ProceedingJoinPoint mockProceedingJoinPoint;
 
-  private DatabaseManagerAspect databaseManagerAspect;
+  private StorageManagerAspect storageManagerAspect;
 
   @BeforeEach
   void beforeEach() {
-    databaseManagerAspect = new DatabaseManagerAspect();
-    databaseManagerAspect.initialize(mockEntityManagerFactory);
+    storageManagerAspect = new StorageManagerAspect();
+    storageManagerAspect.initialize(mockEntityManagerFactory);
     when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
     when(mockEntityManager.getTransaction()).thenReturn(mockEntityTransaction);
   }
@@ -38,14 +38,14 @@ class DatabaseManagerAspectTest {
     when(mockProceedingJoinPoint.proceed())
         .then(
             (Void) -> {
-              assertEquals(mockEntityManager, databaseManagerAspect.get(null));
-              Thread thread = new Thread(() -> assertEquals(null, databaseManagerAspect.get(null)));
+              assertEquals(mockEntityManager, storageManagerAspect.get(null));
+              Thread thread = new Thread(() -> assertEquals(null, storageManagerAspect.get(null)));
               thread.start();
               thread.join();
               return null;
             });
 
-    databaseManagerAspect.around(null, mockProceedingJoinPoint);
+    storageManagerAspect.around(null, mockProceedingJoinPoint);
 
     verify(mockProceedingJoinPoint).proceed();
   }
@@ -56,18 +56,18 @@ class DatabaseManagerAspectTest {
     when(mockAnotherJoinPoint.proceed())
         .then(
             (Void) -> {
-              assertEquals(mockEntityManager, databaseManagerAspect.get(null));
+              assertEquals(mockEntityManager, storageManagerAspect.get(null));
               return null;
             });
     when(mockProceedingJoinPoint.proceed())
         .then(
             (Void) -> {
-              assertEquals(mockEntityManager, databaseManagerAspect.get(null));
-              databaseManagerAspect.around(null, mockAnotherJoinPoint);
+              assertEquals(mockEntityManager, storageManagerAspect.get(null));
+              storageManagerAspect.around(null, mockAnotherJoinPoint);
               return null;
             });
 
-    databaseManagerAspect.around(null, mockProceedingJoinPoint);
+    storageManagerAspect.around(null, mockProceedingJoinPoint);
 
     verify(mockProceedingJoinPoint).proceed();
   }
@@ -78,11 +78,11 @@ class DatabaseManagerAspectTest {
     when(mockEntityTransaction.isActive()).thenReturn(true);
 
     assertThrows(
-        DatabaseException.class, () -> databaseManagerAspect.around(null, mockProceedingJoinPoint));
+        StorageException.class, () -> storageManagerAspect.around(null, mockProceedingJoinPoint));
 
     verify(mockEntityTransaction).rollback();
     verify(mockEntityManager).close();
-    assertEquals(null, databaseManagerAspect.get(null));
+    assertEquals(null, storageManagerAspect.get(null));
   }
 
   @Test
@@ -90,7 +90,7 @@ class DatabaseManagerAspectTest {
     when(mockEntityManager.getTransaction()).thenThrow(new RuntimeException());
 
     assertThrows(
-        DatabaseException.class, () -> databaseManagerAspect.around(null, mockProceedingJoinPoint));
+        StorageException.class, () -> storageManagerAspect.around(null, mockProceedingJoinPoint));
   }
 
   @Test
@@ -99,7 +99,7 @@ class DatabaseManagerAspectTest {
     when(mockEntityTransaction.isActive()).thenReturn(false);
 
     assertThrows(
-        DatabaseException.class, () -> databaseManagerAspect.around(null, mockProceedingJoinPoint));
+        StorageException.class, () -> storageManagerAspect.around(null, mockProceedingJoinPoint));
 
     verify(mockEntityTransaction, never()).rollback();
   }
@@ -110,7 +110,7 @@ class DatabaseManagerAspectTest {
     when(mockEntityTransaction.isActive()).thenThrow(new RuntimeException());
 
     assertThrows(
-        DatabaseException.class, () -> databaseManagerAspect.around(null, mockProceedingJoinPoint));
+        StorageException.class, () -> storageManagerAspect.around(null, mockProceedingJoinPoint));
   }
 
   @Test
@@ -120,13 +120,13 @@ class DatabaseManagerAspectTest {
     doThrow(new RuntimeException()).when(mockEntityTransaction).rollback();
 
     assertThrows(
-        DatabaseException.class, () -> databaseManagerAspect.around(null, mockProceedingJoinPoint));
+        StorageException.class, () -> storageManagerAspect.around(null, mockProceedingJoinPoint));
   }
 
   @Test
   void around_joinPointReturnsValue_propagatesValueBack() throws Throwable {
     when(mockProceedingJoinPoint.proceed()).thenReturn(0);
 
-    assertEquals(0, databaseManagerAspect.around(null, mockProceedingJoinPoint));
+    assertEquals(0, storageManagerAspect.around(null, mockProceedingJoinPoint));
   }
 }

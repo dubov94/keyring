@@ -1,4 +1,4 @@
-package com.floreina.keyring.database;
+package com.floreina.keyring.storage;
 
 import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.Password;
@@ -13,7 +13,7 @@ import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 
-public class ManagementClient implements ManagementInterface {
+public class KeyOperationsClient implements KeyOperationsInterface {
   @EntityController private EntityManager entityManager;
 
   @Override

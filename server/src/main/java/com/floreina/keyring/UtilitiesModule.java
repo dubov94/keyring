@@ -1,8 +1,8 @@
 package com.floreina.keyring;
 
-import com.floreina.keyring.interceptors.RecognitionInterceptor;
-import com.floreina.keyring.interceptors.RecognitionKeys;
 import com.floreina.keyring.interceptors.SessionKeys;
+import com.floreina.keyring.interceptors.UserMetadataInterceptor;
+import com.floreina.keyring.interceptors.UserMetadataKeys;
 import com.google.gson.Gson;
 import dagger.Module;
 import dagger.Provides;
@@ -34,13 +34,13 @@ class UtilitiesModule {
 
   @Provides
   @Singleton
-  static RecognitionInterceptor provideRecognitionInterceptor() {
-    return new RecognitionInterceptor();
+  static UserMetadataInterceptor provideUserMetadataInterceptor() {
+    return new UserMetadataInterceptor();
   }
 
   @Provides
   @Singleton
-  static RecognitionKeys provideRecognitionKeys() {
-    return new RecognitionKeys();
+  static UserMetadataKeys provideUserMetadataKeys() {
+    return new UserMetadataKeys();
   }
 }

@@ -1,8 +1,8 @@
-package com.floreina.keyring.database;
+package com.floreina.keyring.storage;
 
 import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.Password;
-import com.floreina.keyring.aspects.DatabaseManagerAspect;
+import com.floreina.keyring.aspects.StorageManagerAspect;
 import com.floreina.keyring.entities.Utilities;
 import com.google.common.collect.ImmutableList;
 import org.aspectj.lang.Aspects;
@@ -20,20 +20,20 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ManagementClientTest {
+class KeyOperationsClientTest {
   private static final EntityManagerFactory entityManagerFactory =
       Persistence.createEntityManagerFactory("testing");
   private static Random random = new Random();
-  private ManagementClient managementClient;
+  private KeyOperationsClient keyOperationsClient;
 
   @BeforeAll
   static void beforeAll() throws ClassNotFoundException {
-    Aspects.aspectOf(DatabaseManagerAspect.class).initialize(entityManagerFactory);
+    Aspects.aspectOf(StorageManagerAspect.class).initialize(entityManagerFactory);
   }
 
   @BeforeEach
   void beforeEach() {
-    managementClient = new ManagementClient();
+    keyOperationsClient = new KeyOperationsClient();
   }
 
   @Test
@@ -42,10 +42,10 @@ class ManagementClientTest {
     Password password =
         Password.newBuilder().setValue("password").addAllTags(ImmutableList.of("tag")).build();
 
-    managementClient.createKey(userIdentifier, password);
+    keyOperationsClient.createKey(userIdentifier, password);
 
     List<Password> passwords =
-        managementClient
+        keyOperationsClient
             .readKeys(userIdentifier)
             .stream()
             .map(Utilities::keyToPassword)
@@ -58,7 +58,7 @@ class ManagementClientTest {
   void updateKey() {
     long userIdentifier = createUniqueUser();
     long keyIdentifier =
-        managementClient
+        keyOperationsClient
             .createKey(
                 userIdentifier,
                 Password.newBuilder().setValue("x").addAllTags(ImmutableList.of("a", "b")).build())
@@ -66,12 +66,12 @@ class ManagementClientTest {
     Password password =
         Password.newBuilder().setValue("y").addAllTags(ImmutableList.of("c", "d")).build();
 
-    managementClient.updateKey(
+    keyOperationsClient.updateKey(
         userIdentifier,
         IdentifiedKey.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build());
 
     List<Password> passwords =
-        managementClient
+        keyOperationsClient
             .readKeys(userIdentifier)
             .stream()
             .map(Utilities::keyToPassword)
@@ -84,17 +84,19 @@ class ManagementClientTest {
   void deleteKey() {
     long userIdentifier = createUniqueUser();
     long keyIdentifier =
-        managementClient.createKey(userIdentifier, Password.getDefaultInstance()).getIdentifier();
-    assertEquals(1, managementClient.readKeys(userIdentifier).size());
+        keyOperationsClient
+            .createKey(userIdentifier, Password.getDefaultInstance())
+            .getIdentifier();
+    assertEquals(1, keyOperationsClient.readKeys(userIdentifier).size());
 
-    managementClient.deleteKey(userIdentifier, keyIdentifier);
+    keyOperationsClient.deleteKey(userIdentifier, keyIdentifier);
 
-    assertTrue(managementClient.readKeys(userIdentifier).isEmpty());
+    assertTrue(keyOperationsClient.readKeys(userIdentifier).isEmpty());
   }
 
   private long createUniqueUser() {
-    AccountingClient accountingClient = new AccountingClient();
-    return accountingClient
+    AccountOperationsClient accountOperationsClient = new AccountOperationsClient();
+    return accountOperationsClient
         .createUser(UUID.randomUUID().toString(), "", "", "", "")
         .getIdentifier();
   }

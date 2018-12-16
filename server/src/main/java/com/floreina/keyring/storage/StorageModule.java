@@ -1,4 +1,4 @@
-package com.floreina.keyring.database;
+package com.floreina.keyring.storage;
 
 import com.floreina.keyring.Environment;
 import dagger.Module;
@@ -9,7 +9,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 @Module
-public class DatabaseModule {
+public class StorageModule {
   @Provides
   @Singleton
   static EntityManagerFactory provideEntityManagerFactory() {
@@ -18,12 +18,12 @@ public class DatabaseModule {
   }
 
   @Provides
-  static AccountingInterface provideAccountingInterface() {
-    return new AccountingClient();
+  static AccountOperationsInterface provideAccountOperationsInterface() {
+    return new AccountOperationsClient();
   }
 
   @Provides
-  static ManagementInterface provideManagementInterface() {
-    return new ManagementClient();
+  static KeyOperationsInterface provideKeyOperationsInterface() {
+    return new KeyOperationsClient();
   }
 }
