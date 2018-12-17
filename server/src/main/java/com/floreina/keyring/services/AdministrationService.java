@@ -149,7 +149,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         accountOperationsInterface.changeMasterKey(
             identifier, renewal.getSalt(), renewal.getDigest(), renewal.getKeysList());
         List<Session> sessions = accountOperationsInterface.readSessions(identifier);
-        keyValueClient.drop(
+        keyValueClient.dropSessions(
             sessions
                 .stream()
                 .map(Session::getKey)

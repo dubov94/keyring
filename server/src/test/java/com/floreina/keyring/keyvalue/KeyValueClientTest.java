@@ -48,42 +48,44 @@ class KeyValueClientTest {
   }
 
   @Test
-  void create_getsUniqueIdentifier_putsSessionToUser() {
+  void createSession_getsUniqueIdentifier_putsSessionToUser() {
     String identifier = generateUniqueIdentifier();
     when(mockCryptography.generateSessionKey()).thenReturn(identifier);
 
-    Optional<String> reply = keyValueClient.create(new UserCast().setIdentifier(0L));
+    Optional<String> reply = keyValueClient.createSession(new UserCast().setIdentifier(0L));
 
     assertEquals(identifier, reply.get());
-    assertEquals(0L, keyValueClient.readAndUpdateExpirationTime(identifier).get().getIdentifier());
+    assertEquals(
+        0L, keyValueClient.getSessionAndUpdateItsExpirationTime(identifier).get().getIdentifier());
   }
 
   @Test
-  void create_getsDuplicateIdentifier_returnsEmpty() {
+  void createSession_getsDuplicateIdentifier_returnsEmpty() {
     String identifier = generateUniqueIdentifier();
     when(mockCryptography.generateSessionKey()).thenReturn(identifier);
-    keyValueClient.create(new UserCast().setIdentifier(0L));
+    keyValueClient.createSession(new UserCast().setIdentifier(0L));
 
-    assertFalse(keyValueClient.create(new UserCast().setIdentifier(1L)).isPresent());
+    assertFalse(keyValueClient.createSession(new UserCast().setIdentifier(1L)).isPresent());
   }
 
   @Test
-  void readAndUpdateExpirationTime_noSuchIdentifier_returnsEmpty() {
+  void getSessionAndUpdateItsExpirationTime_noSuchIdentifier_returnsEmpty() {
     String identifier = generateUniqueIdentifier();
 
-    assertFalse(keyValueClient.readAndUpdateExpirationTime(identifier).isPresent());
+    assertFalse(keyValueClient.getSessionAndUpdateItsExpirationTime(identifier).isPresent());
   }
 
   @Test
-  void readAndUpdateExpirationTime_findsIdentifier_updatesExpirationTime() throws Exception {
+  void getSessionAndUpdateItsExpirationTime_findsIdentifier_updatesExpirationTime()
+      throws Exception {
     try (Jedis jedis = jedisPool.getResource()) {
       String identifier = generateUniqueIdentifier();
       when(mockCryptography.generateSessionKey()).thenReturn(identifier);
-      keyValueClient.create(new UserCast().setIdentifier(0L));
+      keyValueClient.createSession(new UserCast().setIdentifier(0L));
       Thread.sleep(10);
       long ttlBefore = jedis.pttl(identifier);
 
-      Optional<UserCast> reply = keyValueClient.readAndUpdateExpirationTime(identifier);
+      Optional<UserCast> reply = keyValueClient.getSessionAndUpdateItsExpirationTime(identifier);
       long ttlAfter = jedis.pttl(identifier);
 
       assertEquals(0L, reply.get().getIdentifier());

@@ -22,7 +22,7 @@ public class SessionInterceptor implements ServerInterceptor {
     String sessionIdentifier = metadata.get(SessionInterceptorKeys.METADATA_SESSION_IDENTIFIER_KEY);
     if (sessionIdentifier != null) {
       Optional<UserCast> maybeUserCast =
-          keyValueClient.readAndUpdateExpirationTime(sessionIdentifier);
+          keyValueClient.getSessionAndUpdateItsExpirationTime(sessionIdentifier);
       if (maybeUserCast.isPresent()) {
         context =
             context.withValue(

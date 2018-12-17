@@ -44,12 +44,12 @@ public class KeyValueClient {
     }
   }
 
-  public Optional<String> create(UserCast userCast) {
+  public Optional<String> createSession(UserCast userCast) {
     String sessionIdentifier = cryptography.generateSessionKey();
     return set(SettingStrategy.MUST_ABSENT, sessionIdentifier, userCast);
   }
 
-  public Optional<UserCast> readAndUpdateExpirationTime(String sessionIdentifier) {
+  public Optional<UserCast> getSessionAndUpdateItsExpirationTime(String sessionIdentifier) {
     try (Jedis jedis = jedisPool.getResource()) {
       Transaction transaction = jedis.multi();
       transaction.expire(sessionIdentifier, SESSION_LIFETIME_IN_SECONDS);
@@ -60,7 +60,7 @@ public class KeyValueClient {
     }
   }
 
-  public void drop(List<String> identifierList) {
+  public void dropSessions(List<String> identifierList) {
     try (Jedis jedis = jedisPool.getResource()) {
       jedis.del(identifierList.stream().toArray(String[]::new));
     }

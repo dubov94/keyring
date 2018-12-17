@@ -131,7 +131,7 @@ class AdministrationServiceTest {
 
     verify(mockAccountOperationsInterface)
         .changeMasterKey(0L, "prefix", "suffix", ImmutableList.of(identifiedKey));
-    verify(mockKeyValueClient).drop(ImmutableList.of("random"));
+    verify(mockKeyValueClient).dropSessions(ImmutableList.of("random"));
     verify(mockStreamObserver)
         .onNext(
             ChangeMasterKeyResponse.newBuilder()

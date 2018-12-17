@@ -51,7 +51,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       String mail = request.getMail();
       String code = cryptography.generateSecurityCode();
       User user = accountOperationsInterface.createUser(username, salt, digest, mail, code);
-      Optional<String> sessionKey = keyValueClient.create(UserCast.fromUser(user));
+      Optional<String> sessionKey = keyValueClient.createSession(UserCast.fromUser(user));
       if (!sessionKey.isPresent()) {
         throw new IllegalStateException();
       } else {
@@ -91,7 +91,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         response.onNext(
             LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
       } else {
-        Optional<String> sessionKey = keyValueClient.create(UserCast.fromUser(user));
+        Optional<String> sessionKey = keyValueClient.createSession(UserCast.fromUser(user));
         if (!sessionKey.isPresent()) {
           throw new IllegalStateException();
         } else {
@@ -125,7 +125,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   @Override
   public void keepAlive(KeepAliveRequest request, StreamObserver<KeepAliveResponse> response) {
     Optional<UserCast> maybeUserCast =
-        keyValueClient.readAndUpdateExpirationTime(request.getSessionKey());
+        keyValueClient.getSessionAndUpdateItsExpirationTime(request.getSessionKey());
     KeepAliveResponse.Builder builder = KeepAliveResponse.newBuilder();
     if (!maybeUserCast.isPresent()) {
       builder.setError(KeepAliveResponse.Error.INVALID_KEY);

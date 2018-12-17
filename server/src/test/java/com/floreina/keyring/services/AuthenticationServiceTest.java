@@ -63,7 +63,7 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.createUser(
             "username", "salt", "digest", "mail@example.com", "0"))
         .thenReturn(new User().setIdentifier(0L));
-    when(mockKeyValueClient.create(any())).thenReturn(Optional.of("identifier"));
+    when(mockKeyValueClient.createSession(any())).thenReturn(Optional.of("identifier"));
     when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
     when(mockRequestMetadataInterceptorKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
 
@@ -143,7 +143,7 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(new User().setIdentifier(0L).setUsername("username").setDigest("digest")));
-    when(mockKeyValueClient.create(any())).thenReturn(Optional.of("identifier"));
+    when(mockKeyValueClient.createSession(any())).thenReturn(Optional.of("identifier"));
     when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
     when(mockRequestMetadataInterceptorKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
 
@@ -167,7 +167,8 @@ class AuthenticationServiceTest {
 
   @Test
   void keepAlive_invalidSessionKey_repliesWithError() {
-    when(mockKeyValueClient.readAndUpdateExpirationTime("identifier")).thenReturn(Optional.empty());
+    when(mockKeyValueClient.getSessionAndUpdateItsExpirationTime("identifier"))
+        .thenReturn(Optional.empty());
 
     authenticationService.keepAlive(
         KeepAliveRequest.newBuilder().setSessionKey("identifier").build(), mockStreamObserver);
@@ -179,7 +180,7 @@ class AuthenticationServiceTest {
 
   @Test
   void keepAlive_validSessionKey_repliesWithDefault() {
-    when(mockKeyValueClient.readAndUpdateExpirationTime("identifier"))
+    when(mockKeyValueClient.getSessionAndUpdateItsExpirationTime("identifier"))
         .thenReturn(Optional.of(new UserCast().setIdentifier(0L)));
 
     authenticationService.keepAlive(
