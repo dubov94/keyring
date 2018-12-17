@@ -23,6 +23,8 @@ public interface AccountOperationsInterface {
 
   void changeMasterKey(long userIdentifier, String salt, String digest, List<IdentifiedKey> protos);
 
+  void changeUsername(long userIdentifier, String username);
+
   void createSession(long userIdentifier, String key, String ipAddress, String userAgent);
 
   List<Session> readSessions(long userIdentifier);

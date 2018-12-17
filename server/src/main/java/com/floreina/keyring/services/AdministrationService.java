@@ -163,4 +163,32 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     response.onCompleted();
   }
+
+  @Override
+  @ValidateUser
+  public void changeUsername(
+      ChangeUsernameRequest request, StreamObserver<ChangeUsernameResponse> response) {
+    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
+    if (!maybeUser.isPresent()) {
+      throw new ConcurrentModificationException();
+    } else {
+      User user = maybeUser.get();
+      if (!Objects.equals(request.getDigest(), user.getDigest())) {
+        response.onNext(
+            ChangeUsernameResponse.newBuilder()
+                .setError(ChangeUsernameResponse.Error.INVALID_DIGEST)
+                .build());
+      } else if (accountOperationsInterface.getUserByName(request.getUsername()).isPresent()) {
+        response.onNext(
+            ChangeUsernameResponse.newBuilder()
+                .setError(ChangeUsernameResponse.Error.NAME_TAKEN)
+                .build());
+      } else {
+        accountOperationsInterface.changeUsername(userIdentifier, request.getUsername());
+        response.onNext(ChangeUsernameResponse.getDefaultInstance());
+      }
+    }
+    response.onCompleted();
+  }
 }

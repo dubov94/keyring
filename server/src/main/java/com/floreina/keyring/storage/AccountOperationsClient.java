@@ -109,9 +109,22 @@ public class AccountOperationsClient implements AccountOperationsInterface {
           entityManager.persist(entity);
         }
       }
-      return;
+    } else {
+      throw new IllegalArgumentException();
     }
-    throw new IllegalArgumentException();
+  }
+
+  @Override
+  @LocalTransaction
+  public void changeUsername(long userIdentifier, String username) {
+    Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
+    if (maybeUser.isPresent()) {
+      User user = maybeUser.get();
+      user.setUsername(username);
+      entityManager.persist(user);
+    } else {
+      throw new IllegalArgumentException();
+    }
   }
 
   @Override

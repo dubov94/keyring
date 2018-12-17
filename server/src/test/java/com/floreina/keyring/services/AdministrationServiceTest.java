@@ -167,6 +167,49 @@ class AdministrationServiceTest {
     verify(mockStreamObserver).onCompleted();
   }
 
+  @Test
+  void changeUsername_digestsMismatch_repliesWithError() {
+    administrationService.changeUsername(
+        ChangeUsernameRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            ChangeUsernameResponse.newBuilder()
+                .setError(ChangeUsernameResponse.Error.INVALID_DIGEST)
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void changeUsername_getsExistingUsername_repliesWithError() {
+    when(mockAccountOperationsInterface.getUserByName("username"))
+        .thenReturn(Optional.of(new User()));
+
+    administrationService.changeUsername(
+        ChangeUsernameRequest.newBuilder().setDigest("digest").setUsername("username").build(),
+        mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            ChangeUsernameResponse.newBuilder()
+                .setError(ChangeUsernameResponse.Error.NAME_TAKEN)
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void changeUsername_getsUniqueUsername_repliesWithDefault() {
+    when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
+
+    administrationService.changeUsername(
+        ChangeUsernameRequest.newBuilder().setDigest("digest").setUsername("username").build(),
+        mockStreamObserver);
+
+    verify(mockAccountOperationsInterface).changeUsername(0L, "username");
+    verify(mockStreamObserver).onNext(ChangeUsernameResponse.getDefaultInstance());
+    verify(mockStreamObserver).onCompleted();
+  }
+
   private void verifyOnErrorUnauthenticated() {
     ArgumentCaptor<StatusException> argumentCaptor = ArgumentCaptor.forClass(StatusException.class);
     verify(mockStreamObserver).onError(argumentCaptor.capture());

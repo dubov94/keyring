@@ -44,7 +44,11 @@
     },
     "changeMasterKey": {
       "method": "put",
-      "path": "/administration/master-key"
+      "path": "/administration/change-master-key"
+    },
+    "changeUsername": {
+      "method": "put",
+      "path": "/administration/change-username"
     }
   }
 }

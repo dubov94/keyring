@@ -163,6 +163,29 @@ class AccountOperationsClientTest {
     assertEquals("0", mailToken.getCode());
   }
 
+  @Test
+  void changeUsername_getsExistingUsername_throwsException() {
+    long userIdentifier = createActiveUser();
+    String username = createUniqueName();
+    accountOperationsClient.createUser(username, "", "", "", "");
+
+    assertThrows(
+        StorageException.class,
+        () -> accountOperationsClient.changeUsername(userIdentifier, username));
+  }
+
+  @Test
+  void changeUsername_getsUniqueUsername_updatesUsername() {
+    long userIdentifier = createActiveUser();
+
+    accountOperationsClient.changeUsername(userIdentifier, "username");
+
+    Optional<User> maybeUser = accountOperationsClient.getUserByIdentifier(userIdentifier);
+    assertTrue(maybeUser.isPresent());
+    User user = maybeUser.get();
+    assertEquals("username", user.getUsername());
+  }
+
   private long createActiveUser() {
     String username = createUniqueName();
     long userIdentifier =

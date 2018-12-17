@@ -120,7 +120,7 @@ export default {
     let newDigest = getDigest(await bcrypt.hash(renewal, newSalt))
     let newEncryptionKey = base64.stringify(sha256(renewal))
     let { data: { error } } =
-      await axios.put('/api/administration/master-key', {
+      await axios.put('/api/administration/change-master-key', {
         current_digest: curDigest,
         renewal: {
           salt: newSalt,

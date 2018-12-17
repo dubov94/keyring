@@ -183,6 +183,21 @@ message AcquireMailTokenResponse {
     Error error = 1;
 }
 
+message ChangeUsernameRequest {
+    string digest = 1;
+    string username = 2;
+}
+
+message ChangeUsernameResponse {
+    enum Error {
+        NONE = 0;
+        INVALID_DIGEST = 1;
+        NAME_TAKEN = 2;
+    }
+
+    Error error = 1;
+}
+
 service Administration {
     rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse);
     rpc ReleaseMailToken (ReleaseMailTokenRequest) returns (ReleaseMailTokenResponse);
@@ -191,4 +206,5 @@ service Administration {
     rpc UpdateKey (UpdateKeyRequest) returns (UpdateKeyResponse);
     rpc DeleteKey (DeleteKeyRequest) returns (DeleteKeyResponse);
     rpc ChangeMasterKey (ChangeMasterKeyRequest) returns (ChangeMasterKeyResponse);
+    rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse);
 }
