@@ -141,5 +141,15 @@ export default {
       commit('setEncryptionKey', newEncryptionKey)
     }
     return error
+  },
+  async changeUsername ({ state }, { username, password }) {
+    let { data: { error } } =
+      await axios.put('/api/administration/change-username', {
+        digest: getDigest(await bcrypt.hash(password, state.salt)),
+        username
+      }, {
+        headers: createSessionHeader(state.sessionKey)
+      })
+    return error
   }
 }

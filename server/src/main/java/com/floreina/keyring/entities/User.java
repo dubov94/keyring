@@ -13,6 +13,7 @@ public class User {
 
   @CreationTimestamp private java.sql.Timestamp timestamp;
 
+  // Note that currently there are no limitations.
   @Column(unique = true)
   private String username;
 

@@ -10,9 +10,12 @@
     </v-toolbar>
     <v-content>
       <v-container fluid>
-        <v-layout justify-center>
-          <v-flex xs12 sm8 md6 lg4 xl3>
+        <v-layout row wrap justify-center>
+          <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
             <change-master-key></change-master-key>
+          </v-flex>
+          <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
+            <change-username></change-username>
           </v-flex>
         </v-layout>
       </v-container>
@@ -23,11 +26,13 @@
 <script>
   import Page from '../Page'
   import ChangeMasterKey from './ChangeMasterKey'
+  import ChangeUsername from './ChangeUsername'
 
   export default {
     components: {
       page: Page,
-      changeMasterKey: ChangeMasterKey
+      changeMasterKey: ChangeMasterKey,
+      changeUsername: ChangeUsername
     }
   }
 </script>

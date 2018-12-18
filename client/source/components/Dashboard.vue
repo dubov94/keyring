@@ -77,6 +77,7 @@
           <v-pagination v-model="pageNumber" :length="pageCount"
             :total-visible="paginationVisibleCount" circle></v-pagination>
         </div>
+        <!-- Note that if a card changes columns it gets re-rendered. -->
         <div class="masonry">
           <div v-for="columnNumber in columnCount"
             :key="columnNumber" class="masonry__arch">

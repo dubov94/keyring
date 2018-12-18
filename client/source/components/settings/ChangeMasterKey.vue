@@ -1,19 +1,19 @@
 <template>
-  <v-card class="mt-4">
+  <v-card>
     <v-toolbar color="primary" dark>
       <v-toolbar-title>Change password</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
       <v-form ref="form" @keydown.native.enter.prevent="submit">
-        <v-text-field v-model="current" label="Current"
+        <v-text-field v-model="current" label="Current password"
           type="password" :error-messages="currentErrors"
           prepend-icon="lock" @input="$v.current.$reset()"
           @blur="$v.current.$touch()"></v-text-field>
-        <v-text-field v-model="renewal" label="Renewal"
+        <v-text-field v-model="renewal" label="New password"
           type="password" :error-messages="renewalErrors"
           prepend-icon="lock_open" @input="$v.renewal.$reset()"
           @blur="$v.renewal.$touch()"></v-text-field>
-        <v-text-field v-model="repeat" label="Repeat"
+        <v-text-field v-model="repeat" label="Repeat new password"
           type="password" :error-messages="repeatErrors"
           prepend-icon="repeat" @input="$v.repeat.$reset()"
           @blur="$v.repeat.$touch()"></v-text-field>
@@ -34,7 +34,7 @@
     validations: {
       current: {
         valid () {
-          return !this.invalid.includes(this.current)
+          return !this.invalidCurrentPasswords.includes(this.current)
         }
       },
       renewal: { required },
@@ -46,7 +46,7 @@
         current: '',
         renewal: '',
         repeat: '',
-        invalid: []
+        invalidCurrentPasswords: []
       }
     },
     computed: {
@@ -98,12 +98,12 @@
                 this.current = ''
                 this.renewal = ''
                 this.repeat = ''
-                this.invalid.length = 0
+                this.invalidCurrentPasswords = []
                 document.activeElement.blur()
                 this.$v.$reset()
                 this.displaySnackbar({ message: 'Success!', timeout: 1500 })
               } else if (error === 'INVALID_CURRENT_DIGEST') {
-                this.invalid.push(current)
+                this.invalidCurrentPasswords.push(current)
               }
             } finally {
               this.requestInProgress = false
