@@ -4,7 +4,7 @@
       <v-toolbar-title>Change username</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
-      <v-form ref="form" @keydown.native.enter.prevent="submit">
+      <v-form @keydown.native.enter.prevent="submit">
         <v-text-field v-model="username" label="New username"
           type="text" :error-messages="usernameErrors"
           prepend-icon="person_outline" @input="$v.username.$reset()"
@@ -66,7 +66,7 @@
         const errors = []
         if (this.$v.password.$dirty) {
           if (!this.$v.password.valid) {
-            errors.push('Invalid current password')
+            errors.push('Invalid password')
           }
         }
         return errors

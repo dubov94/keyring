@@ -4,7 +4,7 @@
       <v-toolbar-title>Change password</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
-      <v-form ref="form" @keydown.native.enter.prevent="submit">
+      <v-form @keydown.native.enter.prevent="submit">
         <v-text-field v-model="current" label="Current password"
           type="password" :error-messages="currentErrors"
           prepend-icon="lock" @input="$v.current.$reset()"

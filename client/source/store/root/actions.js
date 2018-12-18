@@ -143,13 +143,21 @@ export default {
     return error
   },
   async changeUsername ({ state }, { username, password }) {
-    let { data: { error } } =
+    return (
       await axios.put('/api/administration/change-username', {
-        digest: getDigest(await bcrypt.hash(password, state.salt)),
-        username
+        digest: getDigest(await bcrypt.hash(password, state.salt)), username
       }, {
         headers: createSessionHeader(state.sessionKey)
       })
-    return error
+    ).data.error
+  },
+  async acquireMailToken ({ state }, { mail, password }) {
+    return (
+      await axios.post('/api/administration/acquire-mail-token', {
+        digest: getDigest(await bcrypt.hash(password, state.salt)), mail
+      }, {
+        headers: createSessionHeader(state.sessionKey)
+      })
+    ).data.error
   }
 }

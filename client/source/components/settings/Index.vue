@@ -17,6 +17,9 @@
           <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
             <change-username></change-username>
           </v-flex>
+          <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
+            <change-mail></change-mail>
+          </v-flex>
         </v-layout>
       </v-container>
     </v-content>
@@ -25,12 +28,14 @@
 
 <script>
   import Page from '../Page'
+  import ChangeMail from './ChangeMail'
   import ChangeMasterKey from './ChangeMasterKey'
   import ChangeUsername from './ChangeUsername'
 
   export default {
     components: {
       page: Page,
+      changeMail: ChangeMail,
       changeMasterKey: ChangeMasterKey,
       changeUsername: ChangeUsername
     }
