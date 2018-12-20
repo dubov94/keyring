@@ -14,18 +14,20 @@
     <v-card-text>
       <v-form @keydown.native.enter.prevent="submit">
         <v-layout align-center>
-          <v-text-field type="text" prepend-icon="person" label="Username"
-            v-model="username" :error-messages="usernameErrors"
-            @input="$v.$reset()" :autofocus="!hasUsername"></v-text-field>
+          <form-text-field type="text" label="Username" prepend-icon="person"
+            v-model="username" :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
+            @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
+            :autofocus="!hasUsername"></form-text-field>
           <v-tooltip bottom>
             <v-switch slot="activator" hide-details color="primary"
               class="switch" v-model="persistanceSwitch"></v-switch>
             <span>Remember</span>
           </v-tooltip>
         </v-layout>
-        <v-text-field type="password" prepend-icon="lock" label="Password"
-          v-model="password" :error-messages="passwordErrors"
-          @input="$v.$reset()" :autofocus="hasUsername"></v-text-field>
+        <form-text-field type="password" label="Password" prepend-icon="lock"
+          v-model="password" :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
+          @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
+          :autofocus="hasUsername"></form-text-field>
       </v-form>
     </v-card-text>
     <v-card-actions>
@@ -61,8 +63,8 @@
         required
       },
       password: {},
-      pair: {
-        fresh () {
+      forCredentials: {
+        valid () {
           for (let { username, password } of this.invalidPairs) {
             if (this.username === username && this.password === password) {
               return false
@@ -70,32 +72,23 @@
           }
           return true
         }
-      }
+      },
+      credentialsGroup: ['username', 'password']
     },
     computed: {
       hasUsername () {
         return this.username !== ''
       },
       usernameErrors () {
-        const errors = []
-        if (this.$v.username.$dirty) {
-          if (!this.$v.username.required) {
-            errors.push('Username is required')
-          }
-          if (!this.$v.pair.fresh) {
-            errors.push(INVALID_CREDENTIALS_MESSAGE)
-          }
+        return {
+          'Username is required': !this.$v.username.required,
+          [INVALID_CREDENTIALS_MESSAGE]: !this.$v.forCredentials.valid
         }
-        return errors
       },
       passwordErrors () {
-        const errors = []
-        if (this.$v.password.$dirty) {
-          if (!this.$v.pair.fresh) {
-            errors.push(INVALID_CREDENTIALS_MESSAGE)
-          }
+        return {
+          [INVALID_CREDENTIALS_MESSAGE]: !this.$v.forCredentials.valid
         }
-        return errors
       }
     },
     methods: {

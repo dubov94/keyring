@@ -5,18 +5,15 @@
     </v-toolbar>
     <v-card-text>
       <v-form @keydown.native.enter.prevent="submit">
-        <v-text-field v-model="current" label="Current password"
-          type="password" :error-messages="currentErrors"
-          prepend-icon="lock" @input="$v.current.$reset()"
-          @blur="$v.current.$touch()"></v-text-field>
-        <v-text-field v-model="renewal" label="New password"
-          type="password" :error-messages="renewalErrors"
-          prepend-icon="lock_open" @input="$v.renewal.$reset()"
-          @blur="$v.renewal.$touch()"></v-text-field>
-        <v-text-field v-model="repeat" label="Repeat new password"
-          type="password" :error-messages="repeatErrors"
-          prepend-icon="repeat" @input="$v.repeat.$reset()"
-          @blur="$v.repeat.$touch()"></v-text-field>
+        <form-text-field type="password" label="Current password" prepend-icon="lock"
+          v-model="current" :dirty="$v.current.$dirty" :errors="currentErrors"
+          @touch="$v.current.$touch()" @reset="$v.current.$reset()"></form-text-field>
+        <form-text-field type="password" label="New password" prepend-icon="lock_open"
+          v-model="renewal" :dirty="$v.renewal.$dirty" :errors="renewalErrors"
+          @touch="$v.renewal.$touch()" @reset="$v.renewal.$reset()"></form-text-field>
+        <form-text-field type="password" label="Repeat new password" prepend-icon="repeat"
+          v-model="repeat" :dirty="$v.repeat.$dirty" :errors="repeatErrors"
+          @touch="$v.repeat.$touch()" @reset="$v.repeat.$reset()"></form-text-field>
         <div class="text-xs-right">
           <v-btn class="mr-0" :loading="requestInProgress"
             color="primary" @click="submit">Submit</v-btn>
@@ -51,31 +48,19 @@
     },
     computed: {
       currentErrors () {
-        const errors = []
-        if (this.$v.current.$dirty) {
-          if (!this.$v.current.valid) {
-            errors.push('Invalid current password')
-          }
+        return {
+          'Invalid current password': !this.$v.current.valid
         }
-        return errors
       },
       renewalErrors () {
-        const errors = []
-        if (this.$v.renewal.$dirty) {
-          if (!this.$v.renewal.required) {
-            errors.push('Password cannot be empty')
-          }
+        return {
+          'Password cannot be empty': !this.$v.renewal.required
         }
-        return errors
       },
       repeatErrors () {
-        const errors = []
-        if (this.$v.repeat.$dirty) {
-          if (!this.$v.repeat.sameAs) {
-            errors.push('Passwords do not match')
-          }
+        return {
+          'Passwords do not match': !this.$v.repeat.sameAs
         }
-        return errors
       }
     },
     methods: {
@@ -95,12 +80,12 @@
                 renewal: this.renewal
               })
               if (error === 'NONE') {
+                document.activeElement.blur()
+                this.$v.$reset()
                 this.current = ''
                 this.renewal = ''
                 this.repeat = ''
                 this.invalidCurrentPasswords = []
-                document.activeElement.blur()
-                this.$v.$reset()
                 this.displaySnackbar({ message: 'Success!', timeout: 1500 })
               } else if (error === 'INVALID_CURRENT_DIGEST') {
                 this.invalidCurrentPasswords.push(current)

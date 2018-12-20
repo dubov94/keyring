@@ -20,9 +20,9 @@
         <v-stepper-step step="2">Activate</v-stepper-step>
         <v-stepper-content step="2">
           <v-form @keydown.native.enter.prevent="submit">
-            <v-text-field type="text" prepend-icon="verified_user" label="Code"
-              v-model="code" :error-messages="codeErrors" ref="code"
-              @input="$v.code.$reset()" @blur="$v.code.$touch()"></v-text-field>
+            <form-text-field type="text" label="Code" prepend-icon="verified_user"
+              v-model="code" :dirty="$v.code.$dirty" :errors="codeErrors" ref="code"
+              @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
           </v-form>
         </v-stepper-content>
         <v-stepper-step step="3">Enjoy!</v-stepper-step>
@@ -31,8 +31,8 @@
       </v-stepper>
     </v-card-text>
     <v-card-actions>
-      <v-btn block color="primary"
-        @click="submit" :loading="requestInProgress" class="mx-3 mb-2">Activate</v-btn>
+      <v-btn block color="primary" class="mx-3 mb-2"
+        @click="submit" :loading="requestInProgress">Activate</v-btn>
     </v-card-actions>
   </v-card>
 </template>
@@ -51,24 +51,19 @@
     async mounted () {
       await this.$nextTick()
       this.$refs.code.focus()
-      window.ROUTER = this.$router
     },
     validations: {
       code: {
-        fresh () {
+        valid () {
           return !this.invalidCodes.includes(this.code)
         }
       }
     },
     computed: {
       codeErrors () {
-        const errors = []
-        if (this.$v.code.$dirty) {
-          if (!this.$v.code.fresh) {
-            errors.push('Invalid code')
-          }
+        return {
+          'Invalid code': !this.$v.code.valid
         }
-        return errors
       }
     },
     methods: {

@@ -1,5 +1,6 @@
 import 'vuetify/dist/vuetify.min.css'
 import Application from './Application'
+import FormTextField from './components/FormTextField'
 import Vue from 'vue'
 import Vuelidate from 'vuelidate'
 import Vuetify from 'vuetify'
@@ -32,6 +33,8 @@ Vue.directive('focus', {
     element.focus()
   }
 })
+
+Vue.component('form-text-field', FormTextField)
 
 axios.interceptors.response.use(undefined, (error) => {
   store.dispatch('interface/displaySnackbar', {

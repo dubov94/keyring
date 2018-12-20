@@ -5,14 +5,12 @@
     </v-toolbar>
     <v-card-text>
       <v-form @keydown.native.enter.prevent="submit">
-        <v-text-field v-model="username" label="New username"
-          type="text" :error-messages="usernameErrors"
-          prepend-icon="person_outline" @input="$v.username.$reset()"
-          @blur="$v.username.$touch()"></v-text-field>
-        <v-text-field v-model="password" label="Password"
-          type="password" :error-messages="passwordErrors"
-          prepend-icon="lock" @input="$v.password.$reset()"
-          @blur="$v.password.$touch()"></v-text-field>
+        <form-text-field type="text" label="New username" prepend-icon="person_outline"
+          v-model="username" :dirty="$v.username.$dirty" :errors="usernameErrors"
+          @touch="$v.username.$touch()" @reset="$v.username.$reset()"></form-text-field>
+        <form-text-field type="password" label="Password" prepend-icon="lock"
+          v-model="password" :dirty="$v.password.$dirty" :errors="passwordErrors"
+          @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
         <div class="text-xs-right">
           <v-btn class="mr-0" :loading="requestInProgress"
             color="primary" @click="submit">Submit</v-btn>
@@ -30,7 +28,7 @@
     validations: {
       username: {
         required,
-        fresh () {
+        valid () {
           return !this.takenUserNames.includes(this.username)
         }
       },
@@ -51,25 +49,15 @@
     },
     computed: {
       usernameErrors () {
-        const errors = []
-        if (this.$v.username.$dirty) {
-          if (!this.$v.username.required) {
-            errors.push('Username cannot be empty')
-          }
-          if (!this.$v.username.fresh) {
-            errors.push('Username is already taken')
-          }
+        return {
+          'Username cannot be empty': !this.$v.username.required,
+          'Username is already taken': !this.$v.username.valid
         }
-        return errors
       },
       passwordErrors () {
-        const errors = []
-        if (this.$v.password.$dirty) {
-          if (!this.$v.password.valid) {
-            errors.push('Invalid password')
-          }
+        return {
+          'Invalid password': !this.$v.password.valid
         }
-        return errors
       }
     },
     methods: {
@@ -87,12 +75,12 @@
               let password = this.password
               let error = await this.changeUsername({ username, password })
               if (error === 'NONE') {
+                document.activeElement.blur()
+                this.$v.$reset()
                 this.username = ''
                 this.password = ''
                 this.takenUserNames = []
                 this.invalidPasswords = []
-                document.activeElement.blur()
-                this.$v.$reset()
                 this.displaySnackbar({ message: 'Success!', timeout: 1500 })
               } else if (error === 'NAME_TAKEN') {
                 this.takenUserNames.push(username)

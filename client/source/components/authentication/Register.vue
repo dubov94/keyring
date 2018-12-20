@@ -5,18 +5,22 @@
     </v-toolbar>
     <v-card-text>
       <v-form @keydown.native.enter.prevent="submit">
-        <v-text-field type="text" prepend-icon="person" label="Username" autofocus
-          v-model="username" :error-messages="usernameErrors"
-          @input="$v.username.$reset()" @blur="$v.username.$touch()"></v-text-field>
-        <v-text-field type="password" prepend-icon="lock" label="Password"
-          v-model="password" :error-messages="passwordErrors"
-          @input="$v.password.$reset()" @blur="$v.password.$touch()"></v-text-field>
-        <v-text-field type="password" prepend-icon="repeat" label="Repeat password"
-          v-model="repeat" :error-messages="repeatErrors"
-          @input="$v.repeat.$reset()" @blur="$v.repeat.$touch()"></v-text-field>
-        <v-text-field type="email" prepend-icon="email" label="E-mail"
-          v-model="mail" :error-messages="mailErrors"
-          @input="$v.mail.$reset()" @blur="$v.mail.$touch()"></v-text-field>
+        <form-text-field type="text" label="Username" prepend-icon="person" autofocus
+          v-model="username" :dirty="$v.username.$dirty" :errors="usernameErrors"
+          @touch="$v.username.$touch()" @reset="$v.username.$reset()">
+        </form-text-field>
+        <form-text-field type="password" label="Password" prepend-icon="lock"
+          v-model="password" :dirty="$v.password.$dirty" :errors="passwordErrors"
+          @touch="$v.password.$touch()" @reset="$v.password.$reset()">
+        </form-text-field>
+        <form-text-field type="password" label="Repeat password" prepend-icon="repeat"
+          v-model="repeat" :dirty="$v.repeat.$dirty" :errors="repeatErrors"
+          @touch="$v.repeat.$touch()" @reset="$v.repeat.$reset()">
+        </form-text-field>
+        <form-text-field type="email" label="E-mail" prepend-icon="email"
+          v-model="mail" :dirty="$v.mail.$dirty" :errors="mailErrors"
+          @touch="$v.mail.$touch()" @reset="$v.mail.$reset()">
+        </form-text-field>
       </v-form>
     </v-card-text>
     <v-card-actions>
@@ -47,7 +51,7 @@
     validations: {
       username: {
         required,
-        fresh () {
+        valid () {
           return !this.takenUserNames.includes(this.username)
         }
       },
@@ -57,46 +61,26 @@
     },
     computed: {
       usernameErrors () {
-        const errors = []
-        if (this.$v.username.$dirty) {
-          if (!this.$v.username.required) {
-            errors.push('Username cannot be empty')
-          }
-          if (!this.$v.username.fresh) {
-            errors.push('Username is already taken')
-          }
+        return {
+          'Username cannot be empty': !this.$v.username.required,
+          'Username is already taken': !this.$v.username.valid
         }
-        return errors
       },
       passwordErrors () {
-        const errors = []
-        if (this.$v.password.$dirty) {
-          if (!this.$v.password.required) {
-            errors.push('Password cannot be empty')
-          }
+        return {
+          'Password cannot be empty': !this.$v.password.required
         }
-        return errors
       },
       repeatErrors () {
-        const errors = []
-        if (this.$v.repeat.$dirty) {
-          if (!this.$v.repeat.sameAs) {
-            errors.push('Passwords do not match')
-          }
+        return {
+          'Passwords do not match': !this.$v.repeat.sameAs
         }
-        return errors
       },
       mailErrors () {
-        const errors = []
-        if (this.$v.mail.$dirty) {
-          if (!this.$v.mail.required) {
-            errors.push('E-mail address is required')
-          }
-          if (!this.$v.mail.email) {
-            errors.push('E-mail address is invalid')
-          }
+        return {
+          'E-mail address is required': !this.$v.mail.required,
+          'E-mail address is invalid': !this.$v.mail.email
         }
-        return errors
       }
     },
     methods: {
