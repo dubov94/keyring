@@ -10,7 +10,7 @@
 
 <template>
   <v-card>
-    <v-toolbar color="primary" dark>
+    <v-toolbar color="primary" dark style="z-index: 1;">
       <v-toolbar-title>Change e-mail</v-toolbar-title>
     </v-toolbar>
     <v-card-text class="card-text">
