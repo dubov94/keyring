@@ -85,18 +85,18 @@
     computed: {
       mailErrors () {
         return {
-          'E-mail address is required': !this.$v.mail.required,
-          'E-mail address is invalid': !this.$v.mail.email
+          [this.$t('EMAIL_ADDRESS_IS_REQUIRED')]: !this.$v.mail.required,
+          [this.$t('EMAIL_ADDRESS_IS_INVALID')]: !this.$v.mail.email
         }
       },
       passwordErrors () {
         return {
-          'Invalid password': !this.$v.password.valid
+          [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
         }
       },
       codeErrors () {
         return {
-          'Invalid code': !this.$v.code.valid
+          [this.$t('INVALID_CODE')]: !this.$v.code.valid
         }
       }
     },
@@ -145,7 +145,10 @@
                 this.code = ''
                 this.invalidCodes = []
                 this.invalidPasswords = []
-                this.displaySnackbar({ message: 'Success!', timeout: 1500 })
+                this.displaySnackbar({
+                  message: this.$t('SUCCESS'),
+                  timeout: 1500
+                })
               } else if (error === 'INVALID_CODE') {
                 this.invalidCodes.push(code)
               }

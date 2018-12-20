@@ -1,6 +1,6 @@
 <template>
   <v-text-field :value="value" :type="type" :label="label"
-    :prepend-icon="prependIcon" :autofocus="autofocus"
+    :prepend-icon="prependIcon" :autofocus="autofocus" ref="input"
     :error-messages="errorMessages" @blur="touch" @keydown.native.enter="touch"
     @focus="reset" @input="input"></v-text-field>
 </template>
@@ -38,6 +38,9 @@
       input (value) {
         this.reset()
         this.$emit('input', value)
+      },
+      focus () {
+        this.$refs.input.focus()
       }
     },
     computed: {

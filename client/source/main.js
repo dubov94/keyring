@@ -1,7 +1,9 @@
 import 'vuetify/dist/vuetify.min.css'
 import Application from './Application'
 import FormTextField from './components/FormTextField'
+import Messages from './messages'
 import Vue from 'vue'
+import VueI18n from 'vue-i18n'
 import Vuelidate from 'vuelidate'
 import Vuetify from 'vuetify'
 import axios from 'axios'
@@ -10,6 +12,7 @@ import store from './store'
 import {SESSION_LIFETIME_IN_MS} from './constants'
 import {logOut} from './utilities'
 
+Vue.use(VueI18n)
 Vue.use(Vuetify)
 Vue.use(Vuelidate)
 
@@ -49,5 +52,9 @@ new Vue({
   el: '#application',
   router,
   store,
-  components: { Application }
+  components: { Application },
+  i18n: new VueI18n({
+    locale: 'en',
+    messages: Messages
+  })
 })

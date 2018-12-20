@@ -50,13 +50,13 @@
     computed: {
       usernameErrors () {
         return {
-          'Username cannot be empty': !this.$v.username.required,
-          'Username is already taken': !this.$v.username.valid
+          [this.$t('USERNAME_CANNOT_BE_EMPTY')]: !this.$v.username.required,
+          [this.$t('USERNAME_IS_ALREADY_TAKEN')]: !this.$v.username.valid
         }
       },
       passwordErrors () {
         return {
-          'Invalid password': !this.$v.password.valid
+          [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
         }
       }
     },
@@ -81,7 +81,10 @@
                 this.password = ''
                 this.takenUserNames = []
                 this.invalidPasswords = []
-                this.displaySnackbar({ message: 'Success!', timeout: 1500 })
+                this.displaySnackbar({
+                  message: this.$t('SUCCESS'),
+                  timeout: 1500
+                })
               } else if (error === 'NAME_TAKEN') {
                 this.takenUserNames.push(username)
               } else if (error === 'INVALID_DIGEST') {

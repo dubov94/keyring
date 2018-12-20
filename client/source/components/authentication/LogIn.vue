@@ -44,8 +44,6 @@
   import {mapActions} from 'vuex'
   import {required} from 'vuelidate/lib/validators'
 
-  const INVALID_CREDENTIALS_MESSAGE = 'Invalid username or password'
-
   export default {
     data () {
       let storageUsername = this.$store.state.preferences.username
@@ -81,13 +79,13 @@
       },
       usernameErrors () {
         return {
-          'Username is required': !this.$v.username.required,
-          [INVALID_CREDENTIALS_MESSAGE]: !this.$v.forCredentials.valid
+          [this.$t('USERNAME_IS_REQUIRED')]: !this.$v.username.required,
+          [this.$t('INVALID_USERNAME_OR_PASSWORD')]: !this.$v.forCredentials.valid
         }
       },
       passwordErrors () {
         return {
-          [INVALID_CREDENTIALS_MESSAGE]: !this.$v.forCredentials.valid
+          [this.$t('INVALID_USERNAME_OR_PASSWORD')]: !this.$v.forCredentials.valid
         }
       }
     },

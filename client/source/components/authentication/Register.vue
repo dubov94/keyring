@@ -62,24 +62,24 @@
     computed: {
       usernameErrors () {
         return {
-          'Username cannot be empty': !this.$v.username.required,
-          'Username is already taken': !this.$v.username.valid
+          [this.$t('USERNAME_CANNOT_BE_EMPTY')]: !this.$v.username.required,
+          [this.$t('USERNAME_IS_ALREADY_TAKEN')]: !this.$v.username.valid
         }
       },
       passwordErrors () {
         return {
-          'Password cannot be empty': !this.$v.password.required
+          [this.$t('PASSWORD_CANNOT_BE_EMPTY')]: !this.$v.password.required
         }
       },
       repeatErrors () {
         return {
-          'Passwords do not match': !this.$v.repeat.sameAs
+          [this.$t('PASSWORDS_DO_NOT_MATCH')]: !this.$v.repeat.sameAs
         }
       },
       mailErrors () {
         return {
-          'E-mail address is required': !this.$v.mail.required,
-          'E-mail address is invalid': !this.$v.mail.email
+          [this.$t('EMAIL_ADDRESS_IS_REQUIRED')]: !this.$v.mail.required,
+          [this.$t('EMAIL_ADDRESS_IS_INVALID')]: !this.$v.mail.email
         }
       }
     },

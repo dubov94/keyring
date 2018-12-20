@@ -62,7 +62,7 @@
     computed: {
       codeErrors () {
         return {
-          'Invalid code': !this.$v.code.valid
+          [this.$t('INVALID_CODE')]: !this.$v.code.valid
         }
       }
     },

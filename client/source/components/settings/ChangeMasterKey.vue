@@ -49,17 +49,17 @@
     computed: {
       currentErrors () {
         return {
-          'Invalid current password': !this.$v.current.valid
+          [this.$t('INVALID_CURRENT_PASSWORD')]: !this.$v.current.valid
         }
       },
       renewalErrors () {
         return {
-          'Password cannot be empty': !this.$v.renewal.required
+          [this.$t('PASSWORD_CANNOT_BE_EMPTY')]: !this.$v.renewal.required
         }
       },
       repeatErrors () {
         return {
-          'Passwords do not match': !this.$v.repeat.sameAs
+          [this.$t('PASSWORDS_DO_NOT_MATCH')]: !this.$v.repeat.sameAs
         }
       }
     },
@@ -86,7 +86,10 @@
                 this.renewal = ''
                 this.repeat = ''
                 this.invalidCurrentPasswords = []
-                this.displaySnackbar({ message: 'Success!', timeout: 1500 })
+                this.displaySnackbar({
+                  message: this.$t('SUCCESS'),
+                  timeout: 1500
+                })
               } else if (error === 'INVALID_CURRENT_DIGEST') {
                 this.invalidCurrentPasswords.push(current)
               }
