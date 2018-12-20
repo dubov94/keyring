@@ -28,23 +28,23 @@ const vuexSession = new VuexPersist({
 const heartBeatPlugin = (store) => {
   let identifier = null
 
-  const scheduleBeat = () => {
+  const scheduleBeat = (immediately) => {
     clearTimeout(identifier)
     identifier = setTimeout(async () => {
       await axios.put('/api/authentication/keep-alive', {
         session_key: store.state.sessionKey
       })
-      scheduleBeat()
-    }, SESSION_LIFETIME_IN_MS / 2)
+      scheduleBeat(false)
+    }, immediately ? 0 : SESSION_LIFETIME_IN_MS / 2)
   }
 
   if (store.getters.hasSessionKey) {
-    scheduleBeat()
+    scheduleBeat(true)
   }
 
   store.subscribe((mutation) => {
     if (mutation.type === 'setSessionKey') {
-      scheduleBeat()
+      scheduleBeat(false)
     }
   })
 }
