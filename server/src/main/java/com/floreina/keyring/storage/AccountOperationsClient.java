@@ -23,7 +23,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public User createUser(String username, String salt, String digest, String mail, String code) {
-    User user = new User().setUsername(username).setSalt(salt).setDigest(digest);
+    User user =
+        new User()
+            .setState(User.State.PENDING)
+            .setUsername(username)
+            .setSalt(salt)
+            .setDigest(digest);
     MailToken mailToken = new MailToken().setUser(user).setMail(mail).setCode(code);
     entityManager.persist(user);
     entityManager.persist(mailToken);
@@ -61,6 +66,9 @@ public class AccountOperationsClient implements AccountOperationsInterface {
       if (maybeUser.isPresent()) {
         User user = maybeUser.get();
         user.setMail(mailToken.getMail());
+        if (Utilities.isUserActivated(user)) {
+          user.setState(User.State.ACTIVE);
+        }
         entityManager.persist(user);
         entityManager.remove(mailToken);
         return;

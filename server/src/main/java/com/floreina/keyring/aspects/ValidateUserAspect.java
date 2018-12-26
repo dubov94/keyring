@@ -30,9 +30,7 @@ public class ValidateUserAspect {
       throws Throwable {
     Optional<User> user =
         accountOperationsInterface.getUserByIdentifier(sessionInterceptorKeys.getUserIdentifier());
-    if (user.isPresent()
-        && (Arrays.asList(validateUser.states()).contains(ValidateUser.UserState.PENDING)
-            || Utilities.isUserActive(user.get()))) {
+    if (user.isPresent() && Arrays.asList(validateUser.states()).contains(user.get().getState())) {
       proceedingJoinPoint.proceed();
     } else {
       StreamObserver streamObserver = (StreamObserver) proceedingJoinPoint.getArgs()[1];

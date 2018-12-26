@@ -70,7 +70,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
-  @ValidateUser(states = {ValidateUser.UserState.PENDING, ValidateUser.UserState.ACTIVE})
+  @ValidateUser(states = {User.State.PENDING, User.State.ACTIVE})
   public void releaseMailToken(
       ReleaseMailTokenRequest request, StreamObserver<ReleaseMailTokenResponse> response) {
     long userIdentifier = sessionInterceptorKeys.getUserIdentifier();

@@ -28,4 +28,8 @@ public class Utilities {
     entity.setValue(key.getValue());
     entity.setTags(key.getTags());
   }
+
+  public static boolean isUserActivated(User user) {
+    return user.getMail() != null;
+  }
 }

@@ -49,6 +49,7 @@ class AccountOperationsClientTest {
     assertEquals("0", mailToken.getCode());
     assertEquals("mail@example.com", mailToken.getMail());
     User user = mailToken.getUser();
+    assertEquals(User.State.PENDING, user.getState());
     assertEquals(username, user.getUsername());
     assertEquals("salt", user.getSalt());
     assertEquals("digest", user.getDigest());
@@ -71,7 +72,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
-  void releaseMailToken_removesTokenSetsMail() {
+  void releaseMailToken_removesTokenSetsMailActivatesUser() {
     String username = createUniqueName();
     long userIdentifier =
         accountOperationsClient
@@ -82,9 +83,9 @@ class AccountOperationsClientTest {
     accountOperationsClient.releaseMailToken(mailToken.getIdentifier());
 
     assertEquals(Optional.empty(), accountOperationsClient.getMailToken(userIdentifier, "0"));
-    assertEquals(
-        "mail@domain.com",
-        accountOperationsClient.getUserByIdentifier(userIdentifier).get().getMail());
+    User user = accountOperationsClient.getUserByIdentifier(userIdentifier).get();
+    assertEquals("mail@domain.com", user.getMail());
+    assertEquals(User.State.ACTIVE, user.getState());
   }
 
   @Test

@@ -13,6 +13,8 @@ public class User {
 
   @CreationTimestamp private java.sql.Timestamp timestamp;
 
+  @Enumerated private State state;
+
   // Note that currently there are no limitations.
   @Column(unique = true)
   private String username;
@@ -29,6 +31,15 @@ public class User {
 
   public User setIdentifier(long identifier) {
     this.identifier = identifier;
+    return this;
+  }
+
+  public State getState() {
+    return state;
+  }
+
+  public User setState(State state) {
+    this.state = state;
     return this;
   }
 
@@ -66,5 +77,10 @@ public class User {
   public User setMail(String mail) {
     this.mail = mail;
     return this;
+  }
+
+  public enum State {
+    PENDING,
+    ACTIVE
   }
 }
