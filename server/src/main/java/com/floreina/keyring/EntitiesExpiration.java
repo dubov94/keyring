@@ -47,7 +47,6 @@ public class EntitiesExpiration {
     deleteEntitiesByRestriction(
         Session.class,
         (criteriaBuilder, root) ->
-            // Theoretically the keys may still exist in the key-value storage.
             criteriaBuilder.lessThan(
                 root.get(Session_.timestamp), createTimestampInThePast(28, ChronoUnit.DAYS)));
   }

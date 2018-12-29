@@ -5,9 +5,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
-// TODO: Migrate to Redis.
 @Entity
-@Table(name = "keyvalue")
+@Table(name = "sessions")
 public class Session {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
