@@ -37,7 +37,11 @@ class AdministrationServiceTest {
   @Mock private Cryptography mockCryptography;
   @Mock private Post mockPost;
 
-  private User user = new User().setIdentifier(0L).setDigest("digest").setMail("mail@domain.com");
+  private User user =
+      new User()
+          .setIdentifier(0L)
+          .setState(User.State.ACTIVE)
+          .setDigest("digest");
   private AdministrationService administrationService;
 
   @BeforeEach
@@ -89,7 +93,7 @@ class AdministrationServiceTest {
 
   @Test
   void createKey_userNotActive_repliesUnauthenticated() {
-    user.setMail(null);
+    user.setState(User.State.PENDING);
 
     administrationService.createKey(CreateKeyRequest.getDefaultInstance(), mockStreamObserver);
 

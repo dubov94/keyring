@@ -6,6 +6,7 @@
             <include within="com.floreina.keyring.aspects.*"/>
             <include within="com.floreina.keyring.storage.*"/>
             <include within="com.floreina.keyring.services.*"/>
+            <include within="com.floreina.keyring.EntitiesExpiration"/>
         </weaver>
     </aspects>
 </aspectj>

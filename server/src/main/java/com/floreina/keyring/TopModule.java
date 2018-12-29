@@ -11,7 +11,7 @@ import javax.inject.Singleton;
 import java.security.SecureRandom;
 
 @Module
-class UtilitiesModule {
+class TopModule {
   private static final int SECURITY_CODE_LENGTH = 6;
 
   @Provides
@@ -42,5 +42,11 @@ class UtilitiesModule {
   @Singleton
   static RequestMetadataInterceptorKeys provideUserMetadataKeys() {
     return new RequestMetadataInterceptorKeys();
+  }
+
+  @Provides
+  @Singleton
+  static Chronometry provideChronometry() {
+    return new Chronometry();
   }
 }

@@ -3,6 +3,7 @@ package com.floreina.keyring.entities;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "users")
@@ -11,11 +12,11 @@ public class User {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
 
-  @CreationTimestamp private java.sql.Timestamp timestamp;
+  @CreationTimestamp private Timestamp timestamp;
 
   @Enumerated private State state;
 
-  // Note that currently there are no limitations.
+  // Note that currently there are no server-side limitations.
   @Column(unique = true)
   private String username;
 
@@ -77,6 +78,10 @@ public class User {
   public User setMail(String mail) {
     this.mail = mail;
     return this;
+  }
+
+  public Timestamp getTimestamp() {
+    return timestamp;
   }
 
   public enum State {

@@ -4,7 +4,7 @@ import com.floreina.keyring.*;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
-import com.floreina.keyring.keyvalue.UserCast;
+import com.floreina.keyring.keyvalue.UserProjection;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;
@@ -51,7 +51,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       String mail = request.getMail();
       String code = cryptography.generateSecurityCode();
       User user = accountOperationsInterface.createUser(username, salt, digest, mail, code);
-      Optional<String> sessionKey = keyValueClient.createSession(UserCast.fromUser(user));
+      Optional<String> sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
       if (!sessionKey.isPresent()) {
         throw new IllegalStateException();
       } else {
@@ -91,7 +91,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         response.onNext(
             LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
       } else {
-        Optional<String> sessionKey = keyValueClient.createSession(UserCast.fromUser(user));
+        Optional<String> sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
         if (!sessionKey.isPresent()) {
           throw new IllegalStateException();
         } else {
@@ -124,10 +124,10 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
 
   @Override
   public void keepAlive(KeepAliveRequest request, StreamObserver<KeepAliveResponse> response) {
-    Optional<UserCast> maybeUserCast =
+    Optional<UserProjection> maybeUserProjection =
         keyValueClient.getSessionAndUpdateItsExpirationTime(request.getSessionKey());
     KeepAliveResponse.Builder builder = KeepAliveResponse.newBuilder();
-    if (!maybeUserCast.isPresent()) {
+    if (!maybeUserProjection.isPresent()) {
       builder.setError(KeepAliveResponse.Error.INVALID_KEY);
     }
     response.onNext(builder.build());

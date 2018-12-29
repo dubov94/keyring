@@ -14,12 +14,7 @@ import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 
 @dagger.Component(
-  modules = {
-    UtilitiesModule.class,
-    TemplatesModule.class,
-    StorageModule.class,
-    KeyValueModule.class
-  }
+  modules = {TopModule.class, TemplatesModule.class, StorageModule.class, KeyValueModule.class}
 )
 @Singleton
 interface Component {
@@ -36,4 +31,6 @@ interface Component {
   AccountOperationsInterface accountOperationsInterface();
 
   RequestMetadataInterceptor requestMetadataInterceptor();
+
+  EntitiesExpiration expireEntitiesMethods();
 }

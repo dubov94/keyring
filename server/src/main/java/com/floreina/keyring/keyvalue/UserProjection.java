@@ -2,18 +2,18 @@ package com.floreina.keyring.keyvalue;
 
 import com.floreina.keyring.entities.User;
 
-public class UserCast {
+public class UserProjection {
   private long identifier;
 
-  public static UserCast fromUser(User user) {
-    return new UserCast().setIdentifier(user.getIdentifier());
+  public static UserProjection fromUser(User user) {
+    return new UserProjection().setIdentifier(user.getIdentifier());
   }
 
   public long getIdentifier() {
     return identifier;
   }
 
-  public UserCast setIdentifier(long identifier) {
+  public UserProjection setIdentifier(long identifier) {
     this.identifier = identifier;
     return this;
   }

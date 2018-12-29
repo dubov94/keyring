@@ -52,7 +52,7 @@ class KeyValueClientTest {
     String identifier = generateUniqueIdentifier();
     when(mockCryptography.generateSessionKey()).thenReturn(identifier);
 
-    Optional<String> reply = keyValueClient.createSession(new UserCast().setIdentifier(0L));
+    Optional<String> reply = keyValueClient.createSession(new UserProjection().setIdentifier(0L));
 
     assertEquals(identifier, reply.get());
     assertEquals(
@@ -63,9 +63,9 @@ class KeyValueClientTest {
   void createSession_getsDuplicateIdentifier_returnsEmpty() {
     String identifier = generateUniqueIdentifier();
     when(mockCryptography.generateSessionKey()).thenReturn(identifier);
-    keyValueClient.createSession(new UserCast().setIdentifier(0L));
+    keyValueClient.createSession(new UserProjection().setIdentifier(0L));
 
-    assertFalse(keyValueClient.createSession(new UserCast().setIdentifier(1L)).isPresent());
+    assertFalse(keyValueClient.createSession(new UserProjection().setIdentifier(1L)).isPresent());
   }
 
   @Test
@@ -81,11 +81,11 @@ class KeyValueClientTest {
     try (Jedis jedis = jedisPool.getResource()) {
       String identifier = generateUniqueIdentifier();
       when(mockCryptography.generateSessionKey()).thenReturn(identifier);
-      keyValueClient.createSession(new UserCast().setIdentifier(0L));
+      keyValueClient.createSession(new UserProjection().setIdentifier(0L));
       Thread.sleep(10);
       long ttlBefore = jedis.pttl(identifier);
 
-      Optional<UserCast> reply = keyValueClient.getSessionAndUpdateItsExpirationTime(identifier);
+      Optional<UserProjection> reply = keyValueClient.getSessionAndUpdateItsExpirationTime(identifier);
       long ttlAfter = jedis.pttl(identifier);
 
       assertEquals(0L, reply.get().getIdentifier());

@@ -3,6 +3,7 @@ package com.floreina.keyring.entities;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 @Entity
 @Table(
@@ -14,7 +15,7 @@ public class MailToken {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
 
-  @CreationTimestamp private java.sql.Timestamp timestamp;
+  @CreationTimestamp private Timestamp timestamp;
 
   @ManyToOne private User user;
 

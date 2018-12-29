@@ -31,12 +31,12 @@ public class KeyValueClient {
   }
 
   private Optional<String> set(
-      SettingStrategy settingStrategy, String sessionIdentifier, UserCast userCast) {
+      SettingStrategy settingStrategy, String sessionIdentifier, UserProjection userProjection) {
     try (Jedis jedis = jedisPool.getResource()) {
       String value =
           jedis.set(
               sessionIdentifier,
-              gson.toJson(userCast),
+              gson.toJson(userProjection),
               SETTING_STRATEGY_TO_PARAMETER.get(settingStrategy),
               "ex",
               SESSION_LIFETIME_IN_SECONDS);
@@ -44,19 +44,19 @@ public class KeyValueClient {
     }
   }
 
-  public Optional<String> createSession(UserCast userCast) {
+  public Optional<String> createSession(UserProjection userProjection) {
     String sessionIdentifier = cryptography.generateSessionKey();
-    return set(SettingStrategy.MUST_ABSENT, sessionIdentifier, userCast);
+    return set(SettingStrategy.MUST_ABSENT, sessionIdentifier, userProjection);
   }
 
-  public Optional<UserCast> getSessionAndUpdateItsExpirationTime(String sessionIdentifier) {
+  public Optional<UserProjection> getSessionAndUpdateItsExpirationTime(String sessionIdentifier) {
     try (Jedis jedis = jedisPool.getResource()) {
       Transaction transaction = jedis.multi();
       transaction.expire(sessionIdentifier, SESSION_LIFETIME_IN_SECONDS);
       Response<String> userIdentifier = transaction.get(sessionIdentifier);
       transaction.exec();
       return Optional.ofNullable(userIdentifier.get())
-          .map(string -> gson.fromJson(string, UserCast.class));
+          .map(string -> gson.fromJson(string, UserProjection.class));
     }
   }
 

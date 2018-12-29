@@ -3,7 +3,9 @@ package com.floreina.keyring.entities;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
+// TODO: Migrate to Redis.
 @Entity
 @Table(name = "keyvalue")
 public class Session {
@@ -13,8 +15,9 @@ public class Session {
 
   @ManyToOne private User user;
 
-  @CreationTimestamp private java.sql.Timestamp timestamp;
+  @CreationTimestamp private Timestamp timestamp;
 
+  // Not unique as it's theoretically possible to have two equal expired keys.
   @Column private String key;
 
   @Column(name = "ip_address")

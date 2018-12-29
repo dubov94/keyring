@@ -8,18 +8,26 @@ import io.grpc.ServerInterceptors;
 import org.aspectj.lang.Aspects;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Logger;
 
 class Launcher {
   private static final Logger logger = Logger.getLogger(Launcher.class.getName());
   private Server server;
   private Component component;
+  private Timer timer;
+  private EntitiesExpiration entitiesExpiration;
 
   public static void main(String[] args) throws IOException, InterruptedException {
     Launcher launcher = new Launcher();
     launcher.initialize();
-    launcher.start();
-    launcher.blockUntilShutdown();
+    Runtime.getRuntime().addShutdownHook(new Thread(launcher::stop));
+    launcher.startServer();
+    launcher.scheduleExpiration();
+    launcher.awaitTermination();
   }
 
   private void initialize() {
@@ -29,7 +37,7 @@ class Launcher {
     Aspects.aspectOf(StorageManagerAspect.class).initialize(component.entityManagerFactory());
   }
 
-  private void start() throws IOException {
+  private void startServer() throws IOException {
     server =
         ServerBuilder.forPort(591)
             .addService(
@@ -41,18 +49,36 @@ class Launcher {
                     component.requestMetadataInterceptor(),
                     component.sessionInterceptor()))
             .build();
-    Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
     server.start();
     logger.info("Listening...");
   }
 
+  private void scheduleExpiration() {
+    entitiesExpiration = component.expireEntitiesMethods();
+    timer = new Timer();
+    timer.schedule(
+        new TimerTask() {
+          @Override
+          public void run() {
+            entitiesExpiration.dropExpiredPendingUsers();
+            entitiesExpiration.dropExpiredMailTokens();
+            entitiesExpiration.dropExpiredSessions();
+          }
+        },
+        Date.from(Instant.now()),
+        60 * 1000);
+  }
+
   private void stop() {
+    if (timer != null) {
+      timer.cancel();
+    }
     if (server != null) {
       server.shutdown();
     }
   }
 
-  private void blockUntilShutdown() throws InterruptedException {
+  private void awaitTermination() throws InterruptedException {
     if (server != null) {
       server.awaitTermination();
     }
