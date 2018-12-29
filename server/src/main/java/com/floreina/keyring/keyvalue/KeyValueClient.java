@@ -1,5 +1,6 @@
 package com.floreina.keyring.keyvalue;
 
+import com.floreina.keyring.Chronometry;
 import com.floreina.keyring.Cryptography;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -9,6 +10,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 
 import javax.inject.Inject;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,12 +24,15 @@ public class KeyValueClient {
   private JedisPool jedisPool;
   private Cryptography cryptography;
   private Gson gson;
+  private Chronometry chronometry;
 
   @Inject
-  KeyValueClient(JedisPool jedisPool, Cryptography cryptography, Gson gson) {
+  KeyValueClient(
+      JedisPool jedisPool, Cryptography cryptography, Gson gson, Chronometry chronometry) {
     this.jedisPool = jedisPool;
     this.cryptography = cryptography;
     this.gson = gson;
+    this.chronometry = chronometry;
   }
 
   private Optional<String> set(
@@ -35,8 +40,8 @@ public class KeyValueClient {
     try (Jedis jedis = jedisPool.getResource()) {
       String value =
           jedis.set(
-              sessionIdentifier,
-              gson.toJson(userProjection),
+              convertSessionIdentifierToKey(sessionIdentifier),
+              gson.toJson(userProjection.setCreationTimeInMs(chronometry.currentTime())),
               SETTING_STRATEGY_TO_PARAMETER.get(settingStrategy),
               "ex",
               SESSION_LIFETIME_IN_SECONDS);
@@ -51,19 +56,32 @@ public class KeyValueClient {
 
   public Optional<UserProjection> getSessionAndUpdateItsExpirationTime(String sessionIdentifier) {
     try (Jedis jedis = jedisPool.getResource()) {
+      String key = convertSessionIdentifierToKey(sessionIdentifier);
       Transaction transaction = jedis.multi();
-      transaction.expire(sessionIdentifier, SESSION_LIFETIME_IN_SECONDS);
-      Response<String> userIdentifier = transaction.get(sessionIdentifier);
+      transaction.expire(key, SESSION_LIFETIME_IN_SECONDS);
+      Response<String> userProjectionString = transaction.get(key);
       transaction.exec();
-      return Optional.ofNullable(userIdentifier.get())
-          .map(string -> gson.fromJson(string, UserProjection.class));
+      return Optional.ofNullable(userProjectionString.get())
+          .map(string -> gson.fromJson(string, UserProjection.class))
+          .map(
+              userProjection ->
+                  chronometry.isBefore(
+                          userProjection.getCreationTime(),
+                          chronometry.subtract(chronometry.currentTime(), 1, ChronoUnit.HOURS))
+                      ? null
+                      : userProjection);
     }
   }
 
   public void dropSessions(List<String> identifierList) {
     try (Jedis jedis = jedisPool.getResource()) {
-      jedis.del(identifierList.stream().toArray(String[]::new));
+      jedis.del(
+          identifierList.stream().map(this::convertSessionIdentifierToKey).toArray(String[]::new));
     }
+  }
+
+  private String convertSessionIdentifierToKey(String sessionIdentifier) {
+    return String.format("session:%s", sessionIdentifier);
   }
 
   private enum SettingStrategy {

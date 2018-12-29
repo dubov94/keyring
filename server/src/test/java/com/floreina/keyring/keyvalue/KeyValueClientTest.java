@@ -1,5 +1,6 @@
 package com.floreina.keyring.keyvalue;
 
+import com.floreina.keyring.Chronometry;
 import com.floreina.keyring.Cryptography;
 import com.google.gson.Gson;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
@@ -15,10 +16,13 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +31,7 @@ class KeyValueClientTest {
   private static JedisPool jedisPool;
   private static Gson gson;
   @Mock private Cryptography mockCryptography;
+  @Mock private Chronometry mockChronometry;
   private KeyValueClient keyValueClient;
 
   @BeforeAll
@@ -44,7 +49,9 @@ class KeyValueClientTest {
 
   @BeforeEach
   void beforeEach() {
-    keyValueClient = new KeyValueClient(jedisPool, mockCryptography, gson);
+    keyValueClient = new KeyValueClient(jedisPool, mockCryptography, gson, mockChronometry);
+    when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
+    when(mockChronometry.isBefore(eq(Instant.EPOCH), any(Instant.class))).thenReturn(false);
   }
 
   @Test
@@ -83,10 +90,11 @@ class KeyValueClientTest {
       when(mockCryptography.generateSessionKey()).thenReturn(identifier);
       keyValueClient.createSession(new UserProjection().setIdentifier(0L));
       Thread.sleep(10);
-      long ttlBefore = jedis.pttl(identifier);
+      long ttlBefore = jedis.pttl("session:" + identifier);
 
-      Optional<UserProjection> reply = keyValueClient.getSessionAndUpdateItsExpirationTime(identifier);
-      long ttlAfter = jedis.pttl(identifier);
+      Optional<UserProjection> reply =
+          keyValueClient.getSessionAndUpdateItsExpirationTime(identifier);
+      long ttlAfter = jedis.pttl("session:" + identifier);
 
       assertEquals(0L, reply.get().getIdentifier());
       assertTrue(ttlAfter > ttlBefore);

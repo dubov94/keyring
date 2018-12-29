@@ -44,7 +44,7 @@ class EntitiesExpirationTest {
     User user = new User().setState(User.State.PENDING).setUsername(createUniqueName());
     persistEntity(user);
     when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
-    when(mockChronometry.subtract(Instant.EPOCH, 5, ChronoUnit.MINUTES)).thenReturn(Instant.now());
+    when(mockChronometry.subtract(Instant.EPOCH, 15, ChronoUnit.MINUTES)).thenReturn(Instant.now());
 
     entitiesExpiration.dropExpiredPendingUsers();
 
@@ -56,7 +56,7 @@ class EntitiesExpirationTest {
     User user = new User().setState(User.State.ACTIVE).setUsername(createUniqueName());
     persistEntity(user);
     when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
-    when(mockChronometry.subtract(Instant.EPOCH, 5, ChronoUnit.MINUTES)).thenReturn(Instant.now());
+    when(mockChronometry.subtract(Instant.EPOCH, 15, ChronoUnit.MINUTES)).thenReturn(Instant.now());
 
     entitiesExpiration.dropExpiredPendingUsers();
 

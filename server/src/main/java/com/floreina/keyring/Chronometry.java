@@ -3,12 +3,16 @@ package com.floreina.keyring;
 import java.time.Instant;
 import java.time.temporal.TemporalUnit;
 
-class Chronometry {
-  Instant currentTime() {
+public class Chronometry {
+  public Instant currentTime() {
     return Instant.now();
   }
 
-  Instant subtract(Instant instant, int amountToSubtract, TemporalUnit temporalUnit) {
+  public Instant subtract(Instant instant, int amountToSubtract, TemporalUnit temporalUnit) {
     return instant.minus(amountToSubtract, temporalUnit);
+  }
+
+  public boolean isBefore(Instant left, Instant right) {
+    return left.isBefore(right);
   }
 }

@@ -60,8 +60,8 @@ class Launcher {
         new TimerTask() {
           @Override
           public void run() {
-            entitiesExpiration.dropExpiredPendingUsers();
             entitiesExpiration.dropExpiredMailTokens();
+            entitiesExpiration.dropExpiredPendingUsers();
             entitiesExpiration.dropExpiredSessions();
           }
         },

@@ -25,6 +25,14 @@ public class EntitiesExpiration {
     this.chronometry = chronometry;
   }
 
+  void dropExpiredMailTokens() {
+    deleteEntitiesByRestriction(
+        MailToken.class,
+        (criteriaBuilder, root) ->
+            criteriaBuilder.lessThan(
+                root.get(MailToken_.timestamp), createTimestampInThePast(10, ChronoUnit.MINUTES)));
+  }
+
   void dropExpiredPendingUsers() {
     deleteEntitiesByRestriction(
         User.class,
@@ -32,15 +40,7 @@ public class EntitiesExpiration {
             criteriaBuilder.and(
                 criteriaBuilder.equal(root.get(User_.state), User.State.PENDING),
                 criteriaBuilder.lessThan(
-                    root.get(User_.timestamp), createTimestampInThePast(5, ChronoUnit.MINUTES))));
-  }
-
-  void dropExpiredMailTokens() {
-    deleteEntitiesByRestriction(
-        MailToken.class,
-        (criteriaBuilder, root) ->
-            criteriaBuilder.lessThan(
-                root.get(MailToken_.timestamp), createTimestampInThePast(10, ChronoUnit.MINUTES)));
+                    root.get(User_.timestamp), createTimestampInThePast(15, ChronoUnit.MINUTES))));
   }
 
   void dropExpiredSessions() {
