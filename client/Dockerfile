@@ -1,4 +1,4 @@
-from node
+from node:10
 
 workdir /root/keyring/client
 
