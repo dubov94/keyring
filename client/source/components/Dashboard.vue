@@ -2,7 +2,7 @@
   .navigation {
     margin-bottom: 16px;
     text-align: center;
-  }  
+  }
 
   .masonry {
     max-width: 1264px;
