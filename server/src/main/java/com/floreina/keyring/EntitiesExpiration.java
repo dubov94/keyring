@@ -25,7 +25,7 @@ public class EntitiesExpiration {
     this.chronometry = chronometry;
   }
 
-  void dropDeletedUserAndTheirDependencies() {
+  void dropDeletedUsersAndTheirDependencies() {
     deleteEntitiesByRestriction(
         User.class,
         (criteriaBuilder, userRoot) ->

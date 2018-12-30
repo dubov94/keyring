@@ -50,7 +50,7 @@ class EntitiesExpirationTest {
     Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of(tag));
     persistEntity(key);
 
-    entitiesExpiration.dropDeletedUserAndTheirDependencies();
+    entitiesExpiration.dropDeletedUsersAndTheirDependencies();
 
     assertTrue(isEntityInStorage(tag));
     assertTrue(isEntityInStorage(key));
@@ -65,7 +65,7 @@ class EntitiesExpirationTest {
     Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of(tag));
     persistEntity(key);
 
-    entitiesExpiration.dropDeletedUserAndTheirDependencies();
+    entitiesExpiration.dropDeletedUsersAndTheirDependencies();
 
     assertFalse(isEntityInStorage(tag));
     assertFalse(isEntityInStorage(key));
