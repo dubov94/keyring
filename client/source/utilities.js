@@ -52,3 +52,9 @@ export const logOut = () => {
   sessionStorage.clear()
   location.assign('/log-in')
 }
+
+export const purgeDataAndLoadIndex = () => {
+  sessionStorage.clear()
+  localStorage.clear()
+  location.assign('/')
+}

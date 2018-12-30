@@ -159,5 +159,14 @@ export default {
         headers: createSessionHeader(state.sessionKey)
       })
     ).data.error
+  },
+  async deleteAccount ({ state }, { password }) {
+    return (
+      await axios.post('/api/administration/delete-account', {
+        digest: getDigest(await bcrypt.hash(password, state.salt))
+      }, {
+        headers: createSessionHeader(state.sessionKey)
+      })
+    ).data.error
   }
 }

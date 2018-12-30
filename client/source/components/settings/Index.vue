@@ -15,10 +15,13 @@
             <change-master-key></change-master-key>
           </v-flex>
           <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
+            <change-mail></change-mail>
+          </v-flex>
+          <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
             <change-username></change-username>
           </v-flex>
           <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
-            <change-mail></change-mail>
+            <delete-account></delete-account>
           </v-flex>
         </v-layout>
       </v-container>
@@ -31,13 +34,15 @@
   import ChangeMail from './ChangeMail'
   import ChangeMasterKey from './ChangeMasterKey'
   import ChangeUsername from './ChangeUsername'
+  import DeleteAccount from './DeleteAccount'
 
   export default {
     components: {
       page: Page,
       changeMail: ChangeMail,
       changeMasterKey: ChangeMasterKey,
-      changeUsername: ChangeUsername
+      changeUsername: ChangeUsername,
+      deleteAccount: DeleteAccount
     }
   }
 </script>
