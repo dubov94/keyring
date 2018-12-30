@@ -10,7 +10,7 @@
     </v-toolbar>
     <v-content>
       <v-container fluid>
-        <v-layout row wrap justify-center>
+        <v-layout row wrap justify-center align-center>
           <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
             <change-master-key></change-master-key>
           </v-flex>

@@ -2,20 +2,15 @@
   .navigation {
     margin-bottom: 16px;
     text-align: center;
-  }
+  }  
 
   .masonry {
-    display: flex;
-    max-width: calc(1264px - 1px);
+    max-width: 1264px;
     margin: 0 auto;
   }
 
-  .masonry__arch {
-    flex: 1;
-  }
-
   .masonry__brick {
-    margin: 0 8px 16px;
+    padding: 0 8px 16px;
   }
 
   .search--desktop {
@@ -65,7 +60,7 @@
     <v-toolbar app clipped-left prominent color="primary" dark>
       <v-toolbar-side-icon @click="toggleDrawer"></v-toolbar-side-icon>
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
-          Key Ring
+        Key Ring
       </v-toolbar-title>
       <v-text-field solo-inverted flat ref="search" v-model="query" :class=
         "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
@@ -77,18 +72,14 @@
           <v-pagination v-model="pageNumber" :length="pageCount"
             :total-visible="paginationVisibleCount" circle></v-pagination>
         </div>
-        <!-- Note that if a card changes columns it gets re-rendered. -->
-        <div class="masonry">
-          <div v-for="columnNumber in columnCount"
-            :key="columnNumber" class="masonry__arch">
-            <div v-for="card in generateSlice(columnNumber)"
-              :key="card.identifier" class="masonry__brick">
-              <password :identifier="card.identifier" 
-                :value="card.value" :tags="card.tags">
-              </password>
-            </div>
-          </div>
-        </div>
+        <v-layout class="masonry" row wrap align-center>
+          <v-flex v-for="card in visibleCards" :key="card.identifier"
+            class="masonry__brick" sm12 md6 lg4>
+            <password :identifier="card.identifier" 
+              :value="card.value" :tags="card.tags">
+            </password>
+          </v-flex>
+        </v-layout>
       </v-container>
       <div class="dial">
         <v-btn fab color="error" @click="addKey">
@@ -148,22 +139,12 @@
         }
         return list
       },
+      visibleCards () {
+        let startIndex = (this.pageNumber - 1) * CARDS_PER_PAGE
+        return this.matchingCards.slice(startIndex, startIndex + CARDS_PER_PAGE)
+      },
       cardsCount () {
         return this.matchingCards.length
-      },
-      columnCount () {
-        let number = 1
-        for (let margin of [960, 1264]) {
-          if (this.$vuetify.breakpoint.width >= margin) {
-            number += 1
-          } else {
-            break
-          }
-        }
-        return number
-      },
-      cardsPerColumn () {
-        return CARDS_PER_PAGE / this.columnCount
       }
     },
     methods: {
@@ -173,15 +154,6 @@
       ...mapMutations({
         openEditor: 'interface/openEditor'
       }),
-      generateSlice (columnNumber) {
-        let slice = []
-        let index = (this.pageNumber - 1) * CARDS_PER_PAGE + columnNumber - 1
-        for (; index < this.matchingCards.length &&
-          slice.length < this.cardsPerColumn; index += this.columnCount) {
-          slice.push(this.matchingCards[index])
-        }
-        return slice
-      },
       toggleDrawer () {
         this.showDrawer = !this.showDrawer
       },
