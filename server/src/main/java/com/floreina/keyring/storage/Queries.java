@@ -1,7 +1,6 @@
 package com.floreina.keyring.storage;
 
 import com.floreina.keyring.entities.User;
-import com.floreina.keyring.entities.User_;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -21,8 +20,7 @@ class Queries {
     Root<T> root = criteriaQuery.from(typeClass);
     criteriaQuery
         .select(root)
-        .where(
-            criteriaBuilder.equal(root.get(userAttribute).get(User_.identifier), userIdentifier));
+        .where(criteriaBuilder.equal(root.get(userAttribute), userIdentifier));
     return entityManager.createQuery(criteriaQuery).getResultList();
   }
 }

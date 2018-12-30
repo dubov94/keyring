@@ -25,30 +25,40 @@ public class EntitiesExpiration {
     this.chronometry = chronometry;
   }
 
+  void dropDeletedUserAndTheirDependencies() {
+    deleteEntitiesByRestriction(
+        User.class,
+        (criteriaBuilder, userRoot) ->
+            criteriaBuilder.equal(userRoot.get(User_.state), User.State.DELETED));
+  }
+
   void dropExpiredMailTokens() {
     deleteEntitiesByRestriction(
         MailToken.class,
-        (criteriaBuilder, root) ->
+        (criteriaBuilder, mailTokenRoot) ->
             criteriaBuilder.lessThan(
-                root.get(MailToken_.timestamp), createTimestampInThePast(10, ChronoUnit.MINUTES)));
+                mailTokenRoot.get(MailToken_.timestamp),
+                createTimestampInThePast(10, ChronoUnit.MINUTES)));
   }
 
   void dropExpiredPendingUsers() {
     deleteEntitiesByRestriction(
         User.class,
-        (criteriaBuilder, root) ->
+        (criteriaBuilder, userRoot) ->
             criteriaBuilder.and(
-                criteriaBuilder.equal(root.get(User_.state), User.State.PENDING),
+                criteriaBuilder.equal(userRoot.get(User_.state), User.State.PENDING),
                 criteriaBuilder.lessThan(
-                    root.get(User_.timestamp), createTimestampInThePast(15, ChronoUnit.MINUTES))));
+                    userRoot.get(User_.timestamp),
+                    createTimestampInThePast(15, ChronoUnit.MINUTES))));
   }
 
   void dropExpiredSessions() {
     deleteEntitiesByRestriction(
         Session.class,
-        (criteriaBuilder, root) ->
+        (criteriaBuilder, sessionRoot) ->
             criteriaBuilder.lessThan(
-                root.get(Session_.timestamp), createTimestampInThePast(28, ChronoUnit.DAYS)));
+                sessionRoot.get(Session_.timestamp),
+                createTimestampInThePast(28, ChronoUnit.DAYS)));
   }
 
   private Timestamp createTimestampInThePast(int amountToSubtract, TemporalUnit temporalUnit) {

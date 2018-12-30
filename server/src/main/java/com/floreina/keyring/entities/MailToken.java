@@ -1,6 +1,8 @@
 package com.floreina.keyring.entities;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -17,7 +19,9 @@ public class MailToken {
 
   @CreationTimestamp private Timestamp timestamp;
 
-  @ManyToOne private User user;
+  @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private User user;
 
   @Column private String code;
 

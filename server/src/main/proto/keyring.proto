@@ -198,6 +198,19 @@ message ChangeUsernameResponse {
     Error error = 1;
 }
 
+message DeleteAccountRequest {
+    string digest = 1;
+}
+
+message DeleteAccountResponse {
+    enum Error {
+        NONE = 0;
+        INVALID_DIGEST = 1;
+    }
+
+    Error error = 1;
+}
+
 service Administration {
     rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse);
     rpc ReleaseMailToken (ReleaseMailTokenRequest) returns (ReleaseMailTokenResponse);
@@ -207,4 +220,5 @@ service Administration {
     rpc DeleteKey (DeleteKeyRequest) returns (DeleteKeyResponse);
     rpc ChangeMasterKey (ChangeMasterKeyRequest) returns (ChangeMasterKeyResponse);
     rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse);
+    rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
 }

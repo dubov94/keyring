@@ -139,6 +139,27 @@ class AuthenticationServiceTest {
   }
 
   @Test
+  void logIn_deletedAccount_repliesWithError() {
+    when(mockAccountOperationsInterface.getUserByName("username"))
+        .thenReturn(
+            Optional.of(
+                new User()
+                    .setIdentifier(0L)
+                    .setState(User.State.DELETED)
+                    .setUsername("username")
+                    .setDigest("digest")));
+
+    authenticationService.logIn(
+        LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),
+        mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
   void logIn_validPair_repliesWithSessionKeyAndState() {
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(

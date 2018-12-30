@@ -87,7 +87,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
           LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
     } else {
       User user = maybeUser.get();
-      if (!Objects.equals(request.getDigest(), user.getDigest())) {
+      if (!Objects.equals(request.getDigest(), user.getDigest())
+          || Objects.equals(user.getState(), User.State.DELETED)) {
         response.onNext(
             LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
       } else {

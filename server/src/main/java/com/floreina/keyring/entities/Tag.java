@@ -9,7 +9,14 @@ public class Tag {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
 
+  @ManyToOne @JoinColumn private Key key;
+
   @Column private String value;
+
+  public Tag setKey(Key key) {
+    this.key = key;
+    return this;
+  }
 
   public String getValue() {
     return value;

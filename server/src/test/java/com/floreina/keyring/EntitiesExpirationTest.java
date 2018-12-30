@@ -1,7 +1,10 @@
 package com.floreina.keyring;
 
 import com.floreina.keyring.aspects.StorageManagerAspect;
+import com.floreina.keyring.entities.Key;
+import com.floreina.keyring.entities.Tag;
 import com.floreina.keyring.entities.User;
+import com.google.common.collect.ImmutableList;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,19 +43,37 @@ class EntitiesExpirationTest {
   }
 
   @Test
-  void deleteExpiredUsers_getsOldPendingUser_removesEntity() {
-    User user = new User().setState(User.State.PENDING).setUsername(createUniqueName());
+  void dropDeletedUsersAndTheirDependencies_activeUser_keepsEntities() {
+    User user = new User().setState(User.State.ACTIVE).setUsername(createUniqueName());
     persistEntity(user);
-    when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
-    when(mockChronometry.subtract(Instant.EPOCH, 15, ChronoUnit.MINUTES)).thenReturn(Instant.now());
+    Tag tag = new Tag().setValue("tag");
+    Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of(tag));
+    persistEntity(key);
 
-    entitiesExpiration.dropExpiredPendingUsers();
+    entitiesExpiration.dropDeletedUserAndTheirDependencies();
 
+    assertTrue(isEntityInStorage(tag));
+    assertTrue(isEntityInStorage(key));
+    assertTrue(isEntityInStorage(user));
+  }
+
+  @Test
+  void dropDeletedUsersAndTheirDependencies_deletedUser_removesEntities() {
+    User user = new User().setState(User.State.DELETED).setUsername(createUniqueName());
+    persistEntity(user);
+    Tag tag = new Tag().setValue("tag");
+    Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of(tag));
+    persistEntity(key);
+
+    entitiesExpiration.dropDeletedUserAndTheirDependencies();
+
+    assertFalse(isEntityInStorage(tag));
+    assertFalse(isEntityInStorage(key));
     assertFalse(isEntityInStorage(user));
   }
 
   @Test
-  void deleteExpiredUsers_getsOldActiveUser_keepsEntity() {
+  void dropExpiredPendingUsers_getsOldActiveUser_keepsEntity() {
     User user = new User().setState(User.State.ACTIVE).setUsername(createUniqueName());
     persistEntity(user);
     when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
@@ -61,6 +82,18 @@ class EntitiesExpirationTest {
     entitiesExpiration.dropExpiredPendingUsers();
 
     assertTrue(isEntityInStorage(user));
+  }
+
+  @Test
+  void dropExpiredPendingUsers_getsOldPendingUser_removesEntity() {
+    User user = new User().setState(User.State.PENDING).setUsername(createUniqueName());
+    persistEntity(user);
+    when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
+    when(mockChronometry.subtract(Instant.EPOCH, 15, ChronoUnit.MINUTES)).thenReturn(Instant.now());
+
+    entitiesExpiration.dropExpiredPendingUsers();
+
+    assertFalse(isEntityInStorage(user));
   }
 
   private String createUniqueName() {

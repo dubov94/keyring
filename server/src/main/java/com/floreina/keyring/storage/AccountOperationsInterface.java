@@ -28,4 +28,6 @@ public interface AccountOperationsInterface {
   void createSession(long userIdentifier, String key, String ipAddress, String userAgent);
 
   List<Session> readSessions(long userIdentifier);
+
+  void markAccountAsDeleted(long userIdentifier);
 }

@@ -1,6 +1,8 @@
 package com.floreina.keyring.entities;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -12,7 +14,9 @@ public class Session {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
 
-  @ManyToOne private User user;
+  @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private User user;
 
   @CreationTimestamp private Timestamp timestamp;
 

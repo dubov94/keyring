@@ -49,6 +49,10 @@
     "changeUsername": {
       "method": "put",
       "path": "/administration/change-username"
+    },
+    "deleteAccount": {
+      "method": "post",
+      "path": "/administration/delete-account"
     }
   }
 }

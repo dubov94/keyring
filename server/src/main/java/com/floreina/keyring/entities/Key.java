@@ -1,5 +1,8 @@
 package com.floreina.keyring.entities;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,11 +14,19 @@ public class Key {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
 
-  @ManyToOne private User user;
+  @ManyToOne
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private User user;
 
   @Column private String value;
 
-  @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(
+    mappedBy = "key",
+    fetch = FetchType.EAGER,
+    cascade = CascadeType.ALL,
+    orphanRemoval = true
+  )
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private List<Tag> tags;
 
   public long getIdentifier() {
@@ -44,13 +55,13 @@ public class Key {
     return tags;
   }
 
-  Key setTags(List<Tag> tags) {
+  public Key setTags(List<Tag> tags) {
     if (this.tags == null) {
       this.tags = new ArrayList<>();
     } else {
       this.tags.clear();
     }
-    this.tags.addAll(tags);
+    tags.forEach(tag -> this.tags.add(tag.setKey(this)));
     return this;
   }
 }

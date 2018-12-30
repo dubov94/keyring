@@ -80,12 +80,9 @@ public class User {
     return this;
   }
 
-  public Timestamp getTimestamp() {
-    return timestamp;
-  }
-
   public enum State {
     PENDING,
-    ACTIVE
+    ACTIVE,
+    DELETED
   }
 }

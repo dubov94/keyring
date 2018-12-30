@@ -191,4 +191,33 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     response.onCompleted();
   }
+
+  @Override
+  @ValidateUser
+  public void deleteAccount(
+      DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> response) {
+    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
+    if (!maybeUser.isPresent()) {
+      throw new ConcurrentModificationException();
+    } else {
+      User user = maybeUser.get();
+      if (!Objects.equals(request.getDigest(), user.getDigest())) {
+        response.onNext(
+            DeleteAccountResponse.newBuilder()
+                .setError(DeleteAccountResponse.Error.INVALID_DIGEST)
+                .build());
+      } else {
+        keyValueClient.dropSessions(
+            accountOperationsInterface
+                .readSessions(userIdentifier)
+                .stream()
+                .map(Session::getKey)
+                .collect(toList()));
+        accountOperationsInterface.markAccountAsDeleted(userIdentifier);
+        response.onNext(DeleteAccountResponse.getDefaultInstance());
+      }
+    }
+    response.onCompleted();
+  }
 }

@@ -19,7 +19,9 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   @Override
   @LocalTransaction
   public Key createKey(long userIdentifier, Password proto) {
-    Key entity = Utilities.passwordToKey(proto).setUser(new User().setIdentifier(userIdentifier));
+    Key entity =
+        Utilities.passwordToKey(proto)
+            .setUser(entityManager.getReference(User.class, userIdentifier));
     entityManager.persist(entity);
     return entity;
   }

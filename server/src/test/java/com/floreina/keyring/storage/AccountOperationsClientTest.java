@@ -187,6 +187,18 @@ class AccountOperationsClientTest {
     assertEquals("username", user.getUsername());
   }
 
+  @Test
+  void markAccountAsDeleted_updatesState() {
+    long userIdentifier = createActiveUser();
+
+    accountOperationsClient.markAccountAsDeleted(userIdentifier);
+
+    Optional<User> maybeUser = accountOperationsClient.getUserByIdentifier(userIdentifier);
+    assertTrue(maybeUser.isPresent());
+    User user = maybeUser.get();
+    assertEquals(User.State.DELETED, user.getState());
+  }
+
   private long createActiveUser() {
     String username = createUniqueName();
     long userIdentifier =

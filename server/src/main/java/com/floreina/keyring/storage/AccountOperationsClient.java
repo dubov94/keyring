@@ -140,7 +140,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public void createSession(long userIdentifier, String key, String ipAddress, String userAgent) {
     Session session =
         new Session()
-            .setUser(new User().setIdentifier(userIdentifier))
+            .setUser(entityManager.getReference(User.class, userIdentifier))
             .setKey(key)
             .setIpAddress(ipAddress)
             .setUserAgent(userAgent);
@@ -151,5 +151,18 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @LocalTransaction
   public List<Session> readSessions(long userIdentifier) {
     return Queries.findByUser(entityManager, Session.class, Session_.user, userIdentifier);
+  }
+
+  @Override
+  @LocalTransaction
+  public void markAccountAsDeleted(long userIdentifier) {
+    Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
+    if (maybeUser.isPresent()) {
+      User user = maybeUser.get();
+      user.setState(User.State.DELETED);
+      entityManager.persist(user);
+    } else {
+      throw new IllegalArgumentException();
+    }
   }
 }

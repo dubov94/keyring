@@ -37,11 +37,7 @@ class AdministrationServiceTest {
   @Mock private Cryptography mockCryptography;
   @Mock private Post mockPost;
 
-  private User user =
-      new User()
-          .setIdentifier(0L)
-          .setState(User.State.ACTIVE)
-          .setDigest("digest");
+  private User user = new User().setIdentifier(0L).setState(User.State.ACTIVE).setDigest("digest");
   private AdministrationService administrationService;
 
   @BeforeEach
@@ -211,6 +207,33 @@ class AdministrationServiceTest {
 
     verify(mockAccountOperationsInterface).changeUsername(0L, "username");
     verify(mockStreamObserver).onNext(ChangeUsernameResponse.getDefaultInstance());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void deleteAccount_digestsMismatch_repliesWithError() {
+    administrationService.deleteAccount(
+        DeleteAccountRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            DeleteAccountResponse.newBuilder()
+                .setError(DeleteAccountResponse.Error.INVALID_DIGEST)
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void deleteAccount_digestsMatch_repliesWithDefault() {
+    when(mockAccountOperationsInterface.readSessions(0L))
+        .thenReturn(ImmutableList.of(new Session().setKey("session")));
+
+    administrationService.deleteAccount(
+        DeleteAccountRequest.newBuilder().setDigest("digest").build(), mockStreamObserver);
+
+    verify(mockKeyValueClient).dropSessions(ImmutableList.of("session"));
+    verify(mockAccountOperationsInterface).markAccountAsDeleted(0L);
+    verify(mockStreamObserver).onNext(DeleteAccountResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
   }
 
