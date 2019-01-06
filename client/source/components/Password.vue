@@ -15,19 +15,19 @@
       <v-text-field :type="reveal ? 'text' : 'password'" solo flat readonly
         :value="value"></v-text-field>
       <v-btn icon @click="copyText(value)">
-        <v-icon>fa-copy</v-icon>
+        <v-icon small>fa-copy</v-icon>
       </v-btn>
       <template v-if="$vuetify.breakpoint.smAndUp">
         <v-btn icon @click="toggleReveal">
-          <v-icon>{{ reveal ? 'fa-eye-slash' : 'fa-eye' }}</v-icon>
+          <v-icon small>{{ reveal ? 'fa-eye-slash' : 'fa-eye' }}</v-icon>
         </v-btn>
         <v-btn icon @click="edit">
-          <v-icon>fa-edit</v-icon>
+          <v-icon small>fa-edit</v-icon>
         </v-btn>
       </template>
       <v-menu v-else>
         <v-btn icon slot="activator">
-          <v-icon>fa-ellipsis-v</v-icon>
+          <v-icon small>fa-ellipsis-v</v-icon>
         </v-btn>
         <v-list>
           <v-list-tile @click="toggleReveal">

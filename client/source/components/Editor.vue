@@ -26,11 +26,15 @@
     width: 100%;
     padding-left: 4px;
     color: transparent;
-    caret-color: black;
   }
 
   .tag__label {
     padding: 0 4px;
+  }
+
+  .key >>> input,
+  .tag__input {
+    caret-color: black !important;
   }
 
   /* Matches `.chip`. */
@@ -46,7 +50,8 @@
     <v-card>
       <v-card-title>
         <v-text-field :type="reveal ? 'text' : 'password'" solo flat
-          placeholder="Secret" v-model="secret" ref="secret"></v-text-field>
+          placeholder="Secret" class="key" v-model="secret" ref="secret">
+        </v-text-field>
         <fixed-tooltip top :nudge-y="-6">
           <span slot="label">Available after saving</span>
           <v-btn icon disabled>
