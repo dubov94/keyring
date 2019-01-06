@@ -41,6 +41,12 @@
       <v-card-title>
         <v-text-field :type="reveal ? 'text' : 'password'" solo flat
           placeholder="Secret" v-model="secret" ref="secret"></v-text-field>
+        <fixed-tooltip top :nudge-y="-6">
+          <span slot="label">Available after saving</span>
+          <v-btn icon disabled>
+            <v-icon>file_copy</v-icon>
+          </v-btn>
+        </fixed-tooltip>
         <v-btn icon @click="reveal = !reveal">
           <v-icon>{{ reveal ? 'visibility_off' : 'visibility' }}</v-icon>
         </v-btn>

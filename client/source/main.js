@@ -1,5 +1,6 @@
 import 'vuetify/dist/vuetify.min.css'
 import Application from './Application'
+import FixedTooltip from './components/FixedTooltip'
 import FormTextField from './components/FormTextField'
 import Messages from './messages'
 import Vue from 'vue'
@@ -37,6 +38,7 @@ Vue.directive('focus', {
   }
 })
 
+Vue.component('fixed-tooltip', FixedTooltip)
 Vue.component('form-text-field', FormTextField)
 
 axios.interceptors.response.use(undefined, (error) => {

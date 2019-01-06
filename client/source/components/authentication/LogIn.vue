@@ -1,7 +1,5 @@
 <style scoped>
   .switch {
-    flex: none;
-    width: auto;
     margin: 0 0 8px 16px;
   }
 </style>
@@ -18,11 +16,11 @@
             v-model="username" :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
             @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
             :autofocus="!hasUsername"></form-text-field>
-          <v-tooltip bottom>
-            <v-switch slot="activator" hide-details color="primary"
-              class="switch" v-model="persistanceSwitch"></v-switch>
-            <span>Remember</span>
-          </v-tooltip>
+          <fixed-tooltip bottom :nudge-x="8" :nudge-y="-4">
+            <span slot="label">Remember</span>
+            <v-switch hide-details color="primary" class="switch"
+              v-model="persistanceSwitch"></v-switch>
+          </fixed-tooltip>
         </v-layout>
         <form-text-field type="password" label="Password" prepend-icon="lock"
           v-model="password" :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
@@ -126,12 +124,22 @@
     },
     watch: {
       persistanceSwitch (value) {
-        if (value === false) {
-          this.forgetUsername()
+        if (value) {
           this.displaySnackbar({
-            message: 'Username is erased',
-            timeout: 1500
+            message: 'Okay, we will remember your username after you log in.',
+            timeout: 3000
           })
+        } else {
+          let isUsernameInStore =
+            this.$store.state.preferences.username !== null
+          this.forgetUsername()
+          if (isUsernameInStore) {
+            this.displaySnackbar({
+              message: 'We deleted the username from the storage.' +
+                ' Refresh the page if you want to see the effect.',
+              timeout: 4500
+            })
+          }
         }
       }
     }
