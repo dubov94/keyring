@@ -29,10 +29,10 @@
     padding: 0 4px;
   }
 
+  /* Matches `.chip`. */
   .new_tag_button {
-    margin: 4px;
-    /* Matches `.chip`. */
     height: 34px;
+    margin: 4px;
     min-width: 0;
   }
 </style>
