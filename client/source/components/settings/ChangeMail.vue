@@ -23,7 +23,7 @@
         <v-stepper-items>
           <v-stepper-content step="1" style="padding-top: 0;">
             <v-form @keydown.native.enter.prevent="acquireToken">
-              <form-text-field type="text" label="New e-mail" prepend-icon="email"
+              <form-text-field type="text" label="New e-mail" prepend-icon="mail_outline"
                 v-model="mail" :dirty="$v.mail.$dirty" :errors="mailErrors"
                 @touch="$v.mail.$touch()" @reset="$v.mail.$reset()"></form-text-field>
               <form-text-field type="password" label="Password" prepend-icon="lock"

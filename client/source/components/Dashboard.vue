@@ -41,7 +41,7 @@
       <v-list>
         <v-list-tile @click="$router.push('/settings')">
           <v-list-tile-action>
-            <v-icon>settings</v-icon>
+            <v-icon>fa-cog</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
             Settings
@@ -49,7 +49,7 @@
         </v-list-tile>
         <v-list-tile @click="logOut">
           <v-list-tile-action>
-            <v-icon>exit_to_app</v-icon>
+            <v-icon>fa-sign-out-alt</v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
             Log out
@@ -83,10 +83,10 @@
       </v-container>
       <div class="dial">
         <v-btn fab color="error" @click="addKey">
-          <v-icon>add</v-icon>
+          <v-icon small>fa-plus</v-icon>
         </v-btn>
         <v-btn fab small @click="clearClipboard">
-          <v-icon>layers_clear</v-icon>
+          <v-icon>fa-eraser</v-icon>
         </v-btn>
       </div>
     </v-content>

@@ -4,6 +4,10 @@
     padding-bottom: 0;
   }
 
+  .chip {
+    font-size: 14px;
+  }
+
   .chip >>> .chip__close {
     margin-left: 0;
   }
@@ -46,14 +50,14 @@
         <fixed-tooltip top :nudge-y="-6">
           <span slot="label">Available after saving</span>
           <v-btn icon disabled>
-            <v-icon>file_copy</v-icon>
+            <v-icon>fa-copy</v-icon>
           </v-btn>
         </fixed-tooltip>
         <v-btn icon @click="reveal = !reveal">
-          <v-icon>{{ reveal ? 'visibility_off' : 'visibility' }}</v-icon>
+          <v-icon>{{ reveal ? 'fa-eye-slash' : 'fa-eye' }}</v-icon>
         </v-btn>
-        <v-btn icon @click="generate">
-          <v-icon>autorenew</v-icon>
+        <v-btn icon :disabled="requestInProgress" @click="generate">
+          <v-icon>fa-lightbulb</v-icon>
         </v-btn>
       </v-card-title>
       <v-divider></v-divider>
@@ -69,12 +73,9 @@
               <span class="tag__label">{{ value }}</span>
             </div>
           </v-chip>
-          <fixed-tooltip style="display: inline-block;" bottom :nudge-y="2">
-            <span slot="label">Add a new label</span>
-            <v-btn @click="addTag" outline round class="new_tag_button">
-              +
-            </v-btn>
-          </fixed-tooltip>
+          <v-btn @click="addTag" outline round class="new_tag_button">
+            <v-icon left small>fa-plus</v-icon> Label
+          </v-btn>
         </draggable>
       </v-card-text>
       <v-divider></v-divider>
