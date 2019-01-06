@@ -31,7 +31,9 @@
 
   .new_tag_button {
     margin: 4px;
-    border-radius: 28px;
+    /* Matches `.chip`. */
+    height: 34px;
+    min-width: 0;
   }
 </style>
 
@@ -57,8 +59,9 @@
       <v-divider></v-divider>
       <v-card-text>
         <draggable v-model="chips" :options="draggableOptions" :move="move">
-          <v-chip disabled close v-for="(value, index) in chips" :key="index"
-            @input="removeTag(index)" color="white" class="elevation-3">
+          <v-chip disabled outline color="black" close
+            v-for="(value, index) in chips" :key="index"
+            @input="removeTag(index)">
             <v-icon small class="tag__handle">drag_indicator</v-icon>
             <div class="tag__content">
               <input type="text" :value="value" class="tag__input" v-focus
@@ -66,9 +69,12 @@
               <span class="tag__label">{{ value }}</span>
             </div>
           </v-chip>
-          <v-btn @click="addTag" color="white" class="new_tag_button">
-            Add tag
-          </v-btn>
+          <fixed-tooltip style="display: inline-block;" bottom :nudge-y="2">
+            <span slot="label">Add a new label</span>
+            <v-btn @click="addTag" outline round class="new_tag_button">
+              +
+            </v-btn>
+          </fixed-tooltip>
         </draggable>
       </v-card-text>
       <v-divider></v-divider>
