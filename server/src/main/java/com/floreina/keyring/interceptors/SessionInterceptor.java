@@ -19,14 +19,14 @@ public class SessionInterceptor implements ServerInterceptor {
   public <I, O> ServerCall.Listener<I> interceptCall(
       ServerCall<I, O> call, Metadata metadata, ServerCallHandler<I, O> next) {
     Context context = Context.current();
-    String sessionIdentifier = metadata.get(SessionInterceptorKeys.METADATA_SESSION_IDENTIFIER_KEY);
-    if (sessionIdentifier != null) {
+    String sessionToken = metadata.get(SessionInterceptorKeys.METADATA_SESSION_TOKEN_KEY);
+    if (sessionToken != null) {
       Optional<UserProjection> maybeUserProjection =
-          keyValueClient.getSessionAndUpdateItsExpirationTime(sessionIdentifier);
+          keyValueClient.getSessionAndUpdateItsExpirationTime(sessionToken);
       if (maybeUserProjection.isPresent()) {
         context =
             context.withValue(
-                SessionInterceptorKeys.CONTEXT_SESSION_IDENTIFIER_KEY, sessionIdentifier);
+                SessionInterceptorKeys.CONTEXT_SESSION_TOKEN_KEY, sessionToken);
         context =
             context.withValue(
                 SessionInterceptorKeys.CONTEXT_USER_PROJECTION_KEY, maybeUserProjection.get());

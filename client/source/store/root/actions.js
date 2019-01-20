@@ -10,7 +10,7 @@ const BCRYPT_ROUNDS_LOGARITHM = 12
 const getDigest = (hash) => hash.slice(-31)
 
 const createSessionHeader = (sessionKey) => ({
-  session: sessionKey
+  'X-Session-Token': sessionKey
 })
 
 const encryptPassword = (encryptionKey, { value, tags }) => {

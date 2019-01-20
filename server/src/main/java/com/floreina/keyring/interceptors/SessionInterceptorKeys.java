@@ -5,13 +5,13 @@ import io.grpc.Context;
 import io.grpc.Metadata;
 
 public class SessionInterceptorKeys {
-  static final Context.Key<UserProjection> CONTEXT_USER_PROJECTION_KEY = Context.key("user");
-  static final Context.Key<String> CONTEXT_SESSION_IDENTIFIER_KEY = Context.key("session");
-  static final Metadata.Key<String> METADATA_SESSION_IDENTIFIER_KEY =
-      Metadata.Key.of("session", Metadata.ASCII_STRING_MARSHALLER);
+  static final Context.Key<UserProjection> CONTEXT_USER_PROJECTION_KEY = Context.key("user-projection");
+  static final Context.Key<String> CONTEXT_SESSION_TOKEN_KEY = Context.key("session-token");
+  static final Metadata.Key<String> METADATA_SESSION_TOKEN_KEY =
+      Metadata.Key.of("X-Session-Token", Metadata.ASCII_STRING_MARSHALLER);
 
   public String getSessionIdentifier() {
-    return CONTEXT_SESSION_IDENTIFIER_KEY.get();
+    return CONTEXT_SESSION_TOKEN_KEY.get();
   }
 
   public long getUserIdentifier() {
