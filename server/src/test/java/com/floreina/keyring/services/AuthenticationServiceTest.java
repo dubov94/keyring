@@ -4,7 +4,6 @@ import com.floreina.keyring.*;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
-import com.floreina.keyring.keyvalue.UserProjection;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;
@@ -184,29 +183,5 @@ class AuthenticationServiceTest {
                         .build())
                 .build());
     verify(mockStreamObserver).onCompleted();
-  }
-
-  @Test
-  void keepAlive_invalidSessionKey_repliesWithError() {
-    when(mockKeyValueClient.getSessionAndUpdateItsExpirationTime("identifier"))
-        .thenReturn(Optional.empty());
-
-    authenticationService.keepAlive(
-        KeepAliveRequest.newBuilder().setSessionKey("identifier").build(), mockStreamObserver);
-
-    verify(mockStreamObserver)
-        .onNext(
-            KeepAliveResponse.newBuilder().setError(KeepAliveResponse.Error.INVALID_KEY).build());
-  }
-
-  @Test
-  void keepAlive_validSessionKey_repliesWithDefault() {
-    when(mockKeyValueClient.getSessionAndUpdateItsExpirationTime("identifier"))
-        .thenReturn(Optional.of(new UserProjection().setIdentifier(0L)));
-
-    authenticationService.keepAlive(
-        KeepAliveRequest.newBuilder().setSessionKey("identifier").build(), mockStreamObserver);
-
-    verify(mockStreamObserver).onNext(KeepAliveResponse.getDefaultInstance());
   }
 }

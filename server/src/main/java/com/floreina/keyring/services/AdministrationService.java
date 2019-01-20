@@ -89,6 +89,12 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  public void keepAlive(KeepAliveRequest request, StreamObserver<KeepAliveResponse> response) {
+    response.onNext(KeepAliveResponse.getDefaultInstance());
+    response.onCompleted();
+  }
+
+  @Override
   @ValidateUser
   public void createKey(CreateKeyRequest request, StreamObserver<CreateKeyResponse> response) {
     long identifier =

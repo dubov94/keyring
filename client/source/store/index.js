@@ -31,8 +31,10 @@ const heartBeatPlugin = (store) => {
   const scheduleBeat = (immediately) => {
     clearTimeout(identifier)
     identifier = setTimeout(async () => {
-      await axios.put('/api/authentication/keep-alive', {
-        session_key: store.state.sessionKey
+      await axios.post('/api/administration/keep-alive', null, {
+        headers: {
+          'X-Session-Token': store.state.sessionKey
+        }
       })
       scheduleBeat(false)
     }, immediately ? 0 : SESSION_LIFETIME_IN_MS / 2)

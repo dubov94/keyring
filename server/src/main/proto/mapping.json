@@ -11,10 +11,6 @@
     "logIn": {
       "method": "post",
       "path": "/authentication/log-in"
-    },
-    "keepAlive": {
-      "method": "put",
-      "path": "/authentication/keep-alive"
     }
   },
   "keyring.Administration": {
@@ -25,6 +21,10 @@
     "releaseMailToken": {
       "method": "post",
       "path": "/administration/release-mail-token"
+    },
+    "keepAlive": {
+      "method": "post",
+      "path": "/administration/keep-alive"
     },
     "createKey": {
       "method": "post",

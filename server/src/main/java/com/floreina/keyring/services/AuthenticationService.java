@@ -122,16 +122,4 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
     response.onCompleted();
   }
-
-  @Override
-  public void keepAlive(KeepAliveRequest request, StreamObserver<KeepAliveResponse> response) {
-    Optional<UserProjection> maybeUserProjection =
-        keyValueClient.getSessionAndUpdateItsExpirationTime(request.getSessionKey());
-    KeepAliveResponse.Builder builder = KeepAliveResponse.newBuilder();
-    if (!maybeUserProjection.isPresent()) {
-      builder.setError(KeepAliveResponse.Error.INVALID_KEY);
-    }
-    response.onNext(builder.build());
-    response.onCompleted();
-  }
 }

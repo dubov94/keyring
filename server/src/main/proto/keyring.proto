@@ -24,21 +24,6 @@ message RegisterResponse {
     }
 }
 
-message ReleaseMailTokenRequest {
-    string code = 1;
-}
-
-message ReleaseMailTokenResponse {
-    enum Error {
-        NONE = 0;
-        INVALID_CODE = 1;
-    }
-
-    oneof data {
-        Error error = 1;
-    }
-}
-
 message GetSaltRequest {
     string username = 1;
 }
@@ -90,25 +75,44 @@ message LogInResponse {
     }
 }
 
-message KeepAliveRequest {
-    string session_key = 1;
+service Authentication {
+    rpc Register (RegisterRequest) returns (RegisterResponse);
+    rpc GetSalt (GetSaltRequest) returns (GetSaltResponse);
+    rpc LogIn (LogInRequest) returns (LogInResponse);
 }
 
-message KeepAliveResponse {
+message AcquireMailTokenRequest {
+    string digest = 1;
+    string mail = 2;
+}
+
+message AcquireMailTokenResponse {
     enum Error {
         NONE = 0;
-        INVALID_KEY = 1;
+        INVALID_DIGEST = 1;
     }
 
     Error error = 1;
 }
 
-service Authentication {
-    rpc Register (RegisterRequest) returns (RegisterResponse);
-    rpc GetSalt (GetSaltRequest) returns (GetSaltResponse);
-    rpc LogIn (LogInRequest) returns (LogInResponse);
-    rpc KeepAlive (KeepAliveRequest) returns (KeepAliveResponse);
+message ReleaseMailTokenRequest {
+    string code = 1;
 }
+
+message ReleaseMailTokenResponse {
+    enum Error {
+        NONE = 0;
+        INVALID_CODE = 1;
+    }
+
+    oneof data {
+        Error error = 1;
+    }
+}
+
+message KeepAliveRequest {}
+
+message KeepAliveResponse {}
 
 message Password {
     string value = 1;
@@ -169,20 +173,6 @@ message ChangeMasterKeyResponse {
     Error error = 1;
 }
 
-message AcquireMailTokenRequest {
-    string digest = 1;
-    string mail = 2;
-}
-
-message AcquireMailTokenResponse {
-    enum Error {
-        NONE = 0;
-        INVALID_DIGEST = 1;
-    }
-
-    Error error = 1;
-}
-
 message ChangeUsernameRequest {
     string digest = 1;
     string username = 2;
@@ -214,6 +204,7 @@ message DeleteAccountResponse {
 service Administration {
     rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse);
     rpc ReleaseMailToken (ReleaseMailTokenRequest) returns (ReleaseMailTokenResponse);
+    rpc KeepAlive (KeepAliveRequest) returns (KeepAliveResponse);
     rpc CreateKey (CreateKeyRequest) returns (CreateKeyResponse);
     rpc ReadKeys (ReadKeysRequest) returns (ReadKeysResponse);
     rpc UpdateKey (UpdateKeyRequest) returns (UpdateKeyResponse);
