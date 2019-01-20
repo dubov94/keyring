@@ -4,13 +4,14 @@ import aes from 'crypto-js/aes'
 import base64 from 'crypto-js/enc-base64'
 import encUtf8 from 'crypto-js/enc-utf8'
 import sha256 from 'crypto-js/sha256'
+import {SESSION_TOKEN_HEADER_NAME} from '../../constants'
 
 const BCRYPT_ROUNDS_LOGARITHM = 12
 
 const getDigest = (hash) => hash.slice(-31)
 
 const createSessionHeader = (sessionKey) => ({
-  'X-Session-Token': sessionKey
+  [SESSION_TOKEN_HEADER_NAME]: sessionKey
 })
 
 const encryptPassword = (encryptionKey, { value, tags }) => {
