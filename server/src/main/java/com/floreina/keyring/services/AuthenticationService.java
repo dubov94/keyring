@@ -51,18 +51,14 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       String mail = request.getMail();
       String code = cryptography.generateSecurityCode();
       User user = accountOperationsInterface.createUser(username, salt, digest, mail, code);
-      Optional<String> sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
-      if (!sessionKey.isPresent()) {
-        throw new IllegalStateException();
-      } else {
-        accountOperationsInterface.createSession(
-            user.getIdentifier(),
-            sessionKey.get(),
-            requestMetadataInterceptorKeys.getIpAddress(),
-            requestMetadataInterceptorKeys.getUserAgent());
-        post.sendCode(mail, code);
-        response.onNext(RegisterResponse.newBuilder().setSessionKey(sessionKey.get()).build());
-      }
+      String sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
+      accountOperationsInterface.createSession(
+          user.getIdentifier(),
+          sessionKey,
+          requestMetadataInterceptorKeys.getIpAddress(),
+          requestMetadataInterceptorKeys.getUserAgent());
+      post.sendCode(mail, code);
+      response.onNext(RegisterResponse.newBuilder().setSessionKey(sessionKey).build());
     }
     response.onCompleted();
   }
@@ -92,32 +88,28 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         response.onNext(
             LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
       } else {
-        Optional<String> sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
-        if (!sessionKey.isPresent()) {
-          throw new IllegalStateException();
+        String sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
+        accountOperationsInterface.createSession(
+            user.getIdentifier(),
+            sessionKey,
+            requestMetadataInterceptorKeys.getIpAddress(),
+            requestMetadataInterceptorKeys.getUserAgent());
+        LogInResponse.Payload.Builder payloadBuilder = LogInResponse.Payload.newBuilder();
+        payloadBuilder.setSessionKey(sessionKey);
+        if (user.getMail() == null) {
+          payloadBuilder.addRequirements(LogInResponse.Payload.Requirement.MAIL);
         } else {
-          accountOperationsInterface.createSession(
-              user.getIdentifier(),
-              sessionKey.get(),
-              requestMetadataInterceptorKeys.getIpAddress(),
-              requestMetadataInterceptorKeys.getUserAgent());
-          LogInResponse.Payload.Builder payloadBuilder = LogInResponse.Payload.newBuilder();
-          payloadBuilder.setSessionKey(sessionKey.get());
-          if (user.getMail() == null) {
-            payloadBuilder.addRequirements(LogInResponse.Payload.Requirement.MAIL);
-          } else {
-            payloadBuilder.setKeySet(
-                LogInResponse.Payload.KeySet.newBuilder()
-                    .addAllItems(
-                        keyOperationsInterface
-                            .readKeys(user.getIdentifier())
-                            .stream()
-                            .map(Utilities::entityToIdentifiedKey)
-                            .collect(toList()))
-                    .build());
-          }
-          response.onNext(LogInResponse.newBuilder().setPayload(payloadBuilder.build()).build());
+          payloadBuilder.setKeySet(
+              LogInResponse.Payload.KeySet.newBuilder()
+                  .addAllItems(
+                      keyOperationsInterface
+                          .readKeys(user.getIdentifier())
+                          .stream()
+                          .map(Utilities::entityToIdentifiedKey)
+                          .collect(toList()))
+                  .build());
         }
+        response.onNext(LogInResponse.newBuilder().setPayload(payloadBuilder.build()).build());
       }
     }
     response.onCompleted();

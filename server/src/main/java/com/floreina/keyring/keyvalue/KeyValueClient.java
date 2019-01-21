@@ -16,11 +16,20 @@ import java.util.Optional;
 
 public class KeyValueClient {
   private static final int SESSION_LIFETIME_IN_SECONDS = 5 * 60;
-  private static final ImmutableMap<SettingStrategy, String> SETTING_STRATEGY_TO_PARAMETER =
-      new ImmutableMap.Builder<SettingStrategy, String>()
-          .put(SettingStrategy.MUST_ABSENT, "nx")
-          .put(SettingStrategy.MUST_EXIST, "xx")
-          .build();
+
+  private static final ImmutableMap<SetPresenceConstraint, String>
+      SET_PRESENCE_CONSTRAINT_TO_PARAMETER_VALUE =
+          new ImmutableMap.Builder<SetPresenceConstraint, String>()
+              .put(SetPresenceConstraint.MUST_ABSENT, "nx")
+              .put(SetPresenceConstraint.MUST_EXIST, "xx")
+              .build();
+  private static final ImmutableMap<SetExpirationUnit, String>
+      SET_EXPIRATION_UNIT_TO_PARAMETER_VALUE =
+          new ImmutableMap.Builder<SetExpirationUnit, String>()
+              .put(SetExpirationUnit.SECONDS, "ex")
+              .put(SetExpirationUnit.MILLISECONDS, "px")
+              .build();
+
   private JedisPool jedisPool;
   private Cryptography cryptography;
   private Gson gson;
@@ -35,23 +44,22 @@ public class KeyValueClient {
     this.chronometry = chronometry;
   }
 
-  private Optional<String> set(
-      SettingStrategy settingStrategy, String sessionIdentifier, UserProjection userProjection) {
+  public String createSession(UserProjection userProjection) throws KeyValueException {
+    String sessionIdentifier = cryptography.generateSessionKey();
     try (Jedis jedis = jedisPool.getResource()) {
-      String value =
+      String status =
           jedis.set(
               convertSessionIdentifierToKey(sessionIdentifier),
               gson.toJson(userProjection.setCreationTimeInMs(chronometry.currentTime())),
-              SETTING_STRATEGY_TO_PARAMETER.get(settingStrategy),
-              "ex",
+              SET_PRESENCE_CONSTRAINT_TO_PARAMETER_VALUE.get(SetPresenceConstraint.MUST_ABSENT),
+              SET_EXPIRATION_UNIT_TO_PARAMETER_VALUE.get(SetExpirationUnit.SECONDS),
               SESSION_LIFETIME_IN_SECONDS);
-      return value == null ? Optional.empty() : Optional.of(sessionIdentifier);
+      if (status == null) {
+        throw new KeyValueException("Constraint violation");
+      } else {
+        return sessionIdentifier;
+      }
     }
-  }
-
-  public Optional<String> createSession(UserProjection userProjection) {
-    String sessionIdentifier = cryptography.generateSessionKey();
-    return set(SettingStrategy.MUST_ABSENT, sessionIdentifier, userProjection);
   }
 
   public Optional<UserProjection> getSessionAndUpdateItsExpirationTime(String sessionIdentifier) {
@@ -84,8 +92,13 @@ public class KeyValueClient {
     return String.format("session:%s", sessionIdentifier);
   }
 
-  private enum SettingStrategy {
+  private enum SetPresenceConstraint {
     MUST_ABSENT,
     MUST_EXIST
+  }
+
+  private enum SetExpirationUnit {
+    MILLISECONDS,
+    SECONDS
   }
 }

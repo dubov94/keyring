@@ -43,7 +43,7 @@
       "path": "/administration/delete-key"
     },
     "changeMasterKey": {
-      "method": "put",
+      "method": "post",
       "path": "/administration/change-master-key"
     },
     "changeUsername": {

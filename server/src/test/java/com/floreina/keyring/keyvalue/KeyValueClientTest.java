@@ -59,20 +59,22 @@ class KeyValueClientTest {
     String identifier = generateUniqueIdentifier();
     when(mockCryptography.generateSessionKey()).thenReturn(identifier);
 
-    Optional<String> reply = keyValueClient.createSession(new UserProjection().setIdentifier(0L));
+    String reply = keyValueClient.createSession(new UserProjection().setIdentifier(0L));
 
-    assertEquals(identifier, reply.get());
+    assertEquals(identifier, reply);
     assertEquals(
         0L, keyValueClient.getSessionAndUpdateItsExpirationTime(identifier).get().getIdentifier());
   }
 
   @Test
-  void createSession_getsDuplicateIdentifier_returnsEmpty() {
+  void createSession_getsDuplicateIdentifier_throwsException() {
     String identifier = generateUniqueIdentifier();
     when(mockCryptography.generateSessionKey()).thenReturn(identifier);
     keyValueClient.createSession(new UserProjection().setIdentifier(0L));
 
-    assertFalse(keyValueClient.createSession(new UserProjection().setIdentifier(1L)).isPresent());
+    assertThrows(
+        KeyValueException.class,
+        () -> keyValueClient.createSession(new UserProjection().setIdentifier(1L)));
   }
 
   @Test

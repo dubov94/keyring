@@ -24,6 +24,7 @@ import org.mockito.Mock;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -116,6 +117,7 @@ class AdministrationServiceTest {
         .thenReturn(
             ImmutableList.of(new Session().setKey("random"), new Session().setKey("session")));
     when(mockSessionInterceptorKeys.getSessionIdentifier()).thenReturn("session");
+    when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
 
     administrationService.changeMasterKey(
         ChangeMasterKeyRequest.newBuilder()
@@ -131,12 +133,9 @@ class AdministrationServiceTest {
 
     verify(mockAccountOperationsInterface)
         .changeMasterKey(0L, "prefix", "suffix", ImmutableList.of(identifiedKey));
-    verify(mockKeyValueClient).dropSessions(ImmutableList.of("random"));
+    verify(mockKeyValueClient).dropSessions(ImmutableList.of("random", "session"));
     verify(mockStreamObserver)
-        .onNext(
-            ChangeMasterKeyResponse.newBuilder()
-                .setError(ChangeMasterKeyResponse.Error.NONE)
-                .build());
+        .onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey("identifier").build());
     verify(mockStreamObserver).onCompleted();
   }
 

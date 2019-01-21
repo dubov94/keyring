@@ -170,7 +170,10 @@ message ChangeMasterKeyResponse {
         INVALID_CURRENT_DIGEST = 1;
     }
 
-    Error error = 1;
+    oneof data {
+        Error error = 1;
+        string session_key = 2;
+    }
 }
 
 message ChangeUsernameRequest {

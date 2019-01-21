@@ -10,6 +10,8 @@ const BCRYPT_ROUNDS_LOGARITHM = 12
 
 const getDigest = (hash) => hash.slice(-31)
 
+const computeEcnryptionKey = (masterKey) => base64.stringify(sha256(masterKey))
+
 const createSessionHeader = (sessionKey) => ({
   [SESSION_TOKEN_HEADER_NAME]: sessionKey
 })
@@ -43,7 +45,7 @@ export default {
       dispatch('importCredentials', {
         salt,
         sessionKey: response.session_key,
-        masterKey: password
+        encryptionKey: computeEcnryptionKey(password)
       })
     }
     return response.error
@@ -71,7 +73,7 @@ export default {
         dispatch('importCredentials', {
           salt,
           sessionKey: payload.session_key,
-          masterKey: password
+          encryptionKey: computeEcnryptionKey(password)
         })
         if (payload.requirements.length === 0) {
           dispatch('acceptUserKeys', {
@@ -83,10 +85,10 @@ export default {
     }
     return { success: false }
   },
-  importCredentials ({ commit }, { salt, sessionKey, masterKey }) {
+  importCredentials ({ commit }, { salt, sessionKey, encryptionKey }) {
     commit('setSalt', salt)
     commit('setSessionKey', sessionKey)
-    commit('setEncryptionKey', base64.stringify(sha256(masterKey)))
+    commit('setEncryptionKey', encryptionKey)
   },
   async acceptUserKeys ({ commit, state }, { userKeys }) {
     commit('setUserKeys', userKeys.map(({ identifier, password }) =>
@@ -115,13 +117,13 @@ export default {
     })
     commit('deleteUserKey', identifier)
   },
-  async changeMasterKey ({ commit, state }, { current, renewal }) {
+  async changeMasterKey ({ dispatch, state }, { current, renewal }) {
     let newSalt = await bcrypt.genSalt(BCRYPT_ROUNDS_LOGARITHM)
     let curDigest = getDigest(await bcrypt.hash(current, state.salt))
     let newDigest = getDigest(await bcrypt.hash(renewal, newSalt))
-    let newEncryptionKey = base64.stringify(sha256(renewal))
-    let { data: { error } } =
-      await axios.put('/api/administration/change-master-key', {
+    let newEncryptionKey = computeEcnryptionKey(renewal)
+    let { data: response } =
+      await axios.post('/api/administration/change-master-key', {
         current_digest: curDigest,
         renewal: {
           salt: newSalt,
@@ -137,11 +139,14 @@ export default {
       }, {
         headers: createSessionHeader(state.sessionKey)
       })
-    if (error === 'NONE') {
-      commit('setSalt', newSalt)
-      commit('setEncryptionKey', newEncryptionKey)
+    if (response.error === 'NONE') {
+      dispatch('importCredentials', {
+        salt: newSalt,
+        sessionKey: response.session_key,
+        encryptionKey: newEncryptionKey
+      })
     }
-    return error
+    return response.error
   },
   async changeUsername ({ state }, { username, password }) {
     return (

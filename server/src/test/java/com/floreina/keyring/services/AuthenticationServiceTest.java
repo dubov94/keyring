@@ -62,7 +62,7 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.createUser(
             "username", "salt", "digest", "mail@example.com", "0"))
         .thenReturn(new User().setIdentifier(0L));
-    when(mockKeyValueClient.createSession(any())).thenReturn(Optional.of("identifier"));
+    when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
     when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
     when(mockRequestMetadataInterceptorKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
 
@@ -163,7 +163,7 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(new User().setIdentifier(0L).setUsername("username").setDigest("digest")));
-    when(mockKeyValueClient.createSession(any())).thenReturn(Optional.of("identifier"));
+    when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
     when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
     when(mockRequestMetadataInterceptorKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
 

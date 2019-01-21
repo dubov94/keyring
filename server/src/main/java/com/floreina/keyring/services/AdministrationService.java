@@ -7,6 +7,7 @@ import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.SessionInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
+import com.floreina.keyring.keyvalue.UserProjection;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;
@@ -155,16 +156,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         accountOperationsInterface.changeMasterKey(
             identifier, renewal.getSalt(), renewal.getDigest(), renewal.getKeysList());
         List<Session> sessions = accountOperationsInterface.readSessions(identifier);
-        keyValueClient.dropSessions(
-            sessions
-                .stream()
-                .map(Session::getKey)
-                .filter(key -> !Objects.equals(key, sessionInterceptorKeys.getSessionIdentifier()))
-                .collect(toList()));
-        response.onNext(
-            ChangeMasterKeyResponse.newBuilder()
-                .setError(ChangeMasterKeyResponse.Error.NONE)
-                .build());
+        keyValueClient.dropSessions(sessions.stream().map(Session::getKey).collect(toList()));
+        String sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
+        response.onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey(sessionKey).build());
       }
     }
     response.onCompleted();
