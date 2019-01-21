@@ -24,9 +24,7 @@ public class SessionInterceptor implements ServerInterceptor {
       Optional<UserProjection> maybeUserProjection =
           keyValueClient.getSessionAndUpdateItsExpirationTime(sessionToken);
       if (maybeUserProjection.isPresent()) {
-        context =
-            context.withValue(
-                SessionInterceptorKeys.CONTEXT_SESSION_TOKEN_KEY, sessionToken);
+        context = context.withValue(SessionInterceptorKeys.CONTEXT_SESSION_TOKEN_KEY, sessionToken);
         context =
             context.withValue(
                 SessionInterceptorKeys.CONTEXT_USER_PROJECTION_KEY, maybeUserProjection.get());

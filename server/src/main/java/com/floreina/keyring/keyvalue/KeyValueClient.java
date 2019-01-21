@@ -44,7 +44,7 @@ public class KeyValueClient {
     this.chronometry = chronometry;
   }
 
-  public String createSession(UserProjection userProjection) throws KeyValueException {
+  public String createSession(UserProjection userProjection) {
     String sessionIdentifier = cryptography.generateSessionKey();
     try (Jedis jedis = jedisPool.getResource()) {
       String status =
