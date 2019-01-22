@@ -1,17 +1,28 @@
-import Settings from './components/settings/Index'
-import SetUp from './components/authentication/SetUp'
 import Authentication from './components/authentication/Index'
 import Dashboard from './components/Dashboard'
 import LogIn from './components/authentication/LogIn'
 import Register from './components/authentication/Register'
+import ResumeSession from './components/authentication/ResumeSession'
+import SetUp from './components/authentication/SetUp'
+import Settings from './components/settings/Index'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import store from './store'
 
 Vue.use(VueRouter)
 
-const tokenGuard = (to, from, next) => {
+const sessionTokenPresenceGuard = (to, from, next) => {
   if (store.getters.hasSessionKey) {
+    next()
+  } else if (store.getters['session/hasUsername']) {
+    next('/resume-session')
+  } else {
+    next('/log-in')
+  }
+}
+
+const sessionResumptionDataGuard = (to, from, next) => {
+  if (store.getters['session/hasUsername']) {
     next()
   } else {
     next('/log-in')
@@ -37,17 +48,22 @@ const router = new VueRouter({
         {
           path: 'set-up',
           component: SetUp,
-          beforeEnter: tokenGuard
+          beforeEnter: sessionTokenPresenceGuard
+        },
+        {
+          path: 'resume-session',
+          component: ResumeSession,
+          beforeEnter: sessionResumptionDataGuard
         }
       ]
     }, {
       path: '/dashboard',
       component: Dashboard,
-      beforeEnter: tokenGuard
+      beforeEnter: sessionTokenPresenceGuard
     }, {
       path: '/settings',
       component: Settings,
-      beforeEnter: tokenGuard
+      beforeEnter: sessionTokenPresenceGuard
     }, {
       path: '*',
       redirect: () => '/'

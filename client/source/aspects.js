@@ -1,7 +1,13 @@
 import axios from 'axios'
+import router from './router'
 import store from './store'
 import {SESSION_LIFETIME_IN_MS, SESSION_TOKEN_HEADER_NAME} from './constants'
-import {logOut} from './utilities'
+
+export const applySaveRouteOnNavigation = () => {
+  router.afterEach((to, from) => {
+    store.commit('session/setLastRoute', from.path)
+  })
+}
 
 export const applyShowToastOnRequestError = () => {
   axios.interceptors.response.use(undefined, (error) => {
@@ -16,7 +22,7 @@ export const applyShowToastOnRequestError = () => {
 export const applySendKeepAliveWhileIdle = () => {
   let keepAliveTimer = null
 
-  const reScheduleTick = (immediate) => {
+  const reScheduleTick = () => {
     clearTimeout(keepAliveTimer)
     keepAliveTimer = setTimeout(async () => {
       if (store.getters.hasSessionKey) {
@@ -26,36 +32,31 @@ export const applySendKeepAliveWhileIdle = () => {
           }
         })
       }
-    }, immediate ? 0 : SESSION_LIFETIME_IN_MS / 2)
+    }, SESSION_LIFETIME_IN_MS / 2)
   }
 
   axios.interceptors.request.use((configuration) => {
     if (configuration.headers.hasOwnProperty(SESSION_TOKEN_HEADER_NAME)) {
-      reScheduleTick(false)
+      reScheduleTick()
     }
     return configuration
   })
 
   store.subscribe((mutation) => {
     if (mutation.type === 'setSessionKey') {
-      reScheduleTick(false)
+      reScheduleTick()
     }
   })
-
-  // This will go away once keys are renewed on refresh.
-  if (store.getters.hasSessionKey) {
-    reScheduleTick(true)
-  }
 }
 
-export const applyLogOutWhenPageIsHidden = () => {
+export const applyFreezeWhenPageIsHidden = () => {
   let visibilityTimer = null
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       visibilityTimer = setTimeout(() => {
         if (store.getters.hasSessionKey) {
-          logOut()
+          location.reload()
         }
       }, SESSION_LIFETIME_IN_MS)
     } else {

@@ -2,6 +2,7 @@ import {state, getters, mutations} from './root/core'
 import actions from './root/actions'
 import Interface from './modules/interface'
 import Preferences from './modules/preferences'
+import Session from './modules/session'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import VuexPersist from 'vuex-persist'
@@ -13,14 +14,9 @@ const vuexLocal = new VuexPersist({
   modules: ['preferences']
 })
 
-const stateKeys = Object.keys(state)
-
 const vuexSession = new VuexPersist({
   storage: sessionStorage,
-  reducer: (object) => stateKeys.reduce((accumulator, current) => {
-    accumulator[current] = object[current]
-    return accumulator
-  }, {})
+  modules: ['session']
 })
 
 const store = new Vuex.Store({
@@ -31,7 +27,8 @@ const store = new Vuex.Store({
   actions,
   modules: {
     interface: Interface,
-    preferences: Preferences
+    preferences: Preferences,
+    session: Session
   }
 })
 

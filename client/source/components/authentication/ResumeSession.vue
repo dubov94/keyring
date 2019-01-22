@@ -1,39 +1,41 @@
 <template>
   <v-card>
-    <v-toolbar color="error" dark>
-      <v-toolbar-title>Delete account</v-toolbar-title>
+    <v-toolbar color="primary" dark>
+      <v-toolbar-title>Resume</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
       <v-form @keydown.native.enter.prevent="submit">
         <form-text-field type="password" label="Password" prepend-icon="lock"
           v-model="password" :dirty="$v.password.$dirty" :errors="passwordErrors"
-          @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
-        <div class="text-xs-right">
-          <v-btn class="mr-0" :loading="requestInProgress"
-            color="error" @click="submit">Submit</v-btn>
-        </div>
+          @touch="$v.password.$touch()" @reset="$v.password.$reset()"
+          autofocus></form-text-field>
       </v-form>
     </v-card-text>
+    <v-card-actions>
+      <v-btn block color="primary" class="mx-4 mb-3"
+        :loading="requestInProgress" @click="submit">
+        Submit
+      </v-btn>
+    </v-card-actions>
   </v-card>
 </template>
 
 <script>
   import {mapActions} from 'vuex'
-  import {purgeAllStoragesAndLoadIndex} from '../../utilities'
 
   export default {
-    validations: {
-      password: {
-        valid () {
-          return !this.invalidPasswords.includes(this.password)
-        }
-      }
-    },
     data () {
       return {
         requestInProgress: false,
         password: '',
         invalidPasswords: []
+      }
+    },
+    validations: {
+      password: {
+        valid () {
+          return !this.invalidPasswords.includes(this.password)
+        }
       }
     },
     computed: {
@@ -45,7 +47,7 @@
     },
     methods: {
       ...mapActions({
-        deleteAccount: 'deleteAccount'
+        logIn: 'logIn'
       }),
       async submit () {
         if (!this.requestInProgress) {
@@ -53,11 +55,12 @@
           if (!this.$v.$invalid) {
             try {
               this.requestInProgress = true
+              let username = this.$store.state.session.username
               let password = this.password
-              let error = await this.deleteAccount({ password })
-              if (error === 'NONE') {
-                purgeAllStoragesAndLoadIndex()
-              } else if (error === 'INVALID_DIGEST') {
+              let { success } = await this.logIn({ username, password })
+              if (success) {
+                this.$router.replace(this.$store.state.session.lastRoute)
+              } else {
                 this.invalidPasswords.push(password)
               }
             } finally {

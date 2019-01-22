@@ -10,7 +10,8 @@ import Vuetify from 'vuetify'
 import router from './router'
 import store from './store'
 import {
-  applyLogOutWhenPageIsHidden,
+  applyFreezeWhenPageIsHidden,
+  applySaveRouteOnNavigation,
   applySendKeepAliveWhileIdle,
   applyShowToastOnRequestError
 } from './aspects'
@@ -30,9 +31,10 @@ Vue.directive('focus', {
 Vue.component('fixed-tooltip', FixedTooltip)
 Vue.component('form-text-field', FormTextField)
 
+applySaveRouteOnNavigation()
 applyShowToastOnRequestError()
 applySendKeepAliveWhileIdle()
-applyLogOutWhenPageIsHidden()
+applyFreezeWhenPageIsHidden()
 
 /* eslint-disable no-new */
 new Vue({

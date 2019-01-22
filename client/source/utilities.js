@@ -48,12 +48,12 @@ export const sleep = (timeInMs) =>
     }, timeInMs)
   })
 
-export const logOut = () => {
+export const purgeSessionStorageAndLoadLogIn = () => {
   sessionStorage.clear()
   location.assign('/log-in')
 }
 
-export const purgeDataAndLoadIndex = () => {
+export const purgeAllStoragesAndLoadIndex = () => {
   sessionStorage.clear()
   localStorage.clear()
   location.assign('/')

@@ -99,7 +99,7 @@
   import Password from './Password'
   import Page from './Page'
   import {mapActions, mapMutations, mapState} from 'vuex'
-  import {logOut} from '../utilities'
+  import {purgeSessionStorageAndLoadLogIn} from '../utilities'
 
   const CARDS_PER_PAGE = 12
 
@@ -164,7 +164,7 @@
         this.pageNumber = 1
       },
       logOut () {
-        logOut()
+        purgeSessionStorageAndLoadLogIn()
       },
       async clearClipboard () {
         await navigator.clipboard.writeText('')

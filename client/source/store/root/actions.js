@@ -31,7 +31,7 @@ const decryptPassword = (encryptionKey, { value, tags }) => {
 }
 
 export default {
-  async register ({ dispatch }, { username, password, mail }) {
+  async register ({ commit, dispatch }, { username, password, mail }) {
     let salt = await bcrypt.genSalt(BCRYPT_ROUNDS_LOGARITHM)
     let hash = await bcrypt.hash(password, salt)
     let { data: response } =
@@ -48,6 +48,7 @@ export default {
         encryptionKey: computeEcnryptionKey(password)
       })
     }
+    commit('session/setUsername', username)
     return response.error
   },
   async releaseMailToken ({ state }, { code }) {
@@ -57,7 +58,7 @@ export default {
       })
     ).data.error
   },
-  async logIn ({ dispatch }, { username, password }) {
+  async logIn ({ commit, dispatch }, { username, password }) {
     let { data: saltResponse } =
       await axios.get(`/api/authentication/get-salt/${username}`)
     if (saltResponse.error === 'NONE') {
@@ -80,6 +81,7 @@ export default {
             userKeys: payload.key_set.items
           })
         }
+        commit('session/setUsername', username)
         return { success: true, requirements: payload.requirements }
       }
     }
@@ -148,14 +150,20 @@ export default {
     }
     return response.error
   },
-  async changeUsername ({ state }, { username, password }) {
-    return (
+  async changeUsername ({ commit, state }, { username, password }) {
+    let { data: { error } } =
       await axios.put('/api/administration/change-username', {
         digest: getDigest(await bcrypt.hash(password, state.salt)), username
       }, {
         headers: createSessionHeader(state.sessionKey)
       })
-    ).data.error
+    if (error === 'NONE') {
+      if (state.preferences.username === state.session.username) {
+        commit('preferences/setUsername', username)
+      }
+      commit('session/setUsername', username)
+    }
+    return error
   },
   async acquireMailToken ({ state }, { mail, password }) {
     return (
