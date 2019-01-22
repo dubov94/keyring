@@ -1,4 +1,4 @@
-from maven
+from maven:3-jdk-8
 
 workdir /root/keyring/server
 
