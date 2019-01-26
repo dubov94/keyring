@@ -1,4 +1,4 @@
-localhost:80 {
+:80 {
     root ./dist
 
     rewrite ^/$ /entry.html
