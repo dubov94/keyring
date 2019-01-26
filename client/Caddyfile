@@ -1,11 +1,13 @@
-localhost {
+localhost:80 {
     root ./dist
 
+    rewrite ^/$ /entry.html
+
     rewrite {
-        to {path} /index.html
+        to {path} /entry.html
     }
 
-    header /index.html {
+    header /entry.html {
         Cache-Control "no-cache"
     }
 
