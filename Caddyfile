@@ -1,17 +1,4 @@
-pwd.floreina.me/api {
-    proxy / gateway:80
-}
-
 pwd.floreina.me {
-    gzip
-
-    header /index.html {
-        Cache-Control "no-cache"
-    }
-
+    proxy /api gateway:80
     proxy / client:80
-
-    rewrite {
-        to {path} /index.html
-    }
 }

@@ -1,0 +1,13 @@
+localhost {
+    root ./dist
+
+    rewrite {
+        to {path} /index.html
+    }
+
+    header /index.html {
+        Cache-Control "no-cache"
+    }
+
+    gzip
+}
