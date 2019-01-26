@@ -130,14 +130,15 @@
             timeout: 3000
           })
         } else {
-          let isUsernameInStore =
-            this.$store.state.preferences.username !== null
+          let storageUsername = this.$store.state.preferences.username
           this.forgetUsername()
-          if (isUsernameInStore) {
+          if (storageUsername !== null) {
+            if (this.username === storageUsername) {
+              this.username = ''
+            }
             this.displaySnackbar({
-              message: 'We deleted the username from the storage.' +
-                ' Refresh the page if you want to see the effect.',
-              timeout: 4500
+              message: 'We deleted the saved username from the storage.',
+              timeout: 3000
             })
           }
         }
