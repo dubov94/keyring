@@ -14,7 +14,7 @@ Vue.use(VueRouter)
 const sessionTokenPresenceGuard = (to, from, next) => {
   if (store.getters.hasSessionKey) {
     next()
-  } else if (store.getters['session/hasUsername']) {
+  } else if (store.getters['session/hasEnoughDataToResume']) {
     next('/resume-session')
   } else {
     next('/log-in')
@@ -22,7 +22,7 @@ const sessionTokenPresenceGuard = (to, from, next) => {
 }
 
 const sessionResumptionDataGuard = (to, from, next) => {
-  if (store.getters['session/hasUsername']) {
+  if (store.getters['session/hasEnoughDataToResume']) {
     next()
   } else {
     next('/log-in')

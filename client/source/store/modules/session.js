@@ -5,7 +5,7 @@ export default {
     lastRoute: null
   },
   getters: {
-    hasUsername: (state) => state.username !== null
+    hasEnoughDataToResume: (state) => state.username !== null
   },
   mutations: {
     setUsername (state, value) {
