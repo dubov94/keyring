@@ -14,7 +14,7 @@
     <v-card-actions>
       <v-btn block color="primary" class="mx-4 mb-3"
         :loading="requestInProgress" @click="submit">
-        Submit
+        Continue
       </v-btn>
     </v-card-actions>
   </v-card>
