@@ -38,11 +38,9 @@ module.exports = merge(baseWebpackConfig, {
           './service-worker-loader.js'), 'utf-8')
     }),
     new FriendlyErrorsPlugin(),
-    new CopyWebpackPlugin([
-      {
-        from: path.resolve(__dirname, '../service-worker-dev.js'),
-        to: 'service-worker.js'
-      }
-    ])
+    new CopyWebpackPlugin([{
+      from: path.resolve(__dirname, '../service-worker-dev.js'),
+      to: 'service-worker.js'
+    }])
   ]
 })

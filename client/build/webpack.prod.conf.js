@@ -10,7 +10,6 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin')
 var GitRevisionPlugin = require('git-revision-webpack-plugin')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
-var SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin')
 var UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 var env = process.env.NODE_ENV === 'testing'
@@ -97,14 +96,18 @@ var webpackConfig = merge(baseWebpackConfig, {
       chunks: ['vendor']
     }),
     // Copy custom static assets.
-    new CopyWebpackPlugin([
-      {
-        from: path.resolve(__dirname, '../static'),
-        to: config.build.assetsSubDirectory,
-        ignore: ['.*']
-      }
-    ]),
-    // Service worker caching.
+    new CopyWebpackPlugin([{
+      from: path.resolve(__dirname, '../static'),
+      to: config.build.assetsSubDirectory,
+      ignore: ['.*']
+    }])
+  ]
+})
+
+if (config.build.enableSwPrecache) {
+  var SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin')
+
+  webpackConfig.plugins.push(
     new SWPrecacheWebpackPlugin({
       cacheId: 'keyring',
       filename: 'service-worker.js',
@@ -112,8 +115,15 @@ var webpackConfig = merge(baseWebpackConfig, {
       minify: true,
       stripPrefix: 'dist/'
     })
-  ]
-})
+  )
+} else {
+  webpackConfig.plugins.push(
+    new CopyWebpackPlugin([{
+      from: path.resolve(__dirname, '../service-worker-prod.js'),
+      to: path.join(config.build.assetsRoot, 'service-worker.js')
+    }])
+  )
+}
 
 if (config.build.productionGzip) {
   var CompressionWebpackPlugin = require('compression-webpack-plugin')
@@ -123,9 +133,7 @@ if (config.build.productionGzip) {
       filename: '[path].gz[query]',
       algorithm: 'gzip',
       test: new RegExp(
-        '\\.(' +
-        config.build.productionGzipExtensions.join('|') +
-        ')$'
+        '\\.(' + config.build.productionGzipExtensions.join('|') + ')$'
       ),
       threshold: 10240,
       minRatio: 0.8
@@ -135,6 +143,7 @@ if (config.build.productionGzip) {
 
 if (config.build.bundleAnalyzerReport) {
   var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+
   webpackConfig.plugins.push(new BundleAnalyzerPlugin())
 }
 
