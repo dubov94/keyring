@@ -42,11 +42,11 @@ export const applySendKeepAliveWhileIdle = () => {
     }, SESSION_LIFETIME_IN_MS / 2)
   }
 
-  axios.interceptors.request.use((configuration) => {
-    if (configuration.headers.hasOwnProperty(SESSION_TOKEN_HEADER_NAME)) {
+  axios.interceptors.response.use((response) => {
+    if (response.config.headers.hasOwnProperty(SESSION_TOKEN_HEADER_NAME)) {
       reScheduleTick()
     }
-    return configuration
+    return response
   })
 
   store.subscribe((mutation) => {
