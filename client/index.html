@@ -30,6 +30,13 @@
     <div id="application">
       <Application></Application>
     </div>
-    <%= htmlWebpackPlugin.options.serviceWorkerLoader %>
+    <script>
+      window.globals = {
+        version: '<%= htmlWebpackPlugin.options.ijVersionString %>'
+      };
+    </script>
+    <script>
+      <%= htmlWebpackPlugin.options.ijServiceWorkerLoaderCode %>
+    </script>
   </body>
 </html>

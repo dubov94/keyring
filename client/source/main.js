@@ -10,6 +10,7 @@ import Vuetify from 'vuetify'
 import router from './router'
 import store from './store'
 import {
+  applyAttachVersionHeaderOnRequest,
   applyFreezeWhenPageIsHidden,
   applySaveRouteOnNavigation,
   applySendKeepAliveWhileIdle,
@@ -32,6 +33,7 @@ Vue.component('fixed-tooltip', FixedTooltip)
 Vue.component('form-text-field', FormTextField)
 
 applySaveRouteOnNavigation()
+applyAttachVersionHeaderOnRequest()
 applyShowToastOnRequestError()
 applySendKeepAliveWhileIdle()
 applyFreezeWhenPageIsHidden()

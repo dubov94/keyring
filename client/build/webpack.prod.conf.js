@@ -6,8 +6,9 @@ var config = require('../config')
 var merge = require('webpack-merge')
 var baseWebpackConfig = require('./webpack.base.conf')
 var CopyWebpackPlugin = require('copy-webpack-plugin')
-var HtmlWebpackPlugin = require('html-webpack-plugin')
 var ExtractTextPlugin = require('extract-text-webpack-plugin')
+var GitRevisionPlugin = require('git-revision-webpack-plugin')
+var HtmlWebpackPlugin = require('html-webpack-plugin')
 var OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 var SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin')
 var UglifyJsPlugin = require('uglifyjs-webpack-plugin')
@@ -67,10 +68,13 @@ var webpackConfig = merge(baseWebpackConfig, {
         collapseWhitespace: true,
         removeAttributeQuotes: true
       },
-      // Necessary to consistently work with multiple chunks via CommonsChunkPlugin.
+      // Necessary to consistently work with multiple chunks via
+      // CommonsChunkPlugin.
       chunksSortMode: 'dependency',
-      serviceWorkerLoader: `<script>${fs.readFileSync(path.join(__dirname,	
-        './service-worker-loader.js'), 'utf-8')}</script>`
+      ijVersionString: new GitRevisionPlugin().version(),
+      ijServiceWorkerLoaderCode:
+        fs.readFileSync(path.join(__dirname,
+          './service-worker-loader.js'), 'utf-8')
     }),
     // Split external JS into its own file.
     new webpack.optimize.CommonsChunkPlugin({

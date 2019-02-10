@@ -9,6 +9,13 @@ export const applySaveRouteOnNavigation = () => {
   })
 }
 
+export const applyAttachVersionHeaderOnRequest = () => {
+  axios.interceptors.request.use((configuration) => {
+    configuration.headers['X-Client-Version'] = window.globals.version
+    return configuration
+  })
+}
+
 export const applyShowToastOnRequestError = () => {
   axios.interceptors.response.use(undefined, (error) => {
     store.dispatch('interface/displaySnackbar', {

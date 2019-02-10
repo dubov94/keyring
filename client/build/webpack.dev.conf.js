@@ -32,8 +32,10 @@ module.exports = merge(baseWebpackConfig, {
       filename: 'index.html',
       template: 'index.html',
       inject: true,
-      serviceWorkerLoader: `<script>${fs.readFileSync(path.join(__dirname,	
-        './service-worker-loader.js'), 'utf-8')}</script>`
+      ijVersionString: 'HEAD',
+      ijServiceWorkerLoaderCode:
+        fs.readFileSync(path.join(__dirname,
+          './service-worker-loader.js'), 'utf-8')
     }),
     new FriendlyErrorsPlugin(),
     new CopyWebpackPlugin([
