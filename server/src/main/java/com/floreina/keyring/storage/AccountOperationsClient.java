@@ -22,13 +22,9 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @LocalTransaction
-  public User createUser(String username, String salt, String digest, String mail, String code) {
+  public User createUser(String username, String salt, String hash, String mail, String code) {
     User user =
-        new User()
-            .setState(User.State.PENDING)
-            .setUsername(username)
-            .setSalt(salt)
-            .setDigest(digest);
+        new User().setState(User.State.PENDING).setUsername(username).setSalt(salt).setHash(hash);
     MailToken mailToken = new MailToken().setUser(user).setMail(mail).setCode(code);
     entityManager.persist(user);
     entityManager.persist(mailToken);
@@ -96,12 +92,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public void changeMasterKey(
-      long userIdentifier, String salt, String digest, List<IdentifiedKey> protos) {
+      long userIdentifier, String salt, String hash, List<IdentifiedKey> protos) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
     if (maybeUser.isPresent()) {
       User user = maybeUser.get();
       user.setSalt(salt);
-      user.setDigest(digest);
+      user.setHash(hash);
       entityManager.persist(user);
       List<Key> entities = Queries.findByUser(entityManager, Key.class, Key_.user, userIdentifier);
       Map<Long, Password> keyIdentifierToProto =

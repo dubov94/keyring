@@ -42,7 +42,7 @@ class AccountOperationsClientTest {
     String username = createUniqueName();
     long userIdentifier =
         accountOperationsClient
-            .createUser(username, "salt", "digest", "mail@example.com", "0")
+            .createUser(username, "salt", "hash", "mail@example.com", "0")
             .getIdentifier();
 
     MailToken mailToken = accountOperationsClient.getMailToken(userIdentifier, "0").get();
@@ -52,7 +52,7 @@ class AccountOperationsClientTest {
     assertEquals(User.State.PENDING, user.getState());
     assertEquals(username, user.getUsername());
     assertEquals("salt", user.getSalt());
-    assertEquals("digest", user.getDigest());
+    assertEquals("hash", user.getHash());
     assertNull(user.getMail());
   }
 
@@ -99,7 +99,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
-  void changeMasterKey_updatesSaltDigestAndKeys() {
+  void changeMasterKey_updatesSaltHashAndKeys() {
     long userIdentifier = createActiveUser();
     long keyIdentifier =
         keyOperationsClient
@@ -110,13 +110,13 @@ class AccountOperationsClientTest {
     accountOperationsClient.changeMasterKey(
         userIdentifier,
         "salt",
-        "digest",
+        "hash",
         ImmutableList.of(
             IdentifiedKey.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build()));
 
     User user = accountOperationsClient.getUserByIdentifier(userIdentifier).get();
     assertEquals("salt", user.getSalt());
-    assertEquals("digest", user.getDigest());
+    assertEquals("hash", user.getHash());
     List<Password> passwords =
         keyOperationsClient
             .readKeys(userIdentifier)

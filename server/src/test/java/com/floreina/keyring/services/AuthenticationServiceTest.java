@@ -58,9 +58,10 @@ class AuthenticationServiceTest {
   @Test
   void register_getsValidRequest_persistsAndSendsMail() {
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
+    when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockCryptography.generateSecurityCode()).thenReturn("0");
     when(mockAccountOperationsInterface.createUser(
-            "username", "salt", "digest", "mail@example.com", "0"))
+            "username", "salt", "hash", "mail@example.com", "0"))
         .thenReturn(new User().setIdentifier(0L));
     when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
     when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
@@ -76,7 +77,7 @@ class AuthenticationServiceTest {
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface)
-        .createUser("username", "salt", "digest", "mail@example.com", "0");
+        .createUser("username", "salt", "hash", "mail@example.com", "0");
     verify(mockAccountOperationsInterface)
         .createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
     verify(mockPost).sendCode("mail@example.com", "0");
@@ -125,7 +126,13 @@ class AuthenticationServiceTest {
   void logIn_invalidDigest_repliesWithError() {
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
-            Optional.of(new User().setIdentifier(0L).setUsername("username").setDigest("digest")));
+            Optional.of(
+                new User()
+                    .setIdentifier(0L)
+                    .setUsername("username")
+                    .setSalt("salt")
+                    .setHash("hash")));
+    when(mockCryptography.computeHash("mallory")).thenReturn("random");
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").setDigest("mallory").build(),
@@ -146,7 +153,9 @@ class AuthenticationServiceTest {
                     .setIdentifier(0L)
                     .setState(User.State.DELETED)
                     .setUsername("username")
-                    .setDigest("digest")));
+                    .setSalt("salt")
+                    .setHash("hash")));
+    when(mockCryptography.computeHash("digest")).thenReturn("hash");
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),
@@ -162,7 +171,13 @@ class AuthenticationServiceTest {
   void logIn_validPair_repliesWithSessionKeyAndState() {
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
-            Optional.of(new User().setIdentifier(0L).setUsername("username").setDigest("digest")));
+            Optional.of(
+                new User()
+                    .setIdentifier(0L)
+                    .setUsername("username")
+                    .setSalt("salt")
+                    .setHash("hash")));
+    when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
     when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
     when(mockRequestMetadataInterceptorKeys.getUserAgent()).thenReturn("Chrome/0.0.0");

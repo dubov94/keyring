@@ -1,4 +1,5 @@
 import 'vuetify/dist/vuetify.min.css'
+import sodium from 'libsodium-wrappers'
 import Application from './Application'
 import FixedTooltip from './components/FixedTooltip'
 import FormTextField from './components/FormTextField'
@@ -38,14 +39,16 @@ applyShowToastOnRequestError()
 applySendKeepAliveWhileIdle()
 applyFreezeWhenPageIsHidden()
 
-/* eslint-disable no-new */
-new Vue({
-  el: '#application',
-  router,
-  store,
-  components: { Application },
-  i18n: new VueI18n({
-    locale: 'en',
-    messages: Messages
+sodium.ready.then(() =>
+  /* eslint-disable no-new */
+  new Vue({
+    el: '#application',
+    router,
+    store,
+    components: { Application },
+    i18n: new VueI18n({
+      locale: 'en',
+      messages: Messages
+    })
   })
-})
+)

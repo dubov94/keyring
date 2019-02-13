@@ -15,7 +15,6 @@ import io.grpc.stub.StreamObserver;
 import javax.inject.Inject;
 import java.util.ConcurrentModificationException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
@@ -54,7 +53,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       throw new ConcurrentModificationException();
     } else {
       User user = maybeUser.get();
-      if (!Objects.equals(request.getDigest(), user.getDigest())) {
+      if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
         response.onNext(
             AcquireMailTokenResponse.newBuilder()
                 .setError(AcquireMailTokenResponse.Error.INVALID_DIGEST)
@@ -146,7 +145,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       throw new ConcurrentModificationException();
     } else {
       User user = maybeUser.get();
-      if (!Objects.equals(request.getCurrentDigest(), user.getDigest())) {
+      if (!Utilities.doesDigestMatchUser(cryptography, user, request.getCurrentDigest())) {
         response.onNext(
             ChangeMasterKeyResponse.newBuilder()
                 .setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST)
@@ -154,7 +153,10 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       } else {
         ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
         accountOperationsInterface.changeMasterKey(
-            identifier, renewal.getSalt(), renewal.getDigest(), renewal.getKeysList());
+            identifier,
+            renewal.getSalt(),
+            cryptography.computeHash(renewal.getDigest()),
+            renewal.getKeysList());
         List<Session> sessions = accountOperationsInterface.readSessions(identifier);
         keyValueClient.dropSessions(sessions.stream().map(Session::getKey).collect(toList()));
         String sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
@@ -174,7 +176,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       throw new ConcurrentModificationException();
     } else {
       User user = maybeUser.get();
-      if (!Objects.equals(request.getDigest(), user.getDigest())) {
+      if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
         response.onNext(
             ChangeUsernameResponse.newBuilder()
                 .setError(ChangeUsernameResponse.Error.INVALID_DIGEST)
@@ -202,7 +204,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       throw new ConcurrentModificationException();
     } else {
       User user = maybeUser.get();
-      if (!Objects.equals(request.getDigest(), user.getDigest())) {
+      if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
         response.onNext(
             DeleteAccountResponse.newBuilder()
                 .setError(DeleteAccountResponse.Error.INVALID_DIGEST)

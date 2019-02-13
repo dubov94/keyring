@@ -24,6 +24,8 @@ public class User {
 
   @Column private String digest;
 
+  @Column private String hash;
+
   @Column private String mail;
 
   public long getIdentifier() {
@@ -68,6 +70,15 @@ public class User {
 
   public User setDigest(String digest) {
     this.digest = digest;
+    return this;
+  }
+
+  public String getHash() {
+    return hash;
+  }
+
+  public User setHash(String hash) {
+    this.hash = hash;
     return this;
   }
 

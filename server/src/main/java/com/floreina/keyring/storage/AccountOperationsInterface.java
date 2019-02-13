@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AccountOperationsInterface {
-  User createUser(String username, String salt, String digest, String mail, String code);
+  User createUser(String username, String salt, String hash, String mail, String code);
 
   void createMailToken(long userIdentifier, String mail, String code);
 
@@ -21,7 +21,7 @@ public interface AccountOperationsInterface {
 
   Optional<User> getUserByIdentifier(long identifier);
 
-  void changeMasterKey(long userIdentifier, String salt, String digest, List<IdentifiedKey> protos);
+  void changeMasterKey(long userIdentifier, String salt, String hash, List<IdentifiedKey> protos);
 
   void changeUsername(long userIdentifier, String username);
 

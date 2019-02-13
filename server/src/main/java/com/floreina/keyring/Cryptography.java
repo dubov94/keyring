@@ -1,6 +1,10 @@
 package com.floreina.keyring;
 
+import com.google.common.base.Charsets;
+import com.google.common.hash.Hashing;
+
 import java.security.SecureRandom;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Cryptography {
@@ -37,5 +41,9 @@ public class Cryptography {
 
   public String generateSessionKey() {
     return UUID.randomUUID().toString();
+  }
+
+  public String computeHash(String value) {
+    return Hashing.sha256().hashString(value, Charsets.UTF_8).toString();
   }
 }

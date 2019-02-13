@@ -47,10 +47,10 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
           RegisterResponse.newBuilder().setError(RegisterResponse.Error.NAME_TAKEN).build());
     } else {
       String salt = request.getSalt();
-      String digest = request.getDigest();
+      String hash = cryptography.computeHash(request.getDigest());
       String mail = request.getMail();
       String code = cryptography.generateSecurityCode();
-      User user = accountOperationsInterface.createUser(username, salt, digest, mail, code);
+      User user = accountOperationsInterface.createUser(username, salt, hash, mail, code);
       String sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
       accountOperationsInterface.createSession(
           user.getIdentifier(),
@@ -83,7 +83,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
           LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
     } else {
       User user = maybeUser.get();
-      if (!Objects.equals(request.getDigest(), user.getDigest())
+      if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())
           || Objects.equals(user.getState(), User.State.DELETED)) {
         response.onNext(
             LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());

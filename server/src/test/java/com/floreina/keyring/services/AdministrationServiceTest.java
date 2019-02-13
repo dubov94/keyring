@@ -38,7 +38,8 @@ class AdministrationServiceTest {
   @Mock private Cryptography mockCryptography;
   @Mock private Post mockPost;
 
-  private User user = new User().setIdentifier(0L).setState(User.State.ACTIVE).setDigest("digest");
+  private User user =
+      new User().setIdentifier(0L).setState(User.State.ACTIVE).setSalt("salt").setHash("hash");
   private AdministrationService administrationService;
 
   @BeforeEach
@@ -98,7 +99,9 @@ class AdministrationServiceTest {
   }
 
   @Test
-  void changeMasterKey_digestsMismatch_repliesWithError() {
+  void changeMasterKey_digestDoesNotMatchHash_repliesWithError() {
+    when(mockCryptography.computeHash("random")).thenReturn("random");
+
     administrationService.changeMasterKey(
         ChangeMasterKeyRequest.newBuilder().setCurrentDigest("random").build(), mockStreamObserver);
 
@@ -113,6 +116,8 @@ class AdministrationServiceTest {
   @Test
   void changeMasterKey_digestsMatch_repliesWithDefault() {
     IdentifiedKey identifiedKey = IdentifiedKey.newBuilder().setIdentifier(0L).build();
+    when(mockCryptography.computeHash("digest")).thenReturn("hash");
+    when(mockCryptography.computeHash("suffix")).thenReturn("xiffus");
     when(mockAccountOperationsInterface.readSessions(0L))
         .thenReturn(
             ImmutableList.of(new Session().setKey("random"), new Session().setKey("session")));
@@ -132,7 +137,7 @@ class AdministrationServiceTest {
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface)
-        .changeMasterKey(0L, "prefix", "suffix", ImmutableList.of(identifiedKey));
+        .changeMasterKey(0L, "prefix", "xiffus", ImmutableList.of(identifiedKey));
     verify(mockKeyValueClient).dropSessions(ImmutableList.of("random", "session"));
     verify(mockStreamObserver)
         .onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey("identifier").build());
@@ -141,6 +146,7 @@ class AdministrationServiceTest {
 
   @Test
   void acquireMailToken_digestsMismatch_repliesWithError() {
+    when(mockCryptography.computeHash("random")).thenReturn("random");
     administrationService.acquireMailToken(
         AcquireMailTokenRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
 
@@ -154,6 +160,7 @@ class AdministrationServiceTest {
 
   @Test
   void acquireMailToken_digestsMatch_repliesWithDefault() {
+    when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockCryptography.generateSecurityCode()).thenReturn("0");
 
     administrationService.acquireMailToken(
@@ -168,6 +175,7 @@ class AdministrationServiceTest {
 
   @Test
   void changeUsername_digestsMismatch_repliesWithError() {
+    when(mockCryptography.computeHash("random")).thenReturn("random");
     administrationService.changeUsername(
         ChangeUsernameRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
 
@@ -181,6 +189,7 @@ class AdministrationServiceTest {
 
   @Test
   void changeUsername_getsExistingUsername_repliesWithError() {
+    when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(Optional.of(new User()));
 
@@ -198,6 +207,7 @@ class AdministrationServiceTest {
 
   @Test
   void changeUsername_getsUniqueUsername_repliesWithDefault() {
+    when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
 
     administrationService.changeUsername(
@@ -211,6 +221,7 @@ class AdministrationServiceTest {
 
   @Test
   void deleteAccount_digestsMismatch_repliesWithError() {
+    when(mockCryptography.computeHash("random")).thenReturn("random");
     administrationService.deleteAccount(
         DeleteAccountRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
 
@@ -224,6 +235,7 @@ class AdministrationServiceTest {
 
   @Test
   void deleteAccount_digestsMatch_repliesWithDefault() {
+    when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockAccountOperationsInterface.readSessions(0L))
         .thenReturn(ImmutableList.of(new Session().setKey("session")));
 
