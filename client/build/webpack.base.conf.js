@@ -47,6 +47,10 @@ module.exports = {
         include: [resolve('source'), resolve('test')]
       },
       {
+        test: /\.worker\.js$/,
+        loader: 'workerize-loader'
+      },
+      {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
         loader: 'url-loader',
         options: {
