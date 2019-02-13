@@ -18,7 +18,7 @@
           if (value === false) {
             this.hideToast()
           } else {
-            throw new Error('Snackbar requested a show!')
+            throw new Error('Snackbar requested a show.')
           }
         }
       },
