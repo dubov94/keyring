@@ -48,7 +48,10 @@ module.exports = {
       },
       {
         test: /\.worker\.js$/,
-        loader: 'workerize-loader'
+        loader: 'workerize-loader',
+        options: {
+          inline: true
+        }
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
