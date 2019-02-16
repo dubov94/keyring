@@ -1,7 +1,8 @@
 import sodium from 'libsodium-wrappers'
+// Eventually we may want to `await sodium.ready`.
 
-const ARGON2_MEMORY_COST = 128 * 1024 * 1024
-const ARGON2_TIME_COST = 3
+const ARGON2_DEFAULT_M = 64 * 1024 * 1024
+const ARGON2_DEFAULT_T = 1
 
 const AUTH_DIGEST_SIZE_IN_BYTES = 32
 const ENCRYPTION_KEY_SIZE_IN_BYTES = 32
@@ -14,7 +15,7 @@ const PARAMETRIZATION_REGULAR_EXPRESSION = new RegExp(
 
 export const generateArgon2Parametrization = () => {
   return '$argon2id' +
-    `$m=${ARGON2_MEMORY_COST},t=${ARGON2_TIME_COST},p=1` +
+    `$m=${ARGON2_DEFAULT_M},t=${ARGON2_DEFAULT_T},p=1` +
     `$${sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES, 'base64')}`
 }
 
