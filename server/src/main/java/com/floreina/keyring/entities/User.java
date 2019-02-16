@@ -22,8 +22,6 @@ public class User {
 
   @Column private String salt;
 
-  @Column private String digest;
-
   @Column private String hash;
 
   @Column private String mail;
@@ -61,15 +59,6 @@ public class User {
 
   public User setSalt(String salt) {
     this.salt = salt;
-    return this;
-  }
-
-  public String getDigest() {
-    return digest;
-  }
-
-  public User setDigest(String digest) {
-    this.digest = digest;
     return this;
   }
 

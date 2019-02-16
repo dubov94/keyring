@@ -1,25 +1,6 @@
-import aes from 'crypto-js/aes'
 import axios from 'axios'
-import base64 from 'crypto-js/enc-base64'
-import bcrypt from 'bcryptjs'
-import encUtf8 from 'crypto-js/enc-utf8'
-import sha256 from 'crypto-js/sha256'
 import SodiumWorker from '../../sodium.worker'
 import {SESSION_TOKEN_HEADER_NAME} from '../../constants'
-
-const BcryptAesCryptography = {
-  BCRYPT_ROUNDS_LOGARITHM: 12,
-  getDigest: (hash) => hash.slice(-31),
-  computeEcnryptionKey: (masterKey) => base64.stringify(sha256(masterKey)),
-  encryptPassword: (encryptionKey, { value, tags }) => ({
-    value: aes.encrypt(value, encryptionKey).toString(),
-    tags: tags.map(tag => aes.encrypt(tag, encryptionKey).toString())
-  }),
-  decryptPassword: (encryptionKey, { value, tags }) => ({
-    value: aes.decrypt(value, encryptionKey).toString(encUtf8),
-    tags: tags.map(tag => aes.decrypt(tag, encryptionKey).toString(encUtf8))
-  })
-}
 
 const sodiumWorker = new SodiumWorker()
 
@@ -103,56 +84,28 @@ export default {
       await axios.get(`/api/authentication/get-salt/${username}`)
     if (saltResponse.error === 'NONE') {
       let { salt } = saltResponse
-      if (salt.startsWith('$2a$')) {
-        let hash = await bcrypt.hash(password, salt)
-        let { data: authResponse } =
-          await axios.post('/api/authentication/log-in', {
-            username,
-            digest: BcryptAesCryptography.getDigest(hash)
+      let {authDigest, encryptionKey} =
+        await SodiumUtilities.computeAuthDigestAndEncryptionKey(
+          salt, password)
+      let { data: authResponse } =
+        await axios.post('/api/authentication/log-in', {
+          username,
+          digest: authDigest
+        })
+      if (authResponse.error === 'NONE') {
+        let { payload } = authResponse
+        dispatch('importCredentials', {
+          salt,
+          sessionKey: payload.session_key,
+          encryptionKey: encryptionKey
+        })
+        if (payload.requirements.length === 0) {
+          await dispatch('acceptUserKeys', {
+            userKeys: payload.key_set.items
           })
-        if (authResponse.error === 'NONE') {
-          let { payload } = authResponse
-          dispatch('importCredentials', {
-            salt,
-            sessionKey: payload.session_key,
-            encryptionKey: BcryptAesCryptography.computeEcnryptionKey(password)
-          })
-          if (payload.requirements.length === 0) {
-            dispatch('acceptUserKeys', {
-              userKeys: payload.key_set.items
-            })
-          }
-          commit('session/setUsername', username)
-          dispatch('changeMasterKey', {
-            current: password,
-            renewal: password
-          })
-          return { success: true, requirements: payload.requirements }
         }
-      } else {
-        let {authDigest, encryptionKey} =
-          await SodiumUtilities.computeAuthDigestAndEncryptionKey(
-            salt, password)
-        let { data: authResponse } =
-          await axios.post('/api/authentication/log-in', {
-            username,
-            digest: authDigest
-          })
-        if (authResponse.error === 'NONE') {
-          let { payload } = authResponse
-          dispatch('importCredentials', {
-            salt,
-            sessionKey: payload.session_key,
-            encryptionKey: encryptionKey
-          })
-          if (payload.requirements.length === 0) {
-            dispatch('acceptUserKeys', {
-              userKeys: payload.key_set.items
-            })
-          }
-          commit('session/setUsername', username)
-          return { success: true, requirements: payload.requirements }
-        }
+        commit('session/setUsername', username)
+        return { success: true, requirements: payload.requirements }
       }
     }
     return { success: false }
@@ -165,12 +118,8 @@ export default {
   async acceptUserKeys ({ commit, state }, { userKeys }) {
     commit('setUserKeys', await Promise.all(
       userKeys.map(async ({ identifier, password }) =>
-        Object.assign({ identifier }, await (
-          state.salt.startsWith('$2a$')
-            ? Promise.resolve(BcryptAesCryptography.decryptPassword(
-              state.encryptionKey, password))
-            : SodiumUtilities.decryptPassword(state.encryptionKey, password)
-        ))
+        Object.assign({ identifier }, await SodiumUtilities.decryptPassword(
+          state.encryptionKey, password))
       )
     ))
   },
@@ -199,13 +148,7 @@ export default {
     commit('deleteUserKey', identifier)
   },
   async changeMasterKey ({ dispatch, state }, { current, renewal }) {
-    let curDigest
-    if (state.salt.startsWith('$2a$')) {
-      curDigest = BcryptAesCryptography.getDigest(
-        await bcrypt.hash(current, state.salt))
-    } else {
-      curDigest = await SodiumUtilities.computeAuthDigest(state.salt, current)
-    }
+    let curDigest = await SodiumUtilities.computeAuthDigest(state.salt, current)
     let newSalt = await SodiumUtilities.generateArgon2Parametrization()
     let {authDigest, encryptionKey} =
       await SodiumUtilities.computeAuthDigestAndEncryptionKey(newSalt, renewal)
