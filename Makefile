@@ -4,7 +4,7 @@ clean:
 	docker system prune --all --force
 
 build-client:
-	docker build -f client/Dockerfile -t dubov94/keyring-client --build-arg GIT_REVISION=$(git describe --always) .
+	docker build -f client/Dockerfile -t dubov94/keyring-client --build-arg GIT_REVISION="$(shell git describe --always)" .
 
 build-gateway:
 	docker build -f gateway/Dockerfile -t dubov94/keyring-gateway .
