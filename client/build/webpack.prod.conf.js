@@ -70,7 +70,8 @@ var webpackConfig = merge(baseWebpackConfig, {
       // Necessary to consistently work with multiple chunks via
       // CommonsChunkPlugin.
       chunksSortMode: 'dependency',
-      ijVersionString: new GitRevisionPlugin().version(),
+      ijVersionString: process.env.GIT_REVISION ||
+        new GitRevisionPlugin().version(),
       ijServiceWorkerLoaderCode:
         fs.readFileSync(path.join(__dirname,
           './service-worker-loader.js'), 'utf-8')

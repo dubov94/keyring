@@ -17,8 +17,7 @@ frontend development server.
 
 ## Production
 
-To build the modules locally one may run
-`docker build -f {module}/Dockerfile -t dubov94/keyring-{module} .`.
+To build all of the modules locally one may run `make`.
 
 Initialize the cluster by executing `docker swarm init`. Set up all the secrets
 using `docker secret create`. Create directories at `/root/postgres` and
