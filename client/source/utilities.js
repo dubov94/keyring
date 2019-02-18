@@ -28,6 +28,40 @@ export const createCharacterRange = (first, last) => {
   return range
 }
 
+export const generateSequenceOffRanges = (ranges, length) => {
+  let bits = new Array(ranges.length).fill(false)
+  let numberOfUsedRanges = 0
+  let isTail = false
+  const numberOfAllOptions = ranges.reduce(
+    (accumulator, current) => accumulator + current.length, 0)
+  let numberOfTailOptions = numberOfAllOptions
+  let sequence = ''
+  while (length--) {
+    let optionIndex = random(
+      0, isTail ? numberOfTailOptions : numberOfAllOptions)
+    let lengthAccumulator = 0
+    let rangeIndex = -1
+    let rangeLength = 0
+    do {
+      lengthAccumulator += rangeLength
+      do {
+        rangeIndex += 1
+      } while (isTail && bits[rangeIndex])
+      rangeLength = ranges[rangeIndex].length
+    } while (optionIndex >= lengthAccumulator + rangeLength)
+    sequence += ranges[rangeIndex][optionIndex - lengthAccumulator]
+    if (!bits[rangeIndex]) {
+      bits[rangeIndex] = true
+      numberOfUsedRanges += 1
+      numberOfTailOptions -= rangeLength
+    }
+    if (bits.length - numberOfUsedRanges === length) {
+      isTail = true
+    }
+  }
+  return sequence
+}
+
 export const areArraysEqual = (left, right) => {
   if (left.length !== right.length) {
     return false

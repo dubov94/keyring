@@ -61,7 +61,7 @@
         <v-btn icon @click="reveal = !reveal">
           <v-icon>{{ reveal ? 'fa-eye-slash' : 'fa-eye' }}</v-icon>
         </v-btn>
-        <v-btn icon :disabled="requestInProgress" @click="generate">
+        <v-btn icon :disabled="requestInProgress" @click="suggest">
           <v-icon>fa-lightbulb</v-icon>
         </v-btn>
       </v-card-title>
@@ -114,8 +114,20 @@
   import YesNoDialog from './YesNoDialog'
   import {mapActions, mapMutations} from 'vuex'
   import {XL_MINIMAL_WIDTH} from './constants'
-  import {ALPHANUMERIC_CHARACTERS} from '../constants'
-  import {areArraysEqual, sleep, random} from '../utilities'
+  import {
+    areArraysEqual,
+    createCharacterRange,
+    generateSequenceOffRanges,
+    sleep
+  } from '../utilities'
+
+  const SYMBOLS_RANGE = '@#$_&-+()/' + '*"\':;!?'
+  const DIGITS_RANGE = createCharacterRange('0', '9')
+  const UPPERCASE_LETTERS_RANGE = createCharacterRange('A', 'Z')
+  const LOWERCASE_LETTERS_RANGE = createCharacterRange('a', 'z')
+
+  const PASSWORD_SUGGESTION_LENGTH = 12
+  const TYPEWRITER_DELAY_IN_MILLIS = 50
 
   export default {
     components: {
@@ -185,19 +197,20 @@
       addTag () {
         this.chips.push('')
       },
-      async generate () {
-        let suggestion = ''
-        for (let index = 0; index < 12; ++index) {
-          suggestion += ALPHANUMERIC_CHARACTERS.charAt(
-            random(0, ALPHANUMERIC_CHARACTERS.length))
-        }
+      async suggest () {
+        let suggestion = generateSequenceOffRanges([
+          SYMBOLS_RANGE,
+          DIGITS_RANGE,
+          UPPERCASE_LETTERS_RANGE,
+          LOWERCASE_LETTERS_RANGE
+        ], PASSWORD_SUGGESTION_LENGTH)
         this.requestInProgress = true
         while (this.secret.length > 0) {
-          await sleep(50)
+          await sleep(TYPEWRITER_DELAY_IN_MILLIS)
           this.secret = this.secret.slice(0, -1)
         }
         for (let length = 1; length <= suggestion.length; ++length) {
-          await sleep(50)
+          await sleep(TYPEWRITER_DELAY_IN_MILLIS)
           this.secret = suggestion.slice(0, length)
         }
         this.requestInProgress = false
