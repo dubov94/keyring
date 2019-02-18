@@ -1,7 +1,10 @@
 import axios from 'axios'
 import router from './router'
 import store from './store'
-import {SESSION_LIFETIME_IN_MS, SESSION_TOKEN_HEADER_NAME} from './constants'
+import {
+  SESSION_LIFETIME_IN_MILLIS,
+  SESSION_TOKEN_HEADER_NAME
+} from './constants'
 
 export const applySaveRouteOnNavigation = () => {
   router.afterEach((to, from) => {
@@ -39,7 +42,7 @@ export const applySendKeepAliveWhileIdle = () => {
           }
         })
       }
-    }, SESSION_LIFETIME_IN_MS / 2)
+    }, SESSION_LIFETIME_IN_MILLIS / 2)
   }
 
   axios.interceptors.response.use((response) => {
@@ -65,7 +68,7 @@ export const applyFreezeWhenPageIsHidden = () => {
         if (store.getters.hasSessionKey) {
           location.reload()
         }
-      }, SESSION_LIFETIME_IN_MS)
+      }, SESSION_LIFETIME_IN_MILLIS)
     } else {
       clearTimeout(visibilityTimer)
     }
