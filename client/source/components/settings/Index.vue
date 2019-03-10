@@ -1,13 +1,7 @@
 <template>
   <page>
-    <v-toolbar app prominent color="primary" dark>
-      <v-btn icon @click="$router.go(-1)">
-        <v-icon>arrow_back</v-icon>
-      </v-btn>
-      <v-toolbar-title>
-        Key Ring
-      </v-toolbar-title>
-    </v-toolbar>
+    <side-menu v-model="showMenu"></side-menu>
+    <toolbar v-model="showMenu"></toolbar>
     <v-content>
       <v-container fluid>
         <v-layout row wrap justify-center align-center>
@@ -30,19 +24,28 @@
 </template>
 
 <script>
-  import Page from '../Page'
   import ChangeMail from './ChangeMail'
   import ChangeMasterKey from './ChangeMasterKey'
   import ChangeUsername from './ChangeUsername'
   import DeleteAccount from './DeleteAccount'
+  import Page from '../Page'
+  import SideMenu from '../toolbar-with-menu/SideMenu'
+  import Toolbar from '../toolbar-with-menu/Toolbar'
 
   export default {
     components: {
-      page: Page,
       changeMail: ChangeMail,
       changeMasterKey: ChangeMasterKey,
       changeUsername: ChangeUsername,
-      deleteAccount: DeleteAccount
+      deleteAccount: DeleteAccount,
+      page: Page,
+      sideMenu: SideMenu,
+      toolbar: Toolbar
+    },
+    data () {
+      return {
+        showMenu: false
+      }
     }
   }
 </script>

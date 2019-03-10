@@ -37,35 +37,15 @@
 
 <template>
   <page>
-    <v-navigation-drawer app v-model="showDrawer" temporary clipped floating>
-      <v-list>
-        <v-list-tile @click="$router.push('/settings')">
-          <v-list-tile-action>
-            <v-icon>fa-cog</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            Settings
-          </v-list-tile-content>
-        </v-list-tile>
-        <v-list-tile @click="logOut">
-          <v-list-tile-action>
-            <v-icon>fa-sign-out-alt</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            Log out
-          </v-list-tile-content>
-        </v-list-tile>
-      </v-list>
-    </v-navigation-drawer>
-    <v-toolbar app clipped-left prominent color="primary" dark>
-      <v-toolbar-side-icon @click="toggleDrawer"></v-toolbar-side-icon>
+    <side-menu v-model="showMenu"></side-menu>
+    <toolbar v-model="showMenu">
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
         Key Ring
       </v-toolbar-title>
       <v-text-field solo-inverted flat ref="search" v-model="query" :class=
         "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
         prepend-icon="search" label="Search"></v-text-field>
-    </v-toolbar>
+    </toolbar>
     <v-content>
       <v-container fluid>
         <div class="navigation">
@@ -98,8 +78,9 @@
   import Editor from './Editor'
   import Password from './Password'
   import Page from './Page'
+  import SideMenu from './toolbar-with-menu/SideMenu'
+  import Toolbar from './toolbar-with-menu/Toolbar'
   import {mapActions, mapMutations, mapState} from 'vuex'
-  import {purgeSessionStorageAndLoadLogIn} from '../utilities'
 
   const CARDS_PER_PAGE = 12
 
@@ -107,11 +88,13 @@
     components: {
       editor: Editor,
       password: Password,
-      page: Page
+      page: Page,
+      sideMenu: SideMenu,
+      toolbar: Toolbar
     },
     data () {
       return {
-        showDrawer: false,
+        showMenu: false,
         pageNumber: 1,
         query: ''
       }
@@ -154,17 +137,11 @@
       ...mapMutations({
         openEditor: 'interface/openEditor'
       }),
-      toggleDrawer () {
-        this.showDrawer = !this.showDrawer
-      },
       addKey () {
         this.openEditor({ identifier: null, reveal: false })
       },
       resetNavigation () {
         this.pageNumber = 1
-      },
-      logOut () {
-        purgeSessionStorageAndLoadLogIn()
       },
       async clearClipboard () {
         await navigator.clipboard.writeText('')
