@@ -16,7 +16,7 @@
           @touch="$v.repeat.$touch()" @reset="$v.repeat.$reset()"></form-text-field>
         <div class="text-xs-right">
           <v-btn class="mr-0" :loading="requestInProgress"
-            color="primary" @click="submit">Submit</v-btn>
+            color="primary" @click="submit" :disabled="!isOnline">Submit</v-btn>
         </div>
       </v-form>
     </v-card-text>
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-  import {mapActions} from 'vuex'
+  import {mapActions, mapGetters} from 'vuex'
   import {required, sameAs} from 'vuelidate/lib/validators'
 
   export default {
@@ -47,6 +47,9 @@
       }
     },
     computed: {
+      ...mapGetters({
+        isOnline: 'isOnline'
+      }),
       currentErrors () {
         return {
           [this.$t('INVALID_CURRENT_PASSWORD')]: !this.$v.current.valid

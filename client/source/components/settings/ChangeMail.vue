@@ -31,7 +31,9 @@
                 @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
               <div class="text-xs-right">
                 <v-btn class="mr-0" :loading="requestInProgress"
-                  color="primary" @click="acquireToken">Next</v-btn>
+                  color="primary" @click="acquireToken" :disabled="!isOnline">
+                  Next
+                </v-btn>
               </div>
             </v-form>
           </v-stepper-content>
@@ -42,7 +44,9 @@
                 @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
               <div class="text-xs-right">
                 <v-btn class="mr-0" :loading="requestInProgress"
-                  color="primary" @click="releaseToken">Submit</v-btn>
+                  color="primary" @click="releaseToken" :disabled="!isOnline">
+                  Submit
+                </v-btn>
               </div>
             </v-form>
           </v-stepper-content>
@@ -53,7 +57,7 @@
 </template>
 
 <script>
-  import {mapActions} from 'vuex'
+  import {mapActions, mapGetters} from 'vuex'
   import {email, required} from 'vuelidate/lib/validators'
 
   export default {
@@ -83,6 +87,9 @@
       }
     },
     computed: {
+      ...mapGetters({
+        isOnline: 'isOnline'
+      }),
       mailErrors () {
         return {
           [this.$t('EMAIL_ADDRESS_IS_REQUIRED')]: !this.$v.mail.required,
