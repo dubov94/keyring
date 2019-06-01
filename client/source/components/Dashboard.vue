@@ -146,8 +146,8 @@
       async clearClipboard () {
         await navigator.clipboard.writeText('')
         this.displaySnackbar({
-          message: 'Clipboard is cleared. Watch out for tools that may keep ' +
-            'the history of copied items anyway!',
+          message: 'Clipboard is cleared. Watch out for tools that may keep' +
+            ' the history of copied items anyway!',
           timeout: 4500
         })
       }
