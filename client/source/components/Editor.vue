@@ -52,12 +52,9 @@
         <v-text-field :type="reveal ? 'text' : 'password'" solo flat
           placeholder="Secret" class="key" v-model="secret" ref="secret">
         </v-text-field>
-        <fixed-tooltip top :nudge-y="-6">
-          <span slot="label">Available after saving</span>
-          <v-btn icon disabled>
-            <v-icon>fa-copy</v-icon>
-          </v-btn>
-        </fixed-tooltip>
+        <v-btn icon @click="copySecret">
+          <v-icon>fa-copy</v-icon>
+        </v-btn>
         <v-btn icon @click="reveal = !reveal">
           <v-icon>{{ reveal ? 'fa-eye-slash' : 'fa-eye' }}</v-icon>
         </v-btn>
@@ -159,7 +156,8 @@
       ...mapActions({
         createKey: 'createUserKey',
         updateKey: 'updateUserKey',
-        removeKey: 'removeUserKey'
+        removeKey: 'removeUserKey',
+        displaySnackbar: 'interface/displaySnackbar'
       }),
       ...mapMutations({
         closeEditor: 'interface/closeEditor'
@@ -184,6 +182,13 @@
         } else {
           this.discardConfirmation = true
         }
+      },
+      async copySecret () {
+        await navigator.clipboard.writeText(this.secret)
+        this.displaySnackbar({
+          message: 'Done. Remember to save!',
+          timeout: 3000
+        })
       },
       move ({ relatedContext }) {
         return relatedContext.element !== undefined
