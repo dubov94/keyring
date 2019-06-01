@@ -140,6 +140,9 @@
       addKey () {
         this.openEditor({ identifier: null, reveal: false })
       },
+      clearQuery () {
+        this.query = ''
+      },
       resetNavigation () {
         this.pageNumber = 1
       },
@@ -154,9 +157,7 @@
     },
     watch: {
       cardsCount (current, previous) {
-        if (current > previous) {
-          this.resetNavigation()
-        } else if (this.pageNumber > this.pageCount) {
+        if (this.pageNumber > this.pageCount) {
           this.pageNumber = this.pageCount
         }
       },
@@ -165,9 +166,18 @@
       }
     },
     mounted () {
+      this.unsubscribeFromStore = this.$store.subscribe((mutation) => {
+        if (mutation.type === 'unshiftUserKey') {
+          this.clearQuery()
+          this.resetNavigation()
+        }
+      })
       if (this.userKeys.length > 0) {
         this.$refs.search.focus()
       }
+    },
+    beforeDestroyed () {
+      this.unsubscribeFromStore()
     }
   }
 </script>
