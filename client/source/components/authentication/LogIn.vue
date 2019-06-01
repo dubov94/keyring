@@ -135,8 +135,8 @@
           this.forgetUsername()
           if (isUsernameInStore !== null) {
             this.displaySnackbar({
-              message: 'We deleted the saved username from the storage. ' +
-                'Refresh the page if you want to see the effect.',
+              message: 'We deleted the saved username from the storage.' +
+                ' Refresh the page if you want to see the effect.',
               timeout: 4500
             })
           }
