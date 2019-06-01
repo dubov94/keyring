@@ -1,4 +1,7 @@
+import Status from './status'
+
 export const state = {
+  status: Status.CONNECTING,
   salt: null,
   encryptionKey: null,
   sessionKey: null,
@@ -6,10 +9,14 @@ export const state = {
 }
 
 export const getters = {
-  hasSessionKey: (state) => state.sessionKey !== null
+  hasSessionKey: (state) => state.sessionKey !== null,
+  isOnline: (state) => state.status === Status.ONLINE
 }
 
 export const mutations = {
+  setStatus (state, status) {
+    state.status = status
+  },
   setSalt (state, salt) {
     state.salt = salt
   },

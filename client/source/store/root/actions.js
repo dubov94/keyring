@@ -1,5 +1,6 @@
 import axios from 'axios'
 import SodiumWorker from '../../sodium.worker'
+import Status from './status'
 import {SESSION_TOKEN_HEADER_NAME} from '../../constants'
 
 const sodiumWorker = new SodiumWorker()
@@ -68,8 +69,9 @@ export default {
         sessionKey: response.session_key,
         encryptionKey: encryptionKey
       })
+      commit('session/setUsername', username)
+      commit('setStatus', Status.ONLINE)
     }
-    commit('session/setUsername', username)
     return response.error
   },
   async releaseMailToken ({ state }, { code }) {
@@ -80,6 +82,7 @@ export default {
     ).data.error
   },
   async logIn ({ commit, dispatch }, { username, password }) {
+    commit('setStatus', Status.CONNECTING)
     let { data: saltResponse } =
       await axios.get(`/api/authentication/get-salt/${username}`)
     if (saltResponse.error === 'NONE') {
@@ -105,9 +108,11 @@ export default {
           })
         }
         commit('session/setUsername', username)
+        commit('setStatus', Status.ONLINE)
         return { success: true, requirements: payload.requirements }
       }
     }
+    commit('setStatus', Status.OFFLINE)
     return { success: false }
   },
   importCredentials ({ commit }, { salt, sessionKey, encryptionKey }) {

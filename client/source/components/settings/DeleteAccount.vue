@@ -10,7 +10,7 @@
           @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
         <div class="text-xs-right">
           <v-btn class="mr-0" :loading="requestInProgress"
-            color="error" @click="submit">Submit</v-btn>
+            color="error" @click="submit" :disabled="!isOnline">Submit</v-btn>
         </div>
       </v-form>
     </v-card-text>
@@ -18,7 +18,7 @@
 </template>
 
 <script>
-  import {mapActions} from 'vuex'
+  import {mapActions, mapGetters} from 'vuex'
   import {purgeAllStoragesAndLoadIndex} from '../../utilities'
 
   export default {
@@ -37,6 +37,9 @@
       }
     },
     computed: {
+      ...mapGetters({
+        isOnline: 'isOnline'
+      }),
       passwordErrors () {
         return {
           [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
