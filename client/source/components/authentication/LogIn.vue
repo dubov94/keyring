@@ -1,7 +1,4 @@
 <style scoped>
-  .switch {
-    margin: 0 0 8px 16px;
-  }
 </style>
 
 <template>
@@ -11,21 +8,16 @@
     </v-toolbar>
     <v-card-text>
       <v-form @keydown.native.enter.prevent="submit">
-        <v-layout align-center>
-          <form-text-field type="text" label="Username" prepend-icon="person"
-            v-model="username" :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
-            @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
-            :autofocus="!hasUsername"></form-text-field>
-          <fixed-tooltip bottom :nudge-x="8" :nudge-y="-4">
-            <span slot="label">Remember</span>
-            <v-switch hide-details color="primary" class="switch"
-              v-model="persistanceSwitch"></v-switch>
-          </fixed-tooltip>
-        </v-layout>
+        <form-text-field type="text" label="Username" prepend-icon="person"
+          v-model="username" :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
+          @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
+          :autofocus="!hasUsername"></form-text-field>
         <form-text-field type="password" label="Password" prepend-icon="lock"
           v-model="password" :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
           @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
           :autofocus="hasUsername"></form-text-field>
+        <v-switch hide-details color="primary" label="Remember me"
+          v-model="persistanceSwitch"></v-switch>
       </v-form>
     </v-card-text>
     <v-card-actions>
@@ -126,7 +118,7 @@
       persistanceSwitch (value) {
         if (value) {
           this.displaySnackbar({
-            message: 'Okay, we will remember your username after you log in.',
+            message: 'Okay, we will store your data locally after you log in.',
             timeout: 3000
           })
         } else {
@@ -135,9 +127,8 @@
           this.forgetUsername()
           if (isUsernameInStore !== null) {
             this.displaySnackbar({
-              message: 'We deleted the saved username from the storage.' +
-                ' Refresh the page if you want to see the effect.',
-              timeout: 4500
+              message: 'Alright, we deleted all your data from this device.',
+              timeout: 3000
             })
           }
         }
