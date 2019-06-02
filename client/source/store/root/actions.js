@@ -1,50 +1,7 @@
 import axios from 'axios'
-import SodiumWorker from '../../sodium.worker'
+import SodiumWrapper from '../../sodium.wrapper'
 import Status from './status'
 import {SESSION_TOKEN_HEADER_NAME} from '../../constants'
-
-const sodiumWorker = new SodiumWorker()
-
-const SodiumUtilities = {
-  generateArgon2Parametrization () {
-    return sodiumWorker.generateArgon2Parametrization()
-  },
-  computeArgon2Hash (parametrization, password) {
-    return sodiumWorker.computeArgon2Hash(parametrization, password)
-  },
-  extractAuthDigestAndEncryptionKey (hash) {
-    return sodiumWorker.extractAuthDigestAndEncryptionKey(hash)
-  },
-  async computeAuthDigestAndEncryptionKey (parametrization, password) {
-    let hash = await this.computeArgon2Hash(parametrization, password)
-    return this.extractAuthDigestAndEncryptionKey(hash)
-  },
-  async computeAuthDigest (parametrization, password) {
-    return (
-      await this.computeAuthDigestAndEncryptionKey(parametrization, password)
-    ).authDigest
-  },
-  encryptMessage (encryptionKey, message) {
-    return sodiumWorker.encryptMessage(encryptionKey, message)
-  },
-  descryptMessage (encryptionKey, cipher) {
-    return sodiumWorker.decryptMessage(encryptionKey, cipher)
-  },
-  async encryptPassword (encryptionKey, { value, tags }) {
-    return {
-      value: await sodiumWorker.encryptMessage(encryptionKey, value),
-      tags: await Promise.all(tags.map(
-        tag => sodiumWorker.encryptMessage(encryptionKey, tag)))
-    }
-  },
-  async decryptPassword (encryptionKey, { value, tags }) {
-    return {
-      value: await sodiumWorker.decryptMessage(encryptionKey, value),
-      tags: await Promise.all(tags.map(
-        tag => sodiumWorker.decryptMessage(encryptionKey, tag)))
-    }
-  }
-}
 
 const createSessionHeader = (sessionKey) => ({
   [SESSION_TOKEN_HEADER_NAME]: sessionKey
@@ -52,9 +9,9 @@ const createSessionHeader = (sessionKey) => ({
 
 export default {
   async register ({ commit, dispatch }, { username, password, mail }) {
-    let parametrization = await SodiumUtilities.generateArgon2Parametrization()
+    let parametrization = await SodiumWrapper.generateArgon2Parametrization()
     let {authDigest, encryptionKey} =
-      await SodiumUtilities.computeAuthDigestAndEncryptionKey(
+      await SodiumWrapper.computeAuthDigestAndEncryptionKey(
         parametrization, password)
     let { data: response } =
       await axios.post('/api/authentication/register', {
@@ -88,7 +45,7 @@ export default {
     if (saltResponse.error === 'NONE') {
       let { salt } = saltResponse
       let {authDigest, encryptionKey} =
-        await SodiumUtilities.computeAuthDigestAndEncryptionKey(
+        await SodiumWrapper.computeAuthDigestAndEncryptionKey(
           salt, password)
       let { data: authResponse } =
         await axios.post('/api/authentication/log-in', {
@@ -126,7 +83,7 @@ export default {
   async acceptUserKeys ({ commit, state }, { userKeys }) {
     commit('setUserKeys', await Promise.all(
       userKeys.map(async ({ identifier, password }) =>
-        Object.assign({ identifier }, await SodiumUtilities.decryptPassword(
+        Object.assign({ identifier }, await SodiumWrapper.decryptPassword(
           state.encryptionKey, password))
       )
     ))
@@ -134,7 +91,7 @@ export default {
   async createUserKey ({ commit, state }, { value, tags }) {
     let { data: response } =
       await axios.post('/api/administration/create-key', {
-        password: await SodiumUtilities.encryptPassword(
+        password: await SodiumWrapper.encryptPassword(
           state.encryptionKey, { value, tags })
       }, { headers: createSessionHeader(state.sessionKey) })
     commit('unshiftUserKey', { identifier: response.identifier, value, tags })
@@ -143,7 +100,7 @@ export default {
     await axios.put('/api/administration/update-key', {
       key: {
         identifier,
-        password: await SodiumUtilities.encryptPassword(
+        password: await SodiumWrapper.encryptPassword(
           state.encryptionKey, { value, tags })
       }
     }, { headers: createSessionHeader(state.sessionKey) })
@@ -156,10 +113,10 @@ export default {
     commit('deleteUserKey', identifier)
   },
   async changeMasterKey ({ dispatch, state }, { current, renewal }) {
-    let curDigest = await SodiumUtilities.computeAuthDigest(state.salt, current)
-    let newSalt = await SodiumUtilities.generateArgon2Parametrization()
+    let curDigest = await SodiumWrapper.computeAuthDigest(state.salt, current)
+    let newSalt = await SodiumWrapper.generateArgon2Parametrization()
     let {authDigest, encryptionKey} =
-      await SodiumUtilities.computeAuthDigestAndEncryptionKey(newSalt, renewal)
+      await SodiumWrapper.computeAuthDigestAndEncryptionKey(newSalt, renewal)
     let { data: response } =
       await axios.post('/api/administration/change-master-key', {
         current_digest: curDigest,
@@ -168,7 +125,7 @@ export default {
           digest: authDigest,
           keys: await Promise.all(state.userKeys.map(async (key) => ({
             identifier: key.identifier,
-            password: await SodiumUtilities.encryptPassword(encryptionKey, {
+            password: await SodiumWrapper.encryptPassword(encryptionKey, {
               value: key.value,
               tags: key.tags
             })
@@ -189,7 +146,7 @@ export default {
   async changeUsername ({ commit, state }, { username, password }) {
     let { data: { error } } =
       await axios.put('/api/administration/change-username', {
-        digest: await SodiumUtilities.computeAuthDigest(state.salt, password),
+        digest: await SodiumWrapper.computeAuthDigest(state.salt, password),
         username
       }, {
         headers: createSessionHeader(state.sessionKey)
@@ -205,7 +162,7 @@ export default {
   async acquireMailToken ({ state }, { mail, password }) {
     return (
       await axios.post('/api/administration/acquire-mail-token', {
-        digest: await SodiumUtilities.computeAuthDigest(state.salt, password),
+        digest: await SodiumWrapper.computeAuthDigest(state.salt, password),
         mail
       }, {
         headers: createSessionHeader(state.sessionKey)
@@ -215,7 +172,7 @@ export default {
   async deleteAccount ({ state }, { password }) {
     return (
       await axios.post('/api/administration/delete-account', {
-        digest: await SodiumUtilities.computeAuthDigest(state.salt, password)
+        digest: await SodiumWrapper.computeAuthDigest(state.salt, password)
       }, {
         headers: createSessionHeader(state.sessionKey)
       })
