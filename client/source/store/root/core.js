@@ -5,12 +5,14 @@ export const state = {
   salt: null,
   encryptionKey: null,
   sessionKey: null,
-  userKeys: []
+  userKeys: [],
+  isActive: false
 }
 
 export const getters = {
   hasSessionKey: (state) => state.sessionKey !== null,
-  isOnline: (state) => state.status === Status.ONLINE
+  isOnline: (state) => state.status === Status.ONLINE,
+  isActive: (state) => state.isActive
 }
 
 export const mutations = {
@@ -25,6 +27,9 @@ export const mutations = {
   },
   setEncryptionKey (state, encryptionKey) {
     state.encryptionKey = encryptionKey
+  },
+  setIsActive (state, value) {
+    state.isActive = value
   },
   setUserKeys (state, userKeys) {
     userKeys.sort((left, right) => {

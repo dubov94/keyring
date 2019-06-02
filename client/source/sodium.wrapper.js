@@ -23,14 +23,10 @@ export default {
       await this.computeAuthDigestAndEncryptionKey(parametrization, password)
     ).authDigest
   },
-  computeLocalDigest (parametrization, password) {
-    return sodiumWorker.computeArgon2HashForLocalStorage(
-        parametrization, password)
-  },
   encryptMessage (encryptionKey, message) {
     return sodiumWorker.encryptMessage(encryptionKey, message)
   },
-  descryptMessage (encryptionKey, cipher) {
+  decryptMessage (encryptionKey, cipher) {
     return sodiumWorker.decryptMessage(encryptionKey, cipher)
   },
   async encryptPassword (encryptionKey, { value, tags }) {
