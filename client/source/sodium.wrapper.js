@@ -6,20 +6,26 @@ export default {
   generateArgon2Parametrization () {
     return sodiumWorker.generateArgon2Parametrization()
   },
-  computeArgon2Hash (parametrization, password) {
-    return sodiumWorker.computeArgon2Hash(parametrization, password)
+  computeArgon2HashForDigestAndKey (parametrization, password) {
+    return sodiumWorker.computeArgon2HashForDigestAndKey(
+        parametrization, password)
   },
   extractAuthDigestAndEncryptionKey (hash) {
     return sodiumWorker.extractAuthDigestAndEncryptionKey(hash)
   },
   async computeAuthDigestAndEncryptionKey (parametrization, password) {
-    let hash = await this.computeArgon2Hash(parametrization, password)
+    let hash = await this.computeArgon2HashForDigestAndKey(
+        parametrization, password)
     return this.extractAuthDigestAndEncryptionKey(hash)
   },
   async computeAuthDigest (parametrization, password) {
     return (
       await this.computeAuthDigestAndEncryptionKey(parametrization, password)
     ).authDigest
+  },
+  computeLocalDigest (parametrization, password) {
+    return sodiumWorker.computeArgon2HashForLocalStorage(
+        parametrization, password)
   },
   encryptMessage (encryptionKey, message) {
     return sodiumWorker.encryptMessage(encryptionKey, message)

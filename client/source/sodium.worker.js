@@ -6,6 +6,7 @@ const ARGON2_DEFAULT_T = 1
 
 const AUTH_DIGEST_SIZE_IN_BYTES = 32
 const ENCRYPTION_KEY_SIZE_IN_BYTES = 32
+const LOCAL_DIGEST_SIZE_IN_BYTES = 32
 
 const PARAMETRIZATION_REGULAR_EXPRESSION = new RegExp(
   '^\\$(argon2(?:i|d|id))' +
@@ -19,13 +20,13 @@ export const generateArgon2Parametrization = () => {
     `$${sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES, 'base64')}`
 }
 
-export const computeArgon2Hash = (parametrization, password) => {
+const computeArgon2Hash = (parametrization, password, length) => {
   let [, algorithm, m, t, p, salt] =
     PARAMETRIZATION_REGULAR_EXPRESSION.exec(parametrization)
   ;[m, t, p] = [m, t, p].map(Number)
   if (algorithm === 'argon2id' && p === 1) {
     return sodium.crypto_pwhash(
-      AUTH_DIGEST_SIZE_IN_BYTES + ENCRYPTION_KEY_SIZE_IN_BYTES,
+      length,
       password,
       sodium.from_base64(salt),
       t, m, sodium.crypto_pwhash_ALG_ARGON2ID13
@@ -35,6 +36,17 @@ export const computeArgon2Hash = (parametrization, password) => {
       `algorithm = '${algorithm}', lanes = '${p}'.`)
   }
 }
+
+export const computeArgon2HashForDigestAndKey = (parametrization, password) =>
+  computeArgon2Hash(
+    parametrization,
+    password,
+    AUTH_DIGEST_SIZE_IN_BYTES + ENCRYPTION_KEY_SIZE_IN_BYTES
+  )
+
+export const computeArgon2HashForLocalStorage = (parametrization, password) =>
+    sodium.to_base64(
+      computeArgon2Hash(parametrization, password, LOCAL_DIGEST_SIZE_IN_BYTES))
 
 export const extractAuthDigestAndEncryptionKey = (hash) => {
   return {
