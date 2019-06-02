@@ -154,6 +154,8 @@ export default {
         sessionKey: response.session_key,
         encryptionKey: encryptionKey
       })
+      await dispatch('depot/saveDigest', renewal)
+      await dispatch('maybeSaveUserKeysInDepot')
     }
     return response.error
   },
