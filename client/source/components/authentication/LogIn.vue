@@ -36,7 +36,7 @@
 
   export default {
     data () {
-      let storageUsername = this.$store.state.preferences.username
+      let storageUsername = this.$store.state.depot.username
 
       return {
         username: storageUsername === null ? '' : storageUsername,
@@ -82,8 +82,8 @@
     methods: {
       ...mapActions({
         logIn: 'logIn',
-        rememberUsername: 'preferences/rememberUsername',
-        forgetUsername: 'preferences/forgetUsername',
+        rememberUsername: 'depot/rememberUsername',
+        forgetUsername: 'depot/forgetUsername',
         displaySnackbar: 'interface/displaySnackbar'
       }),
       async submit () {
@@ -122,8 +122,7 @@
             timeout: 3000
           })
         } else {
-          let isUsernameInStore =
-            this.$store.state.preferences.username !== null
+          let isUsernameInStore = this.$store.state.depot.username !== null
           this.forgetUsername()
           if (isUsernameInStore !== null) {
             this.displaySnackbar({

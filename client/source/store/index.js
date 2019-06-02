@@ -1,7 +1,7 @@
 import {state, getters, mutations} from './root/core'
 import actions from './root/actions'
 import Interface from './modules/interface'
-import Preferences from './modules/preferences'
+import Depot from './modules/depot'
 import Session from './modules/session'
 import Vue from 'vue'
 import Vuex from 'vuex'
@@ -11,7 +11,7 @@ Vue.use(Vuex)
 
 const vuexLocal = new VuexPersist({
   storage: localStorage,
-  modules: ['preferences']
+  modules: ['depot']
 })
 
 const vuexSession = new VuexPersist({
@@ -27,7 +27,7 @@ const store = new Vuex.Store({
   actions,
   modules: {
     interface: Interface,
-    preferences: Preferences,
+    depot: Depot,
     session: Session
   }
 })

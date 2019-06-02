@@ -192,8 +192,8 @@ export default {
         headers: createSessionHeader(state.sessionKey)
       })
     if (error === 'NONE') {
-      if (state.preferences.username === state.session.username) {
-        commit('preferences/setUsername', username)
+      if (state.depot.username === state.session.username) {
+        commit('depot/setUsername', username)
       }
       commit('session/setUsername', username)
     }
