@@ -81,7 +81,7 @@ export default {
       })
     ).data.error
   },
-  async logIn ({ commit, dispatch }, { username, password }) {
+  async logIn ({ commit, dispatch }, { username, password, persist }) {
     commit('setStatus', Status.CONNECTING)
     let { data: saltResponse } =
       await axios.get(`/api/authentication/get-salt/${username}`)
@@ -109,6 +109,9 @@ export default {
         }
         commit('session/setUsername', username)
         commit('setStatus', Status.ONLINE)
+        if (persist) {
+          dispatch('depot/saveUsername', username)
+        }
         return { success: true, requirements: payload.requirements }
       }
     }

@@ -21,7 +21,7 @@
 </template>
 
 <script>
-  import {mapActions} from 'vuex'
+  import {mapActions, mapGetters} from 'vuex'
 
   export default {
     data () {
@@ -49,6 +49,9 @@
       ...mapActions({
         logIn: 'logIn'
       }),
+      ...mapGetters({
+        hasLocalData: 'depot/hasLocalData'
+      }),
       async submit () {
         if (!this.requestInProgress) {
           this.$v.$touch()
@@ -57,7 +60,11 @@
               this.requestInProgress = true
               let username = this.$store.state.session.username
               let password = this.password
-              let { success } = await this.logIn({ username, password })
+              let { success } = await this.logIn({
+                username,
+                password,
+                persist: this.hasLocalData
+              })
               if (success) {
                 this.$router.replace(this.$store.state.session.lastRoute)
               } else {
