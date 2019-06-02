@@ -65,7 +65,7 @@ export const applyFreezeWhenPageIsHidden = () => {
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       visibilityTimer = setTimeout(() => {
-        if (store.getters.hasSessionKey) {
+        if (store.getters.isActive) {
           location.reload()
         }
       }, SESSION_LIFETIME_IN_MILLIS)

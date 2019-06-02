@@ -6,7 +6,6 @@ const ARGON2_DEFAULT_T = 1
 
 const AUTH_DIGEST_SIZE_IN_BYTES = 32
 const ENCRYPTION_KEY_SIZE_IN_BYTES = 32
-const LOCAL_DIGEST_SIZE_IN_BYTES = 32
 
 const PARAMETRIZATION_REGULAR_EXPRESSION = new RegExp(
   '^\\$(argon2(?:i|d|id))' +
@@ -43,10 +42,6 @@ export const computeArgon2HashForDigestAndKey = (parametrization, password) =>
     password,
     AUTH_DIGEST_SIZE_IN_BYTES + ENCRYPTION_KEY_SIZE_IN_BYTES
   )
-
-export const computeArgon2HashForLocalStorage = (parametrization, password) =>
-    sodium.to_base64(
-      computeArgon2Hash(parametrization, password, LOCAL_DIGEST_SIZE_IN_BYTES))
 
 export const extractAuthDigestAndEncryptionKey = (hash) => {
   return {

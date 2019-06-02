@@ -1,12 +1,16 @@
 import SodiumWrapper from '../../sodium.wrapper'
 
+const createInitialState = () => ({
+  username: null,
+  parametrization: null,
+  authDigest: null,
+  encryptionKey: null,
+  userKeys: null
+})
+
 export default {
   namespaced: true,
-  state: {
-    username: null,
-    digest: null,
-    userKeys: null
-  },
+  state: createInitialState(),
   getters: {
     hasLocalData: (state) => state.username !== null
   },
@@ -14,11 +18,20 @@ export default {
     setUsername (state, value) {
       state.username = value
     },
-    setDigest (state, value) {
-      state.digest = value
+    setParametrization (state, value) {
+      state.parametrization = value
+    },
+    setAuthDigest (state, value) {
+      state.authDigest = value
+    },
+    setEncryptionKey (state, value) {
+      state.encryptionKey = value
     },
     setUserKeys (state, value) {
       state.userKeys = value
+    },
+    setInitialValues (state) {
+      Object.assign(state, createInitialState())
     }
   },
   actions: {
@@ -26,17 +39,29 @@ export default {
       commit('setUsername', username)
     },
     purgeDepot ({ commit }) {
-      commit('setUsername', null)
+      commit('setInitialValues')
     },
-    async saveDigest ({ commit }, password) {
+    async savePassword ({ commit }, password) {
       let parametrization = await SodiumWrapper.generateArgon2Parametrization()
-      let digest = await SodiumWrapper.computeLocalDigest(
-        parametrization, password)
-      commit('setDigest', digest)
+      let {authDigest, encryptionKey} =
+        await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+          parametrization, password)
+      commit('setParametrization', parametrization)
+      commit('setAuthDigest', authDigest)
+      commit('setEncryptionKey', encryptionKey)
     },
-    async saveUserKeys ({ commit }, { encryptionKey, userKeys }) {
+    async verifyPassword ({ state }, password) {
+      let candidate = await SodiumWrapper.computeAuthDigest(
+        state.parametrization, password)
+      return state.authDigest === candidate
+    },
+    async saveUserKeys ({ commit, state }, { userKeys }) {
       commit('setUserKeys', await SodiumWrapper.encryptMessage(
-        encryptionKey, JSON.stringify(userKeys)))
+        state.encryptionKey, JSON.stringify(userKeys)))
+    },
+    async getUserKeys ({ state }) {
+      return JSON.parse(
+        await SodiumWrapper.decryptMessage(state.encryptionKey, state.userKeys))
     }
   }
 }
