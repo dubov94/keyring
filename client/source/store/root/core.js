@@ -1,7 +1,7 @@
 import Status from './status'
 
 export const state = {
-  status: Status.CONNECTING,
+  status: Status.OFFLINE,
   salt: null,
   encryptionKey: null,
   sessionKey: null,
