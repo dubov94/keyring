@@ -68,6 +68,7 @@ export default {
         commit('setStatus', Status.ONLINE)
         if (persist) {
           dispatch('depot/saveUsername', username)
+          await dispatch('depot/saveDigest', password)
         }
         return { success: true, requirements: payload.requirements }
       }
