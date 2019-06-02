@@ -17,7 +17,7 @@
           @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
           :autofocus="hasUsername"></form-text-field>
         <v-switch hide-details color="primary" label="Remember me"
-          v-model="persistanceSwitch"></v-switch>
+          v-model="persist"></v-switch>
       </v-form>
     </v-card-text>
     <v-card-actions>
@@ -31,19 +31,18 @@
 </template>
 
 <script>
-  import {mapActions} from 'vuex'
+  import {mapActions, mapGetters} from 'vuex'
   import {required} from 'vuelidate/lib/validators'
 
   export default {
     data () {
-      let storageUsername = this.$store.state.depot.username
-
+      let hasLocalData = this.$store.getters['depot/hasLocalData']
       return {
-        username: storageUsername === null ? '' : storageUsername,
+        username: hasLocalData ? this.$store.state.depot.username : '',
         password: '',
         requestInProgress: false,
         invalidPairs: [],
-        persistanceSwitch: storageUsername !== null
+        persist: hasLocalData
       }
     },
     validations: {
@@ -82,9 +81,11 @@
     methods: {
       ...mapActions({
         logIn: 'logIn',
-        rememberUsername: 'depot/rememberUsername',
-        forgetUsername: 'depot/forgetUsername',
+        purgeDepot: 'depot/purgeDepot',
         displaySnackbar: 'interface/displaySnackbar'
+      }),
+      ...mapGetters({
+        hasLocalData: 'depot/hasLocalData'
       }),
       async submit () {
         if (!this.requestInProgress) {
@@ -93,12 +94,12 @@
             try {
               this.requestInProgress = true
               let [username, password] = [this.username, this.password]
-              let { success, requirements } =
-                await this.logIn({ username, password })
+              let { success, requirements } = await this.logIn({
+                username,
+                password,
+                persist: this.persist
+              })
               if (success) {
-                if (this.persistanceSwitch) {
-                  this.rememberUsername(username)
-                }
                 if (requirements.length > 0) {
                   this.$router.replace('/set-up')
                 } else {
@@ -115,16 +116,15 @@
       }
     },
     watch: {
-      persistanceSwitch (value) {
+      persist (value) {
         if (value) {
           this.displaySnackbar({
             message: 'Okay, we will store your data locally after you log in.',
             timeout: 3000
           })
         } else {
-          let isUsernameInStore = this.$store.state.depot.username !== null
-          this.forgetUsername()
-          if (isUsernameInStore !== null) {
+          if (this.hasLocalData) {
+            this.purgeDepot()
             this.displaySnackbar({
               message: 'Alright, we deleted all your data from this device.',
               timeout: 3000

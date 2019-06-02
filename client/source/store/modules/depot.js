@@ -3,16 +3,19 @@ export default {
   state: {
     username: null
   },
+  getters: {
+    hasLocalData: (state) => state.username !== null
+  },
   mutations: {
     setUsername (state, value) {
       state.username = value
     }
   },
   actions: {
-    rememberUsername ({ commit }, username) {
+    saveUsername ({ commit }, username) {
       commit('setUsername', username)
     },
-    forgetUsername ({ commit }) {
+    purgeDepot ({ commit }) {
       commit('setUsername', null)
     }
   }
