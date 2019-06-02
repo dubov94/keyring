@@ -59,6 +59,10 @@ export default {
           sessionKey: payload.session_key,
           encryptionKey: encryptionKey
         })
+        if (persist) {
+          dispatch('depot/saveUsername', username)
+          await dispatch('depot/saveDigest', password)
+        }
         if (payload.requirements.length === 0) {
           await dispatch('acceptUserKeys', {
             userKeys: payload.key_set.items
@@ -66,10 +70,6 @@ export default {
         }
         commit('session/setUsername', username)
         commit('setStatus', Status.ONLINE)
-        if (persist) {
-          dispatch('depot/saveUsername', username)
-          await dispatch('depot/saveDigest', password)
-        }
         return { success: true, requirements: payload.requirements }
       }
     }
@@ -81,23 +81,34 @@ export default {
     commit('setSessionKey', sessionKey)
     commit('setEncryptionKey', encryptionKey)
   },
-  async acceptUserKeys ({ commit, state }, { userKeys }) {
+  async maybeSaveUserKeysInDepot ({ dispatch, getters, state }) {
+    if (getters['depot/hasLocalData']) {
+      await dispatch('depot/saveUserKeys', {
+        encryptionKey: state.encryptionKey,
+        userKeys: state.userKeys
+      })
+    }
+  },
+  async acceptUserKeys ({ commit, dispatch, state }, { userKeys }) {
     commit('setUserKeys', await Promise.all(
       userKeys.map(async ({ identifier, password }) =>
         Object.assign({ identifier }, await SodiumWrapper.decryptPassword(
           state.encryptionKey, password))
       )
     ))
+    await dispatch('maybeSaveUserKeysInDepot')
   },
-  async createUserKey ({ commit, state }, { value, tags }) {
+  async createUserKey ({ commit, dispatch, state }, { value, tags }) {
     let { data: response } =
       await axios.post('/api/administration/create-key', {
         password: await SodiumWrapper.encryptPassword(
           state.encryptionKey, { value, tags })
       }, { headers: createSessionHeader(state.sessionKey) })
     commit('unshiftUserKey', { identifier: response.identifier, value, tags })
+    await dispatch('maybeSaveUserKeysInDepot')
   },
-  async updateUserKey ({ commit, state }, { identifier, value, tags }) {
+  async updateUserKey (
+    { commit, dispatch, state }, { identifier, value, tags }) {
     await axios.put('/api/administration/update-key', {
       key: {
         identifier,
@@ -106,12 +117,14 @@ export default {
       }
     }, { headers: createSessionHeader(state.sessionKey) })
     commit('modifyUserKey', { identifier, value, tags })
+    await dispatch('maybeSaveUserKeysInDepot')
   },
-  async removeUserKey ({ commit, state }, { identifier }) {
+  async removeUserKey ({ commit, dispatch, state }, { identifier }) {
     await axios.post('/api/administration/delete-key', { identifier }, {
       headers: createSessionHeader(state.sessionKey)
     })
     commit('deleteUserKey', identifier)
+    await dispatch('maybeSaveUserKeysInDepot')
   },
   async changeMasterKey ({ dispatch, state }, { current, renewal }) {
     let curDigest = await SodiumWrapper.computeAuthDigest(state.salt, current)
