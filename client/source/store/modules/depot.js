@@ -4,7 +4,8 @@ export default {
   namespaced: true,
   state: {
     username: null,
-    digest: null
+    digest: null,
+    userKeys: null
   },
   getters: {
     hasLocalData: (state) => state.username !== null
@@ -15,6 +16,9 @@ export default {
     },
     setDigest (state, value) {
       state.digest = value
+    },
+    setUserKeys (state, value) {
+      state.userKeys = value
     }
   },
   actions: {
@@ -29,6 +33,10 @@ export default {
       let digest = await SodiumWrapper.computeLocalDigest(
         parametrization, password)
       commit('setDigest', digest)
+    },
+    async saveUserKeys ({ commit }, { encryptionKey, userKeys }) {
+      commit('setUserKeys', await SodiumWrapper.encryptMessage(
+        encryptionKey, JSON.stringify(userKeys)))
     }
   }
 }
