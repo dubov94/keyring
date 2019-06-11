@@ -12,16 +12,20 @@
       </v-form>
     </v-card-text>
     <v-card-actions>
-      <v-btn block color="primary" class="mx-4 mb-3"
+      <v-btn block color="primary" class="mx-4"
         :loading="requestInProgress" @click="submit">
         Continue
       </v-btn>
     </v-card-actions>
+    <v-layout justify-center py-2>
+      <a @click="cancel">Cancel</a>
+    </v-layout>
   </v-card>
 </template>
 
 <script>
   import {mapActions, mapGetters} from 'vuex'
+  import {purgeSessionStorageAndLoadLogIn} from '../../utilities'
 
   export default {
     data () {
@@ -75,6 +79,9 @@
             }
           }
         }
+      },
+      cancel () {
+        purgeSessionStorageAndLoadLogIn()
       }
     }
   }
