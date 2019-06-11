@@ -1,6 +1,3 @@
-<style scoped>
-</style>
-
 <template>
   <v-card>
     <v-toolbar color="primary" dark>
