@@ -1,21 +1,4 @@
-import Status from './status'
-
-export const state = {
-  status: Status.OFFLINE,
-  salt: null,
-  encryptionKey: null,
-  sessionKey: null,
-  userKeys: [],
-  isActive: false
-}
-
-export const getters = {
-  hasSessionKey: (state) => state.sessionKey !== null,
-  isOnline: (state) => state.status === Status.ONLINE,
-  isActive: (state) => state.isActive
-}
-
-export const mutations = {
+export default {
   setStatus (state, status) {
     state.status = status
   },

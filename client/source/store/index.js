@@ -1,7 +1,9 @@
-import {state, getters, mutations} from './root/core'
-import actions from './root/actions'
 import Interface from './modules/interface'
 import Depot from './modules/depot'
+import RootActions from './root/actions'
+import RootGetters from './root/getters'
+import RootMutations from './root/mutations'
+import RootState from './root/state'
 import Session from './modules/session'
 import Vue from 'vue'
 import Vuex from 'vuex'
@@ -21,10 +23,10 @@ const vuexSession = new VuexPersist({
 
 const store = new Vuex.Store({
   plugins: [vuexLocal.plugin, vuexSession.plugin],
-  state,
-  getters,
-  mutations,
-  actions,
+  state: RootState,
+  getters: RootGetters,
+  mutations: RootMutations,
+  actions: RootActions,
   modules: {
     interface: Interface,
     depot: Depot,
