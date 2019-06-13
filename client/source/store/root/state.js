@@ -6,5 +6,5 @@ export default {
   encryptionKey: null,
   sessionKey: null,
   userKeys: [],
-  isActive: false
+  isUserActive: false
 }

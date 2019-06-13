@@ -62,7 +62,7 @@ export default {
           }
           commit('session/setUsername', username)
           commit('setStatus', Status.ONLINE)
-          commit('setIsActive', true)
+          commit('setIsUserActive', true)
           return { success: true, requirements: payload.requirements }
         }
       }
@@ -77,7 +77,7 @@ export default {
       if (await dispatch('depot/verifyPassword', password)) {
         commit('session/setUsername', username)
         commit('setUserKeys', await dispatch('depot/getUserKeys'))
-        commit('setIsActive', true)
+        commit('setIsUserActive', true)
         dispatch(
           'attemptOnlineAuthentication',
           { username, password, persist }
