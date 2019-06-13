@@ -11,8 +11,8 @@ export default {
   setEncryptionKey (state, encryptionKey) {
     state.encryptionKey = encryptionKey
   },
-  setIsActive (state, value) {
-    state.isActive = value
+  setIsUserActive (state, value) {
+    state.isUserActive = value
   },
   setUserKeys (state, userKeys) {
     userKeys.sort((left, right) => {

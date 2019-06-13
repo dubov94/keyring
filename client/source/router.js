@@ -12,7 +12,7 @@ import store from './store'
 Vue.use(VueRouter)
 
 const sessionTokenPresenceGuard = (to, from, next) => {
-  if (store.getters.isActive) {
+  if (store.getters.isUserActive) {
     next()
   } else if (store.getters['session/hasEnoughDataToResume']) {
     next('/resume-session')
@@ -35,7 +35,7 @@ const router = new VueRouter({
     {
       path: '/',
       component: Authentication,
-      redirect: () => store.getters.isActive ? '/dashboard' : '/log-in',
+      redirect: () => store.getters.isUserActive ? '/dashboard' : '/log-in',
       children: [
         {
           path: 'log-in',
