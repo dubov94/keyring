@@ -1,8 +1,8 @@
 import axios from 'axios'
-import SodiumWrapper from '../../sodium.wrapper'
-import Status from './status'
-import {SESSION_TOKEN_HEADER_NAME} from '../../constants'
-import {purgeSessionStorageAndLoadLogIn} from '../../utilities'
+import SodiumWrapper from '../../../sodium.wrapper'
+import Status from '../status'
+import {SESSION_TOKEN_HEADER_NAME} from '../../../constants'
+import {purgeSessionStorageAndLoadLogIn} from '../../../utilities'
 
 const createSessionHeader = (sessionKey) => ({
   [SESSION_TOKEN_HEADER_NAME]: sessionKey
