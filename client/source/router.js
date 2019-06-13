@@ -11,17 +11,21 @@ import store from './store'
 
 Vue.use(VueRouter)
 
-const sessionTokenPresenceGuard = (to, from, next) => {
+const getPathIfNeedsAuth = (path) => {
   if (store.getters.isUserActive) {
-    next()
+    return path
   } else if (store.getters['session/hasEnoughDataToResume']) {
-    next('/resume-session')
+    return '/resume-session'
   } else {
-    next('/log-in')
+    return '/log-in'
   }
 }
 
-const sessionResumptionDataGuard = (to, from, next) => {
+const activeUserGuard = (to, from, next) => {
+  next(getPathIfNeedsAuth(undefined))
+}
+
+const idleSessionGuard = (to, from, next) => {
   if (store.getters['session/hasEnoughDataToResume']) {
     next()
   } else {
@@ -35,7 +39,7 @@ const router = new VueRouter({
     {
       path: '/',
       component: Authentication,
-      redirect: () => store.getters.isUserActive ? '/dashboard' : '/log-in',
+      redirect: () => getPathIfNeedsAuth('/dashboard'),
       children: [
         {
           path: 'log-in',
@@ -48,22 +52,22 @@ const router = new VueRouter({
         {
           path: 'set-up',
           component: SetUp,
-          beforeEnter: sessionTokenPresenceGuard
+          beforeEnter: activeUserGuard
         },
         {
           path: 'resume-session',
           component: ResumeSession,
-          beforeEnter: sessionResumptionDataGuard
+          beforeEnter: idleSessionGuard
         }
       ]
     }, {
       path: '/dashboard',
       component: Dashboard,
-      beforeEnter: sessionTokenPresenceGuard
+      beforeEnter: activeUserGuard
     }, {
       path: '/settings',
       component: Settings,
-      beforeEnter: sessionTokenPresenceGuard
+      beforeEnter: activeUserGuard
     }, {
       path: '*',
       redirect: () => '/'
