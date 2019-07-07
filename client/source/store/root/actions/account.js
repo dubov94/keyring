@@ -4,7 +4,8 @@ import {createSessionHeader} from './utilities'
 
 export default {
   async changeMasterKey ({ dispatch, state }, { current, renewal }) {
-    let curDigest = await SodiumWrapper.computeAuthDigest(state.salt, current)
+    let curDigest = await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+      state.salt, current).authDigest
     let newSalt = await SodiumWrapper.generateArgon2Parametrization()
     let {authDigest, encryptionKey} =
       await SodiumWrapper.computeAuthDigestAndEncryptionKey(newSalt, renewal)
@@ -39,7 +40,8 @@ export default {
   async changeUsername ({ commit, state }, { username, password }) {
     let { data: { error } } =
       await axios.put('/api/administration/change-username', {
-        digest: await SodiumWrapper.computeAuthDigest(state.salt, password),
+        digest: await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+          state.salt, password).authDigest,
         username
       }, {
         headers: createSessionHeader(state.sessionKey)
@@ -55,7 +57,8 @@ export default {
   async deleteAccount ({ state }, { password }) {
     return (
       await axios.post('/api/administration/delete-account', {
-        digest: await SodiumWrapper.computeAuthDigest(state.salt, password)
+        digest: await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+          state.salt, password).authDigest
       }, {
         headers: createSessionHeader(state.sessionKey)
       })

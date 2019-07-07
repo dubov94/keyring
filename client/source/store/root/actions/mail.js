@@ -6,7 +6,8 @@ export default {
   async acquireMailToken ({ state }, { mail, password }) {
     return (
       await axios.post('/api/administration/acquire-mail-token', {
-        digest: await SodiumWrapper.computeAuthDigest(state.salt, password),
+        digest: await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+          state.salt, password).authDigest,
         mail
       }, {
         headers: createSessionHeader(state.sessionKey)

@@ -18,11 +18,6 @@ export default {
         parametrization, password)
     return this.extractAuthDigestAndEncryptionKey(hash)
   },
-  async computeAuthDigest (parametrization, password) {
-    return (
-      await this.computeAuthDigestAndEncryptionKey(parametrization, password)
-    ).authDigest
-  },
   encryptMessage (encryptionKey, message) {
     return sodiumWorker.encryptMessage(encryptionKey, message)
   },

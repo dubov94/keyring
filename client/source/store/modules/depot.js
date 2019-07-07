@@ -51,8 +51,8 @@ export default {
       commit('setEncryptionKey', encryptionKey)
     },
     async verifyPassword ({ state }, password) {
-      let candidate = await SodiumWrapper.computeAuthDigest(
-        state.parametrization, password)
+      let candidate = await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+        state.parametrization, password).authDigest
       return state.authDigest === candidate
     },
     async saveUserKeys ({ commit, state }, { userKeys }) {
