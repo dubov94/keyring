@@ -122,6 +122,7 @@
         } else {
           if (this.hasLocalData) {
             this.purgeDepot()
+            this.invalidPairs.splice(0)
             this.displaySnackbar({
               message: 'Alright, we deleted all your data from this device.',
               timeout: 3000
