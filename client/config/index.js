@@ -16,7 +16,7 @@ module.exports = {
     // report after build finishes: `npm run build --report`. Set to `true` or
     // `false` to always turn it on or off.
     bundleAnalyzerReport: process.env.npm_config_report,
-    enableSwPrecache: false
+    enableSwPrecache: true
   },
   dev: {
     env: require('./dev.env'),
