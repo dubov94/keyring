@@ -23,12 +23,14 @@ export const applyAttachVersionHeaderOnRequest = () => {
 
 export const applyShowToastOnRequestError = () => {
   axios.interceptors.response.use(undefined, (error) => {
+    let message = 'Network is unavailable'
     if (error.response) {
-      store.dispatch('interface/displaySnackbar', {
-        message: `Error response: ${error.response.status}!`,
-        timeout: 1500
-      })
+      message = `Error response: ${error.response.status}!`
     }
+    store.dispatch('interface/displaySnackbar', {
+      message: message,
+      timeout: 1500
+    })
     return Promise.reject(error)
   })
 }
