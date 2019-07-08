@@ -114,7 +114,7 @@
         displaySnackbar: 'interface/displaySnackbar'
       }),
       async acquireToken () {
-        if (!this.requestInProgress) {
+        if (this.isOnline && !this.requestInProgress) {
           this.$v.requestGroup.$touch()
           if (!this.$v.requestGroup.$invalid) {
             try {
@@ -136,7 +136,7 @@
         }
       },
       async releaseToken () {
-        if (!this.requestInProgress) {
+        if (this.isOnline && !this.requestInProgress) {
           this.$v.code.$touch()
           if (!this.$v.code.$invalid) {
             try {
