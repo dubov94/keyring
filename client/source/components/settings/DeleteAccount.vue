@@ -51,7 +51,7 @@
         deleteAccount: 'deleteAccount'
       }),
       async submit () {
-        if (!this.requestInProgress) {
+        if (this.isOnline && !this.requestInProgress) {
           this.$v.$touch()
           if (!this.$v.$invalid) {
             try {
