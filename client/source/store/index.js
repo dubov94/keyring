@@ -21,8 +21,15 @@ const vuexSession = new VuexPersist({
   modules: ['session']
 })
 
+const depotKeySync = (store) => {
+  store.watch(
+    (state) => state.userKeys,
+    () => { store.dispatch('updateDepotKeys') }
+  )
+}
+
 const store = new Vuex.Store({
-  plugins: [vuexLocal.plugin, vuexSession.plugin],
+  plugins: [vuexLocal.plugin, vuexSession.plugin, depotKeySync],
   state: RootState,
   getters: RootGetters,
   mutations: RootMutations,
