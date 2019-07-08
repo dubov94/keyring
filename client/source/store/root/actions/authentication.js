@@ -47,15 +47,15 @@ export default {
           commit('setParametrization', parametrization)
           commit('setRemoteEncryptionKey', encryptionKey)
           commit('setSessionKey', payload.session_key)
+          // Ignore `persist` if there are any requirements.
           if (payload.requirements.length === 0) {
-            // Ignore if there are any requirements.
             if (persist) {
               await dispatch('depot/saveUsername', username)
               await dispatch('depot/saveAuthDigest', password)
               commit('setDepotEncryptionKey', await dispatch(
                 'depot/computeEncryptionKey', password))
-              await dispatch('updateDepotKeys')
             }
+            // Also triggers depot key synchronization.
             await dispatch('acceptUserKeys', {
               userKeys: payload.key_set.items
             })
@@ -83,6 +83,7 @@ export default {
           commit('setUserKeys', await dispatch('depot/getUserKeys', {
             encryptionKey: state.depotEncryptionKey
           }))
+          commit('setStatus', Status.OFFLINE)
           commit('setIsUserActive', true)
           dispatch(
             'attemptOnlineAuthentication',
