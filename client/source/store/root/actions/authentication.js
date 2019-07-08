@@ -63,11 +63,15 @@ export default {
           commit('session/setUsername', username)
           commit('setStatus', Status.ONLINE)
           commit('setIsUserActive', true)
-          return { success: true, requirements: payload.requirements }
+          return {
+            success: true,
+            local: false,
+            requirements: payload.requirements
+          }
         }
       }
       commit('setStatus', Status.OFFLINE)
-      return { success: false }
+      return { success: false, local: false }
     } catch (error) {
       commit('setStatus', Status.OFFLINE)
       throw new Error('Network is unavailable')
@@ -95,9 +99,9 @@ export default {
               purgeSessionStorageAndLoadLogIn()
             }
           })
-          return { success: true, requirements: [] }
+          return { success: true, local: true, requirements: [] }
         } else {
-          return { success: false }
+          return { success: false, local: true }
         }
       } else {
         await dispatch('depot/purgeDepot')

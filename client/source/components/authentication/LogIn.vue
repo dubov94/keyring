@@ -91,7 +91,7 @@
             try {
               this.requestInProgress = true
               let [username, password] = [this.username, this.password]
-              let { success, requirements } = await this.logIn({
+              let { success, local, requirements } = await this.logIn({
                 username,
                 password,
                 persist: this.persist
@@ -104,6 +104,12 @@
                 }
               } else {
                 this.invalidPairs.push({ username, password })
+                if (local) {
+                  this.displaySnackbar({
+                    message: 'Changed the password recently? Toggle \'Remember me\' twice.',
+                    timeout: 3000
+                  })
+                }
               }
             } finally {
               this.requestInProgress = false
