@@ -66,10 +66,11 @@ export default {
           return { success: true, requirements: payload.requirements }
         }
       }
+      commit('setStatus', Status.OFFLINE)
       return { success: false }
     } catch (error) {
       commit('setStatus', Status.OFFLINE)
-      throw error
+      throw new Error('Network is unavailable')
     }
   },
   async logIn (
