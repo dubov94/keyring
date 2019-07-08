@@ -3,17 +3,19 @@ import SodiumWrapper from '../../../sodium.wrapper'
 import {createSessionHeader} from './utilities'
 
 export default {
-  async changeMasterKey ({ dispatch, state }, { current, renewal }) {
-    let curDigest = await SodiumWrapper.computeAuthDigestAndEncryptionKey(
-      state.salt, current).authDigest
-    let newSalt = await SodiumWrapper.generateArgon2Parametrization()
+  async changeMasterKey (
+    { commit, dispatch, getters, state }, { current, renewal }) {
+    let curDigest = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+      state.parametrization, current)).authDigest
+    let newParametrization = await SodiumWrapper.generateArgon2Parametrization()
     let {authDigest, encryptionKey} =
-      await SodiumWrapper.computeAuthDigestAndEncryptionKey(newSalt, renewal)
+      await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+        newParametrization, renewal)
     let { data: response } =
       await axios.post('/api/administration/change-master-key', {
         current_digest: curDigest,
         renewal: {
-          salt: newSalt,
+          salt: newParametrization,
           digest: authDigest,
           keys: await Promise.all(state.userKeys.map(async (key) => ({
             identifier: key.identifier,
@@ -27,28 +29,31 @@ export default {
         headers: createSessionHeader(state.sessionKey)
       })
     if (response.error === 'NONE') {
-      dispatch('importCredentials', {
-        salt: newSalt,
-        sessionKey: response.session_key,
-        encryptionKey: encryptionKey
-      })
-      await dispatch('depot/savePassword', renewal)
-      await dispatch('maybeSaveUserKeysInDepot')
+      commit('setParametrization', newParametrization)
+      commit('setSessionKey', response.session_key)
+      commit('setRemoteEncryptionKey', encryptionKey)
+      if (getters['depot/hasLocalData']) {
+        await dispatch('depot/saveAuthDigest', renewal)
+        commit('setDepotEncryptionKey', await dispatch(
+          'depot/computeEncryptionKey', renewal))
+        await dispatch('updateDepotKeys')
+      }
     }
     return response.error
   },
-  async changeUsername ({ commit, state }, { username, password }) {
+  async changeUsername (
+    { commit, dispatch, getters, state }, { username, password }) {
     let { data: { error } } =
       await axios.put('/api/administration/change-username', {
-        digest: await SodiumWrapper.computeAuthDigestAndEncryptionKey(
-          state.salt, password).authDigest,
+        digest: (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+          state.parametrization, password)).authDigest,
         username
       }, {
         headers: createSessionHeader(state.sessionKey)
       })
     if (error === 'NONE') {
-      if (state.depot.username === state.session.username) {
-        commit('depot/setUsername', username)
+      if (getters['depot/hasLocalData']) {
+        await dispatch('depot/saveUsername', username)
       }
       commit('session/setUsername', username)
     }
@@ -57,8 +62,8 @@ export default {
   async deleteAccount ({ state }, { password }) {
     return (
       await axios.post('/api/administration/delete-account', {
-        digest: await SodiumWrapper.computeAuthDigestAndEncryptionKey(
-          state.salt, password).authDigest
+        digest: (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+          state.parametrization, password)).authDigest
       }, {
         headers: createSessionHeader(state.sessionKey)
       })

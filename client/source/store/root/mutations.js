@@ -2,14 +2,17 @@ export default {
   setStatus (state, status) {
     state.status = status
   },
-  setSalt (state, salt) {
-    state.salt = salt
+  setParametrization (state, parametrization) {
+    state.parametrization = parametrization
   },
   setSessionKey (state, sessionKey) {
     state.sessionKey = sessionKey
   },
-  setEncryptionKey (state, encryptionKey) {
-    state.encryptionKey = encryptionKey
+  setRemoteEncryptionKey (state, value) {
+    state.remoteEncryptionKey = value
+  },
+  setDepotEncryptionKey (state, value) {
+    state.depotEncryptionKey = value
   },
   setIsUserActive (state, value) {
     state.isUserActive = value

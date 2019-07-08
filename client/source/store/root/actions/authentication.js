@@ -4,7 +4,7 @@ import Status from '../status'
 import {purgeSessionStorageAndLoadLogIn} from '../../../utilities'
 
 export default {
-  async register ({ commit, dispatch }, { username, password, mail }) {
+  async register ({ commit }, { username, password, mail }) {
     let parametrization = await SodiumWrapper.generateArgon2Parametrization()
     let {authDigest, encryptionKey} =
       await SodiumWrapper.computeAuthDigestAndEncryptionKey(
@@ -17,13 +17,12 @@ export default {
         mail
       })
     if (response.error === 'NONE') {
-      dispatch('importCredentials', {
-        salt: parametrization,
-        sessionKey: response.session_key,
-        encryptionKey: encryptionKey
-      })
+      commit('setParametrization', parametrization)
+      commit('setRemoteEncryptionKey', encryptionKey)
+      commit('setSessionKey', response.session_key)
       commit('session/setUsername', username)
       commit('setStatus', Status.ONLINE)
+      commit('setIsUserActive', true)
     }
     return response.error
   },
@@ -34,10 +33,10 @@ export default {
       let { data: saltResponse } =
         await axios.get(`/api/authentication/get-salt/${username}`)
       if (saltResponse.error === 'NONE') {
-        let { salt } = saltResponse
+        let { salt: parametrization } = saltResponse
         let {authDigest, encryptionKey} =
           await SodiumWrapper.computeAuthDigestAndEncryptionKey(
-            salt, password)
+            parametrization, password)
         let { data: authResponse } =
           await axios.post('/api/authentication/log-in', {
             username,
@@ -45,16 +44,17 @@ export default {
           })
         if (authResponse.error === 'NONE') {
           let { payload } = authResponse
-          dispatch('importCredentials', {
-            salt,
-            sessionKey: payload.session_key,
-            encryptionKey: encryptionKey
-          })
+          commit('setParametrization', parametrization)
+          commit('setRemoteEncryptionKey', encryptionKey)
+          commit('setSessionKey', payload.session_key)
           if (payload.requirements.length === 0) {
             // Ignore if there are any requirements.
             if (persist) {
-              dispatch('depot/saveUsername', username)
-              await dispatch('depot/savePassword', password)
+              await dispatch('depot/saveUsername', username)
+              await dispatch('depot/saveAuthDigest', password)
+              commit('setDepotEncryptionKey', await dispatch(
+                'depot/computeEncryptionKey', password))
+              await dispatch('updateDepotKeys')
             }
             await dispatch('acceptUserKeys', {
               userKeys: payload.key_set.items
@@ -66,41 +66,41 @@ export default {
           return { success: true, requirements: payload.requirements }
         }
       }
+      return { success: false }
     } catch (error) {
       commit('setStatus', Status.OFFLINE)
       throw error
     }
-    return { success: false }
   },
-  async logIn ({ commit, dispatch, getters }, { username, password, persist }) {
+  async logIn ({ commit, dispatch, getters, state }, { username, password, persist }) {
     if (getters['depot/hasLocalData']) {
-      if (await dispatch('depot/verifyPassword', password)) {
-        commit('session/setUsername', username)
-        commit('setUserKeys', await dispatch('depot/getUserKeys'))
-        commit('setIsUserActive', true)
-        dispatch(
-          'attemptOnlineAuthentication',
-          { username, password, persist }
-        ).then(async ({ success }) => {
-          if (!success) {
-            await dispatch('depot/purgeDepot')
-            purgeSessionStorageAndLoadLogIn()
-          }
-        })
-        return { success: true, requirements: [] }
+      if (state.depot.username === username) {
+        if (await dispatch('depot/verifyPassword', password)) {
+          commit('session/setUsername', username)
+          commit('setDepotEncryptionKey', await dispatch(
+            'depot/computeEncryptionKey', password))
+          commit('setUserKeys', await dispatch('depot/getUserKeys', {
+            encryptionKey: state.depotEncryptionKey
+          }))
+          commit('setIsUserActive', true)
+          dispatch(
+            'attemptOnlineAuthentication',
+            { username, password, persist }
+          ).then(async ({ success }) => {
+            if (!success) {
+              await dispatch('depot/purgeDepot')
+              purgeSessionStorageAndLoadLogIn()
+            }
+          })
+          return { success: true, requirements: [] }
+        } else {
+          return { success: false }
+        }
       } else {
-        return { success: false }
+        await dispatch('depot/purgeDepot')
       }
-    } else {
-      return await dispatch(
-        'attemptOnlineAuthentication',
-        { username, password, persist }
-      )
     }
-  },
-  importCredentials ({ commit }, { salt, sessionKey, encryptionKey }) {
-    commit('setSalt', salt)
-    commit('setSessionKey', sessionKey)
-    commit('setEncryptionKey', encryptionKey)
+    return await dispatch(
+      'attemptOnlineAuthentication', { username, password, persist })
   }
 }
