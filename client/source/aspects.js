@@ -23,10 +23,12 @@ export const applyAttachVersionHeaderOnRequest = () => {
 
 export const applyShowToastOnRequestError = () => {
   axios.interceptors.response.use(undefined, (error) => {
-    store.dispatch('interface/displaySnackbar', {
-      message: `Error response: ${error.response.status}!`,
-      timeout: 1500
-    })
+    if (error.response) {
+      store.dispatch('interface/displaySnackbar', {
+        message: `Error response: ${error.response.status}!`,
+        timeout: 1500
+      })
+    }
     return Promise.reject(error)
   })
 }
