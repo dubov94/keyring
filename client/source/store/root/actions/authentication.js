@@ -72,7 +72,8 @@ export default {
       throw error
     }
   },
-  async logIn ({ commit, dispatch, getters, state }, { username, password, persist }) {
+  async logIn (
+    { commit, dispatch, getters, state }, { username, password, persist }) {
     if (getters['depot/hasLocalData']) {
       if (state.depot.username === username) {
         if (await dispatch('depot/verifyPassword', password)) {
