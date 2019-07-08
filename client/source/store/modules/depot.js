@@ -38,6 +38,7 @@ export default {
       commit('setInitialValues')
     },
     async saveAuthDigest ({ commit }, password) {
+      // Regenerate parametrization on every synchronization.
       let parametrization = await SodiumWrapper.generateArgon2Parametrization()
       let authDigest = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
           parametrization, password)).authDigest
