@@ -8,7 +8,9 @@ import {
 
 export const applySaveRouteOnNavigation = () => {
   router.afterEach((to, from) => {
-    store.commit('session/setLastRoute', from.path)
+    if (!to.meta.interstitial) {
+      store.commit('session/setLastRoute', to.path)
+    }
   })
 }
 
