@@ -147,6 +147,12 @@
         chips: []
       }
     },
+    mounted () {
+      window.addEventListener('beforeunload', this.onBeforeUnload)
+    },
+    beforeDestroy () {
+      window.removeEventListener('beforeunload', this.onBeforeUnload)
+    },
     computed: {
       ...mapGetters({
         isOnline: 'isOnline'
@@ -177,13 +183,24 @@
       doDiscard () {
         this.closeEditor()
       },
-      maybeDiscard () {
+      hasChanges () {
         let state = this.getDefaultState()
-        if (this.secret === state.value &&
-          areArraysEqual(this.chips, state.tags)) {
-          this.closeEditor()
-        } else {
+        return !(this.secret === state.value &&
+          areArraysEqual(this.chips, state.tags))
+      },
+      maybeDiscard () {
+        if (this.hasChanges()) {
           this.discardConfirmation = true
+        } else {
+          this.closeEditor()
+        }
+      },
+      onBeforeUnload (event) {
+        if (this.isVisible && this.hasChanges()) {
+          event.returnValue = true
+          return true
+        } else {
+          return null
         }
       },
       async copySecret () {
