@@ -4,7 +4,6 @@ const createInitialState = () => ({
   username: null,
   parametrization: null,
   authDigest: null,
-  encryptionKey: null,
   userKeys: null
 })
 
@@ -24,9 +23,6 @@ export default {
     setAuthDigest (state, value) {
       state.authDigest = value
     },
-    setEncryptionKey (state, value) {
-      state.encryptionKey = value
-    },
     setUserKeys (state, value) {
       state.userKeys = value
     },
@@ -41,27 +37,29 @@ export default {
     purgeDepot ({ commit }) {
       commit('setInitialValues')
     },
-    async savePassword ({ commit }, password) {
+    async saveAuthDigest ({ commit }, password) {
       let parametrization = await SodiumWrapper.generateArgon2Parametrization()
-      let {authDigest, encryptionKey} =
-        await SodiumWrapper.computeAuthDigestAndEncryptionKey(
-          parametrization, password)
+      let authDigest = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+          parametrization, password)).authDigest
       commit('setParametrization', parametrization)
       commit('setAuthDigest', authDigest)
-      commit('setEncryptionKey', encryptionKey)
     },
     async verifyPassword ({ state }, password) {
-      let candidate = await SodiumWrapper.computeAuthDigestAndEncryptionKey(
-        state.parametrization, password).authDigest
+      let candidate = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+        state.parametrization, password)).authDigest
       return state.authDigest === candidate
     },
-    async saveUserKeys ({ commit, state }, { userKeys }) {
+    async saveUserKeys ({ commit }, { encryptionKey, userKeys }) {
       commit('setUserKeys', await SodiumWrapper.encryptMessage(
-        state.encryptionKey, JSON.stringify(userKeys)))
+        encryptionKey, JSON.stringify(userKeys)))
     },
-    async getUserKeys ({ state }) {
-      return JSON.parse(
-        await SodiumWrapper.decryptMessage(state.encryptionKey, state.userKeys))
+    async getUserKeys ({ state }, { encryptionKey }) {
+      return JSON.parse(await SodiumWrapper.decryptMessage(
+        encryptionKey, state.userKeys))
+    },
+    async computeEncryptionKey ({ state }, password) {
+      return (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+        state.parametrization, password)).encryptionKey
     }
   }
 }
