@@ -57,7 +57,8 @@ const router = new VueRouter({
         {
           path: 'resume-session',
           component: ResumeSession,
-          beforeEnter: idleSessionGuard
+          beforeEnter: idleSessionGuard,
+          meta: { interstitial: true }
         }
       ]
     }, {
