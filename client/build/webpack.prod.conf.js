@@ -112,8 +112,12 @@ if (config.build.enableSwPrecache) {
     new SWPrecacheWebpackPlugin({
       cacheId: 'keyring',
       filename: 'service-worker.js',
-      staticFileGlobs: ['dist/**/*.{js,html,css}'],
       minify: true,
+      navigateFallback: 'entry.html',
+      staticFileGlobs: [
+        'dist/entry.html',
+        'dist/**/*.{js,html,css}'
+      ],
       stripPrefix: 'dist/'
     })
   )
