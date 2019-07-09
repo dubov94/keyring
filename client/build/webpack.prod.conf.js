@@ -114,10 +114,7 @@ if (config.build.enableSwPrecache) {
       filename: 'service-worker.js',
       minify: true,
       navigateFallback: 'entry.html',
-      staticFileGlobs: [
-        'dist/entry.html',
-        'dist/**/*.{js,html,css}'
-      ],
+      staticFileGlobs: ['dist/**/*'],
       stripPrefix: 'dist/'
     })
   )
