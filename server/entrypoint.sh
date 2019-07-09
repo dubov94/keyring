@@ -1,3 +1,5 @@
+#!/bin/bash
+
 echo 'Converting secrets into environment variables...'
 for path in /run/secrets/*
 do
