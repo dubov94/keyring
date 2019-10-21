@@ -42,13 +42,12 @@ applyFreezeWhenPageIsHidden()
 sodium.ready.then(() =>
   /* eslint-disable no-new */
   new Vue({
-    el: '#application',
+    render: h => h(Application),
     router,
     store,
-    components: { Application },
     i18n: new VueI18n({
       locale: 'en',
       messages: Messages
     })
-  })
+  }).$mount('#application')
 )
