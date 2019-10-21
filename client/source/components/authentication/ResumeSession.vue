@@ -43,6 +43,9 @@
       }
     },
     computed: {
+      ...mapGetters({
+        hasLocalData: 'depot/hasLocalData'
+      }),
       passwordErrors () {
         return {
           [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
@@ -52,9 +55,6 @@
     methods: {
       ...mapActions({
         logIn: 'logIn'
-      }),
-      ...mapGetters({
-        hasLocalData: 'depot/hasLocalData'
       }),
       async submit () {
         if (!this.requestInProgress) {

@@ -60,6 +60,9 @@
       credentialsGroup: ['username', 'password']
     },
     computed: {
+      ...mapGetters({
+        hasLocalData: 'depot/hasLocalData'
+      }),
       hasUsername () {
         return this.username !== ''
       },
@@ -80,9 +83,6 @@
         logIn: 'logIn',
         purgeDepot: 'depot/purgeDepot',
         displaySnackbar: 'interface/displaySnackbar'
-      }),
-      ...mapGetters({
-        hasLocalData: 'depot/hasLocalData'
       }),
       async submit () {
         if (!this.requestInProgress) {
