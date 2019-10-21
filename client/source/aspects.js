@@ -72,6 +72,7 @@ export const applyFreezeWhenPageIsHidden = () => {
     if (document.hidden) {
       visibilityTimer = setTimeout(() => {
         if (store.getters.isUserActive) {
+          // May trigger `beforeunload` if the editor is open.
           location.reload()
         }
       }, SESSION_LIFETIME_IN_MILLIS)
