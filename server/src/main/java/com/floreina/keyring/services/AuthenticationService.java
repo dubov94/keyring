@@ -98,17 +98,16 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         payloadBuilder.setSessionKey(sessionKey);
         if (user.getMail() == null) {
           payloadBuilder.addRequirements(LogInResponse.Payload.Requirement.MAIL);
-        } else {
-          payloadBuilder.setKeySet(
-              LogInResponse.Payload.KeySet.newBuilder()
-                  .addAllItems(
-                      keyOperationsInterface
-                          .readKeys(user.getIdentifier())
-                          .stream()
-                          .map(Utilities::entityToIdentifiedKey)
-                          .collect(toList()))
-                  .build());
         }
+        payloadBuilder.setKeySet(
+            LogInResponse.Payload.KeySet.newBuilder()
+                .addAllItems(
+                    keyOperationsInterface
+                        .readKeys(user.getIdentifier())
+                        .stream()
+                        .map(Utilities::entityToIdentifiedKey)
+                        .collect(toList()))
+                .build());
         response.onNext(LogInResponse.newBuilder().setPayload(payloadBuilder.build()).build());
       }
     }

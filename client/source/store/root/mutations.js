@@ -8,8 +8,8 @@ export default {
   setSessionKey (state, sessionKey) {
     state.sessionKey = sessionKey
   },
-  setRemoteEncryptionKey (state, value) {
-    state.remoteEncryptionKey = value
+  setEncryptionKey (state, value) {
+    state.encryptionKey = value
   },
   setDepotEncryptionKey (state, value) {
     state.depotEncryptionKey = value

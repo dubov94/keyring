@@ -18,7 +18,7 @@ export default {
       })
     if (response.error === 'NONE') {
       commit('setParametrization', parametrization)
-      commit('setRemoteEncryptionKey', encryptionKey)
+      commit('setEncryptionKey', encryptionKey)
       commit('setSessionKey', response.session_key)
       commit('session/setUsername', username)
       commit('setStatus', Status.ONLINE)
@@ -27,7 +27,7 @@ export default {
     return response.error
   },
   async attemptOnlineAuthentication (
-    { commit, dispatch }, { username, password, persist }) {
+    { commit, dispatch, state }, { username, password, persist }) {
     try {
       commit('setStatus', Status.CONNECTING)
       let { data: saltResponse } =
@@ -45,19 +45,14 @@ export default {
         if (authResponse.error === 'NONE') {
           let { payload } = authResponse
           commit('setParametrization', parametrization)
-          commit('setRemoteEncryptionKey', encryptionKey)
+          commit('setEncryptionKey', encryptionKey)
+          await dispatch('acceptUserKeys', { userKeys: payload.key_set.items })
           commit('setSessionKey', payload.session_key)
-          // Ignore `persist` if there are any requirements.
-          if (payload.requirements.length === 0) {
-            if (persist) {
-              await dispatch('depot/saveUsername', username)
-              await dispatch('depot/saveAuthDigest', password)
-              commit('setDepotEncryptionKey', await dispatch(
-                'depot/computeEncryptionKey', password))
-            }
-            // Also triggers depot key synchronization.
-            await dispatch('acceptUserKeys', {
-              userKeys: payload.key_set.items
+          if (persist) {
+            commit('depot/setUsername', username)
+            await dispatch('depot/maybeUpdateDepot', {
+              password,
+              userKeys: state.userKeys
             })
           }
           commit('session/setUsername', username)
@@ -83,11 +78,8 @@ export default {
       if (state.depot.username === username) {
         if (await dispatch('depot/verifyPassword', password)) {
           commit('session/setUsername', username)
-          commit('setDepotEncryptionKey', await dispatch(
-            'depot/computeEncryptionKey', password))
-          commit('setUserKeys', await dispatch('depot/getUserKeys', {
-            encryptionKey: state.depotEncryptionKey
-          }))
+          await dispatch('depot/computeEncryptionKey', password)
+          commit('setUserKeys', await dispatch('depot/getUserKeys'))
           commit('setStatus', Status.OFFLINE)
           commit('setIsUserActive', true)
           dispatch(

@@ -4,8 +4,13 @@ const createInitialState = () => ({
   username: null,
   parametrization: null,
   authDigest: null,
+  encryptionKey: null,
   userKeys: null
 })
+
+const isPresent = (value) => value !== undefined
+
+const convertUserKeysToVault = (userKeys) => JSON.stringify(userKeys)
 
 export default {
   namespaced: true,
@@ -14,6 +19,9 @@ export default {
     hasLocalData: (state) => state.username !== null
   },
   mutations: {
+    setInitialValues (state) {
+      Object.assign(state, createInitialState())
+    },
     setUsername (state, value) {
       state.username = value
     },
@@ -23,44 +31,58 @@ export default {
     setAuthDigest (state, value) {
       state.authDigest = value
     },
+    setEncryptionKey (state, value) {
+      state.encryptionKey = value
+    },
     setUserKeys (state, value) {
       state.userKeys = value
-    },
-    setInitialValues (state) {
-      Object.assign(state, createInitialState())
     }
   },
   actions: {
-    saveUsername ({ commit }, username) {
-      commit('setUsername', username)
-    },
     purgeDepot ({ commit }) {
       commit('setInitialValues')
-    },
-    async saveAuthDigest ({ commit }, password) {
-      // Regenerate parametrization on every synchronization.
-      let parametrization = await SodiumWrapper.generateArgon2Parametrization()
-      let authDigest = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
-          parametrization, password)).authDigest
-      commit('setParametrization', parametrization)
-      commit('setAuthDigest', authDigest)
     },
     async verifyPassword ({ state }, password) {
       let candidate = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
         state.parametrization, password)).authDigest
       return state.authDigest === candidate
     },
-    async saveUserKeys ({ commit }, { encryptionKey, userKeys }) {
-      commit('setUserKeys', await SodiumWrapper.encryptMessage(
-        encryptionKey, JSON.stringify(userKeys)))
+    async computeEncryptionKey ({ commit, state }, password) {
+      commit('setEncryptionKey',
+        (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+          state.parametrization, password)).encryptionKey)
     },
-    async getUserKeys ({ state }, { encryptionKey }) {
+    async getUserKeys ({ state }) {
       return JSON.parse(await SodiumWrapper.decryptMessage(
-        encryptionKey, state.userKeys))
+        state.encryptionKey, state.userKeys))
     },
-    async computeEncryptionKey ({ state }, password) {
-      return (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
-        state.parametrization, password)).encryptionKey
+    async maybeUpdateDepot (
+      { commit, state, getters }, { password, userKeys }) {
+      if (getters.hasLocalData) {
+        if (isPresent(password)) {
+          if (!isPresent(userKeys)) {
+            throw new Error('Expected `userKeys` to be present.')
+          }
+          let parametrization =
+            await SodiumWrapper.generateArgon2Parametrization()
+          let {authDigest, encryptionKey} =
+            await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+              parametrization, password)
+          let vault = await SodiumWrapper.encryptMessage(
+            encryptionKey, convertUserKeysToVault(userKeys))
+          commit('setParametrization', parametrization)
+          commit('setAuthDigest', authDigest)
+          commit('setEncryptionKey', encryptionKey)
+          commit('setUserKeys', vault)
+        } else if (isPresent(userKeys)) {
+          if (state.encryptionKey === null) {
+            throw new Error('Expected `state.encryptionKey` not to be `null`.')
+          }
+          let vault = await SodiumWrapper.encryptMessage(
+            state.encryptionKey, convertUserKeysToVault(userKeys))
+          commit('setUserKeys', vault)
+        }
+      }
     }
   }
 }

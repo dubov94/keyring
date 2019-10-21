@@ -13,7 +13,14 @@ Vue.use(Vuex)
 
 const vuexLocal = new VuexPersist({
   storage: localStorage,
-  modules: ['depot']
+  reducer: (state) => ({
+    depot: {
+      username: state.depot.username,
+      parametrization: state.depot.parametrization,
+      authDigest: state.depot.authDigest,
+      userKeys: state.depot.userKeys
+    }
+  })
 })
 
 const vuexSession = new VuexPersist({
@@ -21,15 +28,8 @@ const vuexSession = new VuexPersist({
   modules: ['session']
 })
 
-const depotKeySync = (store) => {
-  store.watch(
-    (state) => state.userKeys,
-    () => { store.dispatch('updateDepotKeys') }
-  )
-}
-
 const store = new Vuex.Store({
-  plugins: [vuexLocal.plugin, vuexSession.plugin, depotKeySync],
+  plugins: [vuexLocal.plugin, vuexSession.plugin],
   state: RootState,
   getters: RootGetters,
   mutations: RootMutations,
