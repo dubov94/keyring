@@ -50,7 +50,7 @@
     <v-card>
       <v-card-title>
         <v-text-field :type="reveal ? 'text' : 'password'" solo flat
-          placeholder="Secret" class="key" v-model="secret" ref="secret">
+          placeholder="Secret" class="key" v-model="secret">
         </v-text-field>
         <v-btn icon @click="copySecret">
           <v-icon>fa-copy</v-icon>
@@ -65,12 +65,12 @@
       <v-divider></v-divider>
       <v-card-text>
         <draggable v-model="chips" :options="draggableOptions" :move="move">
-          <v-chip disabled outline color="black" close
+          <v-chip disabled outline color="black" :close="index > 0"
             v-for="(value, index) in chips" :key="index"
             @input="removeTag(index)">
             <v-icon small class="tag__handle">drag_indicator</v-icon>
             <div class="tag__content">
-              <input type="text" :value="value" class="tag__input" v-focus
+              <input type="text" :value="value" class="tag__input" ref="tags"
                 @input.stop="setTag(index, $event.target.value)">
               <span class="tag__label">{{ value }}</span>
             </div>
@@ -173,7 +173,7 @@
       }),
       getDefaultState () {
         if (this.identifier === null) {
-          return { value: '', tags: [] }
+          return { value: '', tags: [''] }
         } else {
           let key = this.$store.state.userKeys.find(
             (item) => item.identifier === this.identifier)
@@ -279,8 +279,10 @@
           let state = this.getDefaultState()
           this.secret = state.value
           this.chips = state.tags
-          await this.$nextTick()
-          this.$refs.secret.focus()
+          if (this.identifier === null) {
+            await this.$nextTick()
+            this.$refs.tags[0].focus()
+          }
         }
       }
     }
