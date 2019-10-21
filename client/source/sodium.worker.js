@@ -1,5 +1,4 @@
 import sodium from 'libsodium-wrappers'
-// Eventually we may want to `await sodium.ready`.
 
 const ARGON2_DEFAULT_M = 64 * 1024 * 1024
 const ARGON2_DEFAULT_T = 1
