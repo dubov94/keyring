@@ -195,6 +195,7 @@ class AuthenticationServiceTest {
                     LogInResponse.Payload.newBuilder()
                         .setSessionKey("identifier")
                         .addRequirements(LogInResponse.Payload.Requirement.MAIL)
+                        .setKeySet(LogInResponse.Payload.KeySet.getDefaultInstance())
                         .build())
                 .build());
     verify(mockStreamObserver).onCompleted();
