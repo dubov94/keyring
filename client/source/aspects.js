@@ -1,6 +1,7 @@
 import axios from 'axios'
 import router from './router'
 import store from './store'
+import Status from './store/root/status'
 import {
   SESSION_LIFETIME_IN_MILLIS,
   SESSION_TOKEN_HEADER_NAME
@@ -22,12 +23,13 @@ export const applyAttachVersionHeaderOnRequest = () => {
   })
 }
 
-export const applyShowToastOnRequestError = () => {
+export const applyGoOfflineOnRequestError = () => {
   axios.interceptors.response.use(undefined, (error) => {
     let message = 'Network is unavailable'
     if (error.response) {
       message = `Error response: ${error.response.status}!`
     }
+    store.commit('setStatus', Status.OFFLINE)
     store.dispatch('interface/displaySnackbar', {
       message: message,
       timeout: 1500

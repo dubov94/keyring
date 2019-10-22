@@ -15,7 +15,7 @@ import {
   applyFreezeWhenPageIsHidden,
   applySaveRouteOnNavigation,
   applySendKeepAliveWhileIdle,
-  applyShowToastOnRequestError
+  applyGoOfflineOnRequestError
 } from './aspects'
 
 Vue.use(VueI18n)
@@ -35,7 +35,7 @@ Vue.component('form-text-field', FormTextField)
 
 applySaveRouteOnNavigation()
 applyAttachVersionHeaderOnRequest()
-applyShowToastOnRequestError()
+applyGoOfflineOnRequestError()
 applySendKeepAliveWhileIdle()
 applyFreezeWhenPageIsHidden()
 

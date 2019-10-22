@@ -28,49 +28,44 @@ export default {
   },
   async attemptOnlineAuthentication (
     { commit, dispatch, state }, { username, password, persist }) {
-    try {
-      commit('setStatus', Status.CONNECTING)
-      let { data: saltResponse } =
-        await axios.get(`/api/authentication/get-salt/${username}`)
-      if (saltResponse.error === 'NONE') {
-        let { salt: parametrization } = saltResponse
-        let {authDigest, encryptionKey} =
-          await SodiumWrapper.computeAuthDigestAndEncryptionKey(
-            parametrization, password)
-        let { data: authResponse } =
-          await axios.post('/api/authentication/log-in', {
-            username,
-            digest: authDigest
+    commit('setStatus', Status.CONNECTING)
+    let { data: saltResponse } =
+      await axios.get(`/api/authentication/get-salt/${username}`)
+    if (saltResponse.error === 'NONE') {
+      let { salt: parametrization } = saltResponse
+      let {authDigest, encryptionKey} =
+        await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+          parametrization, password)
+      let { data: authResponse } =
+        await axios.post('/api/authentication/log-in', {
+          username,
+          digest: authDigest
+        })
+      if (authResponse.error === 'NONE') {
+        let { payload } = authResponse
+        commit('setParametrization', parametrization)
+        commit('setEncryptionKey', encryptionKey)
+        await dispatch('acceptUserKeys', { userKeys: payload.key_set.items })
+        commit('setSessionKey', payload.session_key)
+        if (persist) {
+          commit('depot/setUsername', username)
+          await dispatch('depot/maybeUpdateDepot', {
+            password,
+            userKeys: state.userKeys
           })
-        if (authResponse.error === 'NONE') {
-          let { payload } = authResponse
-          commit('setParametrization', parametrization)
-          commit('setEncryptionKey', encryptionKey)
-          await dispatch('acceptUserKeys', { userKeys: payload.key_set.items })
-          commit('setSessionKey', payload.session_key)
-          if (persist) {
-            commit('depot/setUsername', username)
-            await dispatch('depot/maybeUpdateDepot', {
-              password,
-              userKeys: state.userKeys
-            })
-          }
-          commit('session/setUsername', username)
-          commit('setStatus', Status.ONLINE)
-          commit('setIsUserActive', true)
-          return {
-            success: true,
-            local: false,
-            requirements: payload.requirements
-          }
+        }
+        commit('session/setUsername', username)
+        commit('setStatus', Status.ONLINE)
+        commit('setIsUserActive', true)
+        return {
+          success: true,
+          local: false,
+          requirements: payload.requirements
         }
       }
-      commit('setStatus', Status.OFFLINE)
-      return { success: false, local: false }
-    } catch (error) {
-      commit('setStatus', Status.OFFLINE)
-      throw new Error('Network is unavailable')
     }
+    commit('setStatus', Status.OFFLINE)
+    return { success: false, local: false }
   },
   async logIn (
     { commit, dispatch, getters, state }, { username, password, persist }) {
