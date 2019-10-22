@@ -42,17 +42,21 @@ export default {
           digest: authDigest
         })
       if (authResponse.error === 'NONE') {
-        let { payload } = authResponse
+        let { requirements, key_set, session_key } = authResponse.payload
         commit('setParametrization', parametrization)
         commit('setEncryptionKey', encryptionKey)
-        await dispatch('acceptUserKeys', { userKeys: payload.key_set.items })
-        commit('setSessionKey', payload.session_key)
+        await dispatch('acceptUserKeys', { userKeys: key_set.items })
+        commit('setSessionKey', session_key)
         if (persist) {
-          commit('depot/setUsername', username)
-          await dispatch('depot/maybeUpdateDepot', {
-            password,
-            userKeys: state.userKeys
-          })
+          // Ensures there will be no offline authentication until all the
+          // requirements are met.
+          if (requirements.length === 0) {
+            commit('depot/setUsername', username)
+            await dispatch('depot/maybeUpdateDepot', {
+              password,
+              userKeys: state.userKeys
+            })
+          }
         }
         commit('session/setUsername', username)
         commit('setStatus', Status.ONLINE)
@@ -60,7 +64,7 @@ export default {
         return {
           success: true,
           local: false,
-          requirements: payload.requirements
+          requirements
         }
       }
     }
@@ -80,8 +84,8 @@ export default {
           dispatch(
             'attemptOnlineAuthentication',
             { username, password, persist }
-          ).then(async ({ success }) => {
-            if (!success) {
+          ).then(async ({ success, requirements }) => {
+            if (!success || requirements.length > 0) {
               await dispatch('depot/purgeDepot')
               purgeSessionStorageAndLoadLogIn()
             }

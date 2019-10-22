@@ -70,6 +70,7 @@
                 persist: this.hasLocalData
               })
               if (success) {
+                // Ignoring requirements for the sake of simplicity.
                 this.$router.replace(this.$store.state.session.lastRoute)
               } else {
                 this.invalidPasswords.push(password)
