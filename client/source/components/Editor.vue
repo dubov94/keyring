@@ -65,7 +65,8 @@
       <v-divider></v-divider>
       <v-card-text>
         <draggable v-model="chips" :options="draggableOptions" :move="move">
-          <v-chip disabled outline color="black" :close="index > 0"
+          <v-chip disabled outline color="black"
+            :close="chips.length > 1 || index > 0"
             v-for="(value, index) in chips" :key="index"
             @input="removeTag(index)">
             <v-icon small class="tag__handle">drag_indicator</v-icon>
