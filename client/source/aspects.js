@@ -5,6 +5,7 @@ import {
   SESSION_LIFETIME_IN_MILLIS,
   SESSION_TOKEN_HEADER_NAME
 } from './constants'
+import { reloadPage } from './utilities'
 
 export const applySaveRouteOnNavigation = () => {
   router.afterEach((to, from) => {
@@ -72,8 +73,7 @@ export const applyFreezeWhenPageIsHidden = () => {
     if (document.hidden) {
       visibilityTimer = setTimeout(() => {
         if (store.getters.isUserActive) {
-          // May trigger `beforeunload` if the editor is open.
-          location.reload()
+          reloadPage()
         }
       }, SESSION_LIFETIME_IN_MILLIS)
     } else {

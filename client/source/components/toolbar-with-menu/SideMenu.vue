@@ -2,7 +2,7 @@
   <v-navigation-drawer app temporary clipped floating
     :value="value" @input="input">
     <v-list>
-      <v-list-tile>
+      <v-list-tile v-on="canReconnect ? {'click': reconnect} : {}">
         <v-list-tile-action>
           <v-icon :color="connectionIconColor">wifi</v-icon>
         </v-list-tile-action>
@@ -10,6 +10,9 @@
           <v-list-tile-title>
             {{ connectionTitle }}
           </v-list-tile-title>
+          <v-list-tile-sub-title v-if="canReconnect">
+            Click to reconnect
+          </v-list-tile-sub-title>
         </v-list-tile-content>
       </v-list-tile>
       <v-divider></v-divider>
@@ -45,7 +48,7 @@
 <script>
   import Status from '../../store/root/status'
   import {mapState} from 'vuex'
-  import {purgeSessionStorageAndLoadLogIn} from '../../utilities'
+  import {reloadPage, purgeSessionStorageAndLoadLogIn} from '../../utilities'
 
   export default {
     props: ['value'],
@@ -66,11 +69,17 @@
           [Status.CONNECTING]: 'Connecting...',
           [Status.ONLINE]: 'Online'
         }[this.status]
+      },
+      canReconnect () {
+        return this.status === Status.OFFLINE
       }
     },
     methods: {
       input (value) {
         this.$emit('input', value)
+      },
+      reconnect () {
+        reloadPage()
       },
       logOut () {
         purgeSessionStorageAndLoadLogIn()

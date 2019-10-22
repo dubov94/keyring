@@ -92,3 +92,8 @@ export const purgeAllStoragesAndLoadIndex = () => {
   localStorage.clear()
   location.assign('/')
 }
+
+export const reloadPage = () => {
+  // May trigger `beforeunload` if the editor is open.
+  location.reload()
+}
