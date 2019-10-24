@@ -20,8 +20,8 @@ services:
     image: dubov94/keyring-gateway
     environment:
       PROXY_TARGET: 'server:591'
-  health:
-    image: dubov94/keyring-health
+  monitoring:
+    image: dubov94/keyring-monitoring
   server:
     image: dubov94/keyring-server
     secrets:
