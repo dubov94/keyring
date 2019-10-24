@@ -50,5 +50,8 @@ export default {
     let index = state.userKeys.findIndex(
       (item) => item.identifier === identifier)
     state.userKeys.splice(index, 1)
+  },
+  setRecentSessions (state, list) {
+    state.recentSessions = list
   }
 }

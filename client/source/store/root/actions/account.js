@@ -64,5 +64,19 @@ export default {
         headers: createSessionHeader(state.sessionKey)
       })
     ).data.error
+  },
+  async fetchRecentSessions ({ commit, state }) {
+    let { data: { sessions: list } } =
+      await axios.get('/api/administration/get-recent-sessions', {
+        headers: createSessionHeader(state.sessionKey)
+      })
+    commit('setRecentSessions', list.map(
+      ({ creation_time_in_millis, ip_address, user_agent }) => ({
+        // `int64`.
+        creationTimeInMillis: Number(creation_time_in_millis),
+        ipAddress: ip_address,
+        userAgent: user_agent
+      })
+    ))
   }
 }

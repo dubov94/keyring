@@ -24,6 +24,14 @@
           Dashboard
         </v-list-tile-content>
       </v-list-tile>
+      <v-list-tile to="/security">
+        <v-list-tile-action>
+          <v-icon>shield</v-icon>
+        </v-list-tile-action>
+        <v-list-tile-content>
+          Security
+        </v-list-tile-content>
+      </v-list-tile>
       <v-list-tile to="/settings">
         <v-list-tile-action>
           <v-icon>fa-cog</v-icon>

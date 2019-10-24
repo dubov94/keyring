@@ -53,6 +53,10 @@
     "deleteAccount": {
       "method": "post",
       "path": "/administration/delete-account"
+    },
+    "getRecentSessions": {
+      "method": "get",
+      "path": "/administration/get-recent-sessions"
     }
   }
 }
