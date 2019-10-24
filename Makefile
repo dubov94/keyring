@@ -1,4 +1,4 @@
-default: build-client build-gateway build-monitoring build-server
+default: build-client build-proto-bridge build-monitoring build-server
 
 clean:
 	docker system prune --all --force
@@ -6,8 +6,8 @@ clean:
 build-client:
 	docker build -f client/Dockerfile -t dubov94/keyring-client --build-arg GIT_REVISION="$(shell git describe --always)" .
 
-build-gateway:
-	docker build -f gateway/Dockerfile -t dubov94/keyring-gateway .
+build-proto-bridge:
+	docker build -f proto_bridge/Dockerfile -t dubov94/keyring-proto-bridge .
 
 build-monitoring:
 	docker build -f monitoring/Dockerfile -t dubov94/keyring-monitoring .

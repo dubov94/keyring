@@ -6,7 +6,7 @@ const _ = require('lodash')
 
 const HTTP_METHODS = ['delete', 'get', 'patch', 'post', 'put']
 
-// https://cloud.google.com/apis/design/errors#handling_errors
+// https://cloud.google.com/apis/design/errors#handling_errors.
 const GRPC_TO_HTTP = new Map([
     [0, 200],
     [1, 499],

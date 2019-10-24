@@ -9,7 +9,7 @@ client/**/test/unit/coverage
 client/**/test/e2e/reports
 client/**/selenium-*.log
 
-gateway/**/node_modules
+proto_bridge/**/node_modules
 
 server/**/.classpath
 server/**/.factorypath

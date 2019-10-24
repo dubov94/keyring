@@ -1,11 +1,11 @@
 from node:10
 
-workdir /root/keyring/gateway
+workdir /root/keyring/proto_bridge
 
-copy ./gateway/package*.json ./
+copy ./proto_bridge/package*.json ./
 run npm install
 
-copy ./gateway .
+copy ./proto_bridge .
 
 copy ./server/src/main/proto/keyring.proto ./
 copy ./server/src/main/proto/mapping.json ./

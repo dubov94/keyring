@@ -16,8 +16,8 @@ services:
         target: 443
   client:
     image: dubov94/keyring-client
-  gateway:
-    image: dubov94/keyring-gateway
+  proto_bridge:
+    image: dubov94/keyring-proto-bridge
     environment:
       PROXY_TARGET: 'server:591'
   monitoring:

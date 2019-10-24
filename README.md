@@ -8,8 +8,8 @@ with `postgres:postgres` as an authentication pair (usually the default).
 Run `mvn compile` followed by `mvn exec:exec` from
 [`server`](https://github.com/dubov94/keyring/tree/master/server) to launch the
 server and `npm run start` from
-[`gateway`](https://github.com/dubov94/keyring/tree/master/gateway) to start
-proxying from JSON to GRPC.
+[`proto_bridge`](https://github.com/dubov94/keyring/tree/master/proto_bridge) to
+start proxying from JSON to GRPC.
 
 Execute `npm run develop` from
 [`client`](https://github.com/dubov94/keyring/tree/master/client) to spin up the
