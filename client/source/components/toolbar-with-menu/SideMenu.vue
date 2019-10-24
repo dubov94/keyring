@@ -1,8 +1,8 @@
 <template>
   <v-navigation-drawer app temporary clipped floating
     :value="value" @input="input">
-    <v-list>
-      <v-list-tile v-on="canReconnect ? {'click': reconnect} : {}">
+    <v-list two-line>
+      <v-list-tile v-on="isOffline ? {'click': reload} : {}">
         <v-list-tile-action>
           <v-icon :color="connectionIconColor">wifi</v-icon>
         </v-list-tile-action>
@@ -10,13 +10,13 @@
           <v-list-tile-title>
             {{ connectionTitle }}
           </v-list-tile-title>
-          <v-list-tile-sub-title v-if="canReconnect">
-            Click to reconnect
+          <v-list-tile-sub-title v-if="isOffline">
+            Click to reload
           </v-list-tile-sub-title>
         </v-list-tile-content>
       </v-list-tile>
       <v-divider></v-divider>
-      <v-list-tile @click="$router.push('/dashboard')">
+      <v-list-tile to="/dashboard">
         <v-list-tile-action>
           <v-icon>dashboard</v-icon>
         </v-list-tile-action>
@@ -24,7 +24,7 @@
           Dashboard
         </v-list-tile-content>
       </v-list-tile>
-      <v-list-tile @click="$router.push('/settings')">
+      <v-list-tile to="/settings">
         <v-list-tile-action>
           <v-icon>fa-cog</v-icon>
         </v-list-tile-action>
@@ -70,7 +70,7 @@
           [Status.ONLINE]: 'Online'
         }[this.status]
       },
-      canReconnect () {
+      isOffline () {
         return this.status === Status.OFFLINE
       }
     },
@@ -78,7 +78,7 @@
       input (value) {
         this.$emit('input', value)
       },
-      reconnect () {
+      reload () {
         reloadPage()
       },
       logOut () {
