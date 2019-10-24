@@ -13,6 +13,7 @@ import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;
 
 import javax.inject.Inject;
+import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Optional;
@@ -220,6 +221,34 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         response.onNext(DeleteAccountResponse.getDefaultInstance());
       }
     }
+    response.onCompleted();
+  }
+
+  @Override
+  @ValidateUser
+  public void getRecentSessions(
+      GetRecentSessionsRequest request, StreamObserver<GetRecentSessionsResponse> response) {
+    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
+    List<Session> sessions =
+        accountOperationsInterface
+            .readSessions(userIdentifier)
+            .stream()
+            .sorted(Comparator.comparing(Session::getTimestamp).reversed())
+            .collect(toList());
+    response.onNext(
+        GetRecentSessionsResponse.newBuilder()
+            .addAllSessions(
+                sessions
+                    .stream()
+                    .map(
+                        session ->
+                            GetRecentSessionsResponse.Session.newBuilder()
+                                .setCreationTimeInMillis(session.getTimestamp().getTime())
+                                .setIpAddress(session.getIpAddress())
+                                .setUserAgent(session.getUserAgent())
+                                .build())
+                    .collect(toList()))
+            .build());
     response.onCompleted();
   }
 }

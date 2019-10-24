@@ -34,6 +34,15 @@ public class Session {
     return this;
   }
 
+  public Timestamp getTimestamp() {
+    return timestamp;
+  }
+
+  public Session setTimestamp(Timestamp timestamp) {
+    this.timestamp = timestamp;
+    return this;
+  }
+
   public String getKey() {
     return key;
   }

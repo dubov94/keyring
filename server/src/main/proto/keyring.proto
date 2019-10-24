@@ -204,6 +204,19 @@ message DeleteAccountResponse {
     Error error = 1;
 }
 
+message GetRecentSessionsRequest {
+}
+
+message GetRecentSessionsResponse {
+    message Session {
+        int64 creation_time_in_millis = 1;
+        string ip_address = 2;
+        string user_agent = 3;
+    }
+
+    repeated Session sessions = 1;
+}
+
 service Administration {
     rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse);
     rpc ReleaseMailToken (ReleaseMailTokenRequest) returns (ReleaseMailTokenResponse);
@@ -215,4 +228,5 @@ service Administration {
     rpc ChangeMasterKey (ChangeMasterKeyRequest) returns (ChangeMasterKeyResponse);
     rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse);
     rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
+    rpc GetRecentSessions (GetRecentSessionsRequest) returns (GetRecentSessionsResponse);
 }

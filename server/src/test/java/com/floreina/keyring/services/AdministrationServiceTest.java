@@ -21,7 +21,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -245,6 +248,40 @@ class AdministrationServiceTest {
     verify(mockKeyValueClient).dropSessions(ImmutableList.of("session"));
     verify(mockAccountOperationsInterface).markAccountAsDeleted(0L);
     verify(mockStreamObserver).onNext(DeleteAccountResponse.getDefaultInstance());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void getRecentSessions_returnsOrderedList() {
+    Function<Instant, Session> createDatabaseSession =
+        instant ->
+            new Session()
+                .setTimestamp(Timestamp.from(instant))
+                .setIpAddress("127.0.0.1")
+                .setUserAgent("Chrome/0.0.0");
+    when(mockAccountOperationsInterface.readSessions(0L))
+        .thenReturn(
+            ImmutableList.of(
+                createDatabaseSession.apply(Instant.ofEpochSecond(1)),
+                createDatabaseSession.apply(Instant.ofEpochSecond(2))));
+
+    administrationService.getRecentSessions(
+        GetRecentSessionsRequest.getDefaultInstance(), mockStreamObserver);
+
+    Function<Long, GetRecentSessionsResponse.Session> createResponseSession =
+        millis ->
+            GetRecentSessionsResponse.Session.newBuilder()
+                .setCreationTimeInMillis(millis)
+                .setIpAddress("127.0.0.1")
+                .setUserAgent("Chrome/0.0.0")
+                .build();
+    verify(mockStreamObserver)
+        .onNext(
+            GetRecentSessionsResponse.newBuilder()
+                .addAllSessions(
+                    ImmutableList.of(
+                        createResponseSession.apply(2000L), createResponseSession.apply(1000L)))
+                .build());
     verify(mockStreamObserver).onCompleted();
   }
 
