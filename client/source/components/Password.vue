@@ -17,27 +17,19 @@
       <v-btn icon @click="copyText(value)">
         <v-icon small>fa-copy</v-icon>
       </v-btn>
-      <template v-if="$vuetify.breakpoint.smAndUp">
-        <v-btn icon @click="toggleReveal">
-          <v-icon small>{{ reveal ? 'fa-eye-slash' : 'fa-eye' }}</v-icon>
-        </v-btn>
-        <v-btn icon @click="edit">
-          <v-icon small>fa-edit</v-icon>
-        </v-btn>
-      </template>
-      <v-menu v-else>
+      <v-menu>
         <v-btn icon slot="activator">
           <v-icon small>fa-ellipsis-v</v-icon>
         </v-btn>
         <v-list>
+          <v-list-tile @click="edit" :disabled="!isOnline">
+            <v-list-tile-title>
+              Edit
+            </v-list-tile-title>
+          </v-list-tile>
           <v-list-tile @click="toggleReveal">
             <v-list-tile-title>
               {{ reveal ? 'Hide' : 'Show' }}
-            </v-list-tile-title>
-          </v-list-tile>
-          <v-list-tile @click="edit">
-            <v-list-tile-title>
-              Edit
             </v-list-tile-title>
           </v-list-tile>
         </v-list>
@@ -56,10 +48,15 @@
 </template>
 
 <script>
-  import {mapActions, mapMutations} from 'vuex'
+  import {mapActions, mapGetters, mapMutations} from 'vuex'
 
   export default {
     props: ['identifier', 'value', 'tags'],
+    computed: {
+      ...mapGetters({
+        isOnline: 'isOnline'
+      })
+    },
     data () {
       return {
         reveal: false

@@ -65,9 +65,6 @@
         <v-btn fab color="error" @click="addKey">
           <v-icon small>fa-plus</v-icon>
         </v-btn>
-        <v-btn fab small @click="clearClipboard">
-          <v-icon>fa-eraser</v-icon>
-        </v-btn>
       </div>
     </v-content>
     <editor></editor>
@@ -145,14 +142,6 @@
       },
       resetNavigation () {
         this.pageNumber = 1
-      },
-      async clearClipboard () {
-        await navigator.clipboard.writeText('')
-        this.displaySnackbar({
-          message: 'Clipboard is cleared. Watch out for tools that may keep' +
-            ' the history of copied items anyway!',
-          timeout: 4500
-        })
       }
     },
     watch: {

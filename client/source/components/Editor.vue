@@ -52,15 +52,25 @@
         <v-text-field :type="reveal ? 'text' : 'password'" solo flat
           placeholder="Secret" class="key" v-model="secret">
         </v-text-field>
+        <v-btn flat color="primary" :disabled="requestInProgress"
+          @click="suggest">
+          Generate
+        </v-btn>
         <v-btn icon @click="copySecret">
           <v-icon>fa-copy</v-icon>
         </v-btn>
-        <v-btn icon @click="reveal = !reveal">
-          <v-icon>{{ reveal ? 'fa-eye-slash' : 'fa-eye' }}</v-icon>
-        </v-btn>
-        <v-btn icon :disabled="requestInProgress" @click="suggest">
-          <v-icon>fa-lightbulb</v-icon>
-        </v-btn>
+        <v-menu>
+          <v-btn icon slot="activator">
+            <v-icon small>fa-ellipsis-v</v-icon>
+          </v-btn>
+          <v-list>
+            <v-list-tile @click="reveal = !reveal">
+              <v-list-tile-title>
+                {{ reveal ? 'Hide' : 'Show' }}
+              </v-list-tile-title>
+            </v-list-tile>
+          </v-list>
+        </v-menu>
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text>
@@ -76,8 +86,9 @@
               <span class="tag__label">{{ value }}</span>
             </div>
           </v-chip>
-          <v-btn @click="addTag" outline round class="new_tag_button">
-            <v-icon left small>fa-plus</v-icon> Label
+          <v-btn @click="addTag" outline round class="new_tag_button"
+            :disabled="requestInProgress">
+            <v-icon left small>fa-plus</v-icon>Label
           </v-btn>
         </draggable>
       </v-card-text>
