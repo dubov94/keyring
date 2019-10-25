@@ -122,7 +122,7 @@
       persist (value) {
         if (value) {
           this.displaySnackbar({
-            message: 'Okay, we will store your data locally after you log in.',
+            message: 'Okay, we will store your encrypted data locally.',
             timeout: 3000
           })
         } else {
@@ -130,7 +130,7 @@
             this.purgeDepot()
             this.invalidPairs.splice(0)
             this.displaySnackbar({
-              message: 'Alright, we deleted all your data from this device.',
+              message: 'Alright, we wiped out all saved data from this device.',
               timeout: 3000
             })
           }
