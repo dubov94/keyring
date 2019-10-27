@@ -62,7 +62,7 @@
         </v-layout>
       </v-container>
       <div class="dial">
-        <v-btn fab color="error" @click="addKey">
+        <v-btn fab color="error" @click="addKey" :disabled="!isOnline">
           <v-icon small>fa-plus</v-icon>
         </v-btn>
       </div>
@@ -77,7 +77,7 @@
   import Page from './Page'
   import SideMenu from './toolbar-with-menu/SideMenu'
   import Toolbar from './toolbar-with-menu/Toolbar'
-  import {mapActions, mapMutations, mapState} from 'vuex'
+  import {mapActions, mapGetters, mapMutations, mapState} from 'vuex'
 
   const CARDS_PER_PAGE = 12
 
@@ -99,6 +99,9 @@
     computed: {
       ...mapState({
         userKeys: state => state.userKeys
+      }),
+      ...mapGetters({
+        isOnline: 'isOnline'
       }),
       pageCount () {
         return Math.max(Math.floor(

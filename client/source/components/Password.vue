@@ -77,8 +77,10 @@
         this.reveal = !this.reveal
       },
       edit () {
-        this.openEditor({ identifier: this.identifier, reveal: this.reveal })
-        this.reveal = false
+        if (this.isOnline) {
+          this.openEditor({ identifier: this.identifier, reveal: this.reveal })
+          this.reveal = false
+        }
       }
     }
   }

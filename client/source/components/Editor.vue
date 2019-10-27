@@ -97,7 +97,7 @@
         <v-progress-circular indeterminate color="green"
           v-if="requestInProgress"></v-progress-circular>
         <v-spacer></v-spacer>
-        <v-btn flat color="error" :disabled="!isOnline || requestInProgress"
+        <v-btn flat color="error" :disabled="requestInProgress"
           v-if="identifier !== null" @click="maybeRemove">
           Remove
         </v-btn>
@@ -105,7 +105,7 @@
           @click="maybeDiscard">
           Cancel
         </v-btn>
-        <v-btn flat color="primary" :disabled="!isOnline || requestInProgress"
+        <v-btn flat color="primary" :disabled="requestInProgress"
           @click="save">
           Save
         </v-btn>
@@ -121,7 +121,7 @@
 <script>
   import Draggable from 'vuedraggable'
   import YesNoDialog from './YesNoDialog'
-  import {mapActions, mapGetters, mapMutations} from 'vuex'
+  import {mapActions, mapMutations} from 'vuex'
   import {XL_MINIMAL_WIDTH} from './constants'
   import {
     areArraysEqual,
@@ -166,9 +166,6 @@
       window.removeEventListener('beforeunload', this.onBeforeUnload)
     },
     computed: {
-      ...mapGetters({
-        isOnline: 'isOnline'
-      }),
       isVisible () {
         return this.$store.state.interface.editor.show
       }

@@ -10,8 +10,14 @@
         </p>
         <v-layout justify-center>
           <v-flex xs10>
-            <v-data-table :loading="!hasSessionsData" class="elevation-1"
-              disable-initial-sort :headers="headers" :items="items">
+            <v-data-table :loading="isOnline && !hasSessionsData"
+              class="elevation-1" disable-initial-sort
+              :headers="headers" :items="items">
+              <template slot="no-data">
+                <p v-if="!isOnline" class="text-xs-center my-0">
+                  Connect to see recent sessions.
+                </p>
+              </template>
               <template slot="items" slot-scope="slotProps">
                 <td>{{ slotProps.item.moment }}</td>
                 <td>{{ slotProps.item.location }}</td>
@@ -49,7 +55,8 @@
         recentSessions: state => state.recentSessions || []
       }),
       ...mapGetters({
-        hasSessionsData: 'hasSessionsData'
+        hasSessionsData: 'hasSessionsData',
+        isOnline: 'isOnline'
       }),
       headers () {
         return [
@@ -70,7 +77,7 @@
       }
     },
     created () {
-      if (!this.hasSessionsData) {
+      if (this.isOnline && !this.hasSessionsData) {
         this.fetchRecentSessions()
       }
     },
