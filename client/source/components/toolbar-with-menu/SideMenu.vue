@@ -1,7 +1,7 @@
 <template>
   <v-navigation-drawer app temporary clipped floating
     :value="value" @input="input">
-    <v-list two-line>
+    <v-list two-line class="py-0">
       <v-list-tile v-on="isOffline ? {'click': reload} : {}">
         <v-list-tile-action>
           <v-icon :color="connectionIconColor">wifi</v-icon>
