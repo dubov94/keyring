@@ -30,6 +30,7 @@ export const applyGoOfflineOnRequestError = () => {
       message = `Error response: ${error.response.status}!`
     }
     store.commit('setStatus', Status.OFFLINE)
+    store.commit('setSessionKey', null)
     store.dispatch('interface/displaySnackbar', {
       message: message,
       timeout: 1500
