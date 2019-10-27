@@ -36,6 +36,9 @@ const idleSessionGuard = (to, from, next) => {
 
 const router = new VueRouter({
   mode: 'history',
+  scrollBehavior () {
+    return { x: 0, y: 0 }
+  },
   routes: [
     {
       path: '/',
