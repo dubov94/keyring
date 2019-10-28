@@ -228,8 +228,10 @@
       removeTag (index) {
         this.chips.splice(index, 1)
       },
-      addTag () {
+      async addTag () {
         this.chips.push('')
+        await this.$nextTick()
+        this.focusTag(-1)
       },
       async suggest () {
         let suggestion = generateSequenceOffRanges([
@@ -277,6 +279,10 @@
       },
       maybeRemove () {
         this.removeConfirmation = true
+      },
+      focusTag (pointer) {
+        let index = (pointer + this.chips.length) % this.chips.length
+        this.$refs.tags[index].focus()
       }
     },
     watch: {
@@ -290,7 +296,7 @@
           this.chips = state.tags
           if (this.identifier === null) {
             await this.$nextTick()
-            this.$refs.tags[0].focus()
+            this.focusTag(0)
           }
         }
       }
