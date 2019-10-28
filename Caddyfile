@@ -1,4 +1,4 @@
 pwd.floreina.me {
-    proxy /api proto_bridge:80
+    proxy /api proto-bridge:80
     proxy / client:80
 }

@@ -16,19 +16,19 @@ services:
         target: 443
   client:
     image: dubov94/keyring-client
-  proto_bridge:
+  monitoring:
+    image: dubov94/keyring-monitoring
+  proto-bridge:
     image: dubov94/keyring-proto-bridge
     environment:
       PROXY_TARGET: 'server:591'
-  monitoring:
-    image: dubov94/keyring-monitoring
   server:
     image: dubov94/keyring-server
     secrets:
       - mailgun_api_key
     environment:
-      GEOLOCATION_ADDRESS: 'ip_geolocation:80'
-  ip_geolocation:
+      GEOLOCATION_ADDRESS: 'ip-geolocation:80'
+  ip-geolocation:
     image: dubov94/keyring-ip-geolocation
   postgres:
     image: 'postgres:10'
