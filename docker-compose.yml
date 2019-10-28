@@ -26,6 +26,10 @@ services:
     image: dubov94/keyring-server
     secrets:
       - mailgun_api_key
+    environment:
+      GEOLOCATION_ADDRESS: 'ip_geolocation:80'
+  ip_geolocation:
+    image: dubov94/keyring-ip-geolocation
   postgres:
     image: 'postgres:10'
     environment:

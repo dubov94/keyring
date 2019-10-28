@@ -9,6 +9,9 @@ build-client:
 build-proto-bridge:
 	docker build -f proto_bridge/Dockerfile -t dubov94/keyring-proto-bridge .
 
+build-ip-geolocation:
+	docker build -f ip_geolocation/Dockerfile -t dubov94/keyring-ip-geolocation .
+
 build-monitoring:
 	docker build -f monitoring/Dockerfile -t dubov94/keyring-monitoring .
 
