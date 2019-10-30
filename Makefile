@@ -1,4 +1,4 @@
-default: build-client build-proto-bridge build-monitoring build-server
+default: build-client build-monitoring build-proto-bridge build-server build-ip-geolocation
 
 clean:
 	docker system prune --all --force
