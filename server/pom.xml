@@ -129,6 +129,16 @@
             <version>0.6</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client</artifactId>
+            <version>1.31.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-gson</artifactId>
+            <version>1.31.0</version>
+        </dependency>
     </dependencies>
 
     <build>

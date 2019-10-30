@@ -1,5 +1,6 @@
 package com.floreina.keyring;
 
+import com.floreina.keyring.geolocation.GeolocationModule;
 import com.floreina.keyring.interceptors.RequestMetadataInterceptor;
 import com.floreina.keyring.interceptors.SessionInterceptor;
 import com.floreina.keyring.interceptors.SessionInterceptorKeys;
@@ -14,7 +15,13 @@ import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 
 @dagger.Component(
-  modules = {TopModule.class, TemplatesModule.class, StorageModule.class, KeyValueModule.class}
+  modules = {
+    GeolocationModule.class,
+    KeyValueModule.class,
+    StorageModule.class,
+    TopModule.class,
+    TemplatesModule.class
+  }
 )
 @Singleton
 interface Component {

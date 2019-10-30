@@ -207,11 +207,17 @@ message DeleteAccountResponse {
 message GetRecentSessionsRequest {
 }
 
+message Geolocation {
+    string country = 1;
+    string city = 2;
+}
+
 message GetRecentSessionsResponse {
     message Session {
         int64 creation_time_in_millis = 1;
         string ip_address = 2;
         string user_agent = 3;
+        Geolocation geolocation = 4;
     }
 
     repeated Session sessions = 1;

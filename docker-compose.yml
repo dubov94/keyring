@@ -27,7 +27,7 @@ services:
     secrets:
       - mailgun_api_key
     environment:
-      GEOLOCATION_ADDRESS: 'ip-geolocation:80'
+      GEOLOCATION_SERVICE_ENDPOINT: 'ip-geolocation:80'
   ip-geolocation:
     image: dubov94/keyring-ip-geolocation
   postgres:

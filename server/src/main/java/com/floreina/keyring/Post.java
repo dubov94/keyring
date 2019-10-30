@@ -17,9 +17,7 @@ public class Post {
       CodeHeadRendererFactory codeHeadRendererFactory,
       CodeBodyRendererFactory codeBodyRendererFactory) {
     configuration =
-        new Configuration()
-            .domain("pwd.floreina.me")
-            .apiKey(Environment.getVariable("MAILGUN_API_KEY"));
+        new Configuration().domain("pwd.floreina.me").apiKey(Environment.getMailgunApiKey());
     this.codeHeadRendererFactory = codeHeadRendererFactory;
     this.codeBodyRendererFactory = codeBodyRendererFactory;
   }
