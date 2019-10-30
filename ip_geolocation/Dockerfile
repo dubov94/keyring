@@ -13,6 +13,8 @@ env MMDB_PATH=/usr/share/GeoIP
 run apt-get install -y python3 python3-pip
 run pip3 install bottle maxminddb
 
+workdir /root/keyring/ip_geolocation
+
 copy ./ip_geolocation ./
 
 expose 80
