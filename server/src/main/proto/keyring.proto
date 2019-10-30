@@ -110,9 +110,11 @@ message ReleaseMailTokenResponse {
     }
 }
 
-message KeepAliveRequest {}
+message KeepAliveRequest {
+}
 
-message KeepAliveResponse {}
+message KeepAliveResponse {
+}
 
 message Password {
     string value = 1;

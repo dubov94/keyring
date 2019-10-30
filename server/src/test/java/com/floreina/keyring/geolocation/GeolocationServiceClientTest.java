@@ -35,7 +35,9 @@ class GeolocationServiceClientTest {
 
   @Test
   void getIpInfo_getsNoData_setsNoData() {
-    GeolocationServiceClient geolocationServiceClient = new GeolocationServiceClient(createRequestFactoryForGetIpInfo("ip-location", "127.0.0.1", "{}"), "ip-location");
+    GeolocationServiceClient geolocationServiceClient =
+        new GeolocationServiceClient(
+            createRequestFactoryForGetIpInfo("ip-location", "127.0.0.1", "{}"), "ip-location");
 
     Geolocation geolocation = geolocationServiceClient.getIpInfo("127.0.0.1");
 
