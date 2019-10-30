@@ -5,6 +5,7 @@ import com.floreina.keyring.aspects.Annotations.ValidateUser;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
+import com.floreina.keyring.geolocation.GeolocationServiceInterface;
 import com.floreina.keyring.interceptors.SessionInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
 import com.floreina.keyring.keyvalue.UserProjection;
@@ -13,16 +14,15 @@ import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;
 
 import javax.inject.Inject;
-import java.util.Comparator;
-import java.util.ConcurrentModificationException;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.*;
 
 public class AdministrationService extends AdministrationGrpc.AdministrationImplBase {
   private KeyOperationsInterface keyOperationsInterface;
   private AccountOperationsInterface accountOperationsInterface;
+  private GeolocationServiceInterface geolocationServiceInterface;
   private SessionInterceptorKeys sessionInterceptorKeys;
   private KeyValueClient keyValueClient;
   private Cryptography cryptography;
@@ -32,12 +32,14 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   AdministrationService(
       KeyOperationsInterface keyOperationsInterface,
       AccountOperationsInterface accountOperationsInterface,
+      GeolocationServiceInterface geolocationServiceInterface,
       SessionInterceptorKeys sessionInterceptorKeys,
       KeyValueClient keyValueClient,
       Cryptography cryptography,
       Post post) {
     this.keyOperationsInterface = keyOperationsInterface;
     this.accountOperationsInterface = accountOperationsInterface;
+    this.geolocationServiceInterface = geolocationServiceInterface;
     this.sessionInterceptorKeys = sessionInterceptorKeys;
     this.keyValueClient = keyValueClient;
     this.cryptography = cryptography;
@@ -235,6 +237,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
             .stream()
             .sorted(Comparator.comparing(Session::getTimestamp).reversed())
             .collect(toList());
+    Set<String> ipAddressSet = sessions.stream().map(Session::getIpAddress).collect(toSet());
+    Map<String, Geolocation> ipToGeolocation =
+        ipAddressSet.stream().collect(toMap(identity(), geolocationServiceInterface::getIpInfo));
     response.onNext(
         GetRecentSessionsResponse.newBuilder()
             .addAllSessions(
@@ -246,6 +251,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
                                 .setCreationTimeInMillis(session.getTimestamp().getTime())
                                 .setIpAddress(session.getIpAddress())
                                 .setUserAgent(session.getUserAgent())
+                                .setGeolocation(ipToGeolocation.get(session.getIpAddress()))
                                 .build())
                     .collect(toList()))
             .build());

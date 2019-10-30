@@ -5,6 +5,7 @@ import com.floreina.keyring.aspects.ValidateUserAspect;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
+import com.floreina.keyring.geolocation.GeolocationServiceInterface;
 import com.floreina.keyring.interceptors.SessionInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
 import com.floreina.keyring.storage.AccountOperationsInterface;
@@ -35,6 +36,7 @@ import static org.mockito.Mockito.when;
 class AdministrationServiceTest {
   @Mock private KeyOperationsInterface mockKeyOperationsInterface;
   @Mock private AccountOperationsInterface mockAccountOperationsInterface;
+  @Mock private GeolocationServiceInterface mockGeolocationServiceInterface;
   @Mock private SessionInterceptorKeys mockSessionInterceptorKeys;
   @Mock private KeyValueClient mockKeyValueClient;
   @Mock private StreamObserver mockStreamObserver;
@@ -53,6 +55,7 @@ class AdministrationServiceTest {
         new AdministrationService(
             mockKeyOperationsInterface,
             mockAccountOperationsInterface,
+            mockGeolocationServiceInterface,
             mockSessionInterceptorKeys,
             mockKeyValueClient,
             mockCryptography,
@@ -264,6 +267,8 @@ class AdministrationServiceTest {
             ImmutableList.of(
                 createDatabaseSession.apply(Instant.ofEpochSecond(1)),
                 createDatabaseSession.apply(Instant.ofEpochSecond(2))));
+    when(mockGeolocationServiceInterface.getIpInfo("127.0.0.1"))
+        .thenReturn(Geolocation.newBuilder().setCountry("Country").setCity("City").build());
 
     administrationService.getRecentSessions(
         GetRecentSessionsRequest.getDefaultInstance(), mockStreamObserver);
@@ -274,6 +279,8 @@ class AdministrationServiceTest {
                 .setCreationTimeInMillis(millis)
                 .setIpAddress("127.0.0.1")
                 .setUserAgent("Chrome/0.0.0")
+                .setGeolocation(
+                    Geolocation.newBuilder().setCountry("Country").setCity("City").build())
                 .build();
     verify(mockStreamObserver)
         .onNext(
