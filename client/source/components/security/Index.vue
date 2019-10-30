@@ -84,15 +84,20 @@
         )
       }
     },
-    created () {
-      if (this.isOnline && !this.hasSessionsData) {
-        this.fetchRecentSessions()
-      }
-    },
     methods: {
       ...mapActions({
         fetchRecentSessions: 'fetchRecentSessions'
       })
+    },
+    watch: {
+      isOnline: {
+        immediate: true,
+        handler (newValue) {
+          if (newValue && !this.hasSessionsData) {
+            this.fetchRecentSessions()
+          }
+        }
+      }
     }
   }
 </script>
