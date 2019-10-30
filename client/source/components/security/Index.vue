@@ -77,7 +77,7 @@
                 area = geolocation.country
               }
             }
-            let location = area === null ? ipAddress : `${ipAddress} (${area})`
+            let location = area === null ? ipAddress : `${ipAddress}, ${area}`
             let browser = new UaParser(userAgent).getBrowser()
             return {moment, location, browser}
           }
