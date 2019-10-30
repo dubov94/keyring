@@ -73,7 +73,7 @@ class GeolocationServiceClient implements GeolocationServiceInterface {
     }
 
     public static class City {
-      @Key Names names;
+      @Key private Names names;
 
       Optional<String> getEnglishName() {
         return Optional.ofNullable(names).flatMap(Names::getEnglish);
