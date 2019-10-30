@@ -67,9 +67,17 @@
       },
       items () {
         return this.recentSessions.map(
-          ({creationTimeInMillis, ipAddress, userAgent}) => {
+          ({creationTimeInMillis, ipAddress, userAgent, geolocation}) => {
             let moment = new Date(creationTimeInMillis).toLocaleString()
-            let location = ipAddress
+            let area = null
+            if (geolocation.country) {
+              if (geolocation.city) {
+                area = `${geolocation.city}, ${geolocation.country}`
+              } else {
+                area = geolocation.country
+              }
+            }
+            let location = area === null ? ipAddress : `${ipAddress} (${area})`
             let browser = new UaParser(userAgent).getBrowser()
             return {moment, location, browser}
           }

@@ -71,11 +71,12 @@ export default {
         headers: createSessionHeader(state.sessionKey)
       })
     commit('setRecentSessions', list.map(
-      ({ creation_time_in_millis, ip_address, user_agent }) => ({
+      ({ creation_time_in_millis, ip_address, user_agent, geolocation }) => ({
         // `int64`.
         creationTimeInMillis: Number(creation_time_in_millis),
         ipAddress: ip_address,
-        userAgent: user_agent
+        userAgent: user_agent,
+        geolocation: geolocation || {}
       })
     ))
   }
