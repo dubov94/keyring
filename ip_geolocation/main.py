@@ -14,7 +14,7 @@ def update_and_schedule():
     except subprocess.CalledProcessError as error:
         print(error)
     threading.Timer(24 * 60 * 60, update_and_schedule).start()
-    
+
 
 @bottle.route('/get-ip-info/<ip_address>')
 def get_ip_info(ip_address):
