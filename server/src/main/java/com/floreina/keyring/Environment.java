@@ -6,6 +6,6 @@ public class Environment {
   }
 
   public static boolean isProduction() {
-    return "production".equals(getVariable("MODULE_STATE"));
+    return "production".equals(getVariable("MODULE_ENVIRONMENT"));
   }
 }

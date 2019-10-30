@@ -5,6 +5,6 @@ workdir /root/keyring/server
 copy ./server ./
 run mvn compile
 
-env MODULE_STATE="production"
+env MODULE_ENVIRONMENT="production"
 expose 591
 cmd ["./entrypoint.sh"]
