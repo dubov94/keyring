@@ -46,7 +46,12 @@
           <v-icon>fa-sign-out-alt</v-icon>
         </v-list-tile-action>
         <v-list-tile-content>
-          Log out
+          <v-list-tile-title>
+            Log out
+          </v-list-tile-title>
+          <v-list-tile-sub-title>
+            Clears the clipboard
+          </v-list-tile-sub-title>
         </v-list-tile-content>
       </v-list-tile>
     </v-list>
@@ -89,7 +94,8 @@
       reload () {
         reloadPage()
       },
-      logOut () {
+      async logOut () {
+        await navigator.clipboard.writeText('')
         purgeSessionStorageAndLoadLogIn()
       }
     }
