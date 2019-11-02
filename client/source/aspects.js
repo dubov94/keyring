@@ -18,7 +18,9 @@ export const applySaveRouteOnNavigation = () => {
 
 export const applyAttachVersionHeaderOnRequest = () => {
   axios.interceptors.request.use((configuration) => {
-    configuration.headers['X-Client-Version'] = window.globals.version
+    if (configuration.url.startsWith('/')) {
+      configuration.headers['X-Client-Version'] = window.globals.version
+    }
     return configuration
   })
 }

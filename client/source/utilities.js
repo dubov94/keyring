@@ -75,6 +75,16 @@ export const areArraysEqual = (left, right) => {
   }
 }
 
+export const sha1 = async (message) => {
+  let messageUint8Array = new TextEncoder('utf-8').encode(message)
+  let hashArrayBuffer = await crypto.subtle.digest('SHA-1', messageUint8Array)
+  let hashByteArray = Array.from(new Uint8Array(hashArrayBuffer))
+  return hashByteArray
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()
+}
+
 export const sleep = (timeInMs) =>
   new Promise((resolve) => {
     setTimeout(() => {
