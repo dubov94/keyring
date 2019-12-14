@@ -33,6 +33,13 @@ Vue.directive('focus', {
 Vue.component('fixed-tooltip', FixedTooltip)
 Vue.component('form-text-field', FormTextField)
 
+// Aspects are a very powerful short-term weapon, and as any powerful weapon
+// should be used with extreme care. While they do save quite a bit of time
+// on initial plumbing, they heavily obfuscate the logic and sometimes can
+// lead to undesired side-effects in places where their application was not
+// expected by the developer. We are actively trying to reduce their number,
+// but it's a perpetual battle -- in practice as soon as one is eliminated
+// it's a matter of time before another pops up.
 applySaveRouteOnNavigation()
 applyAttachVersionHeaderOnRequest()
 applyGoOfflineOnRequestError()
