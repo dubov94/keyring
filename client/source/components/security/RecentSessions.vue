@@ -76,7 +76,7 @@
       isOnline: {
         immediate: true,
         handler (newValue) {
-          if (newValue && !this.hasSessionsData) {
+          if (newValue) {
             this.fetchRecentSessions()
           }
         }
