@@ -69,8 +69,12 @@
     },
     methods: {
       ...mapActions({
+        clearRecentSessions: 'clearRecentSessions',
         fetchRecentSessions: 'fetchRecentSessions'
       })
+    },
+    beforeDestroy () {
+      this.clearRecentSessions()
     },
     watch: {
       isOnline: {

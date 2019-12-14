@@ -79,5 +79,8 @@ export default {
         geolocation: geolocation || {}
       })
     ))
+  },
+  clearRecentSessions ({ commit }) {
+    commit('setRecentSessions', [])
   }
 }
