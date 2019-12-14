@@ -1,11 +1,9 @@
 <template>
   <v-container fluid>
-    <p class="text-xs-center text--secondary caption">
-      If you do not recognize one of the sessions, your account may have
-      been compromised.
-    </p>
     <v-layout justify-center>
       <v-flex xs10>
+        <h2>Recent sessions</h2>
+        <p>The table contains entries from the last 28 days.</p>
         <v-data-table :loading="isOnline && !hasSessionsData"
           class="elevation-1" disable-initial-sort
           :headers="headers" :items="items">

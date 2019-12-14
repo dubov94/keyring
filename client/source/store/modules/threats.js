@@ -10,16 +10,13 @@ const wasPasswordExposed = async (key) => {
 export default {
   namespaced: true,
   state: {
-    isEnabled: false,
+    isAnalysisEnabled: false,
     duplicateGroups: [],
     exposedUserKeyIds: []
   },
   mutations: {
-    enable (state) {
-      state.isEnabled = true
-    },
-    disable (state) {
-      state.isEnabled = false
+    setAnalysisEnabled (state, value) {
+      state.isAnalysisEnabled = value
     },
     setDuplicateGroups (state, value) {
       state.duplicateGroups = value
@@ -29,8 +26,17 @@ export default {
     }
   },
   actions: {
+    async enableAnalysis ({ commit, dispatch, rootState }) {
+      commit('setAnalysisEnabled', true)
+      await dispatch('maybeAssessUserKeys', rootState.userKeys)
+    },
+    async disableAnalysis ({ commit }) {
+      commit('exposedUserKeyIds', [])
+      commit('duplicateGroups', [])
+      commit('setAnalysisEnabled', false)
+    },
     async maybeAssessUserKeys ({ commit, state }, userKeys) {
-      if (state.isEnabled) {
+      if (state.isAnalysisEnabled) {
         let passwordToIds = new Map()
         userKeys.forEach(({ identifier, value }) => {
           if (!passwordToIds.has(value)) {
