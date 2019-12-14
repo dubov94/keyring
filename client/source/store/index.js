@@ -5,10 +5,10 @@ import RootGetters from './root/getters'
 import RootMutations from './root/mutations'
 import RootState from './root/state'
 import Session from './modules/session'
+import Threats from './modules/threats'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import VuexPersist from 'vuex-persist'
-import Vulnerabilities from './modules/vulnerabilities'
 
 Vue.use(Vuex)
 
@@ -39,7 +39,7 @@ const store = new Vuex.Store({
     depot: Depot,
     interface: Interface,
     session: Session,
-    vulnerabilities: Vulnerabilities
+    threats: Threats
   }
 })
 

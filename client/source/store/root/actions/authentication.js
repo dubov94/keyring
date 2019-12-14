@@ -45,7 +45,10 @@ export default {
         let { requirements, key_set, session_key } = authResponse.payload
         commit('setParametrization', parametrization)
         commit('setEncryptionKey', encryptionKey)
-        await dispatch('acceptUserKeys', { userKeys: key_set.items })
+        await dispatch('acceptUserKeys', {
+          userKeys: key_set.items,
+          updateDepot: false
+        })
         commit('setSessionKey', session_key)
         if (persist) {
           // Ensures there will be no offline authentication until all the
