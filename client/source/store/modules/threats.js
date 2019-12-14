@@ -31,8 +31,8 @@ export default {
       await dispatch('maybeAssessUserKeys', rootState.userKeys)
     },
     async disableAnalysis ({ commit }) {
-      commit('exposedUserKeyIds', [])
-      commit('duplicateGroups', [])
+      commit('setExposedUserKeyIds', [])
+      commit('setDuplicateGroups', [])
       commit('setAnalysisEnabled', false)
     },
     async maybeAssessUserKeys ({ commit, state }, userKeys) {
