@@ -135,7 +135,8 @@
         displaySnackbar: 'interface/displaySnackbar'
       }),
       ...mapMutations({
-        openEditor: 'interface/openEditor'
+        openEditor: 'interface/openEditor',
+        closeEditor: 'interface/closeEditor'
       }),
       addKey () {
         this.openEditor({ identifier: null, reveal: false })
@@ -168,8 +169,9 @@
         this.$refs.search.focus()
       }
     },
-    beforeDestroyed () {
+    beforeDestroy () {
       this.unsubscribeFromStore()
+      this.closeEditor()
     }
   }
 </script>
