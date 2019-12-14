@@ -15,6 +15,12 @@ export default {
     exposedUserKeyIds: []
   },
   mutations: {
+    enable (state) {
+      state.isEnabled = true
+    },
+    disable (state) {
+      state.isEnabled = false
+    },
     setDuplicateGroups (state, value) {
       state.duplicateGroups = value
     },
@@ -23,8 +29,8 @@ export default {
     }
   },
   actions: {
-    async maybeAssessUserKeys ({ commit }, userKeys) {
-      if (this.isEnabled) {
+    async maybeAssessUserKeys ({ commit, state }, userKeys) {
+      if (state.isEnabled) {
         let passwordToIds = new Map()
         userKeys.forEach(({ identifier, value }) => {
           if (!passwordToIds.has(value)) {
