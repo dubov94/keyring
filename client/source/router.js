@@ -1,11 +1,13 @@
 import Authentication from './components/authentication/Index'
 import Dashboard from './components/Dashboard'
 import LogIn from './components/authentication/LogIn'
+import RecentSessions from './components/security/RecentSessions'
 import Register from './components/authentication/Register'
 import ResumeSession from './components/authentication/ResumeSession'
 import SetUp from './components/authentication/SetUp'
 import Security from './components/security/Index'
 import Settings from './components/settings/Index'
+import ThreatAnalysis from './components/security/ThreatAnalysis'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import store from './store'
@@ -72,7 +74,17 @@ const router = new VueRouter({
     }, {
       path: '/security',
       component: Security,
-      beforeEnter: activeUserGuard
+      beforeEnter: activeUserGuard,
+      redirect: '/security/threat-analysis',
+      children: [
+        {
+          path: 'recent-sessions',
+          component: RecentSessions
+        }, {
+          path: 'threat-analysis',
+          component: ThreatAnalysis
+        }
+      ]
     }, {
       path: '/settings',
       component: Settings,
