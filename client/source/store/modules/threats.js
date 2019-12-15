@@ -30,11 +30,6 @@ export default {
       commit('setAnalysisEnabled', true)
       await dispatch('maybeAssessUserKeys', rootState.userKeys)
     },
-    async disableAnalysis ({ commit }) {
-      commit('setExposedUserKeyIds', [])
-      commit('setDuplicateGroups', [])
-      commit('setAnalysisEnabled', false)
-    },
     async maybeAssessUserKeys ({ commit, state }, userKeys) {
       if (state.isAnalysisEnabled) {
         let passwordToIds = new Map()
