@@ -55,7 +55,7 @@
         <v-layout class="masonry" row wrap align-center>
           <v-flex v-for="card in visibleCards" :key="card.identifier"
             class="masonry__brick" sm12 md6 lg4>
-            <password :identifier="card.identifier"  :value="card.value"
+            <password :identifier="card.identifier" :value="card.value"
               :tags="card.tags" @edit="editKey(card.identifier, $event)">
             </password>
           </v-flex>
