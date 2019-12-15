@@ -164,6 +164,9 @@
     },
     beforeDestroy () {
       window.removeEventListener('beforeunload', this.onBeforeUnload)
+      if (this.isVisible) {
+        this.closeEditor()
+      }
     },
     computed: {
       ...mapGetters({

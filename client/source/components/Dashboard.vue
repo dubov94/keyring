@@ -171,7 +171,6 @@
     },
     beforeDestroy () {
       this.unsubscribeFromStore()
-      this.closeEditor()
     }
   }
 </script>
