@@ -48,7 +48,7 @@
 </template>
 
 <script>
-  import {mapActions, mapGetters, mapMutations} from 'vuex'
+  import {mapActions, mapGetters} from 'vuex'
 
   export default {
     props: ['identifier', 'value', 'tags'],
@@ -66,9 +66,6 @@
       ...mapActions({
         displaySnackbar: 'interface/displaySnackbar'
       }),
-      ...mapMutations({
-        openEditor: 'interface/openEditor'
-      }),
       async copyText (string) {
         await navigator.clipboard.writeText(string)
         this.displaySnackbar({ message: 'Copied!', timeout: 1500 })
@@ -78,7 +75,7 @@
       },
       edit () {
         if (this.isOnline) {
-          this.openEditor({ identifier: this.identifier, reveal: this.reveal })
+          this.$emit('edit', { reveal: this.reveal })
           this.reveal = false
         }
       }

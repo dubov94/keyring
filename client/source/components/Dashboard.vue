@@ -55,8 +55,8 @@
         <v-layout class="masonry" row wrap align-center>
           <v-flex v-for="card in visibleCards" :key="card.identifier"
             class="masonry__brick" sm12 md6 lg4>
-            <password :identifier="card.identifier" 
-              :value="card.value" :tags="card.tags">
+            <password :identifier="card.identifier"  :value="card.value"
+              :tags="card.tags" @edit="editKey(card.identifier, $event)">
             </password>
           </v-flex>
         </v-layout>
@@ -140,6 +140,9 @@
       }),
       addKey () {
         this.openEditor({ identifier: null, reveal: false })
+      },
+      editKey (identifier, { reveal }) {
+        this.openEditor({ identifier, reveal })
       },
       clearQuery () {
         this.query = ''
