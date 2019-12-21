@@ -1,16 +1,12 @@
 <style scoped>
-  .navigation {
-    margin-bottom: 16px;
-    text-align: center;
-  }
-
-  .masonry {
+  .container {
     max-width: var(--max-content-width);
     margin: 0 auto;
   }
 
-  .masonry__brick {
-    padding: 0 8px 16px;
+  .navigation {
+    margin-bottom: 16px;
+    text-align: center;
   }
 
   .search--desktop {
@@ -35,6 +31,7 @@
   }
 </style>
 
+
 <template>
   <page>
     <side-menu v-model="showMenu"></side-menu>
@@ -52,14 +49,8 @@
           <v-pagination v-model="pageNumber" :length="pageCount"
             :total-visible="paginationVisibleCount" circle></v-pagination>
         </div>
-        <v-layout class="masonry" row wrap align-center>
-          <v-flex v-for="card in visibleCards" :key="card.identifier"
-            class="masonry__brick" sm12 md6 lg4>
-            <password :identifier="card.identifier" :value="card.value"
-              :tags="card.tags" @edit="editKey(card.identifier, $event)">
-            </password>
-          </v-flex>
-        </v-layout>
+        <password-masonry :user-keys="visibleCards" @edit="handleEditKey">
+        </password-masonry>
       </v-container>
       <div class="dial">
         <v-btn fab color="error" @click="addKey" :disabled="!isOnline">
@@ -73,8 +64,9 @@
 
 <script>
   import Editor from './Editor'
-  import Password from './Password'
   import Page from './Page'
+  import Password from './Password'
+  import PasswordMasonry from './PasswordMasonry'
   import SideMenu from './toolbar-with-menu/SideMenu'
   import Toolbar from './toolbar-with-menu/Toolbar'
   import {mapActions, mapGetters, mapMutations, mapState} from 'vuex'
@@ -84,8 +76,9 @@
   export default {
     components: {
       editor: Editor,
-      password: Password,
       page: Page,
+      password: Password,
+      passwordMasonry: PasswordMasonry,
       sideMenu: SideMenu,
       toolbar: Toolbar
     },
@@ -141,7 +134,7 @@
       addKey () {
         this.openEditor({ identifier: null, reveal: false })
       },
-      editKey (identifier, { reveal }) {
+      handleEditKey ({ identifier, reveal }) {
         this.openEditor({ identifier, reveal })
       },
       clearQuery () {
