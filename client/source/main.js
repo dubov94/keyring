@@ -1,7 +1,6 @@
 import 'vuetify/dist/vuetify.min.css'
 import sodium from 'libsodium-wrappers'
 import Application from './Application'
-import FixedTooltip from './components/FixedTooltip'
 import FormTextField from './components/FormTextField'
 import Messages from './messages'
 import Vue from 'vue'
@@ -30,7 +29,6 @@ Vue.directive('focus', {
   }
 })
 
-Vue.component('fixed-tooltip', FixedTooltip)
 Vue.component('form-text-field', FormTextField)
 
 // Aspects are a very powerful short-term weapon, and as any powerful weapon
