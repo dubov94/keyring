@@ -26,12 +26,14 @@
 <script>
   import {mapActions, mapGetters} from 'vuex'
   import {required, sameAs} from 'vuelidate/lib/validators'
+  import {getShortHash} from '../../utilities'
 
   export default {
     validations: {
       current: {
-        valid () {
-          return !this.invalidCurrentPasswords.includes(this.current)
+        async valid () {
+          return !this.invalidShortHashes.includes(
+            await getShortHash(this.current))
         }
       },
       renewal: { required },
@@ -43,7 +45,7 @@
         current: '',
         renewal: '',
         repeat: '',
-        invalidCurrentPasswords: []
+        invalidShortHashes: []
       }
     },
     computed: {
@@ -88,13 +90,13 @@
                 this.current = ''
                 this.renewal = ''
                 this.repeat = ''
-                this.invalidCurrentPasswords = []
+                this.invalidShortHashes = []
                 this.displaySnackbar({
                   message: this.$t('SUCCESS'),
                   timeout: 1500
                 })
               } else if (error === 'INVALID_CURRENT_DIGEST') {
-                this.invalidCurrentPasswords.push(current)
+                this.invalidShortHashes.push(await getShortHash(current))
               }
             } finally {
               this.requestInProgress = false

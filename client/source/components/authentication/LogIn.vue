@@ -30,6 +30,7 @@
 <script>
   import {mapActions, mapGetters} from 'vuex'
   import {required} from 'vuelidate/lib/validators'
+  import {getShortHash} from '../../utilities'
 
   export default {
     data () {
@@ -48,9 +49,10 @@
       },
       password: {},
       forCredentials: {
-        valid () {
-          for (let { username, password } of this.invalidPairs) {
-            if (this.username === username && this.password === password) {
+        async valid () {
+          for (let { username, shortHash } of this.invalidPairs) {
+            if (this.username === username &&
+              await getShortHash(this.password) === shortHash) {
               return false
             }
           }
@@ -103,7 +105,10 @@
                   this.$router.replace('/dashboard')
                 }
               } else {
-                this.invalidPairs.push({ username, password })
+                this.invalidPairs.push({
+                  username,
+                  shortHash: await getShortHash(password)
+                })
                 if (local) {
                   this.displaySnackbar({
                     message: 'Changed the password recently? Toggle \'Remember me\' twice.',

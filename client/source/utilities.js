@@ -85,6 +85,11 @@ export const sha1 = async (message) => {
     .toUpperCase()
 }
 
+export const getShortHash = async (message, length = 3) => {
+  let hash = await sha1(message)
+  return hash.slice(0, length)
+}
+
 export const sleep = (timeInMs) =>
   new Promise((resolve) => {
     setTimeout(() => {

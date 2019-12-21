@@ -25,20 +25,21 @@
 
 <script>
   import {mapActions, mapGetters} from 'vuex'
-  import {purgeSessionStorageAndLoadLogIn} from '../../utilities'
+  import {getShortHash, purgeSessionStorageAndLoadLogIn} from '../../utilities'
 
   export default {
     data () {
       return {
         requestInProgress: false,
         password: '',
-        invalidPasswords: []
+        invalidShortHashes: []
       }
     },
     validations: {
       password: {
-        valid () {
-          return !this.invalidPasswords.includes(this.password)
+        async valid () {
+          return !this.invalidShortHashes.includes(
+            await getShortHash(this.password))
         }
       }
     },
@@ -73,7 +74,7 @@
                 // Ignoring requirements for the sake of simplicity.
                 this.$router.replace(this.$store.state.session.lastRoute)
               } else {
-                this.invalidPasswords.push(password)
+                this.invalidShortHashes.push(await getShortHash(password))
               }
             } finally {
               this.requestInProgress = false

@@ -59,13 +59,15 @@
 <script>
   import {mapActions, mapGetters} from 'vuex'
   import {email, required} from 'vuelidate/lib/validators'
+  import {getShortHash} from '../../utilities'
 
   export default {
     validations: {
       mail: { email, required },
       password: {
-        valid () {
-          return !this.invalidPasswords.includes(this.password)
+        async valid () {
+          return !this.invalidShortHashes.includes(
+            await getShortHash(this.password))
         }
       },
       code: {
@@ -82,7 +84,7 @@
         mail: '',
         password: '',
         code: '',
-        invalidPasswords: [],
+        invalidShortHashes: [],
         invalidCodes: []
       }
     },
@@ -127,7 +129,7 @@
               if (error === 'NONE') {
                 this.stage += 1
               } else if (error === 'INVALID_DIGEST') {
-                this.invalidPasswords.push(password)
+                this.invalidShortHashes.push(await getShortHash(password))
               }
             } finally {
               this.requestInProgress = false
@@ -151,7 +153,7 @@
                 this.password = ''
                 this.code = ''
                 this.invalidCodes = []
-                this.invalidPasswords = []
+                this.invalidShortHashes = []
                 this.displaySnackbar({
                   message: this.$t('SUCCESS'),
                   timeout: 1500

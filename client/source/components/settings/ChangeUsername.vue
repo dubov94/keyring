@@ -23,6 +23,7 @@
 <script>
   import {mapActions, mapGetters} from 'vuex'
   import {required} from 'vuelidate/lib/validators'
+  import {getShortHash} from '../../utilities'
 
   export default {
     validations: {
@@ -33,8 +34,9 @@
         }
       },
       password: {
-        valid () {
-          return !this.invalidPasswords.includes(this.password)
+        async valid () {
+          return !this.invalidShortHashes.includes(
+            await getShortHash(this.password))
         }
       }
     },
@@ -44,7 +46,7 @@
         username: '',
         password: '',
         takenUserNames: [],
-        invalidPasswords: []
+        invalidShortHashes: []
       }
     },
     computed: {
@@ -83,7 +85,7 @@
                 this.username = ''
                 this.password = ''
                 this.takenUserNames = []
-                this.invalidPasswords = []
+                this.invalidShortHashes = []
                 this.displaySnackbar({
                   message: this.$t('SUCCESS'),
                   timeout: 1500
@@ -91,7 +93,8 @@
               } else if (error === 'NAME_TAKEN') {
                 this.takenUserNames.push(username)
               } else if (error === 'INVALID_DIGEST') {
-                this.invalidPasswords.push(password)
+                this.invalidShortHashes.push(
+                  await getShortHash(password))
               }
             } finally {
               this.requestInProgress = false

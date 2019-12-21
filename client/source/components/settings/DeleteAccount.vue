@@ -19,13 +19,14 @@
 
 <script>
   import {mapActions, mapGetters} from 'vuex'
-  import {purgeAllStoragesAndLoadIndex} from '../../utilities'
+  import {getShortHash, purgeAllStoragesAndLoadIndex} from '../../utilities'
 
   export default {
     validations: {
       password: {
-        valid () {
-          return !this.invalidPasswords.includes(this.password)
+        async valid () {
+          return !this.invalidShortHashes.includes(
+            await getShortHash(this.password))
         }
       }
     },
@@ -33,7 +34,7 @@
       return {
         requestInProgress: false,
         password: '',
-        invalidPasswords: []
+        invalidShortHashes: []
       }
     },
     computed: {
@@ -61,7 +62,8 @@
               if (error === 'NONE') {
                 purgeAllStoragesAndLoadIndex()
               } else if (error === 'INVALID_DIGEST') {
-                this.invalidPasswords.push(password)
+                this.invalidShortHashes.push(
+                  await getShortHash(password))
               }
             } finally {
               this.requestInProgress = false
