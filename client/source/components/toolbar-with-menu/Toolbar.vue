@@ -9,16 +9,19 @@
     <v-toolbar-side-icon @click="toggle"></v-toolbar-side-icon>
     <slot>
       <v-toolbar-title>
-        <router-link to="/" tag="span" class="home-link">
-          Key Ring
-        </router-link>
+        <toolbar-title></toolbar-title>
       </v-toolbar-title>
     </slot>
   </v-toolbar>
 </template>
 
 <script>
+  import Title from './Title'
+
   export default {
+    components: {
+      toolbarTitle: Title
+    },
     props: ['value'],
     methods: {
       toggle () {
@@ -27,3 +30,4 @@
     }
   }
 </script>
+

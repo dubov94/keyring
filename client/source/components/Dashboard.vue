@@ -1,8 +1,4 @@
 <style scoped>
-  .home-link {
-    cursor: pointer;
-  }
-
   .container {
     max-width: var(--max-content-width);
   }
@@ -35,9 +31,7 @@
     <side-menu v-model="showMenu"></side-menu>
     <toolbar v-model="showMenu">
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
-        <router-link to="/" tag="span" class="home-link">
-          Key Ring
-        </router-link>
+        <toolbar-title></toolbar-title>
       </v-toolbar-title>
       <v-text-field solo-inverted flat ref="search" v-model="query" :class=
         "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
@@ -68,6 +62,7 @@
   import Password from './Password'
   import PasswordMasonry from './PasswordMasonry'
   import SideMenu from './toolbar-with-menu/SideMenu'
+  import Title from './toolbar-with-menu/Title'
   import Toolbar from './toolbar-with-menu/Toolbar'
   import {mapActions, mapGetters, mapMutations, mapState} from 'vuex'
 
@@ -80,6 +75,7 @@
       password: Password,
       passwordMasonry: PasswordMasonry,
       sideMenu: SideMenu,
+      toolbarTitle: Title,
       toolbar: Toolbar
     },
     data () {
