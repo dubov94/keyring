@@ -19,7 +19,8 @@
         <p class="mb-0">
           Click the button to enable reactive password scrutiny for this
           session. Note that we use
-          <a href="https://haveibeenpwned.com/Passwords">Have I Been Pwned</a>
+          <a href="https://haveibeenpwned.com/Passwords"
+            target="_blank" rel="noopener noreferrer">Have I Been Pwned</a>
           under the hood.
         </p>
       </v-flex>
