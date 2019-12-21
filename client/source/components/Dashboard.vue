@@ -1,4 +1,8 @@
 <style scoped>
+  .home-link {
+    cursor: pointer;
+  }
+
   .container {
     max-width: var(--max-content-width);
   }
@@ -31,7 +35,9 @@
     <side-menu v-model="showMenu"></side-menu>
     <toolbar v-model="showMenu">
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
-        Key Ring
+        <router-link to="/" tag="span" class="home-link">
+          Key Ring
+        </router-link>
       </v-toolbar-title>
       <v-text-field solo-inverted flat ref="search" v-model="query" :class=
         "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
