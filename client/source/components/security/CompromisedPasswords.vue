@@ -3,7 +3,7 @@
     <v-card-title>
       <v-layout justify-space-between align-center>
         <h3>
-          Compromised passwords&nbsp;&mdash;&nbsp;
+          Compromised passwords &mdash;
           <span v-if="keyCount === 0" class="success--text">
             0
           </span>

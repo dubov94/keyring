@@ -3,7 +3,7 @@
     <v-card-title>
       <v-layout justify-space-between align-center>
         <h3>
-          Duplicate groups&nbsp;&mdash;&nbsp;
+          Duplicate groups &mdash;
           <span class="success--text" v-if="groupCount === 0">
             0
           </span>
