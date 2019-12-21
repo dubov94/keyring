@@ -30,40 +30,12 @@
         </v-btn>
       </v-flex>
     </v-layout>
-    <v-card v-if="isAnalysisEnabled" class="mt-4">
-      <v-card-title>
-        <h3>
-          Duplicate groups&nbsp;&mdash;&nbsp;
-          <span class="success--text" v-if="duplicateGroupsLength === 0">
-            0
-          </span>
-          <span class="warning--text" v-else>{{ duplicateGroupsLength }}</span>
-        </h3>
-      </v-card-title>
-      <template v-if="duplicateGroupsLength > 0">
-        <v-divider></v-divider>
-        <v-card-text>
-          <duplicate-passwords @edit="handleEditKey"></duplicate-passwords>
-        </v-card-text>
-      </template>
-    </v-card>
-    <v-card v-if="isAnalysisEnabled" class="mt-4">
-      <v-card-title>
-        <h3>
-          Compromised passwords&nbsp;&mdash;&nbsp;
-          <span class="success--text" v-if="exposedUserKeyIdsLength === 0">
-            0
-          </span>
-          <span class="error--text" v-else>{{ exposedUserKeyIdsLength }}</span>
-        </h3>
-      </v-card-title>
-      <template v-if="exposedUserKeyIdsLength > 0">
-        <v-divider></v-divider>
-        <v-card-text>
-          <compromised-passwords @edit="handleEditKey"></compromised-passwords>
-        </v-card-text>
-      </template>
-    </v-card>
+    <duplicate-passwords v-if="isAnalysisEnabled" class="mt-4"
+      @edit="handleEditKey">
+    </duplicate-passwords>
+    <compromised-passwords v-if="isAnalysisEnabled" class="mt-4"
+      @edit="handleEditKey">
+    </compromised-passwords>
     <editor></editor>
   </v-container>
 </template>
@@ -82,9 +54,7 @@
     },
     computed: {
       ...mapState({
-        isAnalysisEnabled: state => state.threats.isAnalysisEnabled,
-        duplicateGroupsLength: state => state.threats.duplicateGroups.length,
-        exposedUserKeyIdsLength: state => state.threats.exposedUserKeyIds.length
+        isAnalysisEnabled: state => state.threats.isAnalysisEnabled
       }),
       ...mapGetters({
         isOnline: 'isOnline'

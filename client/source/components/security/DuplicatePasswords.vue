@@ -1,12 +1,29 @@
 <template>
-  <div>
-    <div class="mb-3 text-xs-center">
-      <v-pagination v-model="groupNumber" :length="groupCount" circle
-        :total-visible="$vuetify.breakpoint.smAndUp ? 7 : 5"></v-pagination>
-    </div>
-    <password-masonry :user-keys="groupCards" @edit="handleEditKey">
-    </password-masonry>
-  </div>
+  <v-card>
+    <v-card-title>
+      <v-layout justify-space-between align-center>
+        <h3>
+          Duplicate groups&nbsp;&mdash;&nbsp;
+          <span class="success--text" v-if="groupCount === 0">
+            0
+          </span>
+          <span class="warning--text" v-else>{{ groupCount }}</span>
+        </h3>
+        <v-progress-circular v-show="inProgress" indeterminate
+          :size="24" :width="2" color="primary">
+        </v-progress-circular>
+      </v-layout>
+    </v-card-title>
+    <v-divider v-if="groupCount > 0"></v-divider>
+    <v-card-text v-if="groupCount > 0">
+      <div class="mb-3 text-xs-center">
+        <v-pagination v-model="groupNumber" :length="groupCount" circle
+          :total-visible="$vuetify.breakpoint.smAndUp ? 7 : 5"></v-pagination>
+      </div>
+      <password-masonry :user-keys="groupCards" @edit="handleEditKey">
+      </password-masonry>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script>
@@ -25,7 +42,9 @@
     computed: {
       ...mapState({
         userKeys: state => state.userKeys,
-        duplicateGroups: state => state.threats.duplicateGroups
+        duplicateGroups: state => state.threats.duplicateGroups,
+        groupCount: state => state.threats.duplicateGroups.length,
+        inProgress: state => state.threats.gettingDuplicateGroups
       }),
       groupCards () {
         let list = []
@@ -39,9 +58,6 @@
           }
         }
         return list
-      },
-      groupCount () {
-        return this.duplicateGroups.length
       }
     },
     methods: {

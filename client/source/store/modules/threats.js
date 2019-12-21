@@ -11,15 +11,23 @@ export default {
   namespaced: true,
   state: {
     isAnalysisEnabled: false,
+    gettingDuplicateGroups: false,
     duplicateGroups: [],
+    gettingExposedUserKeys: false,
     exposedUserKeyIds: []
   },
   mutations: {
     setAnalysisEnabled (state, value) {
       state.isAnalysisEnabled = value
     },
+    setGettingDuplicateGroups (state, value) {
+      state.gettingDuplicateGroups = value
+    },
     setDuplicateGroups (state, value) {
       state.duplicateGroups = value
+    },
+    setGettingExposedUserKeys (state, value) {
+      state.gettingExposedUserKeys = value
     },
     setExposedUserKeyIds (state, value) {
       state.exposedUserKeyIds = value
@@ -30,34 +38,46 @@ export default {
       commit('setAnalysisEnabled', true)
       await dispatch('maybeAssessUserKeys', rootState.userKeys)
     },
-    async maybeAssessUserKeys ({ commit, state }, userKeys) {
-      if (state.isAnalysisEnabled) {
-        let passwordToIds = new Map()
-        userKeys.forEach(({ identifier, value }) => {
-          if (!passwordToIds.has(value)) {
-            passwordToIds.set(value, [])
-          }
-          passwordToIds.get(value).push(identifier)
-        })
-        let duplicateGroups = []
-        for (let group of passwordToIds.values()) {
-          if (group.length > 1) {
-            duplicateGroups.push(group)
-          }
+    async detectDuplicateGroups ({ commit }, userKeys) {
+      commit('setGettingDuplicateGroups', true)
+      let passwordToIds = new Map()
+      userKeys.forEach(({ identifier, value }) => {
+        if (!passwordToIds.has(value)) {
+          passwordToIds.set(value, [])
         }
-        commit('setDuplicateGroups', duplicateGroups)
-        let exposedUserKeyIds = (await Promise.all(
-          userKeys.map(async ({ identifier, value }) => ({
-            identifier,
-            wasExposed: await wasPasswordExposed(value)
-          })))).filter(
-          ({
-            wasExposed
-          }) => wasExposed).map(
-          ({
-            identifier
-          }) => identifier)
-        commit('setExposedUserKeyIds', exposedUserKeyIds)
+        passwordToIds.get(value).push(identifier)
+      })
+      let duplicateGroups = []
+      for (let group of passwordToIds.values()) {
+        if (group.length > 1) {
+          duplicateGroups.push(group)
+        }
+      }
+      commit('setDuplicateGroups', duplicateGroups)
+      commit('setGettingDuplicateGroups', false)
+    },
+    async detectExposedUserKeys ({ commit }, userKeys) {
+      commit('setGettingExposedUserKeys', true)
+      let exposedUserKeyIds = (await Promise.all(
+        userKeys.map(async ({ identifier, value }) => ({
+          identifier,
+          wasExposed: await wasPasswordExposed(value)
+        })))).filter(
+        ({
+          wasExposed
+        }) => wasExposed).map(
+        ({
+          identifier
+        }) => identifier)
+      commit('setExposedUserKeyIds', exposedUserKeyIds)
+      commit('setGettingExposedUserKeys', false)
+    },
+    async maybeAssessUserKeys ({ state, dispatch }, userKeys) {
+      if (state.isAnalysisEnabled) {
+        return Promise.all([
+          dispatch('detectDuplicateGroups', userKeys),
+          dispatch('detectExposedUserKeys', userKeys)
+        ])
       }
     }
   }
