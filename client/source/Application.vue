@@ -15,4 +15,8 @@
   .dialog {
     overflow: visible;
   }
+
+  :root {
+    --max-content-width: 1264px;
+  }
 </style>

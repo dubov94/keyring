@@ -5,7 +5,7 @@
   }
 
   .masonry {
-    max-width: 1264px;
+    max-width: var(--max-content-width);
     margin: 0 auto;
   }
 
