@@ -22,7 +22,7 @@ export default {
       state.duplicateGroups = value
     },
     setExposedUserKeyIds (state, value) {
-      state.vulnerableUserKeyIds = value
+      state.exposedUserKeyIds = value
     }
   },
   actions: {
@@ -46,7 +46,7 @@ export default {
           }
         }
         commit('setDuplicateGroups', duplicateGroups)
-        let vulnerableUserKeyIds = (await Promise.all(
+        let exposedUserKeyIds = (await Promise.all(
           userKeys.map(async ({ identifier, value }) => ({
             identifier,
             wasExposed: await wasPasswordExposed(value)
@@ -57,7 +57,7 @@ export default {
           ({
             identifier
           }) => identifier)
-        commit('setExposedUserKeyIds', vulnerableUserKeyIds)
+        commit('setExposedUserKeyIds', exposedUserKeyIds)
       }
     }
   }

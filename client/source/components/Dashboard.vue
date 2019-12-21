@@ -1,12 +1,6 @@
 <style scoped>
   .container {
     max-width: var(--max-content-width);
-    margin: 0 auto;
-  }
-
-  .navigation {
-    margin-bottom: 16px;
-    text-align: center;
   }
 
   .search--desktop {
@@ -44,8 +38,8 @@
         prepend-icon="search" label="Search"></v-text-field>
     </toolbar>
     <v-content>
-      <v-container fluid>
-        <div class="navigation">
+      <v-container fluid mx-auto>
+        <div class="mb-3 text-xs-center">
           <v-pagination v-model="pageNumber" :length="pageCount"
             :total-visible="paginationVisibleCount" circle></v-pagination>
         </div>
