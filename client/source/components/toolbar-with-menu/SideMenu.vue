@@ -50,7 +50,7 @@
             Log out
           </v-list-tile-title>
           <v-list-tile-sub-title>
-            Clears the clipboard
+            May clear the clipboard
           </v-list-tile-sub-title>
         </v-list-tile-content>
       </v-list-tile>
