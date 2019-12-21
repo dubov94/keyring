@@ -7,7 +7,7 @@
     margin: 0;
   }
 
-  #app {
+  #application {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
