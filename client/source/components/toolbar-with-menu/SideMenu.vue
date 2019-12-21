@@ -37,7 +37,12 @@
           <v-icon>fa-cog</v-icon>
         </v-list-tile-action>
         <v-list-tile-content>
-          Settings
+          <v-list-tile-title>
+            Settings
+          </v-list-tile-title>
+          <v-list-tile-sub-title>
+            {{ version }}
+          </v-list-tile-sub-title>
         </v-list-tile-content>
       </v-list-tile>
       <v-divider></v-divider>
@@ -65,6 +70,11 @@
 
   export default {
     props: ['value'],
+    data () {
+      return {
+        version: window.globals.version
+      }
+    },
     computed: {
       ...mapState({
         status: (state) => state.status
