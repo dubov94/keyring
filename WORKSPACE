@@ -15,6 +15,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
     artifacts = [
+        "com.google.guava:guava:24.0-jre",
     ],
     repositories = [
         "https://jcenter.bintray.com/",
