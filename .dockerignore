@@ -17,3 +17,5 @@ server/**/.project
 server/**/.idea
 server/**/.settings
 server/**/target
+
+bazel-*
