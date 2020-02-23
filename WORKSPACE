@@ -26,6 +26,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 maven_install(
     artifacts = [
         "com.google.guava:guava:24.0-jre",
+        "org.jtwig:jtwig-core:5.86.1.RELEASE",
     ],
     repositories = [
         "https://jcenter.bintray.com/",
