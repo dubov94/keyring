@@ -8,3 +8,8 @@ java_library(
     srcs = ["Cryptography.java"],
     deps = ["@maven//:com_google_guava_guava"],
 )
+
+java_library(
+    name = "environment",
+    srcs = ["Environment.java"],
+)
