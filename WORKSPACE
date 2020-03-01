@@ -27,6 +27,20 @@ maven_install(
     artifacts = [
         "com.google.guava:guava:24.0-jre",
         "org.jtwig:jtwig-core:5.86.1.RELEASE",
+    ] + [
+        "org.apiguardian:apiguardian-api:1.0.0",
+        "org.junit.jupiter:junit-jupiter-api:5.5.0",
+        "org.junit.jupiter:junit-jupiter-engine:5.5.0",
+        "org.junit.jupiter:junit-jupiter-params:5.5.0",
+        "org.junit.platform:junit-platform-commons:1.5.0",
+        "org.junit.platform:junit-platform-console:1.5.0",
+        "org.junit.platform:junit-platform-engine:1.5.0",
+        "org.junit.platform:junit-platform-launcher:1.5.0",
+        "org.junit.platform:junit-platform-suite-api:1.5.0",
+        "org.opentest4j:opentest4j:1.1.1",
+    ] + [
+        "name.falgout.jeffrey.testing.junit5:mockito-extension:1.0.0",
+        "org.mockito:mockito-core:2.15.0",
     ],
     repositories = [
         "https://jcenter.bintray.com/",

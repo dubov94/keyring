@@ -7,6 +7,7 @@ java_library(
     name = "cryptography",
     srcs = ["Cryptography.java"],
     deps = ["@maven//:com_google_guava_guava"],
+    visibility = ["//server/src/test/java/com/floreina/keyring:__pkg__"],
 )
 
 java_library(
