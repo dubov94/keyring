@@ -17,5 +17,8 @@ java_library(
 java_library(
     name = "environment",
     srcs = ["Environment.java"],
-    visibility = ["//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring/geolocation:__pkg__",
+        "//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__",
+    ],
 )

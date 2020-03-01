@@ -35,9 +35,11 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
     artifacts = [
+        "com.google.code.gson:gson:2.8.2",
         "com.google.dagger:dagger:2.14.1",
         "com.google.guava:guava:24.0-jre",
-        "com.google.code.gson:gson:2.8.2",
+        "com.google.http-client:google-http-client:1.31.0",
+        "com.google.http-client:google-http-client-gson:1.31.0",
         "io.grpc:grpc-netty:1.8.0",
         "io.grpc:grpc-protobuf:1.8.0",
         "io.grpc:grpc-stub:1.8.0",
