@@ -26,6 +26,10 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 maven_install(
     artifacts = [
         "com.google.guava:guava:24.0-jre",
+        "io.grpc:grpc-netty:1.8.0",
+        "io.grpc:grpc-protobuf:1.8.0",
+        "io.grpc:grpc-stub:1.8.0",
+        "org.hibernate:hibernate-core:5.2.12.Final",
         "org.jtwig:jtwig-core:5.86.1.RELEASE",
     ] + [
         "org.apiguardian:apiguardian-api:1.0.0",
