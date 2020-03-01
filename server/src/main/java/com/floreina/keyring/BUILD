@@ -20,5 +20,6 @@ java_library(
     visibility = [
         "//server/src/main/java/com/floreina/keyring/geolocation:__pkg__",
         "//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__",
+        "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
     ],
 )
