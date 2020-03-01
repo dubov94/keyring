@@ -1,7 +1,7 @@
 def junit5_test(name, srcs, test_package, deps = [], runtime_deps = []):
     native.java_test(
         name = name,
-        srcs = ["CryptographyTest.java"],
+        srcs = srcs,
         use_testrunner = False,
         main_class = "org.junit.platform.console.ConsoleLauncher",
         args = ["--select-package", test_package],

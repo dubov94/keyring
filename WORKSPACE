@@ -43,7 +43,11 @@ maven_install(
         "io.grpc:grpc-netty:1.8.0",
         "io.grpc:grpc-protobuf:1.8.0",
         "io.grpc:grpc-stub:1.8.0",
+        "javax.annotation:javax.annotation-api:1.3.2",
+        "javax.xml.bind:jaxb-api:2.3.0",
+        "org.aspectj:aspectjrt:1.8.13",
         "org.hibernate:hibernate-core:5.2.12.Final",
+        "org.hibernate:hibernate-jpamodelgen:5.2.12.Final",
         "org.jtwig:jtwig-core:5.86.1.RELEASE",
         "redis.clients:jedis:2.9.0",
     ] + [

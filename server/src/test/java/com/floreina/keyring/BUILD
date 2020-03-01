@@ -1,4 +1,4 @@
-load("//:junit5.bzl", "junit5_test")
+load("//bazel/java:junit5.bzl", "junit5_test")
 
 package(default_testonly = 1)
 

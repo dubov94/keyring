@@ -8,6 +8,7 @@ java_proto_library(
     visibility = [
         "//server/src/main/java/com/floreina/keyring/entities:__pkg__",
         "//server/src/main/java/com/floreina/keyring/geolocation:__pkg__",
+        "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
     ],
     deps = [":keyring_proto"],
 )
