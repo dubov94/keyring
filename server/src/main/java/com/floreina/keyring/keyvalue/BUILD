@@ -1,7 +1,10 @@
 java_library(
     name = "user_projection",
     srcs = ["UserProjection.java"],
-    visibility = ["//server/src/main/java/com/floreina/keyring/interceptors:__pkg__"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring/interceptors:__pkg__",
+        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+    ],
     deps = ["//server/src/main/java/com/floreina/keyring/entities:user"],
 )
 
@@ -24,7 +27,10 @@ java_library(
 java_library(
     name = "key_value_client",
     srcs = ["KeyValueClient.java"],
-    visibility = ["//server/src/main/java/com/floreina/keyring/interceptors:__pkg__"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring/interceptors:__pkg__",
+        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+    ],
     deps = [
         ":key_value_exception",
         ":user_projection",

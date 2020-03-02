@@ -20,6 +20,9 @@ java_library(
 java_library(
     name = "session_interceptor_keys",
     srcs = ["SessionInterceptorKeys.java"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+    ],
     deps = [
         "//server/src/main/java/com/floreina/keyring/keyvalue:user_projection",
         "@maven//:io_grpc_grpc_context",

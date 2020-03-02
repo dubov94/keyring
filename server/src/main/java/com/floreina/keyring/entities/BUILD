@@ -7,6 +7,7 @@ java_library(
     visibility = [
         "//server/src/main/java/com/floreina/keyring/aspects:__pkg__",
         "//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__",
+        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
         "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
     ],
     deps = [
@@ -26,6 +27,7 @@ java_library(
         "//bazel/java:hibernate_jpamodelgen",
     ],
     visibility = [
+        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
         "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
     ],
     deps = [
@@ -43,6 +45,7 @@ java_library(
         "//bazel/java:hibernate_jpamodelgen",
     ],
     visibility = [
+        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
         "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
     ],
     deps = [
@@ -60,6 +63,7 @@ java_library(
         "//bazel/java:hibernate_jpamodelgen",
     ],
     visibility = [
+        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
         "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
     ],
     deps = [
@@ -79,6 +83,6 @@ java_library(
     deps = [
         ":key",
         ":user",
-        "//server/src/main/proto:keyring_java_proto",
+        "//server/src/main/proto:keyring_java_grpc",
     ],
 )

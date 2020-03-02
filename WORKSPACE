@@ -22,13 +22,10 @@ http_archive(
 )
 
 http_archive(
-    name = "rules_java",
-    sha256 = "ccf00372878d141f7d5568cedc4c42ad4811ba367ea3e26bc7c43445bbc52895",
-    strip_prefix = "rules_java-d7bf804c8731edd232cb061cb2a9fe003a85d8ee",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_java/archive/d7bf804c8731edd232cb061cb2a9fe003a85d8ee.tar.gz",
-        "https://github.com/bazelbuild/rules_java/archive/d7bf804c8731edd232cb061cb2a9fe003a85d8ee.tar.gz",
-    ],
+    name = "rules_proto_grpc",
+    sha256 = "5f0f2fc0199810c65a2de148a52ba0aff14d631d4e8202f41aff6a9d590a471b",
+    strip_prefix = "rules_proto_grpc-1.0.2",
+    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/1.0.2.tar.gz"],
 )
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
@@ -45,6 +42,7 @@ maven_install(
         "io.grpc:grpc-stub:1.8.0",
         "javax.annotation:javax.annotation-api:1.3.2",
         "javax.xml.bind:jaxb-api:2.3.0",
+        "net.sargue:mailgun:1.5.0",
         "org.aspectj:aspectjrt:1.8.13",
         "org.hibernate:hibernate-core:5.2.12.Final",
         "org.hibernate:hibernate-jpamodelgen:5.2.12.Final",
@@ -76,8 +74,21 @@ rules_proto_dependencies()
 
 rules_proto_toolchains()
 
-load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_java_toolchains")
+load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
 
-rules_java_dependencies()
+rules_proto_grpc_toolchains()
 
-rules_java_toolchains()
+rules_proto_grpc_repos()
+
+load("@rules_proto_grpc//java:repositories.bzl", rules_proto_grpc_java_repos = "java_repos")
+
+rules_proto_grpc_java_repos()
+
+load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
+
+grpc_java_repositories(
+    omit_bazel_skylib = True,
+    omit_com_google_protobuf = True,
+    omit_com_google_protobuf_javalite = True,
+    omit_net_zlib = True,
+)

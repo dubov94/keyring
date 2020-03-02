@@ -10,11 +10,14 @@ java_library(
 java_library(
     name = "account_operations_interface",
     srcs = ["AccountOperationsInterface.java"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+    ],
     deps = [
         "//server/src/main/java/com/floreina/keyring/entities:mail_token",
         "//server/src/main/java/com/floreina/keyring/entities:session",
         "//server/src/main/java/com/floreina/keyring/entities:user",
-        "//server/src/main/proto:keyring_java_proto",
+        "//server/src/main/proto:keyring_java_grpc",
     ],
 )
 
@@ -30,7 +33,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/entities:session",
         "//server/src/main/java/com/floreina/keyring/entities:user",
         "//server/src/main/java/com/floreina/keyring/entities:utilities",
-        "//server/src/main/proto:keyring_java_proto",
+        "//server/src/main/proto:keyring_java_grpc",
         "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
     ],
 )
@@ -38,9 +41,12 @@ java_library(
 java_library(
     name = "key_operations_interface",
     srcs = ["KeyOperationsInterface.java"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+    ],
     deps = [
         "//server/src/main/java/com/floreina/keyring/entities:key",
-        "//server/src/main/proto:keyring_java_proto",
+        "//server/src/main/proto:keyring_java_grpc",
     ],
 )
 
@@ -54,7 +60,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/entities:key",
         "//server/src/main/java/com/floreina/keyring/entities:user",
         "//server/src/main/java/com/floreina/keyring/entities:utilities",
-        "//server/src/main/proto:keyring_java_proto",
+        "//server/src/main/proto:keyring_java_grpc",
         "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
     ],
 )
