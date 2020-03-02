@@ -1,6 +1,9 @@
 java_library(
     name = "request_metadata_interceptor_keys",
     srcs = ["RequestMetadataInterceptorKeys.java"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+    ],
     deps = [
         "@maven//:io_grpc_grpc_context",
         "@maven//:io_grpc_grpc_core",
