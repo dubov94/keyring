@@ -10,6 +10,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__",
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
         "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
+        "//server/src/test/java/com/floreina/keyring:__pkg__",
     ],
     deps = [
         "@maven//:javax_annotation_javax_annotation_api",
@@ -30,6 +31,7 @@ java_library(
     visibility = [
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
         "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
+        "//server/src/test/java/com/floreina/keyring:__pkg__",
     ],
     deps = [
         ":user",

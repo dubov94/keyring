@@ -1,7 +1,10 @@
 java_library(
     name = "chronometry",
     srcs = ["Chronometry.java"],
-    visibility = ["//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__",
+        "//server/src/test/java/com/floreina/keyring:__pkg__",
+    ],
 )
 
 java_library(
@@ -43,6 +46,9 @@ java_library(
 java_library(
     name = "entities_expiration",
     srcs = ["EntitiesExpiration.java"],
+    visibility = [
+        "//server/src/test/java/com/floreina/keyring:__pkg__",
+    ],
     deps = [
         ":chronometry",
         "//server/src/main/java/com/floreina/keyring/aspects:annotations",

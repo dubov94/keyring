@@ -1,4 +1,12 @@
-def junit5_test(name, srcs, test_package, deps = [], runtime_deps = []):
+def junit5_test(
+        name,
+        srcs,
+        test_package,
+        deps = [],
+        runtime_deps = [],
+        data = [],
+        resources = [],
+        jvm_flags = []):
     native.java_test(
         name = name,
         srcs = srcs,
@@ -20,4 +28,7 @@ def junit5_test(name, srcs, test_package, deps = [], runtime_deps = []):
             "@maven//:org_junit_platform_junit_platform_launcher",
             "@maven//:org_junit_platform_junit_platform_suite_api",
         ],
+        data = data,
+        resources = resources,
+        jvm_flags = jvm_flags,
     )

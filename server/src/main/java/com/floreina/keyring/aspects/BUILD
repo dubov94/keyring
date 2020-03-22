@@ -15,6 +15,7 @@ java_library(
     visibility = [
         "//server/src/main:__pkg__",
         "//server/src/main/java/com/floreina/keyring:__pkg__",
+        "//server/src/test/java/com/floreina/keyring:__pkg__",
     ],
     deps = [
         ":annotations",
@@ -30,6 +31,7 @@ java_library(
     visibility = [
         "//server/src/main:__pkg__",
         "//server/src/main/java/com/floreina/keyring:__pkg__",
+        "//server/src/test/java/com/floreina/keyring:__pkg__",
     ],
     deps = [
         ":annotations",
