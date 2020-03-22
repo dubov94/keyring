@@ -11,7 +11,12 @@ java_binary(
         "--add-opens java.base/java.util=ALL-UNNAMED",
     ],
     main_class = "com.floreina.keyring.Launcher",
-    resources = glob(["resources/**/*"]),
+    resources = [
+        "//server/src/main/resources/META-INF:aop.xml",
+        "//server/src/main/resources/META-INF:persistence.xml",
+        "//server/src/main/resources/templates:code.head.twig",
+        "//server/src/main/resources/templates:code.body.twig",
+    ],
     runtime_deps = [
         "//server/src/main/java/com/floreina/keyring:component",
         "//server/src/main/java/com/floreina/keyring:launcher",
