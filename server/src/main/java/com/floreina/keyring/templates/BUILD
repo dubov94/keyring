@@ -26,3 +26,21 @@ java_library(
         "@maven//:org_jtwig_jtwig_core",
     ],
 )
+
+java_library(
+    name = "templates_module",
+    srcs = ["TemplatesModule.java"],
+    plugins = [
+        "//bazel/java:dagger_compiler",
+    ],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring:__pkg__",
+    ],
+    deps = [
+        ":code_body_renderer_factory",
+        ":code_head_renderer_factory",
+        "@maven//:com_google_dagger_dagger",
+        "@maven//:javax_inject_javax_inject",
+        "@maven//:org_jtwig_jtwig_core",
+    ],
+)

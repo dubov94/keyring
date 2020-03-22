@@ -1,0 +1,3 @@
+# https://github.com/bazelbuild/bazel/issues/1356
+# https://docs.bazel.build/versions/master/command-line-reference.html#flag--enable_runfiles
+build --enable_runfiles

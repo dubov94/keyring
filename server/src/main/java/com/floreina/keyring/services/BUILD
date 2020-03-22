@@ -12,6 +12,9 @@ java_library(
 java_library(
     name = "administration_service",
     srcs = ["AdministrationService.java"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring:__pkg__",
+    ],
     deps = [
         ":utilities",
         "//server/src/main/java/com/floreina/keyring:cryptography",
@@ -34,6 +37,9 @@ java_library(
 java_library(
     name = "authentication_service",
     srcs = ["AuthenticationService.java"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring:__pkg__",
+    ],
     deps = [
         ":utilities",
         "//server/src/main/java/com/floreina/keyring:cryptography",

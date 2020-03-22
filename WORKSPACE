@@ -1,14 +1,10 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-RULES_JVM_EXTERNAL_TAG = "3.0"
-
-RULES_JVM_EXTERNAL_SHA = "62133c125bf4109dfd9d2af64830208356ce4ef8b165a6ef15bbff7460b35c3a"
-
 http_archive(
     name = "rules_jvm_external",
-    sha256 = RULES_JVM_EXTERNAL_SHA,
-    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
-    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" % RULES_JVM_EXTERNAL_TAG,
+    sha256 = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af",
+    strip_prefix = "rules_jvm_external-3.2",
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/3.2.zip",
 )
 
 http_archive(
@@ -34,19 +30,25 @@ maven_install(
     artifacts = [
         "com.google.code.gson:gson:2.8.2",
         "com.google.dagger:dagger:2.14.1",
+        "com.google.dagger:dagger-compiler:2.14.1",
         "com.google.guava:guava:24.0-jre",
         "com.google.http-client:google-http-client:1.31.0",
         "com.google.http-client:google-http-client-gson:1.31.0",
-        "io.grpc:grpc-netty:1.8.0",
-        "io.grpc:grpc-protobuf:1.8.0",
-        "io.grpc:grpc-stub:1.8.0",
+        "io.grpc:grpc-netty-shaded:1.28.0",
+        "io.grpc:grpc-protobuf:1.28.0",
+        "io.grpc:grpc-stub:1.28.0",
+        "javax.activation:activation:1.1.1",
         "javax.annotation:javax.annotation-api:1.3.2",
         "javax.xml.bind:jaxb-api:2.3.0",
         "net.sargue:mailgun:1.5.0",
         "org.aspectj:aspectjrt:1.8.13",
+        "org.aspectj:aspectjweaver:1.8.13",
+        "org.hibernate:hibernate-c3p0:5.2.12.Final",
         "org.hibernate:hibernate-core:5.2.12.Final",
         "org.hibernate:hibernate-jpamodelgen:5.2.12.Final",
         "org.jtwig:jtwig-core:5.86.1.RELEASE",
+        "org.postgresql:postgresql:42.1.4",
+        "org.slf4j:slf4j-simple:1.7.25",
         "redis.clients:jedis:2.9.0",
     ] + [
         "org.apiguardian:apiguardian-api:1.0.0",

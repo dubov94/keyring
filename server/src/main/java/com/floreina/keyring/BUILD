@@ -39,3 +39,79 @@ java_library(
         "@maven//:net_sargue_mailgun",
     ],
 )
+
+java_library(
+    name = "entities_expiration",
+    srcs = ["EntitiesExpiration.java"],
+    deps = [
+        ":chronometry",
+        "//server/src/main/java/com/floreina/keyring/aspects:annotations",
+        "//server/src/main/java/com/floreina/keyring/entities:mail_token",
+        "//server/src/main/java/com/floreina/keyring/entities:session",
+        "//server/src/main/java/com/floreina/keyring/entities:user",
+        "@maven//:javax_inject_javax_inject",
+        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
+    ],
+)
+
+java_library(
+    name = "top_module",
+    srcs = ["TopModule.java"],
+    plugins = [
+        "//bazel/java:dagger_compiler",
+    ],
+    deps = [
+        ":chronometry",
+        ":cryptography",
+        "//server/src/main/java/com/floreina/keyring/interceptors:request_metadata_interceptor",
+        "//server/src/main/java/com/floreina/keyring/interceptors:request_metadata_interceptor_keys",
+        "//server/src/main/java/com/floreina/keyring/interceptors:session_interceptor_keys",
+        "@maven//:com_google_code_gson_gson",
+        "@maven//:com_google_dagger_dagger",
+        "@maven//:javax_inject_javax_inject",
+    ],
+)
+
+java_library(
+    name = "component",
+    srcs = ["Component.java"],
+    plugins = [
+        "//bazel/java:dagger_compiler",
+    ],
+    visibility = [
+        "//server/src/main:__pkg__",
+    ],
+    deps = [
+        ":entities_expiration",
+        ":top_module",
+        "//server/src/main/java/com/floreina/keyring/geolocation:geolocation_module",
+        "//server/src/main/java/com/floreina/keyring/interceptors:request_metadata_interceptor",
+        "//server/src/main/java/com/floreina/keyring/interceptors:session_interceptor",
+        "//server/src/main/java/com/floreina/keyring/interceptors:session_interceptor_keys",
+        "//server/src/main/java/com/floreina/keyring/keyvalue:key_value_module",
+        "//server/src/main/java/com/floreina/keyring/services:administration_service",
+        "//server/src/main/java/com/floreina/keyring/services:authentication_service",
+        "//server/src/main/java/com/floreina/keyring/storage:account_operations_interface",
+        "//server/src/main/java/com/floreina/keyring/storage:storage_module",
+        "//server/src/main/java/com/floreina/keyring/templates:templates_module",
+        "@maven//:com_google_dagger_dagger",
+        "@maven//:javax_inject_javax_inject",
+        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
+    ],
+)
+
+java_binary(
+    name = "launcher",
+    srcs = ["Launcher.java"],
+    visibility = [
+        "//server/src/main:__pkg__",
+    ],
+    deps = [
+        ":component",
+        ":entities_expiration",
+        "//server/src/main/java/com/floreina/keyring/aspects:storage_manager_aspect",
+        "//server/src/main/java/com/floreina/keyring/aspects:validate_user_aspect",
+        "@maven//:io_grpc_grpc_api",
+        "@maven//:org_aspectj_aspectjrt",
+    ],
+)

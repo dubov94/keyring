@@ -20,6 +20,12 @@ java_library(
 java_library(
     name = "geolocation_module",
     srcs = ["GeolocationModule.java"],
+    plugins = [
+        "//bazel/java:dagger_compiler",
+    ],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring:__pkg__",
+    ],
     deps = [
         ":geolocation_service_client",
         ":geolocation_service_interface",

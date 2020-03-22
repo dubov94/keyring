@@ -11,6 +11,8 @@ java_library(
     name = "account_operations_interface",
     srcs = ["AccountOperationsInterface.java"],
     visibility = [
+        "//server/src/main/java/com/floreina/keyring:__pkg__",
+        "//server/src/main/java/com/floreina/keyring/aspects:__pkg__",
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = [
@@ -68,11 +70,18 @@ java_library(
 java_library(
     name = "storage_exception",
     srcs = ["StorageException.java"],
+    visibility = ["//server/src/main/java/com/floreina/keyring/aspects:__pkg__"],
 )
 
 java_library(
     name = "storage_module",
     srcs = ["StorageModule.java"],
+    plugins = [
+        "//bazel/java:dagger_compiler",
+    ],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring:__pkg__",
+    ],
     deps = [
         ":account_operations_client",
         ":key_operations_client",

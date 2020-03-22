@@ -16,6 +16,12 @@ java_library(
 java_library(
     name = "key_value_module",
     srcs = ["KeyValueModule.java"],
+    plugins = [
+        "//bazel/java:dagger_compiler",
+    ],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring:__pkg__",
+    ],
     deps = [
         "//server/src/main/java/com/floreina/keyring:environment",
         "@maven//:com_google_dagger_dagger",
