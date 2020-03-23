@@ -1,58 +1,48 @@
-java_library(
-    name = "utilities",
-    srcs = ["Utilities.java"],
-    deps = [
-        "//server/src/main/java/com/floreina/keyring:cryptography",
-        "//server/src/main/java/com/floreina/keyring/entities:key",
-        "//server/src/main/java/com/floreina/keyring/entities:user",
-        "//server/src/main/proto:keyring_java_grpc",
-    ],
-)
+load("//bazel/java:junit5.bzl", "junit5_test")
+load("//server:aspectj.bzl", "woven_junit5_test")
 
-java_library(
-    name = "administration_service",
-    srcs = ["AdministrationService.java"],
-    visibility = [
-        "//server/src/main/java/com/floreina/keyring:__pkg__",
-        "//server/src/test/java/com/floreina/keyring/services:__pkg__",
-    ],
+package(default_testonly = 1)
+
+woven_junit5_test(
+    name = "administration_service_test",
+    srcs = ["AdministrationServiceTest.java"],
+    test_package = "com.floreina.keyring.services",
     deps = [
-        ":utilities",
         "//server/src/main/java/com/floreina/keyring:cryptography",
         "//server/src/main/java/com/floreina/keyring:post",
-        "//server/src/main/java/com/floreina/keyring/aspects:annotations",
+        "//server/src/main/java/com/floreina/keyring/aspects:validate_user_aspect",
         "//server/src/main/java/com/floreina/keyring/entities:mail_token",
         "//server/src/main/java/com/floreina/keyring/entities:session",
         "//server/src/main/java/com/floreina/keyring/entities:user",
         "//server/src/main/java/com/floreina/keyring/geolocation:geolocation_service_interface",
         "//server/src/main/java/com/floreina/keyring/interceptors:session_interceptor_keys",
         "//server/src/main/java/com/floreina/keyring/keyvalue:key_value_client",
-        "//server/src/main/java/com/floreina/keyring/keyvalue:user_projection",
+        "//server/src/main/java/com/floreina/keyring/services:administration_service",
         "//server/src/main/java/com/floreina/keyring/storage:account_operations_interface",
         "//server/src/main/java/com/floreina/keyring/storage:key_operations_interface",
         "//server/src/main/proto:keyring_java_grpc",
-        "@maven//:javax_inject_javax_inject",
+        "@maven//:com_google_guava_guava",
+        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
+        "@maven//:org_aspectj_aspectjrt",
+        "@maven//:org_mockito_mockito_core",
     ],
 )
 
-java_library(
-    name = "authentication_service",
-    srcs = ["AuthenticationService.java"],
-    visibility = [
-        "//server/src/main/java/com/floreina/keyring:__pkg__",
-        "//server/src/test/java/com/floreina/keyring/services:__pkg__",
-    ],
+junit5_test(
+    name = "authentication_service_test",
+    srcs = ["AuthenticationServiceTest.java"],
+    test_package = "com.floreina.keyring.services",
     deps = [
-        ":utilities",
         "//server/src/main/java/com/floreina/keyring:cryptography",
         "//server/src/main/java/com/floreina/keyring:post",
         "//server/src/main/java/com/floreina/keyring/entities:user",
         "//server/src/main/java/com/floreina/keyring/interceptors:request_metadata_interceptor_keys",
         "//server/src/main/java/com/floreina/keyring/keyvalue:key_value_client",
-        "//server/src/main/java/com/floreina/keyring/keyvalue:user_projection",
+        "//server/src/main/java/com/floreina/keyring/services:authentication_service",
         "//server/src/main/java/com/floreina/keyring/storage:account_operations_interface",
         "//server/src/main/java/com/floreina/keyring/storage:key_operations_interface",
         "//server/src/main/proto:keyring_java_grpc",
-        "@maven//:javax_inject_javax_inject",
+        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
+        "@maven//:org_mockito_mockito_core",
     ],
 )

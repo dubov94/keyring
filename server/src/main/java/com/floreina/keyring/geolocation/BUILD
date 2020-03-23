@@ -3,6 +3,7 @@ java_library(
     srcs = ["GeolocationServiceInterface.java"],
     visibility = [
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = ["//server/src/main/proto:keyring_java_grpc"],
 )

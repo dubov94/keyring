@@ -36,6 +36,7 @@ java_library(
     visibility = [
         "//server/src/main/java/com/floreina/keyring/interceptors:__pkg__",
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = [
         ":key_value_exception",
