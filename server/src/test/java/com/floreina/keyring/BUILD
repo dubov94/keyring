@@ -1,4 +1,5 @@
 load("//bazel/java:junit5.bzl", "junit5_test")
+load("//server:aspectj.bzl", "woven_junit5_test")
 
 package(default_testonly = 1)
 
@@ -13,24 +14,12 @@ junit5_test(
     ],
 )
 
-junit5_test(
+woven_junit5_test(
     name = "entities_expiration_test",
     srcs = ["EntitiesExpirationTest.java"],
-    data = [
-        "//bazel/java:aspectjweaver",
-    ],
-    jvm_flags = [
-        "-javaagent:$(rootpath //bazel/java:aspectjweaver)",
-        # https://www.eclipse.org/aspectj/doc/released/README-194.html
-        "--add-opens java.base/java.lang=ALL-UNNAMED",
-    ],
-    resources = [
-        "//server/src/main/resources/META-INF:aop.xml",
-        "//server/src/main/resources/META-INF:persistence.xml",
-    ],
+    resources = ["//server/src/main/resources/META-INF:persistence.xml"],
     test_package = "com.floreina.keyring",
     runtime_deps = [
-        "//server/src/main/java/com/floreina/keyring/aspects:validate_user_aspect",
         "@maven//:com_h2database_h2",
         "@maven//:javax_xml_bind_jaxb_api",
     ],
