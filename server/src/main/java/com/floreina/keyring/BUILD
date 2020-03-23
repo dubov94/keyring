@@ -4,6 +4,7 @@ java_library(
     visibility = [
         "//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__",
         "//server/src/test/java/com/floreina/keyring:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/keyvalue:__pkg__",
     ],
 )
 
@@ -14,6 +15,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__",
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
         "//server/src/test/java/com/floreina/keyring:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/keyvalue:__pkg__",
         "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = ["@maven//:com_google_guava_guava"],

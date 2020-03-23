@@ -1,3 +1,6 @@
 # https://github.com/bazelbuild/bazel/issues/1356
 # https://docs.bazel.build/versions/master/command-line-reference.html#flag--enable_runfiles
 build --enable_runfiles
+
+# https://github.com/kstyrc/embedded-redis/blob/master/src/main/java/redis/embedded/util/OSDetector.java
+build --test_env=PROCESSOR_ARCHITECTURE

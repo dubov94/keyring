@@ -62,6 +62,7 @@ maven_install(
         "org.junit.platform:junit-platform-suite-api:1.5.0",
         "org.opentest4j:opentest4j:1.1.1",
     ] + [
+        "com.github.kstyrc:embedded-redis:0.6",
         "com.h2database:h2:1.4.197",
         "name.falgout.jeffrey.testing.junit5:mockito-extension:1.0.0",
         "org.mockito:mockito-core:2.15.0",

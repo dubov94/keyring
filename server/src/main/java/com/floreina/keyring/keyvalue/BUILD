@@ -4,6 +4,7 @@ java_library(
     visibility = [
         "//server/src/main/java/com/floreina/keyring/interceptors:__pkg__",
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/keyvalue:__pkg__",
     ],
     deps = ["//server/src/main/java/com/floreina/keyring/entities:user"],
 )
@@ -11,6 +12,9 @@ java_library(
 java_library(
     name = "key_value_exception",
     srcs = ["KeyValueException.java"],
+    visibility = [
+        "//server/src/test/java/com/floreina/keyring/keyvalue:__pkg__",
+    ],
 )
 
 java_library(
@@ -36,6 +40,7 @@ java_library(
     visibility = [
         "//server/src/main/java/com/floreina/keyring/interceptors:__pkg__",
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/keyvalue:__pkg__",
         "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = [
