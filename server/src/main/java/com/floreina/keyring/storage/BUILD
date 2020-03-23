@@ -14,6 +14,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring:__pkg__",
         "//server/src/main/java/com/floreina/keyring/aspects:__pkg__",
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/aspects:__pkg__",
         "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = [
@@ -80,6 +81,7 @@ java_library(
     srcs = ["StorageException.java"],
     visibility = [
         "//server/src/main/java/com/floreina/keyring/aspects:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/aspects:__pkg__",
         "//server/src/test/java/com/floreina/keyring/storage:__pkg__",
     ],
 )
