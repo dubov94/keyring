@@ -1,9 +1,13 @@
-from maven:3-jdk-8
+from l.gcr.io/google/bazel:2.2.0
 
-workdir /root/keyring/server
+workdir /root/keyring
 
-copy ./server ./
-run mvn compile
+copy ./WORKSPACE ./
+copy ./.bazelrc ./
+copy ./bazel ./bazel
+copy ./server ./server
+
+run bazel build //server/src/main
 
 env MODULE_ENVIRONMENT="production"
 expose 591

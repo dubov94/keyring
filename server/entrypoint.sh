@@ -8,4 +8,4 @@ do
 done
 
 echo 'Running the server...'
-mvn exec:exec
+bazel run //server/src/main
