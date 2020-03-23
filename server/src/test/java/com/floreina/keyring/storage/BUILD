@@ -1,5 +1,7 @@
 load("//server:aspectj.bzl", "woven_junit5_test")
 
+package(default_testonly = 1)
+
 woven_junit5_test(
     name = "account_operations_client_test",
     srcs = ["AccountOperationsClientTest.java"],
