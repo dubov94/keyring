@@ -26,6 +26,9 @@ java_library(
 java_library(
     name = "account_operations_client",
     srcs = ["AccountOperationsClient.java"],
+    visibility = [
+        "//server/src/test/java/com/floreina/keyring/storage:__pkg__",
+    ],
     deps = [
         ":account_operations_interface",
         ":queries",
@@ -55,6 +58,9 @@ java_library(
 java_library(
     name = "key_operations_client",
     srcs = ["KeyOperationsClient.java"],
+    visibility = [
+        "//server/src/test/java/com/floreina/keyring/storage:__pkg__",
+    ],
     deps = [
         ":key_operations_interface",
         ":queries",
@@ -70,7 +76,10 @@ java_library(
 java_library(
     name = "storage_exception",
     srcs = ["StorageException.java"],
-    visibility = ["//server/src/main/java/com/floreina/keyring/aspects:__pkg__"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring/aspects:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/storage:__pkg__",
+    ],
 )
 
 java_library(

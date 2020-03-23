@@ -12,11 +12,7 @@ java_library(
 java_library(
     name = "storage_manager_aspect",
     srcs = ["StorageManagerAspect.java"],
-    visibility = [
-        "//server/src/main:__pkg__",
-        "//server/src/main/java/com/floreina/keyring:__pkg__",
-        "//server/src/test/java/com/floreina/keyring:__pkg__",
-    ],
+    visibility = ["//server:sources"],
     deps = [
         ":annotations",
         "//server/src/main/java/com/floreina/keyring/storage:storage_exception",
@@ -28,11 +24,7 @@ java_library(
 java_library(
     name = "validate_user_aspect",
     srcs = ["ValidateUserAspect.java"],
-    visibility = [
-        "//server/src/main:__pkg__",
-        "//server/src/main/java/com/floreina/keyring:__pkg__",
-        "//server/src/test/java/com/floreina/keyring:__pkg__",
-    ],
+    visibility = ["//server:sources"],
     deps = [
         ":annotations",
         "//server/src/main/java/com/floreina/keyring/entities:user",

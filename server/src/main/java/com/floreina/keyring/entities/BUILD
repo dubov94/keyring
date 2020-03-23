@@ -4,14 +4,7 @@ java_library(
     plugins = [
         "//bazel/java:hibernate_jpamodelgen",
     ],
-    visibility = [
-        "//server/src/main/java/com/floreina/keyring:__pkg__",
-        "//server/src/main/java/com/floreina/keyring/aspects:__pkg__",
-        "//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__",
-        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
-        "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
-        "//server/src/test/java/com/floreina/keyring:__pkg__",
-    ],
+    visibility = ["//server:sources"],
     deps = [
         "@maven//:javax_annotation_javax_annotation_api",
         "@maven//:org_hibernate_hibernate_core",
@@ -28,11 +21,7 @@ java_library(
     plugins = [
         "//bazel/java:hibernate_jpamodelgen",
     ],
-    visibility = [
-        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
-        "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
-        "//server/src/test/java/com/floreina/keyring:__pkg__",
-    ],
+    visibility = ["//server:sources"],
     deps = [
         ":user",
         "@maven//:javax_annotation_javax_annotation_api",
@@ -47,11 +36,7 @@ java_library(
     plugins = [
         "//bazel/java:hibernate_jpamodelgen",
     ],
-    visibility = [
-        "//server/src/main/java/com/floreina/keyring:__pkg__",
-        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
-        "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
-    ],
+    visibility = ["//server:sources"],
     deps = [
         ":user",
         "@maven//:javax_annotation_javax_annotation_api",
@@ -66,11 +51,7 @@ java_library(
     plugins = [
         "//bazel/java:hibernate_jpamodelgen",
     ],
-    visibility = [
-        "//server/src/main/java/com/floreina/keyring:__pkg__",
-        "//server/src/main/java/com/floreina/keyring/services:__pkg__",
-        "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
-    ],
+    visibility = ["//server:sources"],
     deps = [
         ":user",
         "@maven//:javax_annotation_javax_annotation_api",
@@ -84,6 +65,7 @@ java_library(
     srcs = ["Utilities.java"],
     visibility = [
         "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/storage:__pkg__",
     ],
     deps = [
         ":key",
