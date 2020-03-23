@@ -11,11 +11,4 @@ client/**/selenium-*.log
 
 proto_bridge/**/node_modules
 
-server/**/.classpath
-server/**/.factorypath
-server/**/.project
-server/**/.idea
-server/**/.settings
-server/**/target
-
 bazel-*
