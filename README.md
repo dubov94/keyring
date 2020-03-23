@@ -5,9 +5,7 @@
 Set up [Redis](https://redis.io/) and [PostgreSQL](https://www.postgresql.org/)
 with `postgres:postgres` as an authentication pair (usually the default).
 
-Run `mvn compile` followed by `mvn exec:exec` from
-[`server`](https://github.com/dubov94/keyring/tree/master/server) to launch the
-server and `npm run start` from
+Run `bazel //server/src/main` to launch the server and `npm run start` from
 [`proto_bridge`](https://github.com/dubov94/keyring/tree/master/proto_bridge) to
 start proxying from JSON to GRPC.
 
