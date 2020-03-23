@@ -11,6 +11,9 @@ java_library(
 java_library(
     name = "geolocation_service_client",
     srcs = ["GeolocationServiceClient.java"],
+    visibility = [
+        "//server/src/test/java/com/floreina/keyring/geolocation:__pkg__",
+    ],
     deps = [
         ":geolocation_service_interface",
         "//server/src/main/proto:keyring_java_grpc",
