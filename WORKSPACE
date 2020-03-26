@@ -26,8 +26,8 @@ http_archive(
 
 http_archive(
     name = "rules_pkg",
-    urls = ["https://github.com/bazelbuild/rules_pkg/releases/download/0.2.4/rules_pkg-0.2.4.tar.gz"],
     sha256 = "4ba8f4ab0ff85f2484287ab06c0d871dcb31cc54d439457d28fd4ae14b18450a",
+    urls = ["https://github.com/bazelbuild/rules_pkg/releases/download/0.2.4/rules_pkg-0.2.4.tar.gz"],
 )
 
 http_archive(
@@ -125,9 +125,9 @@ container_deps()
 load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 
 container_pull(
-  name = "io_docker_index_library_openjdk",
-  registry = "index.docker.io",
-  repository = "library/openjdk",
-  tag = "9-jre",
-  digest = "sha256:85d0cc6be1b6eaa6507c910fcd675a17912d04da8bd718e0e6bab42865229e4f",
+    name = "io_docker_index_library_openjdk",
+    digest = "sha256:85d0cc6be1b6eaa6507c910fcd675a17912d04da8bd718e0e6bab42865229e4f",
+    registry = "index.docker.io",
+    repository = "library/openjdk",
+    tag = "9-jre",
 )

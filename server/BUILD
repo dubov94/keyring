@@ -17,7 +17,7 @@ container_image(
     directory = "/root",
     env = {"MODULE_ENVIRONMENT": "production"},
     files = [":entrypoint.sh"],
-    tars = ["//server/src/main:main_package"],
     ports = ["591"],
+    tars = ["//server/src/main:main_package"],
     workdir = "/root",
 )

@@ -21,7 +21,7 @@ def _java_binary_runner_impl(context):
             context.expand_location(
                 jvm_flag,
                 context.attr.deps,
-            )
+            ),
         )
     context.actions.write(
         output = runner,
