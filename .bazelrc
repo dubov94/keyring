@@ -4,7 +4,3 @@ build --enable_runfiles
 
 # https://github.com/kstyrc/embedded-redis/blob/master/src/main/java/redis/embedded/util/OSDetector.java
 build --test_env=PROCESSOR_ARCHITECTURE
-
-build --action_env=MODULE_ENVIRONMENT
-build --action_env=MAILGUN_API_KEY
-build --action_env=GEOLOCATION_SERVICE_ENDPOINT

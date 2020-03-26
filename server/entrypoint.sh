@@ -8,4 +8,4 @@ do
 done
 
 echo 'Running the server...'
-bazel run //server/src/main
+./main_runner

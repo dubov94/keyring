@@ -13,8 +13,7 @@ build-proto-bridge:
 	docker build -f proto_bridge/Dockerfile -t dubov94/keyring-proto-bridge .
 
 build-server:
-	docker build -f server/Dockerfile -t dubov94/keyring-server .
+	bazel run //server
 
 build-ip-geolocation:
 	docker build -f ip_geolocation/Dockerfile -t dubov94/keyring-ip-geolocation .
-

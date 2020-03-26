@@ -1,5 +1,7 @@
 load("//server:aspectj.bzl", "woven_java_binary")
 
+package(default_visibility = ["//server:__pkg__"])
+
 woven_java_binary(
     name = "main",
     jvm_flags = [

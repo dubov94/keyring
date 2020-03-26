@@ -23,7 +23,7 @@ services:
     environment:
       PROXY_TARGET: 'server:591'
   server:
-    image: dubov94/keyring-server
+    image: 'bazel/server:server'
     secrets:
       - mailgun_api_key
     environment:
