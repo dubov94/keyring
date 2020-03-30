@@ -4,7 +4,7 @@ import com.beust.jcommander.Parameter;
 
 public class Environment {
   @Parameter(names = "--port")
-  private int port = 591;
+  private int port = 5001;
 
   @Parameter(names = "--environment")
   private String type = "development";

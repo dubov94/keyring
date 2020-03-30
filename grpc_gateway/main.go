@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
 
 	"github.com/golang/glog"
@@ -13,7 +14,8 @@ import (
 )
 
 var (
-	serverAddress = flag.String("server-address", "localhost:591", "Server address.")
+	port          = flag.Int("port", 5002, "Port to bind to.")
+	serverAddress = flag.String("server-address", "localhost:5001", "Server address.")
 )
 
 func startProxy() error {
@@ -34,7 +36,7 @@ func startProxy() error {
 		return err
 	}
 
-	return http.ListenAndServe(":80", mux)
+	return http.ListenAndServe(fmt.Sprintf(":%d", *port), mux)
 }
 
 func main() {

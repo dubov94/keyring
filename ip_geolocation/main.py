@@ -25,4 +25,4 @@ update_and_schedule()
 # https://maxminddb.readthedocs.io/en/latest/#exceptions.
 reader = maxminddb.open_database(
     os.path.join(os.getenv('MMDB_PATH'), 'GeoLite2-City.mmdb'))
-bottle.run(host='0.0.0.0', port=80)
+bottle.run(host='0.0.0.0', port=5003)

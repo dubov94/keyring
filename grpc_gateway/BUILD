@@ -24,10 +24,10 @@ container_image(
     base = "@io_docker_index_library_debian//image",
     cmd = [
         "./main",
-        "--server-address=server:591",
+        "--server-address=server:5001",
     ],
     directory = "/root",
     files = [":main"],
-    ports = ["80"],
+    ports = ["5002"],
     workdir = "/root",
 )

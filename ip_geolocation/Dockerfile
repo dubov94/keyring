@@ -17,6 +17,6 @@ workdir /root/keyring/ip_geolocation
 
 copy ./ip_geolocation ./
 
-expose 80
+expose 5003
 cmd ["python3", "main.py"]
 
