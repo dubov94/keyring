@@ -19,9 +19,7 @@ services:
   monitoring:
     image: dubov94/keyring-monitoring
   proto-bridge:
-    image: dubov94/keyring-proto-bridge
-    environment:
-      PROXY_TARGET: 'server:591'
+    image: 'bazel/proto_bridge:proto_bridge'
   server:
     image: 'bazel/server:server'
     secrets:

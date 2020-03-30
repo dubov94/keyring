@@ -9,5 +9,3 @@ client/**/yarn-error.log*
 client/**/test/unit/coverage/
 client/**/test/e2e/reports/
 client/**/selenium-*.log
-
-proto_bridge/**/node_modules/

@@ -10,7 +10,7 @@ build-monitoring:
 	docker build -f monitoring/Dockerfile -t dubov94/keyring-monitoring .
 
 build-proto-bridge:
-	docker build -f proto_bridge/Dockerfile -t dubov94/keyring-proto-bridge .
+	bazel run //proto_bridge
 
 build-server:
 	bazel run //server

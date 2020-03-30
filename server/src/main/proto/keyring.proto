@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package keyring;
 
+import "google/api/annotations.proto";
+
 option java_multiple_files = true;
 option java_package = "com.floreina.keyring";
 
@@ -76,9 +78,15 @@ message LogInResponse {
 }
 
 service Authentication {
-    rpc Register (RegisterRequest) returns (RegisterResponse);
-    rpc GetSalt (GetSaltRequest) returns (GetSaltResponse);
-    rpc LogIn (LogInRequest) returns (LogInResponse);
+    rpc Register (RegisterRequest) returns (RegisterResponse) {
+        option (google.api.http) = { post: "/authentication/register" };
+    }
+    rpc GetSalt (GetSaltRequest) returns (GetSaltResponse) {
+        option (google.api.http) = { get: "/authentication/get-salt/{username}" };
+    }
+    rpc LogIn (LogInRequest) returns (LogInResponse) {
+        option (google.api.http) = { post: "/authentication/log-in" };
+    }
 }
 
 message AcquireMailTokenRequest {
@@ -226,15 +234,37 @@ message GetRecentSessionsResponse {
 }
 
 service Administration {
-    rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse);
-    rpc ReleaseMailToken (ReleaseMailTokenRequest) returns (ReleaseMailTokenResponse);
-    rpc KeepAlive (KeepAliveRequest) returns (KeepAliveResponse);
-    rpc CreateKey (CreateKeyRequest) returns (CreateKeyResponse);
-    rpc ReadKeys (ReadKeysRequest) returns (ReadKeysResponse);
-    rpc UpdateKey (UpdateKeyRequest) returns (UpdateKeyResponse);
-    rpc DeleteKey (DeleteKeyRequest) returns (DeleteKeyResponse);
-    rpc ChangeMasterKey (ChangeMasterKeyRequest) returns (ChangeMasterKeyResponse);
-    rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse);
-    rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse);
-    rpc GetRecentSessions (GetRecentSessionsRequest) returns (GetRecentSessionsResponse);
+    rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse) {
+        option (google.api.http) = { post: "/administration/acquire-mail-token" };
+    }
+    rpc ReleaseMailToken (ReleaseMailTokenRequest) returns (ReleaseMailTokenResponse) {
+        option (google.api.http) = { post: "/administration/release-mail-token" };
+    }
+    rpc KeepAlive (KeepAliveRequest) returns (KeepAliveResponse) {
+        option (google.api.http) = { post: "/administration/keep-alive" };
+    };
+    rpc CreateKey (CreateKeyRequest) returns (CreateKeyResponse) {
+        option (google.api.http) = { post: "/administration/create-key" };
+    }
+    rpc ReadKeys (ReadKeysRequest) returns (ReadKeysResponse) {
+        option (google.api.http) = { get: "/administration/read-keys" };
+    }
+    rpc UpdateKey (UpdateKeyRequest) returns (UpdateKeyResponse) {
+        option (google.api.http) = { put: "/administration/update-key" };
+    }
+    rpc DeleteKey (DeleteKeyRequest) returns (DeleteKeyResponse) {
+        option (google.api.http) = { post: "/administration/delete-key" };
+    }
+    rpc ChangeMasterKey (ChangeMasterKeyRequest) returns (ChangeMasterKeyResponse) {
+        option (google.api.http) = { post: "/administration/change-master-key" };
+    }
+    rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse) {
+        option (google.api.http) = { put: "/administration/change-username" };
+    }
+    rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse) {
+        option (google.api.http) = { post: "/administration/delete-account" };
+    }
+    rpc GetRecentSessions (GetRecentSessionsRequest) returns (GetRecentSessionsResponse) {
+        option (google.api.http) = { get: "/administration/get-recent-sessions" };
+    }
 }

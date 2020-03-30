@@ -126,8 +126,40 @@ load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 
 container_pull(
     name = "io_docker_index_library_openjdk",
-    digest = "sha256:85d0cc6be1b6eaa6507c910fcd675a17912d04da8bd718e0e6bab42865229e4f",
+    digest = "sha256:eaa06bc0541a17a55ac9040ccf8ce40655ef6e247534c21e4e065e1cf6078db2",
     registry = "index.docker.io",
     repository = "library/openjdk",
     tag = "9-jre",
 )
+
+container_pull(
+    name = "io_docker_index_library_debian",
+    digest = "sha256:121dd2a723be1c8aa8b116684d66157c93c801f2f5107b60287937e88c13ab89",
+    registry = "index.docker.io",
+    repository = "library/debian",
+    tag = "10.3",
+)
+
+load("@rules_proto_grpc//:repositories.bzl", "bazel_gazelle", "io_bazel_rules_go")
+
+io_bazel_rules_go()
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+
+go_rules_dependencies()
+
+go_register_toolchains()
+
+bazel_gazelle()
+
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+
+gazelle_dependencies()
+
+load("@rules_proto_grpc//github.com/grpc-ecosystem/grpc-gateway:repositories.bzl", rules_proto_grpc_gateway_repos = "gateway_repos")
+
+rules_proto_grpc_gateway_repos()
+
+load("@grpc_ecosystem_grpc_gateway//:repositories.bzl", "go_repositories")
+
+go_repositories()
