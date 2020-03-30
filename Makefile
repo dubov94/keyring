@@ -1,13 +1,10 @@
-default: build-client build-monitoring build-proto-bridge build-server build-ip-geolocation
+default: build-client build-proto-bridge build-server build-ip-geolocation
 
 clean:
 	docker system prune --all --force
 
 build-client:
 	docker build -f client/Dockerfile -t dubov94/keyring-client --build-arg GIT_REVISION="$(shell git describe --always)" .
-
-build-monitoring:
-	docker build -f monitoring/Dockerfile -t dubov94/keyring-monitoring .
 
 build-proto-bridge:
 	bazel run //proto_bridge
