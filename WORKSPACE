@@ -1,11 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-http_archive(
-    name = "rules_jvm_external",
-    sha256 = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af",
-    strip_prefix = "rules_jvm_external-3.2",
-    url = "https://github.com/bazelbuild/rules_jvm_external/archive/3.2.zip",
-)
+# proto_external_dependencies
 
 http_archive(
     name = "rules_proto",
@@ -17,6 +12,14 @@ http_archive(
     ],
 )
 
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+
+rules_proto_dependencies()
+
+rules_proto_toolchains()
+
+# proto_external_dependencies._rules_proto_grpc_dependencies
+
 http_archive(
     name = "rules_proto_grpc",
     sha256 = "5f0f2fc0199810c65a2de148a52ba0aff14d631d4e8202f41aff6a9d590a471b",
@@ -24,17 +27,38 @@ http_archive(
     urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/1.0.2.tar.gz"],
 )
 
-http_archive(
-    name = "rules_pkg",
-    sha256 = "4ba8f4ab0ff85f2484287ab06c0d871dcb31cc54d439457d28fd4ae14b18450a",
-    urls = ["https://github.com/bazelbuild/rules_pkg/releases/download/0.2.4/rules_pkg-0.2.4.tar.gz"],
+load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
+
+rules_proto_grpc_toolchains()
+
+rules_proto_grpc_repos()
+
+# language_specific_dependencies
+
+# language_specific_dependencies.external_java_dependencies
+
+# language_specific_dependencies.external_java_dependencies.rules_proto_grpc_dependencies
+
+load("@rules_proto_grpc//java:repositories.bzl", rules_proto_grpc_java_repos = "java_repos")
+
+rules_proto_grpc_java_repos()
+
+load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
+
+grpc_java_repositories(
+    omit_bazel_skylib = True,
+    omit_com_google_protobuf = True,
+    omit_com_google_protobuf_javalite = True,
+    omit_net_zlib = True,
 )
 
+# language_specific_dependencies.external_java_dependencies
+
 http_archive(
-    name = "io_bazel_rules_docker",
-    sha256 = "dc97fccceacd4c6be14e800b2a00693d5e8d07f69ee187babfd04a80a9f8e250",
-    strip_prefix = "rules_docker-0.14.1",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.1/rules_docker-v0.14.1.tar.gz"],
+    name = "rules_jvm_external",
+    sha256 = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af",
+    strip_prefix = "rules_jvm_external-3.2",
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/3.2.zip",
 )
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
@@ -85,60 +109,9 @@ maven_install(
     ],
 )
 
-load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+# language_specific_dependencies.external_go_dependencies
 
-rules_proto_dependencies()
-
-rules_proto_toolchains()
-
-load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
-
-rules_proto_grpc_toolchains()
-
-rules_proto_grpc_repos()
-
-load("@rules_proto_grpc//java:repositories.bzl", rules_proto_grpc_java_repos = "java_repos")
-
-rules_proto_grpc_java_repos()
-
-load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
-
-grpc_java_repositories(
-    omit_bazel_skylib = True,
-    omit_com_google_protobuf = True,
-    omit_com_google_protobuf_javalite = True,
-    omit_net_zlib = True,
-)
-
-load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
-
-rules_pkg_dependencies()
-
-load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories")
-
-container_repositories()
-
-load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
-
-container_deps()
-
-load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
-
-container_pull(
-    name = "io_docker_index_library_openjdk",
-    digest = "sha256:eaa06bc0541a17a55ac9040ccf8ce40655ef6e247534c21e4e065e1cf6078db2",
-    registry = "index.docker.io",
-    repository = "library/openjdk",
-    tag = "9-jre",
-)
-
-container_pull(
-    name = "io_docker_index_library_debian",
-    digest = "sha256:121dd2a723be1c8aa8b116684d66157c93c801f2f5107b60287937e88c13ab89",
-    registry = "index.docker.io",
-    repository = "library/debian",
-    tag = "10.3",
-)
+# language_specific_dependencies.external_go_dependencies._rules_proto_grpc_dependencies
 
 load("@rules_proto_grpc//:repositories.bzl", "bazel_gazelle", "io_bazel_rules_go")
 
@@ -163,3 +136,56 @@ rules_proto_grpc_gateway_repos()
 load("@grpc_ecosystem_grpc_gateway//:repositories.bzl", "go_repositories")
 
 go_repositories()
+
+# packaging_dependencies
+
+# packaging_dependencies.external_pkg_dependencies
+
+http_archive(
+    name = "rules_pkg",
+    sha256 = "4ba8f4ab0ff85f2484287ab06c0d871dcb31cc54d439457d28fd4ae14b18450a",
+    urls = ["https://github.com/bazelbuild/rules_pkg/releases/download/0.2.4/rules_pkg-0.2.4.tar.gz"],
+)
+
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+
+rules_pkg_dependencies()
+
+# packaging_dependencies.external_docker_dependencies
+
+# packaging_dependencies.external_docker_dependencies._rules_docker_dependencies
+
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "dc97fccceacd4c6be14e800b2a00693d5e8d07f69ee187babfd04a80a9f8e250",
+    strip_prefix = "rules_docker-0.14.1",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.1/rules_docker-v0.14.1.tar.gz"],
+)
+
+load("@io_bazel_rules_docker//repositories:repositories.bzl", container_repositories = "repositories")
+
+container_repositories()
+
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+
+container_deps()
+
+# packaging_dependencies.external_docker_dependencies
+
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+
+container_pull(
+    name = "io_docker_index_library_openjdk",
+    digest = "sha256:eaa06bc0541a17a55ac9040ccf8ce40655ef6e247534c21e4e065e1cf6078db2",
+    registry = "index.docker.io",
+    repository = "library/openjdk",
+    tag = "9-jre",
+)
+
+container_pull(
+    name = "io_docker_index_library_debian",
+    digest = "sha256:121dd2a723be1c8aa8b116684d66157c93c801f2f5107b60287937e88c13ab89",
+    registry = "index.docker.io",
+    repository = "library/debian",
+    tag = "10.3",
+)
