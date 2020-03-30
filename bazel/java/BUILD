@@ -1,6 +1,9 @@
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["junit5.bzl"])
+exports_files([
+    "junit5.bzl",
+    "packaging.bzl",
+])
 
 java_plugin(
     name = "hibernate_jpamodelgen",

@@ -8,4 +8,4 @@ do
 done
 
 echo 'Running the server...'
-./main_runner
+./main_package_runner
