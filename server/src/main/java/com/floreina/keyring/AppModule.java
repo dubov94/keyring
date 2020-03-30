@@ -11,7 +11,7 @@ import javax.inject.Singleton;
 import java.security.SecureRandom;
 
 @Module
-class TopModule {
+class AppModule {
   private static final int SECURITY_CODE_LENGTH = 6;
 
   @Provides

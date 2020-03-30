@@ -65,8 +65,8 @@ java_library(
 )
 
 java_library(
-    name = "top_module",
-    srcs = ["TopModule.java"],
+    name = "app_module",
+    srcs = ["AppModule.java"],
     plugins = [
         "//bazel/java:dagger_compiler",
     ],
@@ -83,8 +83,8 @@ java_library(
 )
 
 java_library(
-    name = "component",
-    srcs = ["Component.java"],
+    name = "app_component",
+    srcs = ["AppComponent.java"],
     plugins = [
         "//bazel/java:dagger_compiler",
     ],
@@ -92,8 +92,8 @@ java_library(
         "//server/src/main:__pkg__",
     ],
     deps = [
+        ":app_module",
         ":entities_expiration",
-        ":top_module",
         "//server/src/main/java/com/floreina/keyring/geolocation:geolocation_module",
         "//server/src/main/java/com/floreina/keyring/interceptors:request_metadata_interceptor",
         "//server/src/main/java/com/floreina/keyring/interceptors:session_interceptor",
@@ -117,7 +117,7 @@ java_binary(
         "//server/src/main:__pkg__",
     ],
     deps = [
-        ":component",
+        ":app_component",
         ":entities_expiration",
         "//server/src/main/java/com/floreina/keyring/aspects:storage_manager_aspect",
         "//server/src/main/java/com/floreina/keyring/aspects:validate_user_aspect",

@@ -15,7 +15,7 @@ woven_java_binary(
         "//server/src/main/resources/templates:code.head.twig",
     ],
     runtime_deps = [
-        "//server/src/main/java/com/floreina/keyring:component",
+        "//server/src/main/java/com/floreina/keyring:app_component",
         "//server/src/main/java/com/floreina/keyring:launcher",
         "@maven//:io_grpc_grpc_netty_shaded",
         "@maven//:io_grpc_grpc_protobuf",

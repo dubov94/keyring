@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 class Launcher {
   private static final Logger logger = Logger.getLogger(Launcher.class.getName());
   private Server server;
-  private Component component;
+  private AppComponent appComponent;
   private Timer timer;
   private EntitiesExpiration entitiesExpiration;
 
@@ -31,10 +31,12 @@ class Launcher {
   }
 
   private void initialize() {
-    component = DaggerComponent.create();
+    appComponent = DaggerAppComponent.create();
     Aspects.aspectOf(ValidateUserAspect.class)
-        .initialize(component.sessionInterceptorKeys(), component.accountOperationsInterface());
-    Aspects.aspectOf(StorageManagerAspect.class).initialize(component.entityManagerFactory());
+        .initialize(
+            appComponent.sessionInterceptorKeys(),
+            appComponent.accountOperationsInterface());
+    Aspects.aspectOf(StorageManagerAspect.class).initialize(appComponent.entityManagerFactory());
   }
 
   private void startServer() throws IOException {
@@ -42,19 +44,20 @@ class Launcher {
         ServerBuilder.forPort(591)
             .addService(
                 ServerInterceptors.intercept(
-                    component.authenticationService(), component.requestMetadataInterceptor()))
+                    appComponent.authenticationService(),
+                    appComponent.requestMetadataInterceptor()))
             .addService(
                 ServerInterceptors.intercept(
-                    component.administrationService(),
-                    component.requestMetadataInterceptor(),
-                    component.sessionInterceptor()))
+                    appComponent.administrationService(),
+                    appComponent.requestMetadataInterceptor(),
+                    appComponent.sessionInterceptor()))
             .build();
     server.start();
     logger.info("Listening...");
   }
 
   private void scheduleExpiration() {
-    entitiesExpiration = component.expireEntitiesMethods();
+    entitiesExpiration = appComponent.expireEntitiesMethods();
     timer = new Timer();
     timer.schedule(
         new TimerTask() {

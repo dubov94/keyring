@@ -19,12 +19,12 @@ import javax.persistence.EntityManagerFactory;
     GeolocationModule.class,
     KeyValueModule.class,
     StorageModule.class,
-    TopModule.class,
+    AppModule.class,
     TemplatesModule.class
   }
 )
 @Singleton
-interface Component {
+interface AppComponent {
   AuthenticationService authenticationService();
 
   AdministrationService administrationService();
