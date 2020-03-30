@@ -1,4 +1,4 @@
 pwd.floreina.me {
-    proxy /api proto-bridge:80
+    proxy /api grpc-gateway:80
     proxy / client:80
 }

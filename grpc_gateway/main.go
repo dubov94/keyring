@@ -9,7 +9,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
 
-	gw "github.com/dubov94/keyring/proto-bridge/keyring_gateway_library"
+	gw "github.com/dubov94/keyring/grpc-gateway/keyring_gateway_library"
 )
 
 var (

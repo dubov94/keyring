@@ -1,4 +1,4 @@
-default: build-client build-proto-bridge build-server build-ip-geolocation
+default: build-client build-grpc-gateway build-server build-ip-geolocation
 
 clean:
 	docker system prune --all --force
@@ -6,8 +6,8 @@ clean:
 build-client:
 	docker build -f client/Dockerfile -t dubov94/keyring-client --build-arg GIT_REVISION="$(shell git describe --always)" .
 
-build-proto-bridge:
-	bazel run //proto_bridge
+build-grpc-gateway:
+	bazel run //grpc_gateway
 
 build-server:
 	bazel run //server

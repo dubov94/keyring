@@ -5,7 +5,7 @@ load("@rules_proto_grpc//github.com/grpc-ecosystem/grpc-gateway:defs.bzl", "gate
 
 gateway_grpc_library(
     name = "keyring_gateway_library",
-    importpath = "github.com/dubov94/keyring/proto-bridge/keyring_gateway_library",
+    importpath = "github.com/dubov94/keyring/grpc-gateway/keyring_gateway_library",
     deps = ["//server/src/main/proto:keyring_proto"],
 )
 
@@ -21,7 +21,7 @@ go_binary(
 )
 
 container_image(
-    name = "proto_bridge",
+    name = "grpc_gateway",
     base = "@io_docker_index_library_debian//image",
     cmd = [
         "./main",

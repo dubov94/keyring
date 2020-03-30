@@ -16,8 +16,8 @@ services:
         target: 443
   client:
     image: dubov94/keyring-client
-  proto-bridge:
-    image: 'bazel/proto_bridge:proto_bridge'
+  grpc-gateway:
+    image: 'bazel/grpc_gateway:grpc_gateway'
   server:
     image: 'bazel/server:server'
     secrets:

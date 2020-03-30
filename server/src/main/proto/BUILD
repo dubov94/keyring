@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 load("@rules_proto_grpc//java:defs.bzl", "java_grpc_library")
 
 package(default_visibility = [
-    "//proto_bridge:__pkg__",
+    "//grpc_gateway:__pkg__",
     "//server:sources",
 ])
 

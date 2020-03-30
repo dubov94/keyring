@@ -5,7 +5,7 @@
 Set up [Redis](https://redis.io/) and [PostgreSQL](https://www.postgresql.org/)
 with `postgres:postgres` as an authentication pair (usually the default).
 
-Run `bazel //server/src/main` to launch the server and `bazel //proto_bridge:main` to
+Run `bazel //server/src/main` to launch the server and `bazel //grpc_gateway:main` to
 start proxying from JSON to GRPC.
 
 Execute `npm run develop` from
