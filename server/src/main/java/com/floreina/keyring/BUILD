@@ -29,6 +29,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__",
         "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
     ],
+    deps = ["@maven//:com_beust_jcommander"],
 )
 
 java_library(
@@ -94,6 +95,7 @@ java_library(
     deps = [
         ":app_module",
         ":entities_expiration",
+        ":environment",
         "//server/src/main/java/com/floreina/keyring/geolocation:geolocation_module",
         "//server/src/main/java/com/floreina/keyring/interceptors:request_metadata_interceptor",
         "//server/src/main/java/com/floreina/keyring/interceptors:session_interceptor",
@@ -117,10 +119,12 @@ java_binary(
         "//server/src/main:__pkg__",
     ],
     deps = [
+        "environment",
         ":app_component",
         ":entities_expiration",
         "//server/src/main/java/com/floreina/keyring/aspects:storage_manager_aspect",
         "//server/src/main/java/com/floreina/keyring/aspects:validate_user_aspect",
+        "@maven//:com_beust_jcommander",
         "@maven//:io_grpc_grpc_api",
         "@maven//:org_aspectj_aspectjrt",
     ],

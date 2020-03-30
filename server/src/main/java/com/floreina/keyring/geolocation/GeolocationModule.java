@@ -15,15 +15,15 @@ import javax.inject.Singleton;
 public class GeolocationModule {
   @Provides
   @Singleton
-  static GeolocationServiceInterface provideGeolocationServiceInterface() {
-    if (Environment.isProduction()) {
+  static GeolocationServiceInterface provideGeolocationServiceInterface(Environment environment) {
+    if (environment.isProduction()) {
       GsonFactory gsonFactory = new GsonFactory();
       HttpRequestFactory httpRequestFactory =
           new NetHttpTransport()
               .createRequestFactory(
                   httpRequest -> httpRequest.setParser(new JsonObjectParser(gsonFactory)));
       return new GeolocationServiceClient(
-          httpRequestFactory, Environment.getGeolocationServiceEndpoint());
+          httpRequestFactory, environment.getGeolocationAddress());
     } else {
       return ip -> Geolocation.getDefaultInstance();
     }

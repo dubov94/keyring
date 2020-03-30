@@ -12,9 +12,9 @@ import javax.persistence.Persistence;
 public class StorageModule {
   @Provides
   @Singleton
-  static EntityManagerFactory provideEntityManagerFactory() {
+  static EntityManagerFactory provideEntityManagerFactory(Environment environment) {
     return Persistence.createEntityManagerFactory(
-        Environment.isProduction() ? "production" : "development");
+        environment.isProduction() ? "production" : "development");
   }
 
   @Provides

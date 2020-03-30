@@ -1,5 +1,6 @@
 package com.floreina.keyring;
 
+import com.beust.jcommander.JCommander;
 import com.floreina.keyring.aspects.StorageManagerAspect;
 import com.floreina.keyring.aspects.ValidateUserAspect;
 import io.grpc.Server;
@@ -16,22 +17,25 @@ import java.util.logging.Logger;
 
 class Launcher {
   private static final Logger logger = Logger.getLogger(Launcher.class.getName());
+  private static final int EXPIRATION_TIMEOUT_IN_S = 60 * 1000;
   private Server server;
   private AppComponent appComponent;
   private Timer timer;
   private EntitiesExpiration entitiesExpiration;
 
   public static void main(String[] args) throws IOException, InterruptedException {
+    Environment environment = new Environment();
+    JCommander.newBuilder().addObject(environment).build().parse(args);
     Launcher launcher = new Launcher();
-    launcher.initialize();
-    Runtime.getRuntime().addShutdownHook(new Thread(launcher::stop));
-    launcher.startServer();
+    launcher.initialize(environment);
+    Runtime.getRuntime().addShutdownHook(new Thread(launcher::cleanUp));
+    launcher.startServer(environment.getPort());
     launcher.scheduleExpiration();
     launcher.awaitTermination();
   }
 
-  private void initialize() {
-    appComponent = DaggerAppComponent.create();
+  private void initialize(Environment environment) {
+    appComponent = DaggerAppComponent.builder().environment(environment).build();
     Aspects.aspectOf(ValidateUserAspect.class)
         .initialize(
             appComponent.sessionInterceptorKeys(),
@@ -39,9 +43,9 @@ class Launcher {
     Aspects.aspectOf(StorageManagerAspect.class).initialize(appComponent.entityManagerFactory());
   }
 
-  private void startServer() throws IOException {
+  private void startServer(int port) throws IOException {
     server =
-        ServerBuilder.forPort(591)
+        ServerBuilder.forPort(port)
             .addService(
                 ServerInterceptors.intercept(
                     appComponent.authenticationService(),
@@ -70,10 +74,10 @@ class Launcher {
           }
         },
         Date.from(Instant.now()),
-        60 * 1000);
+        EXPIRATION_TIMEOUT_IN_S);
   }
 
-  private void stop() {
+  private void cleanUp() {
     if (timer != null) {
       timer.cancel();
     }
@@ -83,8 +87,6 @@ class Launcher {
   }
 
   private void awaitTermination() throws InterruptedException {
-    if (server != null) {
-      server.awaitTermination();
-    }
+    server.awaitTermination();
   }
 }

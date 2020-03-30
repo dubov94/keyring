@@ -12,7 +12,7 @@ def _java_runner_impl(context):
         )
     context.actions.write(
         output = runner,
-        content = "java {} -jar {}".format(
+        content = "java {} -jar {} \"$@\"".format(
             " ".join(expanded_jvm_flags),
             context.attr.deploy_jar.label.name,
         ),

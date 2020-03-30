@@ -16,10 +16,10 @@ import javax.persistence.EntityManagerFactory;
 
 @dagger.Component(
   modules = {
+    AppModule.class,
     GeolocationModule.class,
     KeyValueModule.class,
     StorageModule.class,
-    AppModule.class,
     TemplatesModule.class
   }
 )
@@ -40,4 +40,11 @@ interface AppComponent {
   RequestMetadataInterceptor requestMetadataInterceptor();
 
   EntitiesExpiration expireEntitiesMethods();
+
+  @dagger.Component.Builder
+  interface Builder {
+    @dagger.BindsInstance Builder environment(Environment environment);
+
+    AppComponent build();
+  }
 }

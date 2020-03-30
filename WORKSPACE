@@ -65,6 +65,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
     artifacts = [
+        "com.beust:jcommander:1.78",
         "com.google.code.gson:gson:2.8.2",
         "com.google.dagger:dagger:2.14.1",
         "com.google.dagger:dagger-compiler:2.14.1",

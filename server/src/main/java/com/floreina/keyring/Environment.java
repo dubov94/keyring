@@ -1,19 +1,41 @@
 package com.floreina.keyring;
 
+import com.beust.jcommander.Parameter;
+
 public class Environment {
-  private static String getVariable(String key) {
+  @Parameter(names = "--port")
+  private int port = 591;
+
+  @Parameter(names = "--environment")
+  private String type = "development";
+
+  @Parameter(names = "--redis_host")
+  private String redisHost = "localhost";
+
+  @Parameter(names = "--geolocation_address")
+  private String geolocationAddress = "localhost:5003";
+
+  private String getVariable(String key) {
     return System.getenv(key);
   }
 
-  public static boolean isProduction() {
-    return "production".equals(getVariable("MODULE_ENVIRONMENT"));
+  public int getPort() {
+    return port;
   }
 
-  static String getMailgunApiKey() {
+  public boolean isProduction() {
+    return "production".equals(type);
+  }
+
+  public String getMailgunApiKey() {
     return getVariable("MAILGUN_API_KEY");
   }
 
-  public static String getGeolocationServiceEndpoint() {
-    return getVariable("GEOLOCATION_SERVICE_ENDPOINT");
+  public String getRedisHost() {
+    return redisHost;
+  }
+
+  public String getGeolocationAddress() {
+    return geolocationAddress;
   }
 }

@@ -8,4 +8,4 @@ do
 done
 
 echo 'Running the server...'
-./main_package_runner
+./main_package_runner --environment=production --redis_host=redis --geolocation_address=geolocation:80
