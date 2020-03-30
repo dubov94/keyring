@@ -1,19 +1,18 @@
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
-load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_proto_grpc//github.com/grpc-ecosystem/grpc-gateway:defs.bzl", "gateway_grpc_library")
 
 gateway_grpc_library(
-    name = "keyring_gateway_library",
-    importpath = "github.com/dubov94/keyring/grpc-gateway/keyring_gateway_library",
-    deps = ["//server/src/main/proto:keyring_proto"],
+    name = "service_gateway_library",
+    importpath = "github.com/dubov94/keyring/grpc-gateway/service_gateway_library",
+    deps = ["//proto:service_proto"],
 )
 
 go_binary(
     name = "main",
     srcs = ["main.go"],
     deps = [
-        ":keyring_gateway_library",
+        ":service_gateway_library",
         "@com_github_golang_glog//:go_default_library",
         "@grpc_ecosystem_grpc_gateway//runtime:go_default_library",
         "@org_golang_google_grpc//:go_default_library",

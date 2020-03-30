@@ -5,7 +5,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring:cryptography",
         "//server/src/main/java/com/floreina/keyring/entities:key",
         "//server/src/main/java/com/floreina/keyring/entities:user",
-        "//server/src/main/proto:keyring_java_grpc",
+        "//proto:service_java_grpc",
     ],
 )
 
@@ -30,7 +30,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/keyvalue:user_projection",
         "//server/src/main/java/com/floreina/keyring/storage:account_operations_interface",
         "//server/src/main/java/com/floreina/keyring/storage:key_operations_interface",
-        "//server/src/main/proto:keyring_java_grpc",
+        "//proto:service_java_grpc",
         "@maven//:javax_inject_javax_inject",
     ],
 )
@@ -52,7 +52,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/keyvalue:user_projection",
         "//server/src/main/java/com/floreina/keyring/storage:account_operations_interface",
         "//server/src/main/java/com/floreina/keyring/storage:key_operations_interface",
-        "//server/src/main/proto:keyring_java_grpc",
+        "//proto:service_java_grpc",
         "@maven//:javax_inject_javax_inject",
     ],
 )

@@ -8,12 +8,12 @@ package(default_visibility = [
 ])
 
 proto_library(
-    name = "keyring_proto",
-    srcs = ["keyring.proto"],
+    name = "service_proto",
+    srcs = ["service.proto"],
     deps = ["@go_googleapis//google/api:annotations_proto"],
 )
 
 java_grpc_library(
-    name = "keyring_java_grpc",
-    deps = [":keyring_proto"],
+    name = "service_java_grpc",
+    deps = [":service_proto"],
 )

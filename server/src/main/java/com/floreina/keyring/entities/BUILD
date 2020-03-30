@@ -70,6 +70,6 @@ java_library(
     deps = [
         ":key",
         ":user",
-        "//server/src/main/proto:keyring_java_grpc",
+        "//proto:service_java_grpc",
     ],
 )
