@@ -3,7 +3,7 @@ java_library(
     srcs = ["Queries.java"],
     deps = [
         "//server/src/main/java/com/floreina/keyring/entities:user",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
+        "@maven//:javax_persistence_javax_persistence_api",
     ],
 )
 
@@ -41,7 +41,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/entities:user",
         "//server/src/main/java/com/floreina/keyring/entities:utilities",
         "//proto:service_java_grpc",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
+        "@maven//:javax_persistence_javax_persistence_api",
     ],
 )
 
@@ -72,7 +72,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/entities:user",
         "//server/src/main/java/com/floreina/keyring/entities:utilities",
         "//proto:service_java_grpc",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
+        "@maven//:javax_persistence_javax_persistence_api",
     ],
 )
 
@@ -103,6 +103,6 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/storage:key_operations_interface",
         "@maven//:com_google_dagger_dagger",
         "@maven//:javax_inject_javax_inject",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
+        "@maven//:javax_persistence_javax_persistence_api",
     ],
 )

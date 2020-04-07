@@ -1,9 +1,11 @@
 # Key Ring
 
+Install Java 11 and [Bazel](https://bazel.build).
+
 ## Development
 
 Set up [Redis](https://redis.io/) and [PostgreSQL](https://www.postgresql.org/)
-with `postgres:postgres` as an authentication pair (usually the default).
+with `postgres:postgres` as an authentication pair. Create database `keyring`.
 
 Run `bazel //server/src/main` to launch the server and `bazel //grpc_gateway:main` to
 start proxying from JSON to GRPC.

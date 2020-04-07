@@ -22,8 +22,8 @@ woven_junit5_test(
         "//server/src/main/java/com/floreina/keyring/storage:storage_exception",
         "//proto:service_java_grpc",
         "@maven//:com_google_guava_guava",
+        "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_aspectj_aspectjrt",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
     ],
 )
 
@@ -43,7 +43,7 @@ woven_junit5_test(
         "//server/src/main/java/com/floreina/keyring/storage:key_operations_client",
         "//proto:service_java_grpc",
         "@maven//:com_google_guava_guava",
+        "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_aspectj_aspectjrt",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
     ],
 )

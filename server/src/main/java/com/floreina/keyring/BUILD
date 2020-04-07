@@ -61,7 +61,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/entities:session",
         "//server/src/main/java/com/floreina/keyring/entities:user",
         "@maven//:javax_inject_javax_inject",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
+        "@maven//:javax_persistence_javax_persistence_api",
     ],
 )
 
@@ -108,7 +108,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/templates:templates_module",
         "@maven//:com_google_dagger_dagger",
         "@maven//:javax_inject_javax_inject",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
+        "@maven//:javax_persistence_javax_persistence_api",
     ],
 )
 

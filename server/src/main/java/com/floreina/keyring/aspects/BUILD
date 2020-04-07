@@ -17,8 +17,8 @@ java_library(
     deps = [
         ":annotations",
         "//server/src/main/java/com/floreina/keyring/storage:storage_exception",
+        "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_aspectj_aspectjrt",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
     ],
 )
 

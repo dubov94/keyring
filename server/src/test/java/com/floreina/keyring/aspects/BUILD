@@ -9,9 +9,9 @@ junit5_test(
     deps = [
         "//server/src/main/java/com/floreina/keyring/aspects:storage_manager_aspect",
         "//server/src/main/java/com/floreina/keyring/storage:storage_exception",
+        "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
         "@maven//:org_mockito_mockito_core",
     ],
 )

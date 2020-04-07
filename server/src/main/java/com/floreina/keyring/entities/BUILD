@@ -7,8 +7,8 @@ java_library(
     visibility = ["//server:sources"],
     deps = [
         "@maven//:javax_annotation_javax_annotation_api",
+        "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_hibernate_hibernate_core",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
     ],
 )
 
@@ -25,8 +25,8 @@ java_library(
     deps = [
         ":user",
         "@maven//:javax_annotation_javax_annotation_api",
+        "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_hibernate_hibernate_core",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
     ],
 )
 
@@ -40,8 +40,8 @@ java_library(
     deps = [
         ":user",
         "@maven//:javax_annotation_javax_annotation_api",
+        "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_hibernate_hibernate_core",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
     ],
 )
 
@@ -55,8 +55,8 @@ java_library(
     deps = [
         ":user",
         "@maven//:javax_annotation_javax_annotation_api",
+        "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_hibernate_hibernate_core",
-        "@maven//:org_hibernate_javax_persistence_hibernate_jpa_2_1_api",
     ],
 )
 
