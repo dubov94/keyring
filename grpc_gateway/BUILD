@@ -2,6 +2,8 @@ load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("@rules_proto_grpc//github.com/grpc-ecosystem/grpc-gateway:defs.bzl", "gateway_grpc_library")
 
+package(default_visibility = ["//:__pkg__"])
+
 gateway_grpc_library(
     name = "service_gateway_library",
     importpath = "github.com/dubov94/keyring/grpc-gateway/service_gateway_library",

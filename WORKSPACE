@@ -1,6 +1,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository") 
 
-# proto_external_dependencies
+# external_proto_dependencies
 
 http_archive(
     name = "rules_proto",
@@ -18,7 +19,7 @@ rules_proto_dependencies()
 
 rules_proto_toolchains()
 
-# proto_external_dependencies._rules_proto_grpc_dependencies
+# external_proto_dependencies._rules_proto_grpc_dependencies
 
 http_archive(
     name = "rules_proto_grpc",
@@ -190,3 +191,16 @@ container_pull(
     repository = "library/debian",
     tag = "10.3",
 )
+
+# multirun_dependencies.external_multirun_dependencies
+
+git_repository(
+    name = "com_github_atlassian_bazel_tools",
+    commit = "760d245e874aa62bdf171f25a159e6c8b16dc5d4",
+    remote = "https://github.com/atlassian/bazel-tools.git",
+    shallow_since = "1586006210 +1100",
+)
+
+load("@com_github_atlassian_bazel_tools//multirun:deps.bzl", "multirun_dependencies")
+
+multirun_dependencies()

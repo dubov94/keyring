@@ -1,6 +1,9 @@
 load("//server:aspectj.bzl", "woven_java_binary")
 
-package(default_visibility = ["//server:__pkg__"])
+package(default_visibility = [
+    "//:__pkg__",
+    "//server:__pkg__",
+])
 
 woven_java_binary(
     name = "main",
