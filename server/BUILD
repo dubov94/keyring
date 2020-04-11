@@ -15,7 +15,6 @@ container_image(
     base = "@io_docker_index_library_openjdk//image",
     cmd = ["./entrypoint.sh"],
     directory = "/root",
-    env = {"MODULE_ENVIRONMENT": "production"},
     files = [":entrypoint.sh"],
     ports = ["5001"],
     tars = ["//server/src/main:main_package"],
