@@ -57,7 +57,7 @@ class Launcher {
                     appComponent.sessionInterceptor()))
             .build();
     server.start();
-    logger.info("Listening...");
+    logger.info(String.format("Listening on %d", port));
   }
 
   private void scheduleExpiration() {

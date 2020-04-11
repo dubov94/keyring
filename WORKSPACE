@@ -196,9 +196,9 @@ container_pull(
 
 git_repository(
     name = "com_github_atlassian_bazel_tools",
-    commit = "760d245e874aa62bdf171f25a159e6c8b16dc5d4",
+    commit = "936325de16966d259eee3f309f8578b761cfc874",
     remote = "https://github.com/atlassian/bazel-tools.git",
-    shallow_since = "1586006210 +1100",
+    shallow_since = "1586491416 +1000",
 )
 
 load("@com_github_atlassian_bazel_tools//multirun:deps.bzl", "multirun_dependencies")

@@ -19,6 +19,8 @@ var (
 )
 
 func startProxy() error {
+	var err error
+
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -26,7 +28,7 @@ func startProxy() error {
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 
-	err := gw.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, *serverAddress, opts)
+	err = gw.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, *serverAddress, opts)
 	if err != nil {
 		return err
 	}
@@ -40,10 +42,13 @@ func startProxy() error {
 }
 
 func main() {
+	var err error
+
 	flag.Parse()
 	defer glog.Flush()
 
-	if err := startProxy(); err != nil {
+	err = startProxy()
+	if err != nil {
 		glog.Fatal(err)
 	}
 }
