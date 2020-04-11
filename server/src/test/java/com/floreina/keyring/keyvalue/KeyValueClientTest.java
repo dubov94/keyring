@@ -24,9 +24,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static redis.clients.jedis.Protocol.DEFAULT_PORT;
 
 @ExtendWith(MockitoExtension.class)
 class KeyValueClientTest {
+  // To avoid conflicts with redis-server.service.
+  private static int redisPort = DEFAULT_PORT + 1;
   private static RedisServer redisServer;
   private static JedisPool jedisPool;
   private static Gson gson;
@@ -37,9 +40,9 @@ class KeyValueClientTest {
   @BeforeAll
   static void beforeAll() throws IOException {
     gson = new Gson();
-    redisServer = new RedisServer();
+    redisServer = new RedisServer(redisPort);
     redisServer.start();
-    jedisPool = new JedisPool(new JedisPoolConfig(), "localhost");
+    jedisPool = new JedisPool(new JedisPoolConfig(), "localhost", redisPort);
   }
 
   @AfterAll
