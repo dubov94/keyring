@@ -1,3 +1,10 @@
+workspace(
+    name = "keyring",
+    managed_directories = {
+        "@pwa_npm": ["pwa/node_modules"],
+    },
+)
+
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository") 
 
@@ -19,7 +26,7 @@ rules_proto_dependencies()
 
 rules_proto_toolchains()
 
-# external_proto_dependencies._rules_proto_grpc_dependencies
+# external_proto_dependencies.rules_proto_grpc_dependencies
 
 http_archive(
     name = "rules_proto_grpc",
@@ -113,7 +120,7 @@ maven_install(
 
 # language_specific_dependencies.external_go_dependencies
 
-# language_specific_dependencies.external_go_dependencies._rules_proto_grpc_dependencies
+# language_specific_dependencies.external_go_dependencies.rules_proto_grpc_dependencies
 
 load("@rules_proto_grpc//:repositories.bzl", "bazel_gazelle", "io_bazel_rules_go")
 
@@ -139,6 +146,26 @@ load("@grpc_ecosystem_grpc_gateway//:repositories.bzl", "go_repositories")
 
 go_repositories()
 
+# language_specific_dependencies.external_node_dependencies
+
+http_archive(
+    name = "build_bazel_rules_nodejs",
+    sha256 = "f9e7b9f42ae202cc2d2ce6d698ccb49a9f7f7ea572a78fd451696d03ef2ee116",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.6.0/rules_nodejs-1.6.0.tar.gz"],
+)
+
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories")
+
+node_repositories(package_json = ["//pwa:package.json"])
+
+load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
+
+yarn_install(
+    name = "pwa_npm",
+    package_json = "//pwa:package.json",
+    yarn_lock = "//pwa:yarn.lock",
+)
+
 # packaging_dependencies
 
 # packaging_dependencies.external_pkg_dependencies
@@ -155,7 +182,7 @@ rules_pkg_dependencies()
 
 # packaging_dependencies.external_docker_dependencies
 
-# packaging_dependencies.external_docker_dependencies._rules_docker_dependencies
+# packaging_dependencies.external_docker_dependencies.rules_docker_dependencies
 
 http_archive(
     name = "io_bazel_rules_docker",
