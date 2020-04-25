@@ -1,4 +1,5 @@
 load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 filegroup(
     name = "src",
@@ -40,10 +41,11 @@ vue_cli_launcher(
 )
 
 vue_cli_launcher(
-    name = "package",
+    name = "dist",
     args = [
         "build",
         "--dest=$(@D)",
+        "--resolve-dest-by-cwd",
         "--package-json-path=$(execpath :package_json)",
     ],
     data = [
@@ -67,4 +69,9 @@ vue_cli_launcher(
         "@pwa_npm//vuex",
     ],
     output_dir = True,
+)
+
+pkg_tar(
+    name = "pkg_tar",
+    srcs = [":dist"],
 )

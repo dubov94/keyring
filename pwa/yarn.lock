@@ -3031,6 +3031,11 @@ cyclist@^1.0.1:
   resolved "https://registry.npm.taobao.org/cyclist/download/cyclist-1.0.1.tgz#596e9698fd0c80e12038c2b82d6eb1b35b6224d9"
   integrity sha1-WW6WmP0MgOEgOMK4LW6xs1tiJNk=
 
+dargs@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/dargs/-/dargs-7.0.0.tgz#04015c41de0bcb69ec84050f3d9be0caf8d6d5cc"
+  integrity sha512-2iy1EkLdlBzQGvbweYRFxmFath8+K7+AKB0TlhHWkNuH+TmovaMH/Wp7V7R4u7f4SnX3OgLsU9t1NI9ioDnUpg==
+
 dashdash@^1.12.0:
   version "1.14.1"
   resolved "https://registry.npm.taobao.org/dashdash/download/dashdash-1.14.1.tgz#853cfa0f7cbe2fed5de20326b8dd581035f6e2f0"
@@ -9096,11 +9101,12 @@ vue-class-component@^7.1.0, vue-class-component@^7.2.3:
   resolved "https://registry.npm.taobao.org/vue-class-component/download/vue-class-component-7.2.3.tgz#a5b1abd53513a72ad51098752e2dedd499807cca"
   integrity sha1-pbGr1TUTpyrVEJh1Li3t1JmAfMo=
 
-vue-cli-launcher@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/vue-cli-launcher/-/vue-cli-launcher-1.0.3.tgz#46e502d005dc04f129de4e33c795254593c4d3d1"
-  integrity sha512-HUCsCP4GULok1UMZ5+uF7PfwA03WJiGcwX0XizvpVUXzR647RGOdYL6SpdWGZy9uvKhiogTvEq8ZhJRv2efucg==
+vue-cli-launcher@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/vue-cli-launcher/-/vue-cli-launcher-1.1.0.tgz#561ed417b2742952b7a704363027e29dd492d6b2"
+  integrity sha512-gg/cOi1z5XMOZwfhu9MhTTyx5CE6EKRIWFuWKGAEra9sH2W3aZHPLr4Evvi0r3JrZKBrvpUZGJlj58Rci1pYVA==
   dependencies:
+    dargs "^7.0.0"
     minimist "^1.2.5"
 
 vue-eslint-parser@^7.0.0:
