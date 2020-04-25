@@ -36,12 +36,11 @@ vue_cli_launcher(
         ":package_json",
         ":public",
         ":src",
-        "@pwa_npm//:node_modules",
     ],
 )
 
 vue_cli_launcher(
-    name = "build",
+    name = "package",
     args = [
         "build",
         "--dest=$(@D)",
@@ -52,7 +51,20 @@ vue_cli_launcher(
         ":package_json",
         ":public",
         ":src",
-        "@pwa_npm//:node_modules",
+        "@pwa_npm//@vue/cli-plugin-babel",
+        "@pwa_npm//@vue/cli-plugin-eslint",
+        "@pwa_npm//@vue/cli-plugin-pwa",
+        "@pwa_npm//@vue/cli-plugin-typescript",
+        "@pwa_npm//@vue/cli-plugin-unit-mocha",
+        "@pwa_npm//@vue/eslint-config-standard",
+        "@pwa_npm//@vue/eslint-config-typescript",
+        "@pwa_npm//eslint-plugin-vue",
+        "@pwa_npm//register-service-worker",
+        "@pwa_npm//sass-loader",
+        "@pwa_npm//vue",
+        "@pwa_npm//vue-property-decorator",
+        "@pwa_npm//vue-router",
+        "@pwa_npm//vuex",
     ],
     output_dir = True,
 )

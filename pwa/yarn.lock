@@ -9096,10 +9096,12 @@ vue-class-component@^7.1.0, vue-class-component@^7.2.3:
   resolved "https://registry.npm.taobao.org/vue-class-component/download/vue-class-component-7.2.3.tgz#a5b1abd53513a72ad51098752e2dedd499807cca"
   integrity sha1-pbGr1TUTpyrVEJh1Li3t1JmAfMo=
 
-vue-cli-launcher@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/vue-cli-launcher/-/vue-cli-launcher-1.0.1.tgz#d242f3abd481b8f2b10c22b5bc7defba3d2fa7ed"
-  integrity sha512-Z7oolk+et8HSB/xIlVKlRFk1CoR7VdJEsRA9HANgA5IHexNE36L2WnASZ3uuV0CJFIUc2uRORxO+id1L4+ozMw==
+vue-cli-launcher@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/vue-cli-launcher/-/vue-cli-launcher-1.0.3.tgz#46e502d005dc04f129de4e33c795254593c4d3d1"
+  integrity sha512-HUCsCP4GULok1UMZ5+uF7PfwA03WJiGcwX0XizvpVUXzR647RGOdYL6SpdWGZy9uvKhiogTvEq8ZhJRv2efucg==
+  dependencies:
+    minimist "^1.2.5"
 
 vue-eslint-parser@^7.0.0:
   version "7.0.0"
