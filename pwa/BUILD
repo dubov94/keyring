@@ -1,3 +1,4 @@
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
@@ -18,6 +19,7 @@ filegroup(
         ".eslintrc.js",
         "babel.config.js",
         "tsconfig.json",
+        "vue.config.js",
     ],
 )
 
@@ -74,4 +76,15 @@ vue_cli_launcher(
 pkg_tar(
     name = "pkg_tar",
     srcs = [":dist"],
+)
+
+container_image(
+    name = "pwa",
+    base = "@io_docker_index_abiosoft_caddy//image",
+    directory = "/root",
+    files = ["Caddyfile"],
+    ports = ["8080"],
+    symlinks = {"/etc/Caddyfile": "/root/Caddyfile"},
+    tars = [":pkg_tar"],
+    workdir = "/root",
 )

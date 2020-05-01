@@ -203,6 +203,15 @@ container_deps()
 
 load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 
+
+container_pull(
+    name = "io_docker_index_library_debian",
+    digest = "sha256:121dd2a723be1c8aa8b116684d66157c93c801f2f5107b60287937e88c13ab89",
+    registry = "index.docker.io",
+    repository = "library/debian",
+    tag = "10.3",
+)
+
 container_pull(
     name = "io_docker_index_library_openjdk",
     digest = "sha256:eaa06bc0541a17a55ac9040ccf8ce40655ef6e247534c21e4e065e1cf6078db2",
@@ -212,11 +221,11 @@ container_pull(
 )
 
 container_pull(
-    name = "io_docker_index_library_debian",
-    digest = "sha256:121dd2a723be1c8aa8b116684d66157c93c801f2f5107b60287937e88c13ab89",
+    name = "io_docker_index_abiosoft_caddy",
+    digest = "sha256:de933dc1c1f78e8e70b878110eb31eb226857759f79170542ffb3c746893d2c2",
     registry = "index.docker.io",
-    repository = "library/debian",
-    tag = "10.3",
+    repository = "abiosoft/caddy",
+    tag = "1.0.3",
 )
 
 # multirun_dependencies.external_multirun_dependencies
