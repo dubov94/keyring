@@ -24,10 +24,13 @@ module.exports = {
     config
       .plugin('html')
       .tap(args => {
-        Object.assign(args[0], {
-          title: 'Key Ring',
-          appVersion: StableStatus.STABLE_GIT_REVISION
-        })
+        args[0].title = 'Key Ring'
+        let constructTemplateParameters = args[0].templateParameters
+        args[0].templateParameters = (compilation, assets, pluginOptions) => {
+          let parameters = constructTemplateParameters(compilation, assets, pluginOptions)
+          parameters.APP_VERSION = StableStatus.STABLE_GIT_REVISION
+          return parameters
+        }
         return args
       })
   }
