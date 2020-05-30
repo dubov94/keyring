@@ -1,18 +1,26 @@
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
+load("//bazel:files.bzl", "filegroup_copy")
 
-filegroup(
+copy_file(
+    name = "stable_status",
+    src = "//bazel/workspace:stable_status",
+    out = "stable_status.json",
+)
+
+filegroup_copy(
     name = "src",
     srcs = glob(["src/**/*"]),
 )
 
-filegroup(
+filegroup_copy(
     name = "public",
     srcs = glob(["public/**/*"]),
 )
 
-filegroup(
+filegroup_copy(
     name = "configs",
     srcs = [
         ".browserslistrc",
@@ -23,7 +31,11 @@ filegroup(
     ],
 )
 
-filegroup(
+# `filegroup_copy` ensures all files end up under `bazel-out`,
+# which is where `stable_status` output resides. This way we
+# can reference `stable_status.js` from `vue.config.js`
+# directly.
+filegroup_copy(
     name = "package_json",
     srcs = ["package.json"],
 )
@@ -39,6 +51,7 @@ vue_cli_launcher(
         ":package_json",
         ":public",
         ":src",
+        ":stable_status",
     ],
 )
 
@@ -55,6 +68,7 @@ vue_cli_launcher(
         ":package_json",
         ":public",
         ":src",
+        ":stable_status",
         "@pwa_npm//@vue/cli-plugin-babel",
         "@pwa_npm//@vue/cli-plugin-eslint",
         "@pwa_npm//@vue/cli-plugin-pwa",

@@ -4,3 +4,6 @@ build --enable_runfiles
 
 # https://github.com/kstyrc/embedded-redis/blob/master/src/main/java/redis/embedded/util/OSDetector.java
 build --test_env=PROCESSOR_ARCHITECTURE
+
+# https://docs.bazel.build/versions/master/user-manual.html#workspace_status
+build --workspace_status_command=./bazel/workspace/print_vars.sh
