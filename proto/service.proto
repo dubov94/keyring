@@ -79,13 +79,19 @@ message LogInResponse {
 
 service Authentication {
     rpc Register (RegisterRequest) returns (RegisterResponse) {
-        option (google.api.http) = { post: "/authentication/register" };
+        option (google.api.http) = {
+            post: "/authentication/register"
+            body: "*"
+        };
     }
     rpc GetSalt (GetSaltRequest) returns (GetSaltResponse) {
         option (google.api.http) = { get: "/authentication/get-salt/{username}" };
     }
     rpc LogIn (LogInRequest) returns (LogInResponse) {
-        option (google.api.http) = { post: "/authentication/log-in" };
+        option (google.api.http) = {
+            post: "/authentication/log-in"
+            body: "*"
+        };
     }
 }
 
@@ -235,34 +241,61 @@ message GetRecentSessionsResponse {
 
 service Administration {
     rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse) {
-        option (google.api.http) = { post: "/administration/acquire-mail-token" };
+        option (google.api.http) = {
+            post: "/administration/acquire-mail-token"
+            body: "*"
+        };
     }
     rpc ReleaseMailToken (ReleaseMailTokenRequest) returns (ReleaseMailTokenResponse) {
-        option (google.api.http) = { post: "/administration/release-mail-token" };
+        option (google.api.http) = {
+            post: "/administration/release-mail-token"
+            body: "*"
+        };
     }
     rpc KeepAlive (KeepAliveRequest) returns (KeepAliveResponse) {
-        option (google.api.http) = { post: "/administration/keep-alive" };
+        option (google.api.http) = {
+            post: "/administration/keep-alive"
+            body: "*"
+        };
     };
     rpc CreateKey (CreateKeyRequest) returns (CreateKeyResponse) {
-        option (google.api.http) = { post: "/administration/create-key" };
+        option (google.api.http) = {
+            post: "/administration/create-key"
+            body: "*"
+        };
     }
     rpc ReadKeys (ReadKeysRequest) returns (ReadKeysResponse) {
         option (google.api.http) = { get: "/administration/read-keys" };
     }
     rpc UpdateKey (UpdateKeyRequest) returns (UpdateKeyResponse) {
-        option (google.api.http) = { put: "/administration/update-key" };
+        option (google.api.http) = {
+            put: "/administration/update-key"
+            body: "*"
+        };
     }
     rpc DeleteKey (DeleteKeyRequest) returns (DeleteKeyResponse) {
-        option (google.api.http) = { post: "/administration/delete-key" };
+        option (google.api.http) = {
+            post: "/administration/delete-key"
+            body: "*"
+        };
     }
     rpc ChangeMasterKey (ChangeMasterKeyRequest) returns (ChangeMasterKeyResponse) {
-        option (google.api.http) = { post: "/administration/change-master-key" };
+        option (google.api.http) = {
+            post: "/administration/change-master-key"
+            body: "*"
+        };
     }
     rpc ChangeUsername (ChangeUsernameRequest) returns (ChangeUsernameResponse) {
-        option (google.api.http) = { put: "/administration/change-username" };
+        option (google.api.http) = {
+            put: "/administration/change-username"
+            body: "*"
+        };
     }
     rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountResponse) {
-        option (google.api.http) = { post: "/administration/delete-account" };
+        option (google.api.http) = {
+            post: "/administration/delete-account"
+            body: "*"
+        };
     }
     rpc GetRecentSessions (GetRecentSessionsRequest) returns (GetRecentSessionsResponse) {
         option (google.api.http) = { get: "/administration/get-recent-sessions" };
