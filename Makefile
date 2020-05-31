@@ -1,10 +1,10 @@
-default: build-client build-grpc-gateway build-server build-ip-geolocation
+default: build-pwa build-grpc-gateway build-server build-ip-geolocation
 
 clean:
 	docker system prune --all --force
 
-build-client:
-	docker build -f client/Dockerfile -t dubov94/keyring-client --build-arg GIT_REVISION="$(shell git describe --always)" .
+build-pwa:
+	bazel run //pwa
 
 build-grpc-gateway:
 	bazel run //grpc_gateway

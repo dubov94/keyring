@@ -14,8 +14,8 @@ services:
         protocol: tcp
         published: 443
         target: 443
-  client:
-    image: dubov94/keyring-client
+  pwa:
+    image: 'bazel/pwa:pwa'
   grpc-gateway:
     image: 'bazel/grpc_gateway:grpc_gateway'
   server:
