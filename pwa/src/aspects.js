@@ -58,7 +58,8 @@ export const applySendKeepAliveWhileIdle = () => {
   }
 
   axios.interceptors.response.use((response) => {
-    if (response.config.headers.hasOwnProperty(SESSION_TOKEN_HEADER_NAME)) {
+    if (Object.prototype.hasOwnProperty.call(
+      response.config.headers, SESSION_TOKEN_HEADER_NAME)) {
       reScheduleTick()
     }
     return response
