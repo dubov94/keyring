@@ -1,8 +1,8 @@
-import {cutHashToPrefix, cutHashToSuffix, getSuffixesByPrefix} from '../../haveibeenpwned'
-import {sha1} from '../../utilities'
+import { cutHashToPrefix, cutHashToSuffix, getSuffixesByPrefix } from '../../haveibeenpwned'
+import { sha1 } from '../../utilities'
 
 const wasPasswordExposed = async (key) => {
-  let hash = await sha1(key)
+  const hash = await sha1(key)
   return (await getSuffixesByPrefix(cutHashToPrefix(hash))).includes(
     cutHashToSuffix(hash))
 }
@@ -40,15 +40,15 @@ export default {
     },
     async detectDuplicateGroups ({ commit }, userKeys) {
       commit('setGettingDuplicateGroups', true)
-      let passwordToIds = new Map()
+      const passwordToIds = new Map()
       userKeys.forEach(({ identifier, value }) => {
         if (!passwordToIds.has(value)) {
           passwordToIds.set(value, [])
         }
         passwordToIds.get(value).push(identifier)
       })
-      let duplicateGroups = []
-      for (let group of passwordToIds.values()) {
+      const duplicateGroups = []
+      for (const group of passwordToIds.values()) {
         if (group.length > 1) {
           duplicateGroups.push(group)
         }
@@ -58,7 +58,7 @@ export default {
     },
     async detectExposedUserKeys ({ commit }, userKeys) {
       commit('setGettingExposedUserKeys', true)
-      let exposedUserKeyIds = (await Promise.all(
+      const exposedUserKeyIds = (await Promise.all(
         userKeys.map(async ({ identifier, value }) => ({
           identifier,
           wasExposed: await wasPasswordExposed(value)

@@ -28,119 +28,119 @@
 </template>
 
 <script>
-  import {mapActions, mapGetters} from 'vuex'
-  import {required} from 'vuelidate/lib/validators'
-  import {getShortHash} from '../../utilities'
+import { mapActions, mapGetters } from 'vuex'
+import { required } from 'vuelidate/lib/validators'
+import { getShortHash } from '../../utilities'
 
-  export default {
-    data () {
-      let hasLocalData = this.$store.getters['depot/hasLocalData']
-      return {
-        username: hasLocalData ? this.$store.state.depot.username : '',
-        password: '',
-        requestInProgress: false,
-        invalidPairs: [],
-        persist: hasLocalData
-      }
+export default {
+  data () {
+    const hasLocalData = this.$store.getters['depot/hasLocalData']
+    return {
+      username: hasLocalData ? this.$store.state.depot.username : '',
+      password: '',
+      requestInProgress: false,
+      invalidPairs: [],
+      persist: hasLocalData
+    }
+  },
+  validations: {
+    username: {
+      required
     },
-    validations: {
-      username: {
-        required
-      },
-      password: {},
-      forCredentials: {
-        async valid () {
-          for (let { username, shortHash } of this.invalidPairs) {
-            if (this.username === username &&
+    password: {},
+    forCredentials: {
+      async valid () {
+        for (const { username, shortHash } of this.invalidPairs) {
+          if (this.username === username &&
               await getShortHash(this.password) === shortHash) {
-              return false
-            }
-          }
-          return true
-        }
-      },
-      credentialsGroup: ['username', 'password']
-    },
-    computed: {
-      ...mapGetters({
-        hasLocalData: 'depot/hasLocalData'
-      }),
-      hasUsername () {
-        return this.username !== ''
-      },
-      usernameErrors () {
-        return {
-          [this.$t('USERNAME_IS_REQUIRED')]: !this.$v.username.required,
-          [this.$t('INVALID_USERNAME_OR_PASSWORD')]: !this.$v.forCredentials.valid
-        }
-      },
-      passwordErrors () {
-        return {
-          [this.$t('INVALID_USERNAME_OR_PASSWORD')]: !this.$v.forCredentials.valid
-        }
-      }
-    },
-    methods: {
-      ...mapActions({
-        logIn: 'logIn',
-        purgeDepot: 'depot/purgeDepot',
-        displaySnackbar: 'interface/displaySnackbar'
-      }),
-      async submit () {
-        if (!this.requestInProgress) {
-          this.$v.$touch()
-          if (!this.$v.$invalid) {
-            try {
-              this.requestInProgress = true
-              let [username, password] = [this.username, this.password]
-              let { success, local, requirements } = await this.logIn({
-                username,
-                password,
-                persist: this.persist
-              })
-              if (success) {
-                if (requirements.length > 0) {
-                  this.$router.replace('/set-up')
-                } else {
-                  this.$router.replace('/dashboard')
-                }
-              } else {
-                this.invalidPairs.push({
-                  username,
-                  shortHash: await getShortHash(password)
-                })
-                if (local) {
-                  this.displaySnackbar({
-                    message: 'Changed the password recently? Toggle \'Remember me\' twice.',
-                    timeout: 3000
-                  })
-                }
-              }
-            } finally {
-              this.requestInProgress = false
-            }
+            return false
           }
         }
+        return true
       }
     },
-    watch: {
-      persist (value) {
-        if (value) {
-          this.displaySnackbar({
-            message: 'Okay, we will store your encrypted data locally.',
-            timeout: 3000
-          })
-        } else {
-          if (this.hasLocalData) {
-            this.purgeDepot()
-            this.invalidPairs.splice(0)
-            this.displaySnackbar({
-              message: 'Alright, we wiped out all saved data from this device.',
-              timeout: 3000
+    credentialsGroup: ['username', 'password']
+  },
+  computed: {
+    ...mapGetters({
+      hasLocalData: 'depot/hasLocalData'
+    }),
+    hasUsername () {
+      return this.username !== ''
+    },
+    usernameErrors () {
+      return {
+        [this.$t('USERNAME_IS_REQUIRED')]: !this.$v.username.required,
+        [this.$t('INVALID_USERNAME_OR_PASSWORD')]: !this.$v.forCredentials.valid
+      }
+    },
+    passwordErrors () {
+      return {
+        [this.$t('INVALID_USERNAME_OR_PASSWORD')]: !this.$v.forCredentials.valid
+      }
+    }
+  },
+  methods: {
+    ...mapActions({
+      logIn: 'logIn',
+      purgeDepot: 'depot/purgeDepot',
+      displaySnackbar: 'interface/displaySnackbar'
+    }),
+    async submit () {
+      if (!this.requestInProgress) {
+        this.$v.$touch()
+        if (!this.$v.$invalid) {
+          try {
+            this.requestInProgress = true
+            const [username, password] = [this.username, this.password]
+            const { success, local, requirements } = await this.logIn({
+              username,
+              password,
+              persist: this.persist
             })
+            if (success) {
+              if (requirements.length > 0) {
+                this.$router.replace('/set-up')
+              } else {
+                this.$router.replace('/dashboard')
+              }
+            } else {
+              this.invalidPairs.push({
+                username,
+                shortHash: await getShortHash(password)
+              })
+              if (local) {
+                this.displaySnackbar({
+                  message: 'Changed the password recently? Toggle \'Remember me\' twice.',
+                  timeout: 3000
+                })
+              }
+            }
+          } finally {
+            this.requestInProgress = false
           }
         }
       }
     }
+  },
+  watch: {
+    persist (value) {
+      if (value) {
+        this.displaySnackbar({
+          message: 'Okay, we will store your encrypted data locally.',
+          timeout: 3000
+        })
+      } else {
+        if (this.hasLocalData) {
+          this.purgeDepot()
+          this.invalidPairs.splice(0)
+          this.displaySnackbar({
+            message: 'Alright, we wiped out all saved data from this device.',
+            timeout: 3000
+          })
+        }
+      }
+    }
   }
+}
 </script>

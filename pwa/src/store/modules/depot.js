@@ -43,7 +43,7 @@ export default {
       commit('setInitialValues')
     },
     async verifyPassword ({ state }, password) {
-      let candidate = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+      const candidate = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
         state.parametrization, password)).authDigest
       return state.authDigest === candidate
     },
@@ -63,12 +63,12 @@ export default {
           if (!isPresent(userKeys)) {
             throw new Error('Expected `userKeys` to be present.')
           }
-          let parametrization =
+          const parametrization =
             await SodiumWrapper.generateArgon2Parametrization()
-          let {authDigest, encryptionKey} =
+          const { authDigest, encryptionKey } =
             await SodiumWrapper.computeAuthDigestAndEncryptionKey(
               parametrization, password)
-          let vault = await SodiumWrapper.encryptMessage(
+          const vault = await SodiumWrapper.encryptMessage(
             encryptionKey, convertUserKeysToVault(userKeys))
           commit('setParametrization', parametrization)
           commit('setAuthDigest', authDigest)
@@ -78,7 +78,7 @@ export default {
           if (state.encryptionKey === null) {
             throw new Error('Expected `state.encryptionKey` not to be `null`.')
           }
-          let vault = await SodiumWrapper.encryptMessage(
+          const vault = await SodiumWrapper.encryptMessage(
             state.encryptionKey, convertUserKeysToVault(userKeys))
           commit('setUserKeys', vault)
         }

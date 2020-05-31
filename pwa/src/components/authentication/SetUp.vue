@@ -38,56 +38,56 @@
 </template>
 
 <script>
-  import {mapActions} from 'vuex'
+import { mapActions } from 'vuex'
 
-  export default {
-    data () {
+export default {
+  data () {
+    return {
+      code: '',
+      requestInProgress: false,
+      invalidCodes: []
+    }
+  },
+  async mounted () {
+    await this.$nextTick()
+    this.$refs.code.focus()
+  },
+  validations: {
+    code: {
+      valid () {
+        return !this.invalidCodes.includes(this.code)
+      }
+    }
+  },
+  computed: {
+    codeErrors () {
       return {
-        code: '',
-        requestInProgress: false,
-        invalidCodes: []
+        [this.$t('INVALID_CODE')]: !this.$v.code.valid
       }
-    },
-    async mounted () {
-      await this.$nextTick()
-      this.$refs.code.focus()
-    },
-    validations: {
-      code: {
-        valid () {
-          return !this.invalidCodes.includes(this.code)
-        }
-      }
-    },
-    computed: {
-      codeErrors () {
-        return {
-          [this.$t('INVALID_CODE')]: !this.$v.code.valid
-        }
-      }
-    },
-    methods: {
-      ...mapActions({
-        releaseMailToken: 'releaseMailToken'
-      }),
-      async submit () {
-        if (!this.requestInProgress) {
-          this.$v.$touch()
-          if (!this.$v.$invalid) {
-            try {
-              this.requestInProgress = true
-              let error = await this.releaseMailToken({ code: this.code })
-              if (!error) {
-                this.$router.replace('/dashboard')
-              } else if (error === 'INVALID_CODE') {
-                this.invalidCodes.push(this.code)
-              }
-            } finally {
-              this.requestInProgress = false
+    }
+  },
+  methods: {
+    ...mapActions({
+      releaseMailToken: 'releaseMailToken'
+    }),
+    async submit () {
+      if (!this.requestInProgress) {
+        this.$v.$touch()
+        if (!this.$v.$invalid) {
+          try {
+            this.requestInProgress = true
+            const error = await this.releaseMailToken({ code: this.code })
+            if (!error) {
+              this.$router.replace('/dashboard')
+            } else if (error === 'INVALID_CODE') {
+              this.invalidCodes.push(this.code)
             }
+          } finally {
+            this.requestInProgress = false
           }
         }
       }
     }
   }
+}
 </script>

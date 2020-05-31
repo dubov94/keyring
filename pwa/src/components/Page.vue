@@ -6,11 +6,11 @@
 </template>
 
 <script>
-  import Toast from './Toast'
+import Toast from './Toast'
 
-  export default {
-    components: {
-      toast: Toast
-    }
+export default {
+  components: {
+    toast: Toast
   }
+}
 </script>

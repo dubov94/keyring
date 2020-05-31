@@ -8,14 +8,14 @@ export default {
   },
   computeArgon2HashForDigestAndKey (parametrization, password) {
     return sodiumWorker.computeArgon2HashForDigestAndKey(
-        parametrization, password)
+      parametrization, password)
   },
   extractAuthDigestAndEncryptionKey (hash) {
     return sodiumWorker.extractAuthDigestAndEncryptionKey(hash)
   },
   async computeAuthDigestAndEncryptionKey (parametrization, password) {
-    let hash = await this.computeArgon2HashForDigestAndKey(
-        parametrization, password)
+    const hash = await this.computeArgon2HashForDigestAndKey(
+      parametrization, password)
     return this.extractAuthDigestAndEncryptionKey(hash)
   },
   encryptMessage (encryptionKey, message) {

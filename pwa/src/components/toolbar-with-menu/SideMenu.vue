@@ -64,50 +64,50 @@
 </template>
 
 <script>
-  import Status from '../../store/root/status'
-  import {mapState} from 'vuex'
-  import {reloadPage, purgeSessionStorageAndLoadLogIn} from '../../utilities'
+import Status from '../../store/root/status'
+import { mapState } from 'vuex'
+import { reloadPage, purgeSessionStorageAndLoadLogIn } from '../../utilities'
 
-  export default {
-    props: ['value'],
-    data () {
+export default {
+  props: ['value'],
+  data () {
+    return {
+      version: window.globals.version
+    }
+  },
+  computed: {
+    ...mapState({
+      status: (state) => state.status
+    }),
+    connectionIconColor () {
       return {
-        version: window.globals.version
-      }
+        [Status.OFFLINE]: 'error',
+        [Status.CONNECTING]: 'warning',
+        [Status.ONLINE]: 'success'
+      }[this.status]
     },
-    computed: {
-      ...mapState({
-        status: (state) => state.status
-      }),
-      connectionIconColor () {
-        return {
-          [Status.OFFLINE]: 'error',
-          [Status.CONNECTING]: 'warning',
-          [Status.ONLINE]: 'success'
-        }[this.status]
-      },
-      connectionTitle () {
-        return {
-          [Status.OFFLINE]: 'Offline',
-          [Status.CONNECTING]: 'Connecting...',
-          [Status.ONLINE]: 'Online'
-        }[this.status]
-      },
-      isOffline () {
-        return this.status === Status.OFFLINE
-      }
+    connectionTitle () {
+      return {
+        [Status.OFFLINE]: 'Offline',
+        [Status.CONNECTING]: 'Connecting...',
+        [Status.ONLINE]: 'Online'
+      }[this.status]
     },
-    methods: {
-      input (value) {
-        this.$emit('input', value)
-      },
-      reload () {
-        reloadPage()
-      },
-      async logOut () {
-        await navigator.clipboard.writeText('')
-        purgeSessionStorageAndLoadLogIn()
-      }
+    isOffline () {
+      return this.status === Status.OFFLINE
+    }
+  },
+  methods: {
+    input (value) {
+      this.$emit('input', value)
+    },
+    reload () {
+      reloadPage()
+    },
+    async logOut () {
+      await navigator.clipboard.writeText('')
+      purgeSessionStorageAndLoadLogIn()
     }
   }
+}
 </script>

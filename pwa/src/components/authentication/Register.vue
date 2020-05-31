@@ -34,82 +34,82 @@
 </template>
 
 <script>
-  import {mapActions} from 'vuex'
-  import {email, required, sameAs} from 'vuelidate/lib/validators'
+import { mapActions } from 'vuex'
+import { email, required, sameAs } from 'vuelidate/lib/validators'
 
-  export default {
-    data () {
+export default {
+  data () {
+    return {
+      username: '',
+      password: '',
+      repeat: '',
+      mail: '',
+      requestInProgress: false,
+      takenUserNames: []
+    }
+  },
+  validations: {
+    username: {
+      required,
+      valid () {
+        return !this.takenUserNames.includes(this.username)
+      }
+    },
+    password: { required },
+    repeat: { sameAs: sameAs('password') },
+    mail: { email, required }
+  },
+  computed: {
+    usernameErrors () {
       return {
-        username: '',
-        password: '',
-        repeat: '',
-        mail: '',
-        requestInProgress: false,
-        takenUserNames: []
+        [this.$t('USERNAME_CANNOT_BE_EMPTY')]: !this.$v.username.required,
+        [this.$t('USERNAME_IS_ALREADY_TAKEN')]: !this.$v.username.valid
       }
     },
-    validations: {
-      username: {
-        required,
-        valid () {
-          return !this.takenUserNames.includes(this.username)
-        }
-      },
-      password: { required },
-      repeat: { sameAs: sameAs('password') },
-      mail: { email, required }
-    },
-    computed: {
-      usernameErrors () {
-        return {
-          [this.$t('USERNAME_CANNOT_BE_EMPTY')]: !this.$v.username.required,
-          [this.$t('USERNAME_IS_ALREADY_TAKEN')]: !this.$v.username.valid
-        }
-      },
-      passwordErrors () {
-        return {
-          [this.$t('PASSWORD_CANNOT_BE_EMPTY')]: !this.$v.password.required
-        }
-      },
-      repeatErrors () {
-        return {
-          [this.$t('PASSWORDS_DO_NOT_MATCH')]: !this.$v.repeat.sameAs
-        }
-      },
-      mailErrors () {
-        return {
-          [this.$t('EMAIL_ADDRESS_IS_REQUIRED')]: !this.$v.mail.required,
-          [this.$t('EMAIL_ADDRESS_IS_INVALID')]: !this.$v.mail.email
-        }
+    passwordErrors () {
+      return {
+        [this.$t('PASSWORD_CANNOT_BE_EMPTY')]: !this.$v.password.required
       }
     },
-    methods: {
-      ...mapActions({
-        register: 'register'
-      }),
-      async submit () {
-        if (!this.requestInProgress) {
-          this.$v.$touch()
-          if (!this.$v.$invalid) {
-            try {
-              this.requestInProgress = true
-              let username = this.username
-              let error = await this.register({
-                username,
-                password: this.password,
-                mail: this.mail
-              })
-              if (!error) {
-                this.$router.replace('/set-up')
-              } else if (error === 'NAME_TAKEN') {
-                this.takenUserNames.push(username)
-              }
-            } finally {
-              this.requestInProgress = false
+    repeatErrors () {
+      return {
+        [this.$t('PASSWORDS_DO_NOT_MATCH')]: !this.$v.repeat.sameAs
+      }
+    },
+    mailErrors () {
+      return {
+        [this.$t('EMAIL_ADDRESS_IS_REQUIRED')]: !this.$v.mail.required,
+        [this.$t('EMAIL_ADDRESS_IS_INVALID')]: !this.$v.mail.email
+      }
+    }
+  },
+  methods: {
+    ...mapActions({
+      register: 'register'
+    }),
+    async submit () {
+      if (!this.requestInProgress) {
+        this.$v.$touch()
+        if (!this.$v.$invalid) {
+          try {
+            this.requestInProgress = true
+            const username = this.username
+            const error = await this.register({
+              username,
+              password: this.password,
+              mail: this.mail
+            })
+            if (!error) {
+              this.$router.replace('/set-up')
+            } else if (error === 'NAME_TAKEN') {
+              this.takenUserNames.push(username)
             }
+          } finally {
+            this.requestInProgress = false
           }
         }
       }
     }
   }
+}
 </script>

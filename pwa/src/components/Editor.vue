@@ -119,193 +119,193 @@
 </template>
 
 <script>
-  import Draggable from 'vuedraggable'
-  import YesNoDialog from './YesNoDialog'
-  import {mapActions, mapGetters, mapMutations} from 'vuex'
-  import {XL_MINIMAL_WIDTH} from './constants'
-  import {
-    areArraysEqual,
-    createCharacterRange,
-    generateSequenceOffRanges,
-    sleep
-  } from '../utilities'
+import Draggable from 'vuedraggable'
+import YesNoDialog from './YesNoDialog'
+import { mapActions, mapGetters, mapMutations } from 'vuex'
+import { XL_MINIMAL_WIDTH } from './constants'
+import {
+  areArraysEqual,
+  createCharacterRange,
+  generateSequenceOffRanges,
+  sleep
+} from '../utilities'
 
-  const SYMBOLS_RANGE = '@#$_&-+()/' + '*"\':;!?'
-  const DIGITS_RANGE = createCharacterRange('0', '9')
-  const UPPERCASE_LETTERS_RANGE = createCharacterRange('A', 'Z')
-  const LOWERCASE_LETTERS_RANGE = createCharacterRange('a', 'z')
+const SYMBOLS_RANGE = '@#$_&-+()/' + '*"\':;!?'
+const DIGITS_RANGE = createCharacterRange('0', '9')
+const UPPERCASE_LETTERS_RANGE = createCharacterRange('A', 'Z')
+const LOWERCASE_LETTERS_RANGE = createCharacterRange('a', 'z')
 
-  const PASSWORD_SUGGESTION_LENGTH = 12
-  const TYPEWRITER_DELAY_IN_MILLIS = 50
+const PASSWORD_SUGGESTION_LENGTH = 12
+const TYPEWRITER_DELAY_IN_MILLIS = 50
 
-  export default {
-    components: {
-      draggable: Draggable,
-      yesNoDialog: YesNoDialog
-    },
-    data () {
-      return {
-        draggableOptions: {
-          handle: '.tag__handle',
-          animation: 150
-        },
-        maxWidth: XL_MINIMAL_WIDTH * (3 / 12),
-        requestInProgress: false,
-        discardConfirmation: false,
-        removeConfirmation: false,
-        identifier: null,
-        reveal: false,
-        secret: '',
-        chips: []
-      }
-    },
-    mounted () {
-      window.addEventListener('beforeunload', this.onBeforeUnload)
-    },
-    beforeDestroy () {
-      window.removeEventListener('beforeunload', this.onBeforeUnload)
-      if (this.isVisible) {
-        this.closeEditor()
-      }
-    },
-    computed: {
-      ...mapGetters({
-        isOnline: 'isOnline'
-      }),
-      isVisible () {
-        return this.$store.state.interface.editor.show
-      }
-    },
-    methods: {
-      ...mapActions({
-        createKey: 'createUserKey',
-        updateKey: 'updateUserKey',
-        removeKey: 'removeUserKey',
-        displaySnackbar: 'interface/displaySnackbar'
-      }),
-      ...mapMutations({
-        closeEditor: 'interface/closeEditor'
-      }),
-      getDefaultState () {
-        if (this.identifier === null) {
-          return { value: '', tags: [''] }
-        } else {
-          let key = this.$store.state.userKeys.find(
-            (item) => item.identifier === this.identifier)
-          return { value: key.value, tags: key.tags.slice() }
-        }
+export default {
+  components: {
+    draggable: Draggable,
+    yesNoDialog: YesNoDialog
+  },
+  data () {
+    return {
+      draggableOptions: {
+        handle: '.tag__handle',
+        animation: 150
       },
-      doDiscard () {
-        this.closeEditor()
-      },
-      hasChanges () {
-        let state = this.getDefaultState()
-        return !(this.secret === state.value &&
+      maxWidth: XL_MINIMAL_WIDTH * (3 / 12),
+      requestInProgress: false,
+      discardConfirmation: false,
+      removeConfirmation: false,
+      identifier: null,
+      reveal: false,
+      secret: '',
+      chips: []
+    }
+  },
+  mounted () {
+    window.addEventListener('beforeunload', this.onBeforeUnload)
+  },
+  beforeDestroy () {
+    window.removeEventListener('beforeunload', this.onBeforeUnload)
+    if (this.isVisible) {
+      this.closeEditor()
+    }
+  },
+  computed: {
+    ...mapGetters({
+      isOnline: 'isOnline'
+    }),
+    isVisible () {
+      return this.$store.state.interface.editor.show
+    }
+  },
+  methods: {
+    ...mapActions({
+      createKey: 'createUserKey',
+      updateKey: 'updateUserKey',
+      removeKey: 'removeUserKey',
+      displaySnackbar: 'interface/displaySnackbar'
+    }),
+    ...mapMutations({
+      closeEditor: 'interface/closeEditor'
+    }),
+    getDefaultState () {
+      if (this.identifier === null) {
+        return { value: '', tags: [''] }
+      } else {
+        const key = this.$store.state.userKeys.find(
+          (item) => item.identifier === this.identifier)
+        return { value: key.value, tags: key.tags.slice() }
+      }
+    },
+    doDiscard () {
+      this.closeEditor()
+    },
+    hasChanges () {
+      const state = this.getDefaultState()
+      return !(this.secret === state.value &&
           areArraysEqual(this.chips, state.tags))
-      },
-      maybeDiscard () {
-        if (this.hasChanges()) {
-          this.discardConfirmation = true
-        } else {
-          this.closeEditor()
-        }
-      },
-      onBeforeUnload (event) {
-        if (this.isVisible && this.hasChanges()) {
-          event.returnValue = true
-          return true
-        } else {
-          return null
-        }
-      },
-      async copySecret () {
-        await navigator.clipboard.writeText(this.secret)
-        this.displaySnackbar({
-          message: 'Done. Remember to save!',
-          timeout: 3000
-        })
-      },
-      move ({ relatedContext }) {
-        return relatedContext.element !== undefined
-      },
-      setTag (index, value) {
-        this.$set(this.chips, index, value)
-      },
-      removeTag (index) {
-        this.chips.splice(index, 1)
-      },
-      async addTag () {
-        this.chips.push('')
-        await this.$nextTick()
-        this.focusTag(-1)
-      },
-      async suggest () {
-        let suggestion = generateSequenceOffRanges([
-          SYMBOLS_RANGE,
-          DIGITS_RANGE,
-          UPPERCASE_LETTERS_RANGE,
-          LOWERCASE_LETTERS_RANGE
-        ], PASSWORD_SUGGESTION_LENGTH)
-        this.requestInProgress = true
-        while (this.secret.length > 0) {
-          await sleep(TYPEWRITER_DELAY_IN_MILLIS)
-          this.secret = this.secret.slice(0, -1)
-        }
-        for (let length = 1; length <= suggestion.length; ++length) {
-          await sleep(TYPEWRITER_DELAY_IN_MILLIS)
-          this.secret = suggestion.slice(0, length)
-        }
-        this.requestInProgress = false
-      },
-      async save () {
-        try {
-          this.requestInProgress = true
-          if (this.identifier === null) {
-            await this.createKey({ value: this.secret, tags: this.chips })
-          } else {
-            await this.updateKey({
-              identifier: this.identifier,
-              value: this.secret,
-              tags: this.chips
-            })
-          }
-          this.closeEditor()
-        } finally {
-          this.requestInProgress = false
-        }
-      },
-      async doRemove () {
-        try {
-          this.requestInProgress = true
-          await this.removeKey({ identifier: this.identifier })
-          this.closeEditor()
-        } finally {
-          this.requestInProgress = false
-        }
-      },
-      maybeRemove () {
-        this.removeConfirmation = true
-      },
-      focusTag (pointer) {
-        let index = (pointer + this.chips.length) % this.chips.length
-        this.$refs.tags[index].focus()
+    },
+    maybeDiscard () {
+      if (this.hasChanges()) {
+        this.discardConfirmation = true
+      } else {
+        this.closeEditor()
       }
     },
-    watch: {
-      async isVisible (value) {
-        if (value === true) {
-          let editorState = this.$store.state.interface.editor
-          this.reveal = editorState.reveal
-          this.identifier = editorState.identifier
-          let state = this.getDefaultState()
-          this.secret = state.value
-          this.chips = state.tags
-          if (this.identifier === null) {
-            await this.$nextTick()
-            this.focusTag(0)
-          }
+    onBeforeUnload (event) {
+      if (this.isVisible && this.hasChanges()) {
+        event.returnValue = true
+        return true
+      } else {
+        return null
+      }
+    },
+    async copySecret () {
+      await navigator.clipboard.writeText(this.secret)
+      this.displaySnackbar({
+        message: 'Done. Remember to save!',
+        timeout: 3000
+      })
+    },
+    move ({ relatedContext }) {
+      return relatedContext.element !== undefined
+    },
+    setTag (index, value) {
+      this.$set(this.chips, index, value)
+    },
+    removeTag (index) {
+      this.chips.splice(index, 1)
+    },
+    async addTag () {
+      this.chips.push('')
+      await this.$nextTick()
+      this.focusTag(-1)
+    },
+    async suggest () {
+      const suggestion = generateSequenceOffRanges([
+        SYMBOLS_RANGE,
+        DIGITS_RANGE,
+        UPPERCASE_LETTERS_RANGE,
+        LOWERCASE_LETTERS_RANGE
+      ], PASSWORD_SUGGESTION_LENGTH)
+      this.requestInProgress = true
+      while (this.secret.length > 0) {
+        await sleep(TYPEWRITER_DELAY_IN_MILLIS)
+        this.secret = this.secret.slice(0, -1)
+      }
+      for (let length = 1; length <= suggestion.length; ++length) {
+        await sleep(TYPEWRITER_DELAY_IN_MILLIS)
+        this.secret = suggestion.slice(0, length)
+      }
+      this.requestInProgress = false
+    },
+    async save () {
+      try {
+        this.requestInProgress = true
+        if (this.identifier === null) {
+          await this.createKey({ value: this.secret, tags: this.chips })
+        } else {
+          await this.updateKey({
+            identifier: this.identifier,
+            value: this.secret,
+            tags: this.chips
+          })
+        }
+        this.closeEditor()
+      } finally {
+        this.requestInProgress = false
+      }
+    },
+    async doRemove () {
+      try {
+        this.requestInProgress = true
+        await this.removeKey({ identifier: this.identifier })
+        this.closeEditor()
+      } finally {
+        this.requestInProgress = false
+      }
+    },
+    maybeRemove () {
+      this.removeConfirmation = true
+    },
+    focusTag (pointer) {
+      const index = (pointer + this.chips.length) % this.chips.length
+      this.$refs.tags[index].focus()
+    }
+  },
+  watch: {
+    async isVisible (value) {
+      if (value === true) {
+        const editorState = this.$store.state.interface.editor
+        this.reveal = editorState.reveal
+        this.identifier = editorState.identifier
+        const state = this.getDefaultState()
+        this.secret = state.value
+        this.chips = state.tags
+        if (this.identifier === null) {
+          await this.$nextTick()
+          this.focusTag(0)
         }
       }
     }
   }
+}
 </script>

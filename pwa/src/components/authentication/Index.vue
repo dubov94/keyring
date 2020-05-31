@@ -13,11 +13,11 @@
 </template>
 
 <script>
-  import Page from '../Page'
+import Page from '../Page'
 
-  export default {
-    components: {
-      page: Page
-    }
+export default {
+  components: {
+    page: Page
   }
+}
 </script>

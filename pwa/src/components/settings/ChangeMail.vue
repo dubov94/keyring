@@ -57,117 +57,116 @@
 </template>
 
 <script>
-  import {mapActions, mapGetters} from 'vuex'
-  import {email, required} from 'vuelidate/lib/validators'
-  import {getShortHash} from '../../utilities'
+import { mapActions, mapGetters } from 'vuex'
+import { email, required } from 'vuelidate/lib/validators'
+import { getShortHash } from '../../utilities'
 
-  export default {
-    validations: {
-      mail: { email, required },
-      password: {
-        async valid () {
-          return !this.invalidShortHashes.includes(
-            await getShortHash(this.password))
-        }
-      },
-      code: {
-        valid () {
-          return !this.invalidCodes.includes(this.code)
-        }
-      },
-      requestGroup: ['mail', 'password']
+export default {
+  validations: {
+    mail: { email, required },
+    password: {
+      async valid () {
+        return !this.invalidShortHashes.includes(
+          await getShortHash(this.password))
+      }
     },
-    data () {
+    code: {
+      valid () {
+        return !this.invalidCodes.includes(this.code)
+      }
+    },
+    requestGroup: ['mail', 'password']
+  },
+  data () {
+    return {
+      stage: 1,
+      requestInProgress: false,
+      mail: '',
+      password: '',
+      code: '',
+      invalidShortHashes: [],
+      invalidCodes: []
+    }
+  },
+  computed: {
+    ...mapGetters({
+      isOnline: 'isOnline'
+    }),
+    mailErrors () {
       return {
-        stage: 1,
-        requestInProgress: false,
-        mail: '',
-        password: '',
-        code: '',
-        invalidShortHashes: [],
-        invalidCodes: []
+        [this.$t('EMAIL_ADDRESS_IS_REQUIRED')]: !this.$v.mail.required,
+        [this.$t('EMAIL_ADDRESS_IS_INVALID')]: !this.$v.mail.email
       }
     },
-    computed: {
-      ...mapGetters({
-        isOnline: 'isOnline'
-      }),
-      mailErrors () {
-        return {
-          [this.$t('EMAIL_ADDRESS_IS_REQUIRED')]: !this.$v.mail.required,
-          [this.$t('EMAIL_ADDRESS_IS_INVALID')]: !this.$v.mail.email
-        }
-      },
-      passwordErrors () {
-        return {
-          [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
-        }
-      },
-      codeErrors () {
-        return {
-          [this.$t('INVALID_CODE')]: !this.$v.code.valid
-        }
+    passwordErrors () {
+      return {
+        [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
       }
     },
-    methods: {
-      ...mapActions({
-        acquireMailToken: 'acquireMailToken',
-        releaseMailToken: 'releaseMailToken',
-        displaySnackbar: 'interface/displaySnackbar'
-      }),
-      async acquireToken () {
-        if (this.isOnline && !this.requestInProgress) {
-          this.$v.requestGroup.$touch()
-          if (!this.$v.requestGroup.$invalid) {
-            try {
-              this.requestInProgress = true
-              let password = this.password
-              let error = await this.acquireMailToken({
-                mail: this.mail,
-                password
-              })
-              if (!error) {
-                this.stage += 1
-              } else if (error === 'INVALID_DIGEST') {
-                this.invalidShortHashes.push(await getShortHash(password))
-              }
-            } finally {
-              this.requestInProgress = false
+    codeErrors () {
+      return {
+        [this.$t('INVALID_CODE')]: !this.$v.code.valid
+      }
+    }
+  },
+  methods: {
+    ...mapActions({
+      acquireMailToken: 'acquireMailToken',
+      releaseMailToken: 'releaseMailToken',
+      displaySnackbar: 'interface/displaySnackbar'
+    }),
+    async acquireToken () {
+      if (this.isOnline && !this.requestInProgress) {
+        this.$v.requestGroup.$touch()
+        if (!this.$v.requestGroup.$invalid) {
+          try {
+            this.requestInProgress = true
+            const password = this.password
+            const error = await this.acquireMailToken({
+              mail: this.mail,
+              password
+            })
+            if (!error) {
+              this.stage += 1
+            } else if (error === 'INVALID_DIGEST') {
+              this.invalidShortHashes.push(await getShortHash(password))
             }
+          } finally {
+            this.requestInProgress = false
           }
         }
-      },
-      async releaseToken () {
-        if (this.isOnline && !this.requestInProgress) {
-          this.$v.code.$touch()
-          if (!this.$v.code.$invalid) {
-            try {
-              this.requestInProgress = true
-              let code = this.code
-              let error = await this.releaseMailToken({ code })
-              if (!error) {
-                this.stage = 1
-                document.activeElement.blur()
-                this.$v.$reset()
-                this.mail = ''
-                this.password = ''
-                this.code = ''
-                this.invalidCodes = []
-                this.invalidShortHashes = []
-                this.displaySnackbar({
-                  message: this.$t('SUCCESS'),
-                  timeout: 1500
-                })
-              } else if (error === 'INVALID_CODE') {
-                this.invalidCodes.push(code)
-              }
-            } finally {
-              this.requestInProgress = false
+      }
+    },
+    async releaseToken () {
+      if (this.isOnline && !this.requestInProgress) {
+        this.$v.code.$touch()
+        if (!this.$v.code.$invalid) {
+          try {
+            this.requestInProgress = true
+            const code = this.code
+            const error = await this.releaseMailToken({ code })
+            if (!error) {
+              this.stage = 1
+              document.activeElement.blur()
+              this.$v.$reset()
+              this.mail = ''
+              this.password = ''
+              this.code = ''
+              this.invalidCodes = []
+              this.invalidShortHashes = []
+              this.displaySnackbar({
+                message: this.$t('SUCCESS'),
+                timeout: 1500
+              })
+            } else if (error === 'INVALID_CODE') {
+              this.invalidCodes.push(code)
             }
+          } finally {
+            this.requestInProgress = false
           }
         }
       }
     }
   }
+}
 </script>
-    

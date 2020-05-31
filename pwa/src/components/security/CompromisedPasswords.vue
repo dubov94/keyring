@@ -23,26 +23,26 @@
 </template>
 
 <script>
-  import PasswordMasonry from '../PasswordMasonry'
-  import {mapState} from 'vuex'
+import PasswordMasonry from '../PasswordMasonry'
+import { mapState } from 'vuex'
 
-  export default {
-    components: {
-      passwordMasonry: PasswordMasonry
-    },
-    computed: {
-      ...mapState({
-        userKeys: state => state.userKeys,
-        exposedKeys: state => state.userKeys.filter(({ identifier }) =>
-          state.threats.exposedUserKeyIds.includes(identifier)),
-        keyCount: state => state.threats.exposedUserKeyIds.length,
-        inProgress: state => state.threats.gettingExposedUserKeys
-      })
-    },
-    methods: {
-      handleEditKey ({ identifier, reveal }) {
-        this.$emit('edit', { identifier, reveal })
-      }
+export default {
+  components: {
+    passwordMasonry: PasswordMasonry
+  },
+  computed: {
+    ...mapState({
+      userKeys: state => state.userKeys,
+      exposedKeys: state => state.userKeys.filter(({ identifier }) =>
+        state.threats.exposedUserKeyIds.includes(identifier)),
+      keyCount: state => state.threats.exposedUserKeyIds.length,
+      inProgress: state => state.threats.gettingExposedUserKeys
+    })
+  },
+  methods: {
+    handleEditKey ({ identifier, reveal }) {
+      this.$emit('edit', { identifier, reveal })
     }
   }
+}
 </script>

@@ -18,59 +18,59 @@
 </template>
 
 <script>
-  import {mapActions, mapGetters} from 'vuex'
-  import {getShortHash, purgeAllStoragesAndLoadIndex} from '../../utilities'
+import { mapActions, mapGetters } from 'vuex'
+import { getShortHash, purgeAllStoragesAndLoadIndex } from '../../utilities'
 
-  export default {
-    validations: {
-      password: {
-        async valid () {
-          return !this.invalidShortHashes.includes(
-            await getShortHash(this.password))
-        }
+export default {
+  validations: {
+    password: {
+      async valid () {
+        return !this.invalidShortHashes.includes(
+          await getShortHash(this.password))
       }
-    },
-    data () {
+    }
+  },
+  data () {
+    return {
+      requestInProgress: false,
+      password: '',
+      invalidShortHashes: []
+    }
+  },
+  computed: {
+    ...mapGetters({
+      isOnline: 'isOnline'
+    }),
+    passwordErrors () {
       return {
-        requestInProgress: false,
-        password: '',
-        invalidShortHashes: []
+        [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
       }
-    },
-    computed: {
-      ...mapGetters({
-        isOnline: 'isOnline'
-      }),
-      passwordErrors () {
-        return {
-          [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
-        }
-      }
-    },
-    methods: {
-      ...mapActions({
-        deleteAccount: 'deleteAccount'
-      }),
-      async submit () {
-        if (this.isOnline && !this.requestInProgress) {
-          this.$v.$touch()
-          if (!this.$v.$invalid) {
-            try {
-              this.requestInProgress = true
-              let password = this.password
-              let error = await this.deleteAccount({ password })
-              if (!error) {
-                purgeAllStoragesAndLoadIndex()
-              } else if (error === 'INVALID_DIGEST') {
-                this.invalidShortHashes.push(
-                  await getShortHash(password))
-              }
-            } finally {
-              this.requestInProgress = false
+    }
+  },
+  methods: {
+    ...mapActions({
+      deleteAccount: 'deleteAccount'
+    }),
+    async submit () {
+      if (this.isOnline && !this.requestInProgress) {
+        this.$v.$touch()
+        if (!this.$v.$invalid) {
+          try {
+            this.requestInProgress = true
+            const password = this.password
+            const error = await this.deleteAccount({ password })
+            if (!error) {
+              purgeAllStoragesAndLoadIndex()
+            } else if (error === 'INVALID_DIGEST') {
+              this.invalidShortHashes.push(
+                await getShortHash(password))
             }
+          } finally {
+            this.requestInProgress = false
           }
         }
       }
     }
   }
+}
 </script>

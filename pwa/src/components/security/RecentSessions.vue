@@ -27,63 +27,62 @@
 </template>
 
 <script>
-  import UaParser from 'ua-parser-js'
-  import {mapActions, mapGetters, mapState} from 'vuex'
+import UaParser from 'ua-parser-js'
+import { mapActions, mapGetters, mapState } from 'vuex'
 
-  export default {
-    computed: {
-      ...mapState({
-        recentSessions: state => state.recentSessions || []
-      }),
-      ...mapGetters({
-        hasSessionsData: 'hasSessionsData',
-        isOnline: 'isOnline'
-      }),
-      headers () {
-        return [
-          { text: 'Timestamp', value: 'moment' },
-          { text: 'IP address', value: 'location' },
-          { text: 'User agent', value: 'browser' }
-        ]
-      },
-      items () {
-        return this.recentSessions.map(
-          ({creationTimeInMillis, ipAddress, userAgent, geolocation}) => {
-            let moment = new Date(creationTimeInMillis).toLocaleString()
-            let area = null
-            if (geolocation.country) {
-              if (geolocation.city) {
-                area = `${geolocation.city}, ${geolocation.country}`
-              } else {
-                area = geolocation.country
-              }
+export default {
+  computed: {
+    ...mapState({
+      recentSessions: state => state.recentSessions || []
+    }),
+    ...mapGetters({
+      hasSessionsData: 'hasSessionsData',
+      isOnline: 'isOnline'
+    }),
+    headers () {
+      return [
+        { text: 'Timestamp', value: 'moment' },
+        { text: 'IP address', value: 'location' },
+        { text: 'User agent', value: 'browser' }
+      ]
+    },
+    items () {
+      return this.recentSessions.map(
+        ({ creationTimeInMillis, ipAddress, userAgent, geolocation }) => {
+          const moment = new Date(creationTimeInMillis).toLocaleString()
+          let area = null
+          if (geolocation.country) {
+            if (geolocation.city) {
+              area = `${geolocation.city}, ${geolocation.country}`
+            } else {
+              area = geolocation.country
             }
-            let location = area === null ? ipAddress : `${ipAddress}, ${area}`
-            let browser = new UaParser(userAgent).getBrowser()
-            return {moment, location, browser}
           }
-        )
-      }
-    },
-    methods: {
-      ...mapActions({
-        clearRecentSessions: 'clearRecentSessions',
-        fetchRecentSessions: 'fetchRecentSessions'
-      })
-    },
-    beforeDestroy () {
-      this.clearRecentSessions()
-    },
-    watch: {
-      isOnline: {
-        immediate: true,
-        handler (newValue) {
-          if (newValue) {
-            this.fetchRecentSessions()
-          }
+          const location = area === null ? ipAddress : `${ipAddress}, ${area}`
+          const browser = new UaParser(userAgent).getBrowser()
+          return { moment, location, browser }
+        }
+      )
+    }
+  },
+  methods: {
+    ...mapActions({
+      clearRecentSessions: 'clearRecentSessions',
+      fetchRecentSessions: 'fetchRecentSessions'
+    })
+  },
+  beforeDestroy () {
+    this.clearRecentSessions()
+  },
+  watch: {
+    isOnline: {
+      immediate: true,
+      handler (newValue) {
+        if (newValue) {
+          this.fetchRecentSessions()
         }
       }
     }
   }
+}
 </script>
-  

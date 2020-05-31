@@ -21,88 +21,87 @@
 </template>
 
 <script>
-  import {mapActions, mapGetters} from 'vuex'
-  import {required} from 'vuelidate/lib/validators'
-  import {getShortHash} from '../../utilities'
+import { mapActions, mapGetters } from 'vuex'
+import { required } from 'vuelidate/lib/validators'
+import { getShortHash } from '../../utilities'
 
-  export default {
-    validations: {
-      username: {
-        required,
-        valid () {
-          return !this.takenUserNames.includes(this.username)
-        }
-      },
-      password: {
-        async valid () {
-          return !this.invalidShortHashes.includes(
-            await getShortHash(this.password))
-        }
+export default {
+  validations: {
+    username: {
+      required,
+      valid () {
+        return !this.takenUserNames.includes(this.username)
       }
     },
-    data () {
+    password: {
+      async valid () {
+        return !this.invalidShortHashes.includes(
+          await getShortHash(this.password))
+      }
+    }
+  },
+  data () {
+    return {
+      requestInProgress: false,
+      username: '',
+      password: '',
+      takenUserNames: [],
+      invalidShortHashes: []
+    }
+  },
+  computed: {
+    ...mapGetters({
+      isOnline: 'isOnline'
+    }),
+    usernameErrors () {
       return {
-        requestInProgress: false,
-        username: '',
-        password: '',
-        takenUserNames: [],
-        invalidShortHashes: []
+        [this.$t('USERNAME_CANNOT_BE_EMPTY')]: !this.$v.username.required,
+        [this.$t('USERNAME_IS_ALREADY_TAKEN')]: !this.$v.username.valid
       }
     },
-    computed: {
-      ...mapGetters({
-        isOnline: 'isOnline'
-      }),
-      usernameErrors () {
-        return {
-          [this.$t('USERNAME_CANNOT_BE_EMPTY')]: !this.$v.username.required,
-          [this.$t('USERNAME_IS_ALREADY_TAKEN')]: !this.$v.username.valid
-        }
-      },
-      passwordErrors () {
-        return {
-          [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
-        }
+    passwordErrors () {
+      return {
+        [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
       }
-    },
-    methods: {
-      ...mapActions({
-        changeUsername: 'changeUsername',
-        displaySnackbar: 'interface/displaySnackbar'
-      }),
-      async submit () {
-        if (this.isOnline && !this.requestInProgress) {
-          this.$v.$touch()
-          if (!this.$v.$invalid) {
-            try {
-              this.requestInProgress = true
-              let username = this.username
-              let password = this.password
-              let error = await this.changeUsername({ username, password })
-              if (!error) {
-                document.activeElement.blur()
-                this.$v.$reset()
-                this.username = ''
-                this.password = ''
-                this.takenUserNames = []
-                this.invalidShortHashes = []
-                this.displaySnackbar({
-                  message: this.$t('SUCCESS'),
-                  timeout: 1500
-                })
-              } else if (error === 'NAME_TAKEN') {
-                this.takenUserNames.push(username)
-              } else if (error === 'INVALID_DIGEST') {
-                this.invalidShortHashes.push(
-                  await getShortHash(password))
-              }
-            } finally {
-              this.requestInProgress = false
+    }
+  },
+  methods: {
+    ...mapActions({
+      changeUsername: 'changeUsername',
+      displaySnackbar: 'interface/displaySnackbar'
+    }),
+    async submit () {
+      if (this.isOnline && !this.requestInProgress) {
+        this.$v.$touch()
+        if (!this.$v.$invalid) {
+          try {
+            this.requestInProgress = true
+            const username = this.username
+            const password = this.password
+            const error = await this.changeUsername({ username, password })
+            if (!error) {
+              document.activeElement.blur()
+              this.$v.$reset()
+              this.username = ''
+              this.password = ''
+              this.takenUserNames = []
+              this.invalidShortHashes = []
+              this.displaySnackbar({
+                message: this.$t('SUCCESS'),
+                timeout: 1500
+              })
+            } else if (error === 'NAME_TAKEN') {
+              this.takenUserNames.push(username)
+            } else if (error === 'INVALID_DIGEST') {
+              this.invalidShortHashes.push(
+                await getShortHash(password))
             }
+          } finally {
+            this.requestInProgress = false
           }
         }
       }
     }
   }
+}
 </script>
-  

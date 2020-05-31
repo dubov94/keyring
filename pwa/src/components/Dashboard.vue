@@ -25,7 +25,6 @@
   }
 </style>
 
-
 <template>
   <page>
     <side-menu v-model="showMenu"></side-menu>
@@ -57,112 +56,110 @@
 </template>
 
 <script>
-  import Editor from './Editor'
-  import Page from './Page'
-  import Password from './Password'
-  import PasswordMasonry from './PasswordMasonry'
-  import SideMenu from './toolbar-with-menu/SideMenu'
-  import Title from './toolbar-with-menu/Title'
-  import Toolbar from './toolbar-with-menu/Toolbar'
-  import {mapActions, mapGetters, mapMutations, mapState} from 'vuex'
+import Editor from './Editor'
+import Page from './Page'
+import PasswordMasonry from './PasswordMasonry'
+import SideMenu from './toolbar-with-menu/SideMenu'
+import Title from './toolbar-with-menu/Title'
+import Toolbar from './toolbar-with-menu/Toolbar'
+import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
 
-  const CARDS_PER_PAGE = 12
+const CARDS_PER_PAGE = 12
 
-  export default {
-    components: {
-      editor: Editor,
-      page: Page,
-      password: Password,
-      passwordMasonry: PasswordMasonry,
-      sideMenu: SideMenu,
-      toolbarTitle: Title,
-      toolbar: Toolbar
+export default {
+  components: {
+    editor: Editor,
+    page: Page,
+    passwordMasonry: PasswordMasonry,
+    sideMenu: SideMenu,
+    toolbarTitle: Title,
+    toolbar: Toolbar
+  },
+  data () {
+    return {
+      showMenu: false,
+      pageNumber: 1,
+      query: ''
+    }
+  },
+  computed: {
+    ...mapState({
+      userKeys: state => state.userKeys
+    }),
+    ...mapGetters({
+      isOnline: 'isOnline'
+    }),
+    pageCount () {
+      return Math.max(Math.floor(
+        (this.matchingCards.length + CARDS_PER_PAGE - 1) / CARDS_PER_PAGE), 1)
     },
-    data () {
-      return {
-        showMenu: false,
-        pageNumber: 1,
-        query: ''
+    paginationVisibleCount () {
+      return this.$vuetify.breakpoint.smAndUp ? 7 : 5
+    },
+    normalizedQuery () {
+      return this.query.trim().toLowerCase()
+    },
+    matchingCards () {
+      const prefix = this.normalizedQuery
+      let list = this.userKeys
+      if (prefix !== '') {
+        list = list.filter(key =>
+          key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
+      }
+      return list
+    },
+    visibleCards () {
+      const startIndex = (this.pageNumber - 1) * CARDS_PER_PAGE
+      return this.matchingCards.slice(startIndex, startIndex + CARDS_PER_PAGE)
+    },
+    cardsCount () {
+      return this.matchingCards.length
+    }
+  },
+  methods: {
+    ...mapActions({
+      displaySnackbar: 'interface/displaySnackbar'
+    }),
+    ...mapMutations({
+      openEditor: 'interface/openEditor',
+      closeEditor: 'interface/closeEditor'
+    }),
+    addKey () {
+      this.openEditor({ identifier: null, reveal: false })
+    },
+    handleEditKey ({ identifier, reveal }) {
+      this.openEditor({ identifier, reveal })
+    },
+    clearQuery () {
+      this.query = ''
+    },
+    resetNavigation () {
+      this.pageNumber = 1
+    }
+  },
+  watch: {
+    cardsCount (current, previous) {
+      if (this.pageNumber > this.pageCount) {
+        this.pageNumber = this.pageCount
       }
     },
-    computed: {
-      ...mapState({
-        userKeys: state => state.userKeys
-      }),
-      ...mapGetters({
-        isOnline: 'isOnline'
-      }),
-      pageCount () {
-        return Math.max(Math.floor(
-          (this.matchingCards.length + CARDS_PER_PAGE - 1) / CARDS_PER_PAGE), 1)
-      },
-      paginationVisibleCount () {
-        return this.$vuetify.breakpoint.smAndUp ? 7 : 5
-      },
-      normalizedQuery () {
-        return this.query.trim().toLowerCase()
-      },
-      matchingCards () {
-        let prefix = this.normalizedQuery
-        let list = this.userKeys
-        if (prefix !== '') {
-          list = list.filter(key =>
-            key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
-        }
-        return list
-      },
-      visibleCards () {
-        let startIndex = (this.pageNumber - 1) * CARDS_PER_PAGE
-        return this.matchingCards.slice(startIndex, startIndex + CARDS_PER_PAGE)
-      },
-      cardsCount () {
-        return this.matchingCards.length
-      }
-    },
-    methods: {
-      ...mapActions({
-        displaySnackbar: 'interface/displaySnackbar'
-      }),
-      ...mapMutations({
-        openEditor: 'interface/openEditor',
-        closeEditor: 'interface/closeEditor'
-      }),
-      addKey () {
-        this.openEditor({ identifier: null, reveal: false })
-      },
-      handleEditKey ({ identifier, reveal }) {
-        this.openEditor({ identifier, reveal })
-      },
-      clearQuery () {
-        this.query = ''
-      },
-      resetNavigation () {
-        this.pageNumber = 1
-      }
-    },
-    watch: {
-      cardsCount (current, previous) {
-        if (this.pageNumber > this.pageCount) {
-          this.pageNumber = this.pageCount
-        }
-      },
-      normalizedQuery () {
+    normalizedQuery () {
+      this.resetNavigation()
+    }
+  },
+  mounted () {
+    this.unsubscribeFromStore = this.$store.subscribe((mutation) => {
+      if (mutation.type === 'unshiftUserKey') {
+        this.clearQuery()
         this.resetNavigation()
       }
-    },
-    mounted () {
-      this.unsubscribeFromStore = this.$store.subscribe((mutation) => {
-        if (mutation.type === 'unshiftUserKey') {
-          this.clearQuery()
-          this.resetNavigation()
-        }
-      })
-      if (this.userKeys.length > 0) {
-        this.$refs.search.focus()
-      }
-    },
-    beforeDestroy () {
-      this.unsubscribeFromStore()
+    })
+    if (this.userKeys.length > 0) {
+      this.$refs.search.focus()
     }
+  },
+  beforeDestroy () {
+    this.unsubscribeFromStore()
   }
+}
 </script>

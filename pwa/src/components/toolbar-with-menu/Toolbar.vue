@@ -16,18 +16,17 @@
 </template>
 
 <script>
-  import Title from './Title'
+import Title from './Title'
 
-  export default {
-    components: {
-      toolbarTitle: Title
-    },
-    props: ['value'],
-    methods: {
-      toggle () {
-        this.$emit('input', !this.value)
-      }
+export default {
+  components: {
+    toolbarTitle: Title
+  },
+  props: ['value'],
+  methods: {
+    toggle () {
+      this.$emit('input', !this.value)
     }
   }
+}
 </script>
-

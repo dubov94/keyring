@@ -48,37 +48,37 @@
 </template>
 
 <script>
-  import {mapActions, mapGetters} from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
-  export default {
-    props: ['identifier', 'value', 'tags'],
-    computed: {
-      ...mapGetters({
-        isOnline: 'isOnline'
-      })
+export default {
+  props: ['identifier', 'value', 'tags'],
+  computed: {
+    ...mapGetters({
+      isOnline: 'isOnline'
+    })
+  },
+  data () {
+    return {
+      reveal: false
+    }
+  },
+  methods: {
+    ...mapActions({
+      displaySnackbar: 'interface/displaySnackbar'
+    }),
+    async copyText (string) {
+      await navigator.clipboard.writeText(string)
+      this.displaySnackbar({ message: 'Copied!', timeout: 1500 })
     },
-    data () {
-      return {
-        reveal: false
-      }
+    toggleReveal () {
+      this.reveal = !this.reveal
     },
-    methods: {
-      ...mapActions({
-        displaySnackbar: 'interface/displaySnackbar'
-      }),
-      async copyText (string) {
-        await navigator.clipboard.writeText(string)
-        this.displaySnackbar({ message: 'Copied!', timeout: 1500 })
-      },
-      toggleReveal () {
-        this.reveal = !this.reveal
-      },
-      edit () {
-        if (this.isOnline) {
-          this.$emit('edit', { reveal: this.reveal })
-          this.reveal = false
-        }
+    edit () {
+      if (this.isOnline) {
+        this.$emit('edit', { reveal: this.reveal })
+        this.reveal = false
       }
     }
   }
+}
 </script>

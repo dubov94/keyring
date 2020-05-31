@@ -24,86 +24,86 @@
 </template>
 
 <script>
-  import {mapActions, mapGetters} from 'vuex'
-  import {required, sameAs} from 'vuelidate/lib/validators'
-  import {getShortHash} from '../../utilities'
+import { mapActions, mapGetters } from 'vuex'
+import { required, sameAs } from 'vuelidate/lib/validators'
+import { getShortHash } from '../../utilities'
 
-  export default {
-    validations: {
-      current: {
-        async valid () {
-          return !this.invalidShortHashes.includes(
-            await getShortHash(this.current))
-        }
-      },
-      renewal: { required },
-      repeat: { sameAs: sameAs('renewal') }
+export default {
+  validations: {
+    current: {
+      async valid () {
+        return !this.invalidShortHashes.includes(
+          await getShortHash(this.current))
+      }
     },
-    data () {
+    renewal: { required },
+    repeat: { sameAs: sameAs('renewal') }
+  },
+  data () {
+    return {
+      requestInProgress: false,
+      current: '',
+      renewal: '',
+      repeat: '',
+      invalidShortHashes: []
+    }
+  },
+  computed: {
+    ...mapGetters({
+      isOnline: 'isOnline'
+    }),
+    currentErrors () {
       return {
-        requestInProgress: false,
-        current: '',
-        renewal: '',
-        repeat: '',
-        invalidShortHashes: []
+        [this.$t('INVALID_CURRENT_PASSWORD')]: !this.$v.current.valid
       }
     },
-    computed: {
-      ...mapGetters({
-        isOnline: 'isOnline'
-      }),
-      currentErrors () {
-        return {
-          [this.$t('INVALID_CURRENT_PASSWORD')]: !this.$v.current.valid
-        }
-      },
-      renewalErrors () {
-        return {
-          [this.$t('PASSWORD_CANNOT_BE_EMPTY')]: !this.$v.renewal.required
-        }
-      },
-      repeatErrors () {
-        return {
-          [this.$t('PASSWORDS_DO_NOT_MATCH')]: !this.$v.repeat.sameAs
-        }
+    renewalErrors () {
+      return {
+        [this.$t('PASSWORD_CANNOT_BE_EMPTY')]: !this.$v.renewal.required
       }
     },
-    methods: {
-      ...mapActions({
-        changeMasterKey: 'changeMasterKey',
-        displaySnackbar: 'interface/displaySnackbar'
-      }),
-      async submit () {
-        if (this.isOnline && !this.requestInProgress) {
-          this.$v.$touch()
-          if (!this.$v.$invalid) {
-            try {
-              this.requestInProgress = true
-              let current = this.current
-              let error = await this.changeMasterKey({
-                current,
-                renewal: this.renewal
+    repeatErrors () {
+      return {
+        [this.$t('PASSWORDS_DO_NOT_MATCH')]: !this.$v.repeat.sameAs
+      }
+    }
+  },
+  methods: {
+    ...mapActions({
+      changeMasterKey: 'changeMasterKey',
+      displaySnackbar: 'interface/displaySnackbar'
+    }),
+    async submit () {
+      if (this.isOnline && !this.requestInProgress) {
+        this.$v.$touch()
+        if (!this.$v.$invalid) {
+          try {
+            this.requestInProgress = true
+            const current = this.current
+            const error = await this.changeMasterKey({
+              current,
+              renewal: this.renewal
+            })
+            if (!error) {
+              document.activeElement.blur()
+              this.$v.$reset()
+              this.current = ''
+              this.renewal = ''
+              this.repeat = ''
+              this.invalidShortHashes = []
+              this.displaySnackbar({
+                message: this.$t('SUCCESS'),
+                timeout: 1500
               })
-              if (!error) {
-                document.activeElement.blur()
-                this.$v.$reset()
-                this.current = ''
-                this.renewal = ''
-                this.repeat = ''
-                this.invalidShortHashes = []
-                this.displaySnackbar({
-                  message: this.$t('SUCCESS'),
-                  timeout: 1500
-                })
-              } else if (error === 'INVALID_CURRENT_DIGEST') {
-                this.invalidShortHashes.push(await getShortHash(current))
-              }
-            } finally {
-              this.requestInProgress = false
+            } else if (error === 'INVALID_CURRENT_DIGEST') {
+              this.invalidShortHashes.push(await getShortHash(current))
             }
+          } finally {
+            this.requestInProgress = false
           }
         }
       }
     }
   }
+}
 </script>

@@ -42,35 +42,35 @@
 </template>
 
 <script>
-  import CompromisedPasswords from './CompromisedPasswords'
-  import DuplicatePasswords from './DuplicatePasswords'
-  import Editor from '../Editor'
-  import {mapActions, mapGetters, mapMutations, mapState} from 'vuex'
+import CompromisedPasswords from './CompromisedPasswords'
+import DuplicatePasswords from './DuplicatePasswords'
+import Editor from '../Editor'
+import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
 
-  export default {
-    components: {
-      compromisedPasswords: CompromisedPasswords,
-      duplicatePasswords: DuplicatePasswords,
-      editor: Editor
-    },
-    computed: {
-      ...mapState({
-        isAnalysisEnabled: state => state.threats.isAnalysisEnabled
-      }),
-      ...mapGetters({
-        isOnline: 'isOnline'
-      })
-    },
-    methods: {
-      ...mapMutations({
-        openEditor: 'interface/openEditor'
-      }),
-      ...mapActions({
-        enableAnalysis: 'threats/enableAnalysis'
-      }),
-      handleEditKey ({ identifier, reveal }) {
-        this.openEditor({ identifier, reveal })
-      }
+export default {
+  components: {
+    compromisedPasswords: CompromisedPasswords,
+    duplicatePasswords: DuplicatePasswords,
+    editor: Editor
+  },
+  computed: {
+    ...mapState({
+      isAnalysisEnabled: state => state.threats.isAnalysisEnabled
+    }),
+    ...mapGetters({
+      isOnline: 'isOnline'
+    })
+  },
+  methods: {
+    ...mapMutations({
+      openEditor: 'interface/openEditor'
+    }),
+    ...mapActions({
+      enableAnalysis: 'threats/enableAnalysis'
+    }),
+    handleEditKey ({ identifier, reveal }) {
+      this.openEditor({ identifier, reveal })
     }
   }
+}
 </script>

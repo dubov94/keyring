@@ -17,29 +17,29 @@
 </template>
 
 <script>
-  import {XL_MINIMAL_WIDTH} from './constants'
+import { XL_MINIMAL_WIDTH } from './constants'
 
-  export default {
-    props: ['value', 'message'],
-    data () {
-      return {
-        maxWidth: XL_MINIMAL_WIDTH * (1.5 / 12)
-      }
+export default {
+  props: ['value', 'message'],
+  data () {
+    return {
+      maxWidth: XL_MINIMAL_WIDTH * (1.5 / 12)
+    }
+  },
+  methods: {
+    close () {
+      this.$emit('input', false)
     },
-    methods: {
-      close () {
-        this.$emit('input', false)
-      },
-      affirm () {
-        this.$emit('affirm')
-      },
-      deny () {
-        this.close()
-      },
-      allow () {
-        this.close()
-        this.affirm()
-      }
+    affirm () {
+      this.$emit('affirm')
+    },
+    deny () {
+      this.close()
+    },
+    allow () {
+      this.close()
+      this.affirm()
     }
   }
+}
 </script>

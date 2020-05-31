@@ -20,9 +20,9 @@ export default {
   setUserKeys (state, userKeys) {
     userKeys.sort((left, right) => {
       let [leftTagIndex, rightTagIndex] = [0, 0]
-      let [leftTagCount, rightTagCount] = [left.tags.length, right.tags.length]
+      const [leftTagCount, rightTagCount] = [left.tags.length, right.tags.length]
       while (leftTagIndex < leftTagCount && rightTagIndex < rightTagCount) {
-        let tagsComparison = String.prototype.localeCompare.call(
+        const tagsComparison = String.prototype.localeCompare.call(
           left.tags[leftTagIndex], right.tags[rightTagIndex])
         if (tagsComparison !== 0) {
           return tagsComparison
@@ -42,12 +42,12 @@ export default {
     state.userKeys.unshift(userKey)
   },
   modifyUserKey (state, userKey) {
-    let index = state.userKeys.findIndex(
+    const index = state.userKeys.findIndex(
       (item) => item.identifier === userKey.identifier)
     state.userKeys.splice(index, 1, userKey)
   },
   deleteUserKey (state, identifier) {
-    let index = state.userKeys.findIndex(
+    const index = state.userKeys.findIndex(
       (item) => item.identifier === identifier)
     state.userKeys.splice(index, 1)
   },

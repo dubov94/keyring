@@ -24,29 +24,28 @@
 </template>
 
 <script>
-  import ChangeMail from './ChangeMail'
-  import ChangeMasterKey from './ChangeMasterKey'
-  import ChangeUsername from './ChangeUsername'
-  import DeleteAccount from './DeleteAccount'
-  import Page from '../Page'
-  import SideMenu from '../toolbar-with-menu/SideMenu'
-  import Toolbar from '../toolbar-with-menu/Toolbar'
+import ChangeMail from './ChangeMail'
+import ChangeMasterKey from './ChangeMasterKey'
+import ChangeUsername from './ChangeUsername'
+import DeleteAccount from './DeleteAccount'
+import Page from '../Page'
+import SideMenu from '../toolbar-with-menu/SideMenu'
+import Toolbar from '../toolbar-with-menu/Toolbar'
 
-  export default {
-    components: {
-      changeMail: ChangeMail,
-      changeMasterKey: ChangeMasterKey,
-      changeUsername: ChangeUsername,
-      deleteAccount: DeleteAccount,
-      page: Page,
-      sideMenu: SideMenu,
-      toolbar: Toolbar
-    },
-    data () {
-      return {
-        showMenu: false
-      }
+export default {
+  components: {
+    changeMail: ChangeMail,
+    changeMasterKey: ChangeMasterKey,
+    changeUsername: ChangeUsername,
+    deleteAccount: DeleteAccount,
+    page: Page,
+    sideMenu: SideMenu,
+    toolbar: Toolbar
+  },
+  data () {
+    return {
+      showMenu: false
     }
   }
+}
 </script>
-  

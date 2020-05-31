@@ -6,61 +6,61 @@
 </template>
 
 <script>
-  export default {
-    props: [
-      'autofocus',
-      'dirty',
-      'errors',
-      'label',
-      'prependIcon',
-      'type',
-      'value'
-    ],
-    data () {
-      return {
-        dirtyInternal: this.dirty,
-        ignoreEvents: !this.dirty
+export default {
+  props: [
+    'autofocus',
+    'dirty',
+    'errors',
+    'label',
+    'prependIcon',
+    'type',
+    'value'
+  ],
+  data () {
+    return {
+      dirtyInternal: this.dirty,
+      ignoreEvents: !this.dirty
+    }
+  },
+  methods: {
+    touch () {
+      if (!this.ignoreEvents) {
+        this.dirtyInternal = true
+        this.$emit('touch')
       }
     },
-    methods: {
-      touch () {
-        if (!this.ignoreEvents) {
-          this.dirtyInternal = true
-          this.$emit('touch')
-        }
-      },
-      reset () {
-        if (!this.ignoreEvents) {
-          this.dirtyInternal = false
-          this.$emit('reset')
-        }
-      },
-      input (value) {
-        this.reset()
-        this.$emit('input', value)
-      },
-      focus () {
-        this.$refs.input.focus()
+    reset () {
+      if (!this.ignoreEvents) {
+        this.dirtyInternal = false
+        this.$emit('reset')
       }
     },
-    computed: {
-      errorMessages () {
-        if (this.dirty) {
-          return Object.entries(this.errors)
-            .filter(([key, value]) => value)
-            .map(([key, value]) => key)
-        } else {
-          return []
-        }
-      }
+    input (value) {
+      this.reset()
+      this.$emit('input', value)
     },
-    watch: {
-      dirty (value) {
-        if (value !== this.dirtyInternal) {
-          this.dirtyInternal = value
-          this.ignoreEvents = !value
-        }
+    focus () {
+      this.$refs.input.focus()
+    }
+  },
+  computed: {
+    errorMessages () {
+      if (this.dirty) {
+        return Object.entries(this.errors)
+          .filter(([key, value]) => value)
+          .map(([key, value]) => key)
+      } else {
+        return []
+      }
+    }
+  },
+  watch: {
+    dirty (value) {
+      if (value !== this.dirtyInternal) {
+        this.dirtyInternal = value
+        this.ignoreEvents = !value
       }
     }
   }
+}
 </script>

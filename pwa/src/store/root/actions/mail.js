@@ -1,6 +1,6 @@
 import axios from 'axios'
 import SodiumWrapper from '../../../sodium.wrapper'
-import {createSessionHeader} from './utilities'
+import { createSessionHeader } from './utilities'
 
 export default {
   async acquireMailToken ({ state }, { mail, password }) {

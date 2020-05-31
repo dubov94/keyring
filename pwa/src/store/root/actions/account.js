@@ -1,16 +1,16 @@
 import axios from 'axios'
 import SodiumWrapper from '../../../sodium.wrapper'
-import {createSessionHeader} from './utilities'
+import { createSessionHeader } from './utilities'
 
 export default {
   async changeMasterKey ({ commit, dispatch, state }, { current, renewal }) {
-    let curDigest = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+    const curDigest = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
       state.parametrization, current)).authDigest
-    let newParametrization = await SodiumWrapper.generateArgon2Parametrization()
-    let {authDigest, encryptionKey} =
+    const newParametrization = await SodiumWrapper.generateArgon2Parametrization()
+    const { authDigest, encryptionKey } =
       await SodiumWrapper.computeAuthDigestAndEncryptionKey(
         newParametrization, renewal)
-    let { data: response } =
+    const { data: response } =
       await axios.post('/api/administration/change-master-key', {
         current_digest: curDigest,
         renewal: {
@@ -39,7 +39,7 @@ export default {
     return response.error
   },
   async changeUsername ({ commit, getters, state }, { username, password }) {
-    let { data: { error } } =
+    const { data: { error } } =
       await axios.put('/api/administration/change-username', {
         digest: (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).authDigest,
@@ -66,7 +66,7 @@ export default {
     ).data.error
   },
   async fetchRecentSessions ({ commit, state }) {
-    let { data: { sessions: list } } =
+    const { data: { sessions: list } } =
       await axios.get('/api/administration/get-recent-sessions', {
         headers: createSessionHeader(state.sessionKey)
       })

@@ -13,18 +13,18 @@
 </template>
 
 <script>
-  import Page from '../Page'
-  import SideMenu from '../toolbar-with-menu/SideMenu'
-  import Toolbar from '../toolbar-with-menu/Toolbar'
+import Page from '../Page'
+import SideMenu from '../toolbar-with-menu/SideMenu'
+import Toolbar from '../toolbar-with-menu/Toolbar'
 
-  export default {
-    components: {
-      page: Page,
-      sideMenu: SideMenu,
-      toolbar: Toolbar
-    },
-    data () {
-      return { showMenu: false }
-    }
+export default {
+  components: {
+    page: Page,
+    sideMenu: SideMenu,
+    toolbar: Toolbar
+  },
+  data () {
+    return { showMenu: false }
   }
+}
 </script>

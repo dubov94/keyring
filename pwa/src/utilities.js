@@ -1,27 +1,27 @@
-export const shuffle = (array) => {
-  let limit = array.length
-  while (limit > 0) {
-    let index = random(0, limit--);
-    [array[index], array[limit]] = [array[limit], array[index]]
-  }
-}
-
 const RANDOM_RANGE_LIMIT = Math.pow(2, 32)
 
 export const random = (lower, upper) => {
-  let count = upper - lower
-  let buffer = new Uint32Array(1)
-  let uniformRangeLimit = RANDOM_RANGE_LIMIT - RANDOM_RANGE_LIMIT % count
+  const count = upper - lower
+  const buffer = new Uint32Array(1)
+  const uniformRangeLimit = RANDOM_RANGE_LIMIT - RANDOM_RANGE_LIMIT % count
   do {
     crypto.getRandomValues(buffer)
   } while (buffer[0] >= uniformRangeLimit)
   return lower + buffer[0] % count
 }
 
+export const shuffle = (array) => {
+  let limit = array.length
+  while (limit > 0) {
+    const index = random(0, limit--);
+    [array[index], array[limit]] = [array[limit], array[index]]
+  }
+}
+
 export const createCharacterRange = (first, last) => {
   let range = ''
-  let firstCode = first.charCodeAt(0)
-  let lastCode = last.charCodeAt(0)
+  const firstCode = first.charCodeAt(0)
+  const lastCode = last.charCodeAt(0)
   for (let charCode = firstCode; charCode <= lastCode; ++charCode) {
     range += String.fromCharCode(charCode)
   }
@@ -29,7 +29,7 @@ export const createCharacterRange = (first, last) => {
 }
 
 export const generateSequenceOffRanges = (ranges, length) => {
-  let bits = new Array(ranges.length).fill(false)
+  const bits = new Array(ranges.length).fill(false)
   let numberOfUsedRanges = 0
   let isTail = false
   const numberOfAllOptions = ranges.reduce(
@@ -37,7 +37,7 @@ export const generateSequenceOffRanges = (ranges, length) => {
   let numberOfTailOptions = numberOfAllOptions
   let sequence = ''
   while (length--) {
-    let optionIndex = random(
+    const optionIndex = random(
       0, isTail ? numberOfTailOptions : numberOfAllOptions)
     let lengthAccumulator = 0
     let rangeIndex = -1
@@ -46,7 +46,7 @@ export const generateSequenceOffRanges = (ranges, length) => {
       lengthAccumulator += rangeLength
       do {
         rangeIndex += 1
-      } while (isTail && bits[rangeIndex])
+      } while (isTail && bits[rangeIndex]) // eslint-disable-line no-unmodified-loop-condition
       rangeLength = ranges[rangeIndex].length
     } while (optionIndex >= lengthAccumulator + rangeLength)
     sequence += ranges[rangeIndex][optionIndex - lengthAccumulator]
@@ -76,9 +76,9 @@ export const areArraysEqual = (left, right) => {
 }
 
 export const sha1 = async (message) => {
-  let messageUint8Array = new TextEncoder('utf-8').encode(message)
-  let hashArrayBuffer = await crypto.subtle.digest('SHA-1', messageUint8Array)
-  let hashByteArray = Array.from(new Uint8Array(hashArrayBuffer))
+  const messageUint8Array = new TextEncoder('utf-8').encode(message)
+  const hashArrayBuffer = await crypto.subtle.digest('SHA-1', messageUint8Array)
+  const hashByteArray = Array.from(new Uint8Array(hashArrayBuffer))
   return hashByteArray
     .map(byte => byte.toString(16).padStart(2, '0'))
     .join('')
@@ -86,7 +86,7 @@ export const sha1 = async (message) => {
 }
 
 export const getShortHash = async (message, length = 3) => {
-  let hash = await sha1(message)
+  const hash = await sha1(message)
   return hash.slice(0, length)
 }
 

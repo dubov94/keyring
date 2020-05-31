@@ -42,6 +42,8 @@ filegroup_copy(
     srcs = ["package.json"],
 )
 
+# ESLint indications might be unstable, see
+# https://github.com/vuejs/vue-cli/issues/3065.
 vue_cli_launcher(
     name = "serve",
     args = [

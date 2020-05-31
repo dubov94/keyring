@@ -46,7 +46,6 @@ applySendKeepAliveWhileIdle()
 applyFreezeWhenPageIsHidden()
 
 sodium.ready.then(() =>
-  /* eslint-disable no-new */
   new Vue({
     render: h => h(Application),
     router,

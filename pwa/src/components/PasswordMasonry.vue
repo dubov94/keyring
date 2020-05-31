@@ -16,17 +16,17 @@
 </template>
 
 <script>
-  import Password from './Password'
+import Password from './Password'
 
-  export default {
-    components: {
-      password: Password
-    },
-    props: ['userKeys'],
-    methods: {
-      handleEditKey (identifier, { reveal }) {
-        this.$emit('edit', { identifier, reveal })
-      }
+export default {
+  components: {
+    password: Password
+  },
+  props: ['userKeys'],
+  methods: {
+    handleEditKey (identifier, { reveal }) {
+      this.$emit('edit', { identifier, reveal })
     }
   }
+}
 </script>

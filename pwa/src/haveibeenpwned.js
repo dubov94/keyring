@@ -6,11 +6,11 @@ export const cutHashToPrefix = (hash) => hash.slice(0, PREFIX_LENGTH)
 
 export const cutHashToSuffix = (hash) => hash.slice(PREFIX_LENGTH)
 
-let prefixToSuffixes = new Map()
+const prefixToSuffixes = new Map()
 
 export const getSuffixesByPrefix = async (prefix) => {
   if (!prefixToSuffixes.has(prefix)) {
-    let { data } = await axios.get(
+    const { data } = await axios.get(
       `https://api.pwnedpasswords.com/range/${prefix}`)
     prefixToSuffixes.set(prefix,
       data.split('\n').map(string => string.split(':')[0]))

@@ -24,67 +24,67 @@
 </template>
 
 <script>
-  import {mapActions, mapGetters} from 'vuex'
-  import {getShortHash, purgeSessionStorageAndLoadLogIn} from '../../utilities'
+import { mapActions, mapGetters } from 'vuex'
+import { getShortHash, purgeSessionStorageAndLoadLogIn } from '../../utilities'
 
-  export default {
-    data () {
-      return {
-        requestInProgress: false,
-        password: '',
-        invalidShortHashes: []
-      }
-    },
-    validations: {
-      password: {
-        async valid () {
-          return !this.invalidShortHashes.includes(
-            await getShortHash(this.password))
-        }
-      }
-    },
-    computed: {
-      ...mapGetters({
-        hasLocalData: 'depot/hasLocalData'
-      }),
-      passwordErrors () {
-        return {
-          [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
-        }
-      }
-    },
-    methods: {
-      ...mapActions({
-        logIn: 'logIn'
-      }),
-      async submit () {
-        if (!this.requestInProgress) {
-          this.$v.$touch()
-          if (!this.$v.$invalid) {
-            try {
-              this.requestInProgress = true
-              let username = this.$store.state.session.username
-              let password = this.password
-              let { success } = await this.logIn({
-                username,
-                password,
-                persist: this.hasLocalData
-              })
-              if (success) {
-                // Ignoring requirements for the sake of simplicity.
-                this.$router.replace(this.$store.state.session.lastRoute)
-              } else {
-                this.invalidShortHashes.push(await getShortHash(password))
-              }
-            } finally {
-              this.requestInProgress = false
-            }
-          }
-        }
-      },
-      cancel () {
-        purgeSessionStorageAndLoadLogIn()
+export default {
+  data () {
+    return {
+      requestInProgress: false,
+      password: '',
+      invalidShortHashes: []
+    }
+  },
+  validations: {
+    password: {
+      async valid () {
+        return !this.invalidShortHashes.includes(
+          await getShortHash(this.password))
       }
     }
+  },
+  computed: {
+    ...mapGetters({
+      hasLocalData: 'depot/hasLocalData'
+    }),
+    passwordErrors () {
+      return {
+        [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
+      }
+    }
+  },
+  methods: {
+    ...mapActions({
+      logIn: 'logIn'
+    }),
+    async submit () {
+      if (!this.requestInProgress) {
+        this.$v.$touch()
+        if (!this.$v.$invalid) {
+          try {
+            this.requestInProgress = true
+            const username = this.$store.state.session.username
+            const password = this.password
+            const { success } = await this.logIn({
+              username,
+              password,
+              persist: this.hasLocalData
+            })
+            if (success) {
+              // Ignoring requirements for the sake of simplicity.
+              this.$router.replace(this.$store.state.session.lastRoute)
+            } else {
+              this.invalidShortHashes.push(await getShortHash(password))
+            }
+          } finally {
+            this.requestInProgress = false
+          }
+        }
+      }
+    },
+    cancel () {
+      purgeSessionStorageAndLoadLogIn()
+    }
   }
+}
 </script>

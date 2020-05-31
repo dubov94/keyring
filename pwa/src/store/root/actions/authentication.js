@@ -1,15 +1,15 @@
 import axios from 'axios'
 import SodiumWrapper from '../../../sodium.wrapper'
 import Status from '../status'
-import {purgeSessionStorageAndLoadLogIn} from '../../../utilities'
+import { purgeSessionStorageAndLoadLogIn } from '../../../utilities'
 
 export default {
   async register ({ commit }, { username, password, mail }) {
-    let parametrization = await SodiumWrapper.generateArgon2Parametrization()
-    let {authDigest, encryptionKey} =
+    const parametrization = await SodiumWrapper.generateArgon2Parametrization()
+    const { authDigest, encryptionKey } =
       await SodiumWrapper.computeAuthDigestAndEncryptionKey(
         parametrization, password)
-    let { data: response } =
+    const { data: response } =
       await axios.post('/api/authentication/register', {
         username,
         salt: parametrization,
@@ -29,20 +29,20 @@ export default {
   async attemptOnlineAuthentication (
     { commit, dispatch, state }, { username, password, persist }) {
     commit('setStatus', Status.CONNECTING)
-    let { data: saltResponse } =
+    const { data: saltResponse } =
       await axios.get(`/api/authentication/get-salt/${username}`)
     if (!saltResponse.error) {
-      let { salt: parametrization } = saltResponse
-      let {authDigest, encryptionKey} =
+      const { salt: parametrization } = saltResponse
+      const { authDigest, encryptionKey } =
         await SodiumWrapper.computeAuthDigestAndEncryptionKey(
           parametrization, password)
-      let { data: authResponse } =
+      const { data: authResponse } =
         await axios.post('/api/authentication/log-in', {
           username,
           digest: authDigest
         })
       if (!authResponse.error) {
-        let { requirements, key_set, session_key } = authResponse.payload
+        const { requirements, key_set, session_key } = authResponse.payload
         commit('setParametrization', parametrization)
         commit('setEncryptionKey', encryptionKey)
         await dispatch('acceptUserKeys', {

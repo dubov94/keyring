@@ -1,6 +1,6 @@
 import axios from 'axios'
 import SodiumWrapper from '../../../sodium.wrapper'
-import {createSessionHeader} from './utilities'
+import { createSessionHeader } from './utilities'
 
 export default {
   async acceptUserKeys ({ commit, dispatch, state }, { userKeys, updateDepot }) {
@@ -16,7 +16,7 @@ export default {
     await dispatch('threats/maybeAssessUserKeys', state.userKeys)
   },
   async createUserKey ({ commit, dispatch, state }, { value, tags }) {
-    let { data: response } =
+    const { data: response } =
       await axios.post('/api/administration/create-key', {
         password: await SodiumWrapper.encryptPassword(
           state.encryptionKey, { value, tags })

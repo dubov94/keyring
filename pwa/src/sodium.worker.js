@@ -50,9 +50,9 @@ export const extractAuthDigestAndEncryptionKey = (hash) => {
 }
 
 export const encryptMessage = (encryptionKey, message) => {
-  let nonce = sodium.randombytes_buf(
+  const nonce = sodium.randombytes_buf(
     sodium.crypto_secretbox_NONCEBYTES, 'base64')
-  let cipher = sodium.crypto_secretbox_easy(
+  const cipher = sodium.crypto_secretbox_easy(
     message,
     sodium.from_base64(nonce),
     sodium.from_base64(encryptionKey),
@@ -62,9 +62,9 @@ export const encryptMessage = (encryptionKey, message) => {
 }
 
 export const decryptMessage = (encryptionKey, string) => {
-  let nonceBase64Length = sodium.crypto_secretbox_NONCEBYTES * 8 / 6
-  let nonce = string.slice(0, nonceBase64Length)
-  let cipher = string.slice(nonceBase64Length)
+  const nonceBase64Length = sodium.crypto_secretbox_NONCEBYTES * 8 / 6
+  const nonce = string.slice(0, nonceBase64Length)
+  const cipher = string.slice(nonceBase64Length)
   return sodium.crypto_secretbox_open_easy(
     sodium.from_base64(cipher),
     sodium.from_base64(nonce),
