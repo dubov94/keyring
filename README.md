@@ -7,12 +7,7 @@ Install Java 11 and [Bazel](https://bazel.build).
 Set up [Redis](https://redis.io/) and [PostgreSQL](https://www.postgresql.org/)
 with `postgres:postgres` as an authentication pair. Create database `keyring`.
 
-Run `bazel //server/src/main` to launch the server and `bazel //grpc_gateway:main` to
-start proxying from JSON to GRPC.
-
-Execute `npm run develop` from
-[`client`](https://github.com/dubov94/keyring/tree/master/client) to spin up the
-frontend development server.
+Run `bazel run //:all_services` to spin up all components.
 
 ## Production
 
