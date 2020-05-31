@@ -126,7 +126,7 @@
                 mail: this.mail,
                 password
               })
-              if (error === 'NONE') {
+              if (!error) {
                 this.stage += 1
               } else if (error === 'INVALID_DIGEST') {
                 this.invalidShortHashes.push(await getShortHash(password))
@@ -145,7 +145,7 @@
               this.requestInProgress = true
               let code = this.code
               let error = await this.releaseMailToken({ code })
-              if (error === 'NONE') {
+              if (!error) {
                 this.stage = 1
                 document.activeElement.blur()
                 this.$v.$reset()

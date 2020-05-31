@@ -27,7 +27,7 @@ export default {
       }, {
         headers: createSessionHeader(state.sessionKey)
       })
-    if (response.error === 'NONE') {
+    if (!response.error) {
       commit('setParametrization', newParametrization)
       commit('setEncryptionKey', encryptionKey)
       commit('setSessionKey', response.session_key)
@@ -47,7 +47,7 @@ export default {
       }, {
         headers: createSessionHeader(state.sessionKey)
       })
-    if (error === 'NONE') {
+    if (!error) {
       if (getters['depot/hasLocalData']) {
         commit('depot/setUsername', username)
       }

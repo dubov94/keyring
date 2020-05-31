@@ -16,7 +16,7 @@ export default {
         digest: authDigest,
         mail
       })
-    if (response.error === 'NONE') {
+    if (!response.error) {
       commit('setParametrization', parametrization)
       commit('setEncryptionKey', encryptionKey)
       commit('setSessionKey', response.session_key)
@@ -31,7 +31,7 @@ export default {
     commit('setStatus', Status.CONNECTING)
     let { data: saltResponse } =
       await axios.get(`/api/authentication/get-salt/${username}`)
-    if (saltResponse.error === 'NONE') {
+    if (!saltResponse.error) {
       let { salt: parametrization } = saltResponse
       let {authDigest, encryptionKey} =
         await SodiumWrapper.computeAuthDigestAndEncryptionKey(
@@ -41,7 +41,7 @@ export default {
           username,
           digest: authDigest
         })
-      if (authResponse.error === 'NONE') {
+      if (!authResponse.error) {
         let { requirements, key_set, session_key } = authResponse.payload
         commit('setParametrization', parametrization)
         commit('setEncryptionKey', encryptionKey)

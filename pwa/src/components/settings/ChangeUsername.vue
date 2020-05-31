@@ -79,7 +79,7 @@
               let username = this.username
               let password = this.password
               let error = await this.changeUsername({ username, password })
-              if (error === 'NONE') {
+              if (!error) {
                 document.activeElement.blur()
                 this.$v.$reset()
                 this.username = ''

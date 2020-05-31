@@ -77,7 +77,7 @@
             try {
               this.requestInProgress = true
               let error = await this.releaseMailToken({ code: this.code })
-              if (error === 'NONE') {
+              if (!error) {
                 this.$router.replace('/dashboard')
               } else if (error === 'INVALID_CODE') {
                 this.invalidCodes.push(this.code)

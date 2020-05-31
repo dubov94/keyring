@@ -84,7 +84,7 @@
                 current,
                 renewal: this.renewal
               })
-              if (error === 'NONE') {
+              if (!error) {
                 document.activeElement.blur()
                 this.$v.$reset()
                 this.current = ''

@@ -99,7 +99,7 @@
                 password: this.password,
                 mail: this.mail
               })
-              if (error === 'NONE') {
+              if (!error) {
                 this.$router.replace('/set-up')
               } else if (error === 'NAME_TAKEN') {
                 this.takenUserNames.push(username)
