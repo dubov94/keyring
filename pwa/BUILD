@@ -4,6 +4,8 @@ load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("//bazel:files.bzl", "filegroup_copy")
 
+package(default_visibility = ["//:__pkg__"])
+
 copy_file(
     name = "stable_status",
     src = "//bazel/workspace:stable_status",

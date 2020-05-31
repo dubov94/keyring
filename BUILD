@@ -20,3 +20,23 @@ multirun(
     ],
     parallel = True,
 )
+
+command(
+    name = "pwa",
+    arguments = [
+        "serve",
+        "--package-json-path=$(rootpath //pwa:package_json)",
+    ],
+    command = "//pwa:serve",
+    data = ["//pwa:package_json"],
+)
+
+multirun(
+    name = "all_services",
+    commands = [
+        ":grpc_gateway",
+        ":server",
+        ":pwa",
+    ],
+    parallel = True,
+)
