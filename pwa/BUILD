@@ -1,6 +1,6 @@
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
-load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher")
+load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher", "vue_cli_launcher_test")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("//bazel:files.bzl", "filegroup_copy")
 
@@ -42,6 +42,14 @@ filegroup_copy(
     srcs = ["package.json"],
 )
 
+SOURCES = [
+    ":configs",
+    ":package_json",
+    ":public",
+    ":src",
+    ":stable_status",
+]
+
 # ESLint indications might be unstable, see
 # https://github.com/vuejs/vue-cli/issues/3065.
 vue_cli_launcher(
@@ -50,13 +58,45 @@ vue_cli_launcher(
         "serve",
         "--package-json-path=$(rootpath :package_json)",
     ],
-    data = [
-        ":configs",
-        ":package_json",
-        ":public",
-        ":src",
-        ":stable_status",
+    data = SOURCES,
+)
+
+DEPENDENCIES = [
+    "@pwa_npm//@vue/cli-plugin-babel",
+    "@pwa_npm//@vue/cli-plugin-eslint",
+    "@pwa_npm//@vue/cli-plugin-pwa",
+    "@pwa_npm//@vue/cli-plugin-typescript",
+    "@pwa_npm//@vue/cli-plugin-unit-mocha",
+    "@pwa_npm//@vue/eslint-config-standard",
+    "@pwa_npm//@vue/eslint-config-typescript",
+    "@pwa_npm//eslint-plugin-vue",
+    "@pwa_npm//register-service-worker",
+    "@pwa_npm//sass-loader",
+    "@pwa_npm//vue",
+    "@pwa_npm//vue-property-decorator",
+    "@pwa_npm//vue-router",
+    "@pwa_npm//vuex",
+]
+
+filegroup_copy(
+    name = "unit_specs",
+    srcs = glob(["tests/unit/**/*"]),
+)
+
+vue_cli_launcher_test(
+    name = "unit_tests",
+    args = [
+        "test:unit",
+        "--package-json-path=$(rootpath :package_json)",
+        # https://github.com/vuejs/vue-cli/blob/16d2701011e6e660850da5b4f1bed185bbcd0b3c/packages/%40vue/cli-plugin-unit-mocha/index.js#L61-L65
+        "pwa/tests/unit/**/*.spec.ts",
     ],
+    data = [
+        ":unit_specs",
+        "@pwa_npm//@types/chai",
+        "@pwa_npm//@types/mocha",
+        "@pwa_npm//chai",
+    ] + SOURCES + DEPENDENCIES,
 )
 
 vue_cli_launcher(
@@ -67,27 +107,7 @@ vue_cli_launcher(
         "--resolve-dest-by-cwd",
         "--package-json-path=$(execpath :package_json)",
     ],
-    data = [
-        ":configs",
-        ":package_json",
-        ":public",
-        ":src",
-        ":stable_status",
-        "@pwa_npm//@vue/cli-plugin-babel",
-        "@pwa_npm//@vue/cli-plugin-eslint",
-        "@pwa_npm//@vue/cli-plugin-pwa",
-        "@pwa_npm//@vue/cli-plugin-typescript",
-        "@pwa_npm//@vue/cli-plugin-unit-mocha",
-        "@pwa_npm//@vue/eslint-config-standard",
-        "@pwa_npm//@vue/eslint-config-typescript",
-        "@pwa_npm//eslint-plugin-vue",
-        "@pwa_npm//register-service-worker",
-        "@pwa_npm//sass-loader",
-        "@pwa_npm//vue",
-        "@pwa_npm//vue-property-decorator",
-        "@pwa_npm//vue-router",
-        "@pwa_npm//vuex",
-    ],
+    data = SOURCES + DEPENDENCIES,
     output_dir = True,
 )
 
