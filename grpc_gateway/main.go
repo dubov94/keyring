@@ -5,10 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
 	gw "github.com/dubov94/keyring/grpc-gateway/service_gateway_library"
 )
@@ -18,6 +20,13 @@ var (
 	serverAddress = flag.String("server-address", "localhost:5001", "Server address.")
 )
 
+func annotator(ctx context.Context, req *http.Request) metadata.MD {
+	return metadata.Pairs(
+		"x-ip-address", strings.Split(req.Header.Get("x-forwarded-for"), ", ")[0],
+		"x-user-agent", req.Header.Get("user-agent"),
+	)
+}
+
 func startProxy() error {
 	var err error
 
@@ -25,7 +34,7 @@ func startProxy() error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	mux := runtime.NewServeMux()
+	mux := runtime.NewServeMux(runtime.WithMetadata(annotator))
 	opts := []grpc.DialOption{grpc.WithInsecure()}
 
 	err = gw.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, *serverAddress, opts)

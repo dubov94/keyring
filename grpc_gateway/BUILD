@@ -18,6 +18,7 @@ go_binary(
         "@com_github_golang_glog//:go_default_library",
         "@grpc_ecosystem_grpc_gateway//runtime:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
+        "@org_golang_google_grpc//metadata:go_default_library",
     ],
 )
 
