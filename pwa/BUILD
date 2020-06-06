@@ -69,13 +69,22 @@ DEPENDENCIES = [
     "@pwa_npm//@vue/cli-plugin-unit-mocha",
     "@pwa_npm//@vue/eslint-config-standard",
     "@pwa_npm//@vue/eslint-config-typescript",
+    "@pwa_npm//axios",
     "@pwa_npm//eslint-plugin-vue",
+    "@pwa_npm//libsodium-wrappers",
     "@pwa_npm//register-service-worker",
     "@pwa_npm//sass-loader",
+    "@pwa_npm//ua-parser-js",
     "@pwa_npm//vue",
+    "@pwa_npm//vue-i18n",
     "@pwa_npm//vue-property-decorator",
     "@pwa_npm//vue-router",
+    "@pwa_npm//vuedraggable",
+    "@pwa_npm//vuelidate",
+    "@pwa_npm//vuetify",
     "@pwa_npm//vuex",
+    "@pwa_npm//vuex-persist",
+    "@pwa_npm//workerize-loader",
 ]
 
 filegroup_copy(
