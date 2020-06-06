@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import Page from '../Page'
+import Page from '@/components/Page'
 
 export default {
   components: {

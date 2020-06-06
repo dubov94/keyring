@@ -19,7 +19,7 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import { getShortHash, purgeAllStoragesAndLoadIndex } from '../../utilities'
+import { getShortHash, purgeAllStoragesAndLoadIndex } from '@/utilities'
 
 export default {
   validations: {

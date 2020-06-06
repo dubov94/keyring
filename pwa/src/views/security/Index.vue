@@ -13,9 +13,9 @@
 </template>
 
 <script>
-import Page from '../Page'
-import SideMenu from '../toolbar-with-menu/SideMenu'
-import Toolbar from '../toolbar-with-menu/Toolbar'
+import Page from '@/components/Page'
+import SideMenu from '@/components/toolbar-with-menu/SideMenu'
+import Toolbar from '@/components/toolbar-with-menu/Toolbar'
 
 export default {
   components: {

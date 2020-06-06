@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import PasswordMasonry from '../PasswordMasonry'
+import PasswordMasonry from '@/components/PasswordMasonry'
 import { mapState } from 'vuex'
 
 export default {

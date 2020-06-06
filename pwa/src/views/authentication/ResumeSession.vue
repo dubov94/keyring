@@ -25,7 +25,7 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import { getShortHash, purgeSessionStorageAndLoadLogIn } from '../../utilities'
+import { getShortHash, purgeSessionStorageAndLoadLogIn } from '@/utilities'
 
 export default {
   data () {

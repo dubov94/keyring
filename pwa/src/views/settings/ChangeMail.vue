@@ -59,7 +59,7 @@
 <script>
 import { mapActions, mapGetters } from 'vuex'
 import { email, required } from 'vuelidate/lib/validators'
-import { getShortHash } from '../../utilities'
+import { getShortHash } from '@/utilities'
 
 export default {
   validations: {

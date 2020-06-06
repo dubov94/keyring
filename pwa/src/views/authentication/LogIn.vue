@@ -30,7 +30,7 @@
 <script>
 import { mapActions, mapGetters } from 'vuex'
 import { required } from 'vuelidate/lib/validators'
-import { getShortHash } from '../../utilities'
+import { getShortHash } from '@/utilities'
 
 export default {
   data () {

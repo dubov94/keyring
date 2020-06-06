@@ -56,12 +56,12 @@
 </template>
 
 <script>
-import Editor from './Editor'
-import Page from './Page'
-import PasswordMasonry from './PasswordMasonry'
-import SideMenu from './toolbar-with-menu/SideMenu'
-import Title from './toolbar-with-menu/Title'
-import Toolbar from './toolbar-with-menu/Toolbar'
+import Editor from '@/components/Editor'
+import Page from '@/components/Page'
+import PasswordMasonry from '@/components/PasswordMasonry'
+import SideMenu from '@/components/toolbar-with-menu/SideMenu'
+import Title from '@/components/toolbar-with-menu/Title'
+import Toolbar from '@/components/toolbar-with-menu/Toolbar'
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
 
 const CARDS_PER_PAGE = 12

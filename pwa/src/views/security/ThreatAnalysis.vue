@@ -44,7 +44,7 @@
 <script>
 import CompromisedPasswords from './CompromisedPasswords'
 import DuplicatePasswords from './DuplicatePasswords'
-import Editor from '../Editor'
+import Editor from '@/components/Editor'
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
 
 export default {
