@@ -1,4 +1,4 @@
 pwd.floreina.me {
     proxy /api grpc-gateway:5002
-    proxy / client:80
+    proxy / pwa:8080
 }
