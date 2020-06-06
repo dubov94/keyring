@@ -14,7 +14,7 @@ par_binary(
 
 container_run_and_commit(
     name = "geoipupdate_with_python",
-    commands = ["apk add --no-cache python3"],
+    commands = ["apk add --no-cache python3 bash"],
     docker_run_flags = ["--entrypoint=\"\""],
     image = "@io_docker_index_maxmindinc_geoipupdate//image",
 )
