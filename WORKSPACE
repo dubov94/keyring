@@ -6,7 +6,6 @@ workspace(
 )
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 # skylib_dependencies
@@ -82,7 +81,7 @@ http_archive(
     name = "rules_jvm_external",
     sha256 = "82262ff4223c5fda6fb7ff8bd63db8131b51b413d26eb49e3131037e79e324af",
     strip_prefix = "rules_jvm_external-3.2",
-    url = "https://github.com/bazelbuild/rules_jvm_external/archive/3.2.zip",
+    urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/3.2.zip"],
 )
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
@@ -182,6 +181,41 @@ yarn_install(
     yarn_lock = "//pwa:yarn.lock",
 )
 
+# language_specific_dependencies.external_python_dependencies
+
+http_archive(
+    name = "rules_python",
+    sha256 = "b5668cde8bb6e3515057ef465a35ad712214962f0b3a314e551204266c7be90c",
+    strip_prefix = "rules_python-0.0.2",
+    urls = ["https://github.com/bazelbuild/rules_python/releases/download/0.0.2/rules_python-0.0.2.tar.gz"],
+)
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
+load("@rules_python//python:pip.bzl", "pip_repositories")
+
+pip_repositories()
+
+git_repository(
+    name = "subpar",
+    commit = "35bb9f0092f71ea56b742a520602da9b3638a24f",
+    remote = "https://github.com/google/subpar",
+    shallow_since = "1557863961 -0400",
+)
+
+load("@rules_python//python:pip.bzl", "pip3_import")
+
+pip3_import(
+    name = "ip_geolocation_pip",
+    requirements = "//ip_geolocation:requirements.txt",
+)
+
+load("@ip_geolocation_pip//:requirements.bzl", "pip_install")
+
+pip_install()
+
 # packaging_dependencies
 
 # packaging_dependencies.external_pkg_dependencies
@@ -241,6 +275,14 @@ container_pull(
     registry = "index.docker.io",
     repository = "abiosoft/caddy",
     tag = "1.0.3",
+)
+
+container_pull(
+    name = "io_docker_index_maxmindinc_geoipupdate",
+    digest = "sha256:4803802f76c635839ab3d3fd4abb1c0d400c9788cffdd237e7c323298e40c915",
+    registry = "index.docker.io",
+    repository = "maxmindinc/geoipupdate",
+    tag = "v4.3",
 )
 
 # multirun_dependencies.external_multirun_dependencies

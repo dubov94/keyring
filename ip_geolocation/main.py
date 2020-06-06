@@ -9,7 +9,9 @@ import maxminddb
 
 def update_and_schedule():
     try:
-        subprocess.run(['geoipupdate'],
+        # Expects GEOIPUPDATE_ACCOUNT_ID, GEOIPUPDATE_LICENSE_KEY
+        # and GEOIPUPDATE_EDITION_IDS.
+        subprocess.run(['/usr/bin/entry.sh'],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
     except subprocess.CalledProcessError as error:
         print(error)
@@ -22,7 +24,8 @@ def get_ip_info(ip_address):
 
 
 update_and_schedule()
-# https://maxminddb.readthedocs.io/en/latest/#exceptions.
+# https://maxminddb.readthedocs.io/en/latest/#exceptions
 reader = maxminddb.open_database(
-    os.path.join(os.getenv('MMDB_PATH'), 'GeoLite2-City.mmdb'))
+    # https://github.com/maxmind/geoipupdate/blob/master/docker/entry.sh
+    os.path.join(os.getenv('/usr/share/GeoIP'), 'GeoLite2-City.mmdb'))
 bottle.run(host='0.0.0.0', port=5003)
