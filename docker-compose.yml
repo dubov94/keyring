@@ -41,3 +41,7 @@ services:
 secrets:
   mailgun_api_key:
     external: true
+  geoipupdate_account_id:
+    external: true
+  geoipupdate_license_key:
+    external: true
