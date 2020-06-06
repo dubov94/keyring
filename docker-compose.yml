@@ -23,7 +23,10 @@ services:
     secrets:
       - mailgun_api_key
   ip-geolocation:
-    image: dubov94/keyring-ip-geolocation
+    image: 'bazel/ip_geolocation:ip_geolocation'
+    secrets:
+      - geoipupdate_account_id
+      - geoipupdate_license_key
   postgres:
     image: 'postgres:10'
     environment:

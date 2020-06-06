@@ -13,4 +13,4 @@ build-server:
 	bazel run //server
 
 build-ip-geolocation:
-	docker build -f ip_geolocation/Dockerfile -t dubov94/keyring-ip-geolocation .
+	bazel run //ip_geolocation
