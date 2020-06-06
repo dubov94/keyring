@@ -4,13 +4,13 @@ clean:
 	docker system prune --all --force
 
 build-pwa:
-	bazel run //pwa
+	bazel run -c opt //pwa
 
 build-grpc-gateway:
-	bazel run //grpc_gateway
+	bazel run -c opt //grpc_gateway
 
 build-server:
-	bazel run //server
+	bazel run -c opt //server
 
 build-ip-geolocation:
-	bazel run //ip_geolocation
+	bazel run -c opt //ip_geolocation
