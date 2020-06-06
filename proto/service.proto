@@ -20,10 +20,10 @@ message RegisterResponse {
         NAME_TAKEN = 1;
     }
 
-    oneof data {
-        Error error = 1;
-        string session_key = 2;
-    }
+    // <oneof>
+    Error error = 1;
+    string session_key = 2;
+    // </oneof>
 }
 
 message GetSaltRequest {
@@ -36,10 +36,10 @@ message GetSaltResponse {
         NOT_FOUND = 1;
     }
 
-    oneof data {
-        Error error = 1;
-        string salt = 2;
-    }
+    // <oneof>
+    Error error = 1;
+    string salt = 2;
+    // </oneof>
 }
 
 message LogInRequest {
@@ -71,10 +71,10 @@ message LogInResponse {
         KeySet key_set = 4;
     }
 
-    oneof data {
-        Error error = 1;
-        Payload payload = 2;
-    }
+    // <oneof>
+    Error error = 1;
+    Payload payload = 2;
+    // </oneof>
 }
 
 service Authentication {
@@ -119,9 +119,9 @@ message ReleaseMailTokenResponse {
         INVALID_CODE = 1;
     }
 
-    oneof data {
-        Error error = 1;
-    }
+    // <oneof>
+    Error error = 1;
+    // </oneof>
 }
 
 message KeepAliveRequest {
@@ -186,10 +186,10 @@ message ChangeMasterKeyResponse {
         INVALID_CURRENT_DIGEST = 1;
     }
 
-    oneof data {
-        Error error = 1;
-        string session_key = 2;
-    }
+    // <oneof>
+    Error error = 1;
+    string session_key = 2;
+    // </oneof>
 }
 
 message ChangeUsernameRequest {

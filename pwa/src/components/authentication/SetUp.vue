@@ -77,7 +77,7 @@ export default {
           try {
             this.requestInProgress = true
             const error = await this.releaseMailToken({ code: this.code })
-            if (!error) {
+            if (error === 'NONE') {
               this.$router.replace('/dashboard')
             } else if (error === 'INVALID_CODE') {
               this.invalidCodes.push(this.code)

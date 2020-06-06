@@ -99,7 +99,7 @@ export default {
               password: this.password,
               mail: this.mail
             })
-            if (!error) {
+            if (error === 'NONE') {
               this.$router.replace('/set-up')
             } else if (error === 'NAME_TAKEN') {
               this.takenUserNames.push(username)

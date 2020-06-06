@@ -59,7 +59,7 @@ export default {
             this.requestInProgress = true
             const password = this.password
             const error = await this.deleteAccount({ password })
-            if (!error) {
+            if (error === 'NONE') {
               purgeAllStoragesAndLoadIndex()
             } else if (error === 'INVALID_DIGEST') {
               this.invalidShortHashes.push(

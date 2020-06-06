@@ -20,13 +20,6 @@ if (process.env.NODE_ENV === 'production') {
       console.log('New content is being downloaded')
     },
     updated () {
-      const v0RegExp = /^v0.0.0-([0-9]+)-([a-z0-9]+)$/
-      const matches = (window as any).globals.version.match(v0RegExp)
-      if (matches !== null) {
-        if (Number(matches[1]) < 409) {
-          location.reload()
-        }
-      }
       console.log('New content is available; please refresh')
     },
     offline () {

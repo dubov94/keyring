@@ -79,7 +79,7 @@ export default {
             const username = this.username
             const password = this.password
             const error = await this.changeUsername({ username, password })
-            if (!error) {
+            if (error === 'NONE') {
               document.activeElement.blur()
               this.$v.$reset()
               this.username = ''
