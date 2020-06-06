@@ -27,5 +27,5 @@ update_and_schedule()
 # https://maxminddb.readthedocs.io/en/latest/#exceptions
 reader = maxminddb.open_database(
     # https://github.com/maxmind/geoipupdate/blob/master/docker/entry.sh
-    os.path.join(os.getenv('/usr/share/GeoIP'), 'GeoLite2-City.mmdb'))
+    os.path.join('/usr/share/GeoIP', 'GeoLite2-City.mmdb'))
 bottle.run(host='0.0.0.0', port=5003)
