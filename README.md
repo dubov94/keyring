@@ -1,6 +1,6 @@
 # Key Ring
 
-Install Java 11 and [Bazel](https://bazel.build).
+Install Java 11, [Bazel](https://bazel.build) and Docker.
 
 ## Development
 
