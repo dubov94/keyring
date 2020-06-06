@@ -22,13 +22,14 @@ container_run_and_commit(
 container_image(
     name = "ip_geolocation",
     base = ":geoipupdate_with_python",
+    cmd = ["./entrypoint.sh"],
     directory = "/root",
-    entrypoint = ["./entrypoint.sh"],
+    entrypoint = None,
     env = {
         "GEOIPUPDATE_EDITION_IDS": "GeoLite2-City GeoLite2-Country",
     },
     files = [
-        ":entrypoint.sh",
+        "entrypoint.sh",
         ":main.par",
     ],
     ports = ["5003"],
