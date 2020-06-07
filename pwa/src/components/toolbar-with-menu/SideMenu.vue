@@ -101,7 +101,7 @@ export default {
     reload () {
       reloadPage()
     },
-    async logOut () {
+    logOut () {
       purgeSessionStorageAndLoadLogIn()
     }
   }
