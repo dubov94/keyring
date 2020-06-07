@@ -30,7 +30,7 @@
     <side-menu v-model="showMenu"></side-menu>
     <toolbar v-model="showMenu">
       <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
-        <toolbar-title></toolbar-title>
+        <toolbar-title @click.native="clearQuery"></toolbar-title>
       </v-toolbar-title>
       <v-text-field solo-inverted flat ref="search" v-model="query" :class=
         "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
