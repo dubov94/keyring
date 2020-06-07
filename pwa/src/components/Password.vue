@@ -68,7 +68,10 @@ export default {
     }),
     async copyText (string) {
       await navigator.clipboard.writeText(string)
-      this.displaySnackbar({ message: 'Copied!', timeout: 1500 })
+      this.displaySnackbar({
+        message: 'Copied. Some clipboards retain history — be careful! 😱',
+        timeout: 3000
+      })
     },
     toggleReveal () {
       this.reveal = !this.reveal

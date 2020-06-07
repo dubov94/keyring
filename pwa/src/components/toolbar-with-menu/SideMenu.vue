@@ -54,9 +54,6 @@
           <v-list-tile-title>
             Log out
           </v-list-tile-title>
-          <v-list-tile-sub-title>
-            May clear the clipboard
-          </v-list-tile-sub-title>
         </v-list-tile-content>
       </v-list-tile>
     </v-list>
@@ -105,7 +102,6 @@ export default {
       reloadPage()
     },
     async logOut () {
-      await navigator.clipboard.writeText('')
       purgeSessionStorageAndLoadLogIn()
     }
   }
