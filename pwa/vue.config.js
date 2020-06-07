@@ -49,6 +49,9 @@ module.exports = {
       appleTouchIcon: 'img/icons/apple-touch-icon.png',
       maskIcon: 'img/icons/safari-pinned-tab.svg',
       msTileImage: 'img/icons/mstile-144x144.png'
+    },
+    workboxOptions: {
+      navigateFallback: 'index.html'
     }
   }
 }
