@@ -1,14 +1,8 @@
 :8080 {
     root ./dist
 
-    rewrite ^/$ /entry.html
-
     rewrite {
-        to {path} /entry.html
-    }
-
-    header /entry.html {
-        Cache-Control "no-cache"
+        to {path} /index.html
     }
 
     gzip

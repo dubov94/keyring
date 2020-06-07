@@ -2,7 +2,6 @@
 const StableStatus = require('./stable_status.json')
 
 module.exports = {
-  indexPath: 'entry.html',
   devServer: {
     proxy: {
       '^/api': {
@@ -42,8 +41,8 @@ module.exports = {
     name: 'Key Ring',
     themeColor: '#1976d2',
     msTileColor: '#2d89ef',
-    assetsVersion: 'A0mpzYva75',
-    manifestPath: 'site.webmanifest',
+    assetsVersion: 'MoVydmAfvrT9cZ7Q',
+    manifestPath: 'https://pwd.floreina.me/site.webmanifest',
     iconPaths: {
       favicon32: 'img/icons/favicon-32x32.png',
       favicon16: 'img/icons/favicon-16x16.png',
