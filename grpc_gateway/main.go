@@ -27,6 +27,17 @@ func annotator(ctx context.Context, req *http.Request) metadata.MD {
 	)
 }
 
+func headerMatcher(key string) (string, bool) {
+	switch key {
+	case "X-Client-Version":
+		return key, true
+	case "X-Session-Token":
+		return key, true
+	default:
+		return runtime.DefaultHeaderMatcher(key)
+	}
+}
+
 func startProxy() error {
 	var err error
 
@@ -37,6 +48,7 @@ func startProxy() error {
 	mux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(
 			runtime.MIMEWildcard, &runtime.JSONPb{OrigName: true, EmitDefaults: true}),
+		runtime.WithIncomingHeaderMatcher(headerMatcher),
 		runtime.WithMetadata(annotator),
 	)
 	opts := []grpc.DialOption{grpc.WithInsecure()}

@@ -19,7 +19,7 @@ export const applySaveRouteOnNavigation = () => {
 export const applyAttachVersionHeaderOnRequest = () => {
   axios.interceptors.request.use((configuration) => {
     if (configuration.url.startsWith('/api')) {
-      configuration.headers['Grpc-Metadata-X-Client-Version'] = window.globals.version
+      configuration.headers['X-Client-Version'] = window.globals.version
     }
     return configuration
   })
