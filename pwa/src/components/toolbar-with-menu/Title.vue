@@ -5,7 +5,7 @@
 </style>
 
 <template>
-  <router-link to="/" tag="span" class="home-link">
+  <router-link to="/dashboard" tag="span" class="home-link">
     Key Ring
   </router-link>
 </template>
