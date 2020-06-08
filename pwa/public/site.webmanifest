@@ -3,12 +3,12 @@
     "short_name": "Key Ring",
     "icons": [
         {
-            "src": "/android-chrome-192x192.png?v=MoVydmAfvrT9cZ7Q",
+            "src": "img/icons/android-chrome-192x192.png?v=MoVydmAfvrT9cZ7Q",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "/android-chrome-512x512.png?v=MoVydmAfvrT9cZ7Q",
+            "src": "img/icons/android-chrome-512x512.png?v=MoVydmAfvrT9cZ7Q",
             "sizes": "512x512",
             "type": "image/png"
         }
