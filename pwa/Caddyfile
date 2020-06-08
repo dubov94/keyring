@@ -5,5 +5,7 @@
         to {path} /
     }
 
+    header -ETag
+
     gzip
 }
