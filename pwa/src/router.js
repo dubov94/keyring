@@ -1,5 +1,6 @@
 import Authentication from '@/views/authentication/Index'
 import Dashboard from '@/views/Dashboard'
+import Landing from '@/views/Landing'
 import LogIn from '@/views/authentication/LogIn'
 import RecentSessions from '@/views/security/RecentSessions'
 import Register from '@/views/authentication/Register'
@@ -14,18 +15,18 @@ import store from '@/store'
 
 Vue.use(VueRouter)
 
-const getPathOrAuthFallback = (path) => {
+const getPathOrAuthFallback = (path, fallback) => {
   if (store.getters.isUserActive) {
     return path
   } else if (store.getters['session/hasEnoughDataToResume']) {
     return '/resume-session'
   } else {
-    return '/log-in'
+    return fallback
   }
 }
 
 const activeUserGuard = (to, from, next) => {
-  next(getPathOrAuthFallback(undefined))
+  next(getPathOrAuthFallback(undefined, '/log-in'))
 }
 
 const idleSessionGuard = (to, from, next) => {
@@ -45,29 +46,28 @@ const router = new VueRouter({
   routes: [
     {
       path: '/',
+      component: Landing,
+      beforeEnter: (to, from, next) => {
+        next(getPathOrAuthFallback('/dashboard', undefined))
+      }
+    }, {
+      path: '/log-in',
       component: Authentication,
-      redirect: () => getPathOrAuthFallback('/dashboard'),
-      children: [
-        {
-          path: 'log-in',
-          component: LogIn
-        },
-        {
-          path: 'register',
-          component: Register
-        },
-        {
-          path: 'set-up',
-          component: SetUp,
-          beforeEnter: activeUserGuard
-        },
-        {
-          path: 'resume-session',
-          component: ResumeSession,
-          beforeEnter: idleSessionGuard,
-          meta: { interstitial: true }
-        }
-      ]
+      children: [{ path: '', component: LogIn }]
+    }, {
+      path: '/register',
+      component: Authentication,
+      children: [{ path: '', component: Register }]
+    }, {
+      path: '/set-up',
+      component: Authentication,
+      beforeEnter: activeUserGuard,
+      children: [{ path: '', component: SetUp }]
+    }, {
+      path: '/resume-session',
+      component: Authentication,
+      beforeEnter: idleSessionGuard,
+      children: [{ path: '', component: ResumeSession }]
     }, {
       path: '/dashboard',
       component: Dashboard,
