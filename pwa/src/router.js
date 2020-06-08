@@ -21,12 +21,12 @@ const getPathOrAuthFallback = (path, fallback) => {
   } else if (store.getters['session/hasEnoughDataToResume']) {
     return '/resume-session'
   } else {
-    return fallback
+    return '/log-in'
   }
 }
 
 const activeUserGuard = (to, from, next) => {
-  next(getPathOrAuthFallback(undefined, '/log-in'))
+  next(getPathOrAuthFallback(undefined))
 }
 
 const idleSessionGuard = (to, from, next) => {
@@ -46,10 +46,7 @@ const router = new VueRouter({
   routes: [
     {
       path: '/',
-      component: Landing,
-      beforeEnter: (to, from, next) => {
-        next(getPathOrAuthFallback('/dashboard', undefined))
-      }
+      component: Landing
     }, {
       path: '/log-in',
       component: Authentication,
