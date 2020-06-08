@@ -2,5 +2,8 @@ pwd.floreina.me {
     proxy /api grpc-gateway:5002 {
         without /api
     }
-    proxy / pwa:8080
+    proxy / pwa:8080 {
+        header_upstream -If-None-Match
+        header_downstream -ETag
+    }
 }
