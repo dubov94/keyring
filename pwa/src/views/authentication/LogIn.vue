@@ -35,8 +35,14 @@ import { getShortHash } from '@/utilities'
 export default {
   data () {
     const hasLocalData = this.$store.getters['depot/hasLocalData']
+    let username = ''
+    if (this.$store.getters['session/hasUsername']) {
+      username = this.$store.state.session.username
+    } else if (hasLocalData) {
+      username = this.$store.state.depot.username
+    }
     return {
-      username: hasLocalData ? this.$store.state.depot.username : '',
+      username,
       password: '',
       requestInProgress: false,
       invalidPairs: [],

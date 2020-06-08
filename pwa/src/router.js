@@ -4,7 +4,6 @@ import Landing from '@/views/Landing'
 import LogIn from '@/views/authentication/LogIn'
 import RecentSessions from '@/views/security/RecentSessions'
 import Register from '@/views/authentication/Register'
-import ResumeSession from '@/views/authentication/ResumeSession'
 import SetUp from '@/views/authentication/SetUp'
 import Security from '@/views/security/Index'
 import Settings from '@/views/settings/Index'
@@ -18,8 +17,6 @@ Vue.use(VueRouter)
 const getPathOrAuthFallback = (path, fallback) => {
   if (store.getters.isUserActive) {
     return path
-  } else if (store.getters['session/hasEnoughDataToResume']) {
-    return '/resume-session'
   } else {
     return '/log-in'
   }
@@ -27,14 +24,6 @@ const getPathOrAuthFallback = (path, fallback) => {
 
 const activeUserGuard = (to, from, next) => {
   next(getPathOrAuthFallback(undefined))
-}
-
-const idleSessionGuard = (to, from, next) => {
-  if (store.getters['session/hasEnoughDataToResume']) {
-    next()
-  } else {
-    next('/log-in')
-  }
 }
 
 const router = new VueRouter({
@@ -58,13 +47,7 @@ const router = new VueRouter({
     }, {
       path: '/set-up',
       component: Authentication,
-      beforeEnter: activeUserGuard,
       children: [{ path: '', component: SetUp }]
-    }, {
-      path: '/resume-session',
-      component: Authentication,
-      beforeEnter: idleSessionGuard,
-      children: [{ path: '', component: ResumeSession }]
     }, {
       path: '/dashboard',
       component: Dashboard,

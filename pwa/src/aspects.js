@@ -8,14 +8,6 @@ import {
 } from './constants'
 import { reloadPage } from './utilities'
 
-export const applySaveRouteOnNavigation = () => {
-  router.afterEach((to, from) => {
-    if (!to.meta.interstitial) {
-      store.commit('session/setLastRoute', to.path)
-    }
-  })
-}
-
 export const applyAttachVersionHeaderOnRequest = () => {
   axios.interceptors.request.use((configuration) => {
     if (configuration.url.startsWith('/api')) {

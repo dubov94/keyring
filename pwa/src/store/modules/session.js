@@ -1,18 +1,14 @@
 export default {
   namespaced: true,
   state: {
-    username: null,
-    lastRoute: null
+    username: null
   },
   getters: {
-    hasEnoughDataToResume: (state) => state.username !== null
+    hasUsername: (state) => state.username !== null
   },
   mutations: {
     setUsername (state, value) {
       state.username = value
-    },
-    setLastRoute (state, value) {
-      state.lastRoute = value
     }
   }
 }

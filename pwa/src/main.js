@@ -13,7 +13,6 @@ import store from './store'
 import {
   applyAttachVersionHeaderOnRequest,
   applyFreezeWhenPageIsHidden,
-  applySaveRouteOnNavigation,
   applySendKeepAliveWhileIdle,
   applyGoOfflineOnRequestError
 } from './aspects'
@@ -39,7 +38,6 @@ Vue.component('form-text-field', FormTextField)
 // expected by the developer. We are actively trying to reduce their number,
 // but it's a perpetual battle -- in practice as soon as one is eliminated
 // it's a matter of time before another pops up.
-applySaveRouteOnNavigation()
 applyAttachVersionHeaderOnRequest()
 applyGoOfflineOnRequestError()
 applySendKeepAliveWhileIdle()
