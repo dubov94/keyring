@@ -94,7 +94,7 @@ vue_cli_launcher_test(
     args = [
         "test:unit",
         "--package-json-path=$(rootpath :package_json)",
-        "pwa/src/**/*.spec.(js|ts)",
+        "pwa/src/**/*.spec.{js,ts}",
     ],
     data = [
         "@pwa_npm//@types/chai",
