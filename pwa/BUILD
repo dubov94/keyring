@@ -89,21 +89,14 @@ DEPENDENCIES = [
     "@pwa_npm//workerize-loader",
 ]
 
-filegroup_copy(
-    name = "unit_specs",
-    srcs = glob(["tests/unit/**/*"]),
-)
-
 vue_cli_launcher_test(
     name = "unit_tests",
     args = [
         "test:unit",
         "--package-json-path=$(rootpath :package_json)",
-        # https://github.com/vuejs/vue-cli/blob/16d2701011e6e660850da5b4f1bed185bbcd0b3c/packages/%40vue/cli-plugin-unit-mocha/index.js#L61-L65
-        "pwa/tests/unit/**/*.spec.ts",
+        "pwa/src/**/*.spec.(js|ts)",
     ],
     data = [
-        ":unit_specs",
         "@pwa_npm//@types/chai",
         "@pwa_npm//@types/mocha",
         "@pwa_npm//chai",
