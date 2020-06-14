@@ -3,6 +3,12 @@ pwd.floreina.me {
         without /api
     }
     proxy / pwa:8080 {
+        # Caddy defines ETag as concatenation of mtime and size.
+        # `container_image` always yields mtime equal to epoch. Service
+        # worker's size does not change during regeneration because the only
+        # variable is the hash in the precache manifest name used by
+        # `importScripts`, so its ETag is virtually constant. To prevent this,
+        # we disable ETag completely.
         header_upstream -If-None-Match
         header_downstream -ETag
     }
