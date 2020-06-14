@@ -274,7 +274,7 @@ container_pull(
     digest = "sha256:de933dc1c1f78e8e70b878110eb31eb226857759f79170542ffb3c746893d2c2",
     registry = "index.docker.io",
     repository = "abiosoft/caddy",
-    tag = "1.0.3",
+    tag = "1.0.3-no-stats",
 )
 
 container_pull(
