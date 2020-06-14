@@ -19,9 +19,13 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['src/**/*.spec.(js|ts)'],
+      files: ['src/**/*.spec.{js,ts}'],
       env: {
         mocha: true
+      },
+      rules: {
+        'no-unused-expressions': 'off',
+        '@typescript-eslint/no-non-null-assertion': 'off'
       }
     }
   ]
