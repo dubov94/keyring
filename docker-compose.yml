@@ -1,7 +1,7 @@
 version: '3.2'
 services:
   reverse-proxy:
-    image: 'bazel/reverse_proxy:reverse_proxy'
+    image: 'bazel:reverse_proxy'
     volumes:
       - '$HOME/.caddy:/root/.caddy'
   pwa:
