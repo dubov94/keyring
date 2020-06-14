@@ -1,4 +1,5 @@
 load("@com_github_atlassian_bazel_tools//multirun:def.bzl", "command", "multirun")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 
 exports_files(["WORKSPACE"])
 
@@ -39,4 +40,14 @@ multirun(
         ":pwa",
     ],
     parallel = True,
+)
+
+container_image(
+    name = "reverse_proxy",
+    base = "@io_docker_index_abiosoft_caddy//image",
+    directory = "/root",
+    files = ["Caddyfile"],
+    ports = ["80", "443"],
+    symlinks = {"/etc/Caddyfile": "/root/Caddyfile"},
+    workdir = "/root",
 )

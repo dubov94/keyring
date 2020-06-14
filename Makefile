@@ -1,7 +1,10 @@
-default: build-pwa build-grpc-gateway build-server build-ip-geolocation
+default: build-reverse-proxy build-pwa build-grpc-gateway build-server build-ip-geolocation
 
 clean:
 	docker system prune --all --force
+
+build-reverse-proxy:
+	bazel run -c opt //:reverse_proxy
 
 build-pwa:
 	bazel run -c opt //pwa

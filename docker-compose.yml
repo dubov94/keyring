@@ -1,19 +1,9 @@
 version: '3.2'
 services:
   caddy:
-    image: abiosoft/caddy
+    image: 'bazel/reverse_proxy:reverse_proxy'
     volumes:
-      - '$PWD/Caddyfile:/etc/Caddyfile'
       - '$HOME/.caddy:/root/.caddy'
-    ports:
-      - mode: host
-        protocol: tcp
-        published: 80
-        target: 80
-      - mode: host
-        protocol: tcp
-        published: 443
-        target: 443
   pwa:
     image: 'bazel/pwa:pwa'
   grpc-gateway:
