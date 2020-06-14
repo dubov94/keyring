@@ -47,7 +47,6 @@ container_image(
     base = "@io_docker_index_abiosoft_caddy//image",
     directory = "/root",
     files = ["Caddyfile"],
-    ports = ["80:80", "443:443"],
     symlinks = {"/etc/Caddyfile": "/root/Caddyfile"},
     workdir = "/root",
 )

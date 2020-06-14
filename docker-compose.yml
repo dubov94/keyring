@@ -4,6 +4,9 @@ services:
     image: 'bazel:reverse_proxy'
     volumes:
       - '$HOME/.caddy:/root/.caddy'
+    ports:
+      - '80:80'
+      - '443:443'
   pwa:
     image: 'bazel/pwa:pwa'
   grpc-gateway:
