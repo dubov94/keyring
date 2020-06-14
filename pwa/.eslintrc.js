@@ -19,7 +19,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['src/**/*.spec.(js|jsx|ts|tsx)'],
+      files: ['src/**/*.spec.(js|ts)'],
       env: {
         mocha: true
       }
