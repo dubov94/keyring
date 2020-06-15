@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import Status from '../../store/root/status'
+import { Status } from '../../store/root/status'
 import { mapState } from 'vuex'
 import { reloadPage, purgeSessionStorageAndLoadLogIn } from '../../utilities'
 

@@ -1,6 +1,6 @@
 import axios from 'axios'
 import SodiumWrapper from '../../../sodium.wrapper'
-import Status from '../status'
+import { Status } from '../status'
 import { purgeSessionStorageAndLoadLogIn } from '../../../utilities'
 
 export default {

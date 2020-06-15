@@ -1,7 +1,7 @@
 import axios from 'axios'
 import router from './router'
 import store from './store'
-import Status from './store/root/status'
+import { Status } from './store/root/status'
 import {
   SESSION_LIFETIME_IN_MILLIS,
   SESSION_TOKEN_HEADER_NAME
