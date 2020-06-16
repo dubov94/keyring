@@ -1,12 +1,12 @@
 import axios from 'axios'
-import SodiumWrapper from '../../../sodium.wrapper'
+import SodiumClient from '@/sodium_client'
 import { createSessionHeader } from './utilities'
 
 export default {
   async acquireMailToken ({ state }, { mail, password }) {
     return (
       await axios.post('/api/administration/acquire-mail-token', {
-        digest: (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+        digest: (await SodiumClient.computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).authDigest,
         mail
       }, {

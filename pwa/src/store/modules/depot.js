@@ -1,4 +1,4 @@
-import SodiumWrapper from '../../sodium.wrapper'
+import SodiumClient from '@/sodium_client'
 
 const createInitialState = () => ({
   username: null,
@@ -43,17 +43,17 @@ export default {
       commit('setInitialValues')
     },
     async verifyPassword ({ state }, password) {
-      const candidate = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+      const candidate = (await SodiumClient.computeAuthDigestAndEncryptionKey(
         state.parametrization, password)).authDigest
       return state.authDigest === candidate
     },
     async computeEncryptionKey ({ commit, state }, password) {
       commit('setEncryptionKey',
-        (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+        (await SodiumClient.computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).encryptionKey)
     },
     async getUserKeys ({ state }) {
-      return JSON.parse(await SodiumWrapper.decryptMessage(
+      return JSON.parse(await SodiumClient.decryptMessage(
         state.encryptionKey, state.userKeys))
     },
     async maybeUpdateDepot (
@@ -64,11 +64,11 @@ export default {
             throw new Error('Expected `userKeys` to be present.')
           }
           const parametrization =
-            await SodiumWrapper.generateArgon2Parametrization()
+            await SodiumClient.generateArgon2Parametrization()
           const { authDigest, encryptionKey } =
-            await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+            await SodiumClient.computeAuthDigestAndEncryptionKey(
               parametrization, password)
-          const vault = await SodiumWrapper.encryptMessage(
+          const vault = await SodiumClient.encryptMessage(
             encryptionKey, convertUserKeysToVault(userKeys))
           commit('setParametrization', parametrization)
           commit('setAuthDigest', authDigest)
@@ -78,7 +78,7 @@ export default {
           if (state.encryptionKey === null) {
             throw new Error('Expected `state.encryptionKey` not to be `null`.')
           }
-          const vault = await SodiumWrapper.encryptMessage(
+          const vault = await SodiumClient.encryptMessage(
             state.encryptionKey, convertUserKeysToVault(userKeys))
           commit('setUserKeys', vault)
         }

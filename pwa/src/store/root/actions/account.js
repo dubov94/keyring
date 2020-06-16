@@ -1,14 +1,14 @@
 import axios from 'axios'
-import SodiumWrapper from '../../../sodium.wrapper'
+import SodiumClient from '@/sodium_client'
 import { createSessionHeader } from './utilities'
 
 export default {
   async changeMasterKey ({ commit, dispatch, state }, { current, renewal }) {
-    const curDigest = (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+    const curDigest = (await SodiumClient.computeAuthDigestAndEncryptionKey(
       state.parametrization, current)).authDigest
-    const newParametrization = await SodiumWrapper.generateArgon2Parametrization()
+    const newParametrization = await SodiumClient.generateArgon2Parametrization()
     const { authDigest, encryptionKey } =
-      await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+      await SodiumClient.computeAuthDigestAndEncryptionKey(
         newParametrization, renewal)
     const { data: response } =
       await axios.post('/api/administration/change-master-key', {
@@ -18,7 +18,7 @@ export default {
           digest: authDigest,
           keys: await Promise.all(state.userKeys.map(async (key) => ({
             identifier: key.identifier,
-            password: await SodiumWrapper.encryptPassword(encryptionKey, {
+            password: await SodiumClient.encryptPassword(encryptionKey, {
               value: key.value,
               tags: key.tags
             })
@@ -41,7 +41,7 @@ export default {
   async changeUsername ({ commit, getters, state }, { username, password }) {
     const { data: { error } } =
       await axios.put('/api/administration/change-username', {
-        digest: (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+        digest: (await SodiumClient.computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).authDigest,
         username
       }, {
@@ -58,7 +58,7 @@ export default {
   async deleteAccount ({ state }, { password }) {
     return (
       await axios.post('/api/administration/delete-account', {
-        digest: (await SodiumWrapper.computeAuthDigestAndEncryptionKey(
+        digest: (await SodiumClient.computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).authDigest
       }, {
         headers: createSessionHeader(state.sessionKey)

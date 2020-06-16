@@ -1,6 +1,6 @@
 import 'vuetify/dist/vuetify.min.css'
 import sodium from 'libsodium-wrappers'
-import './registerServiceWorker'
+import './register_service_worker'
 import Application from './Application'
 import FormTextField from './components/FormTextField'
 import Messages from './messages'
