@@ -138,7 +138,7 @@ export default {
     }
   },
   watch: {
-    cardsCount (current, previous) {
+    cardsCount () {
       if (this.pageNumber > this.pageCount) {
         this.pageNumber = this.pageCount
       }

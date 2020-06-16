@@ -14,7 +14,7 @@ import store from '@/store'
 
 Vue.use(VueRouter)
 
-const getPathOrAuthFallback = (path, fallback) => {
+const getPathOrAuthFallback = (path) => {
   if (store.getters.isUserActive) {
     return path
   } else {

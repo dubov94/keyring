@@ -47,8 +47,8 @@ export default {
     errorMessages () {
       if (this.dirty) {
         return Object.entries(this.errors)
-          .filter(([key, value]) => value)
-          .map(([key, value]) => key)
+          .filter(([, value]) => value)
+          .map(([key]) => key)
       } else {
         return []
       }
