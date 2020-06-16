@@ -16,7 +16,8 @@ module.exports = {
   chainWebpack: config => {
     config.module
       .rule('workerize')
-      .test(/\.worker\.js$/)
+      .before('js')
+      .test(/\.worker\.(js|ts)$/)
       .use('workerize-loader')
       .loader('workerize-loader')
       .options({

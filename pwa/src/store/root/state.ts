@@ -1,9 +1,12 @@
 import { Status } from './status'
 
-export interface Key {
-  identifier: string;
+export interface Password {
   value: string;
   tags: Array<string>;
+}
+
+export interface Key extends Password {
+  identifier: string;
 }
 
 export interface Geolocation {

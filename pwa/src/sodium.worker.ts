@@ -18,10 +18,13 @@ export const generateArgon2Parametrization = () => {
     `$${sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES, 'base64')}`
 }
 
-const computeArgon2Hash = (parametrization, password, length) => {
-  let [, algorithm, m, t, p, salt] =
-    PARAMETRIZATION_REGULAR_EXPRESSION.exec(parametrization)
-  ;[m, t, p] = [m, t, p].map(Number)
+const computeArgon2Hash = (parametrization: string, password: string, length: number): Uint8Array => {
+  const matches = PARAMETRIZATION_REGULAR_EXPRESSION.exec(parametrization)
+  if (matches === null) {
+    throw new Error(`Malformed parametrization: '${parametrization}'`)
+  }
+  const [, algorithm, mText, tText, pText, salt] = matches
+  const [m, t, p] = [mText, tText, pText].map(Number)
   if (algorithm === 'argon2id' && p === 1) {
     return sodium.crypto_pwhash(
       length,
@@ -31,25 +34,25 @@ const computeArgon2Hash = (parametrization, password, length) => {
     )
   } else {
     throw new Error('Unsupported hashing parameters: ' +
-      `algorithm = '${algorithm}', lanes = '${p}'.`)
+      `algorithm = '${algorithm}', lanes = '${p}'`)
   }
 }
 
-export const computeArgon2HashForDigestAndKey = (parametrization, password) =>
+export const computeArgon2HashForDigestAndKey = (parametrization: string, password: string): Uint8Array =>
   computeArgon2Hash(
     parametrization,
     password,
     AUTH_DIGEST_SIZE_IN_BYTES + ENCRYPTION_KEY_SIZE_IN_BYTES
   )
 
-export const extractAuthDigestAndEncryptionKey = (hash) => {
+export const extractAuthDigestAndEncryptionKey = (hash: Uint8Array) => {
   return {
     authDigest: sodium.to_base64(hash.slice(0, AUTH_DIGEST_SIZE_IN_BYTES)),
     encryptionKey: sodium.to_base64(hash.slice(-ENCRYPTION_KEY_SIZE_IN_BYTES))
   }
 }
 
-export const encryptMessage = (encryptionKey, message) => {
+export const encryptMessage = (encryptionKey: string, message: string): string => {
   const nonce = sodium.randombytes_buf(
     sodium.crypto_secretbox_NONCEBYTES, 'base64')
   const cipher = sodium.crypto_secretbox_easy(
@@ -61,7 +64,7 @@ export const encryptMessage = (encryptionKey, message) => {
   return `${nonce}${cipher}`
 }
 
-export const decryptMessage = (encryptionKey, string) => {
+export const decryptMessage = (encryptionKey: string, string: string): string => {
   const nonceBase64Length = sodium.crypto_secretbox_NONCEBYTES * 8 / 6
   const nonce = string.slice(0, nonceBase64Length)
   const cipher = string.slice(nonceBase64Length)

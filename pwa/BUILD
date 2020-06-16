@@ -62,6 +62,7 @@ vue_cli_launcher(
 )
 
 DEPENDENCIES = [
+    "@pwa_npm//@types/libsodium-wrappers",
     "@pwa_npm//@vue/cli-plugin-babel",
     "@pwa_npm//@vue/cli-plugin-eslint",
     "@pwa_npm//@vue/cli-plugin-pwa",
