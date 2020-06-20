@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { areArraysEqual, createCharacterRange, generateSequenceOffRanges, shuffle, purgeAllStoragesAndLoadIndex } from './utilities'
+import { areArraysEqual, createCharacterRange, generateSequenceOffRanges, shuffle } from './utilities'
 
 const SIMPLE_RNG = (lower: number, upper: number): number =>
   lower + Math.floor(Math.random() * (upper - lower))
