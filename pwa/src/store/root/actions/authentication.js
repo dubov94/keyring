@@ -1,13 +1,14 @@
 import axios from 'axios'
-import SodiumClient from '@/sodium_client'
+import { container } from 'tsyringe'
+import { SodiumClient } from '@/sodium_client'
 import { Status } from '../status'
 import { purgeSessionStorageAndLoadLogIn } from '../../../utilities'
 
 export default {
   async register ({ commit }, { username, password, mail }) {
-    const parametrization = await SodiumClient.generateArgon2Parametrization()
+    const parametrization = await container.resolve(SodiumClient).generateArgon2Parametrization()
     const { authDigest, encryptionKey } =
-      await SodiumClient.computeAuthDigestAndEncryptionKey(
+      await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
         parametrization, password)
     const { data: response } =
       await axios.post('/api/authentication/register', {
@@ -34,7 +35,7 @@ export default {
     if (saltResponse.error === 'NONE') {
       const { salt: parametrization } = saltResponse
       const { authDigest, encryptionKey } =
-        await SodiumClient.computeAuthDigestAndEncryptionKey(
+        await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
           parametrization, password)
       const { data: authResponse } =
         await axios.post('/api/authentication/log-in', {

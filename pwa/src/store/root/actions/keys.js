@@ -1,12 +1,13 @@
 import axios from 'axios'
-import SodiumClient from '@/sodium_client'
+import { container } from 'tsyringe'
+import { SodiumClient } from '@/sodium_client'
 import { createSessionHeader } from './utilities'
 
 export default {
   async acceptUserKeys ({ commit, dispatch, state }, { userKeys, updateDepot }) {
     commit('setUserKeys', await Promise.all(
       userKeys.map(async ({ identifier, password }) =>
-        Object.assign({ identifier }, await SodiumClient.decryptPassword(
+        Object.assign({ identifier }, await container.resolve(SodiumClient).decryptPassword(
           state.encryptionKey, password))
       )
     ))
@@ -18,7 +19,7 @@ export default {
   async createUserKey ({ commit, dispatch, state }, { value, tags }) {
     const { data: response } =
       await axios.post('/api/administration/create-key', {
-        password: await SodiumClient.encryptPassword(
+        password: await container.resolve(SodiumClient).encryptPassword(
           state.encryptionKey, { value, tags })
       }, { headers: createSessionHeader(state.sessionKey) })
     commit('unshiftUserKey', { identifier: response.identifier, value, tags })
@@ -30,7 +31,7 @@ export default {
     await axios.put('/api/administration/update-key', {
       key: {
         identifier,
-        password: await SodiumClient.encryptPassword(
+        password: await container.resolve(SodiumClient).encryptPassword(
           state.encryptionKey, { value, tags })
       }
     }, { headers: createSessionHeader(state.sessionKey) })

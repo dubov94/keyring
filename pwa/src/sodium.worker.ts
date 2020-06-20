@@ -1,77 +1,38 @@
 import sodium from 'libsodium-wrappers'
 
-const ARGON2_DEFAULT_M = 64 * 1024 * 1024
-const ARGON2_DEFAULT_T = 1
-
-const AUTH_DIGEST_SIZE_IN_BYTES = 32
-const ENCRYPTION_KEY_SIZE_IN_BYTES = 32
-
-const PARAMETRIZATION_REGULAR_EXPRESSION = new RegExp(
-  '^\\$(argon2(?:i|d|id))' +
-  '\\$m=([1-9][0-9]*),t=([1-9][0-9]*),p=([1-9][0-9]*)' +
-  '\\$([A-Za-z0-9-_]{22})$'
-)
-
-export const generateArgon2Parametrization = () => {
-  return '$argon2id' +
-    `$m=${ARGON2_DEFAULT_M},t=${ARGON2_DEFAULT_T},p=1` +
-    `$${sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES, 'base64')}`
+export const fromBase64 = (base64String: string): Uint8Array => {
+  return sodium.from_base64(base64String)
 }
 
-const computeArgon2Hash = (parametrization: string, password: string, length: number): Uint8Array => {
-  const matches = PARAMETRIZATION_REGULAR_EXPRESSION.exec(parametrization)
-  if (matches === null) {
-    throw new Error(`Malformed parametrization: '${parametrization}'`)
-  }
-  const [, algorithm, mText, tText, pText, salt] = matches
-  const [m, t, p] = [mText, tText, pText].map(Number)
-  if (algorithm === 'argon2id' && p === 1) {
-    return sodium.crypto_pwhash(
-      length,
-      password,
-      sodium.from_base64(salt),
-      t, m, sodium.crypto_pwhash_ALG_ARGON2ID13
-    )
-  } else {
-    throw new Error('Unsupported hashing parameters: ' +
-      `algorithm = '${algorithm}', lanes = '${p}'`)
-  }
+export const toBase64 = (uint8Array: Uint8Array): string => {
+  return sodium.to_base64(uint8Array)
 }
 
-export const computeArgon2HashForDigestAndKey = (parametrization: string, password: string): Uint8Array =>
-  computeArgon2Hash(
-    parametrization,
-    password,
-    AUTH_DIGEST_SIZE_IN_BYTES + ENCRYPTION_KEY_SIZE_IN_BYTES
-  )
-
-export const extractAuthDigestAndEncryptionKey = (hash: Uint8Array) => {
-  return {
-    authDigest: sodium.to_base64(hash.slice(0, AUTH_DIGEST_SIZE_IN_BYTES)),
-    encryptionKey: sodium.to_base64(hash.slice(-ENCRYPTION_KEY_SIZE_IN_BYTES))
-  }
+export const generateSalt = (): Uint8Array => {
+  return sodium.randombytes_buf(sodium.crypto_pwhash_SALTBYTES)
 }
 
-export const encryptMessage = (encryptionKey: string, message: string): string => {
-  const nonce = sodium.randombytes_buf(
-    sodium.crypto_secretbox_NONCEBYTES, 'base64')
-  const cipher = sodium.crypto_secretbox_easy(
-    message,
-    sodium.from_base64(nonce),
-    sodium.from_base64(encryptionKey),
-    'base64'
-  )
-  return `${nonce}${cipher}`
+export const computeHash = (iterations: number, memoryInBytes: number, salt: Uint8Array, password: string, hashLength: number): Uint8Array => {
+  return sodium.crypto_pwhash(hashLength, password, salt, iterations, memoryInBytes, sodium.crypto_pwhash_ALG_ARGON2ID13)
 }
 
-export const decryptMessage = (encryptionKey: string, string: string): string => {
+export const generateNonce = (): Uint8Array => {
+  return sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES)
+}
+
+export const encryptMessage = (encryptionKey: Uint8Array, nonce: Uint8Array, message: string): string => {
+  return sodium.crypto_secretbox_easy(message, nonce, encryptionKey, 'base64')
+}
+
+export const decryptMessage = (encryptionKey: Uint8Array, nonce: Uint8Array, base64Cipher: string): string => {
+  return sodium.crypto_secretbox_open_easy(sodium.from_base64(base64Cipher), nonce, encryptionKey, 'text')
+}
+
+export const joinNonceCipher = (nonce: Uint8Array, base64Cipher: string): string => {
+  return `${sodium.to_base64(nonce)}${base64Cipher}`
+}
+
+export const splitNonceCipher = (pack: string): [Uint8Array, string] => {
   const nonceBase64Length = sodium.crypto_secretbox_NONCEBYTES * 8 / 6
-  const nonce = string.slice(0, nonceBase64Length)
-  const cipher = string.slice(nonceBase64Length)
-  return sodium.crypto_secretbox_open_easy(
-    sodium.from_base64(cipher),
-    sodium.from_base64(nonce),
-    sodium.from_base64(encryptionKey),
-    'text'
-  )
+  return [sodium.from_base64(pack.slice(0, nonceBase64Length)), pack.slice(nonceBase64Length)]
 }

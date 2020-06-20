@@ -35,5 +35,7 @@
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  // https://github.com/microsoft/tsyringe#installation
+  "emitDecoratorMetadata": true
 }

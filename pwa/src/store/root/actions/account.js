@@ -1,14 +1,15 @@
 import axios from 'axios'
-import SodiumClient from '@/sodium_client'
+import { container } from 'tsyringe'
+import { SodiumClient } from '@/sodium_client'
 import { createSessionHeader } from './utilities'
 
 export default {
   async changeMasterKey ({ commit, dispatch, state }, { current, renewal }) {
-    const curDigest = (await SodiumClient.computeAuthDigestAndEncryptionKey(
+    const curDigest = (await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
       state.parametrization, current)).authDigest
-    const newParametrization = await SodiumClient.generateArgon2Parametrization()
+    const newParametrization = await container.resolve(SodiumClient).generateArgon2Parametrization()
     const { authDigest, encryptionKey } =
-      await SodiumClient.computeAuthDigestAndEncryptionKey(
+      await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
         newParametrization, renewal)
     const { data: response } =
       await axios.post('/api/administration/change-master-key', {
@@ -18,7 +19,7 @@ export default {
           digest: authDigest,
           keys: await Promise.all(state.userKeys.map(async (key) => ({
             identifier: key.identifier,
-            password: await SodiumClient.encryptPassword(encryptionKey, {
+            password: await container.resolve(SodiumClient).encryptPassword(encryptionKey, {
               value: key.value,
               tags: key.tags
             })
@@ -41,7 +42,7 @@ export default {
   async changeUsername ({ commit, getters, state }, { username, password }) {
     const { data: { error } } =
       await axios.put('/api/administration/change-username', {
-        digest: (await SodiumClient.computeAuthDigestAndEncryptionKey(
+        digest: (await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).authDigest,
         username
       }, {
@@ -58,7 +59,7 @@ export default {
   async deleteAccount ({ state }, { password }) {
     return (
       await axios.post('/api/administration/delete-account', {
-        digest: (await SodiumClient.computeAuthDigestAndEncryptionKey(
+        digest: (await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).authDigest
       }, {
         headers: createSessionHeader(state.sessionKey)

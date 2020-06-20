@@ -1,4 +1,5 @@
-import SodiumClient from '@/sodium_client'
+import { container } from 'tsyringe'
+import { SodiumClient } from '@/sodium_client'
 
 const createInitialState = () => ({
   username: null,
@@ -43,32 +44,33 @@ export default {
       commit('setInitialValues')
     },
     async verifyPassword ({ state }, password) {
-      const candidate = (await SodiumClient.computeAuthDigestAndEncryptionKey(
+      const candidate = (await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
         state.parametrization, password)).authDigest
       return state.authDigest === candidate
     },
     async computeEncryptionKey ({ commit, state }, password) {
       commit('setEncryptionKey',
-        (await SodiumClient.computeAuthDigestAndEncryptionKey(
+        (await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).encryptionKey)
     },
     async getUserKeys ({ state }) {
-      return JSON.parse(await SodiumClient.decryptMessage(
+      return JSON.parse(await container.resolve(SodiumClient).decryptMessage(
         state.encryptionKey, state.userKeys))
     },
     async maybeUpdateDepot (
       { commit, state, getters }, { password, userKeys }) {
+      const sodiumInterface = container.resolve(SodiumClient)
       if (getters.hasLocalData) {
         if (isPresent(password)) {
           if (!isPresent(userKeys)) {
             throw new Error('Expected `userKeys` to be present.')
           }
           const parametrization =
-            await SodiumClient.generateArgon2Parametrization()
+            await sodiumInterface.generateArgon2Parametrization()
           const { authDigest, encryptionKey } =
-            await SodiumClient.computeAuthDigestAndEncryptionKey(
+            await sodiumInterface.computeAuthDigestAndEncryptionKey(
               parametrization, password)
-          const vault = await SodiumClient.encryptMessage(
+          const vault = await sodiumInterface.encryptMessage(
             encryptionKey, convertUserKeysToVault(userKeys))
           commit('setParametrization', parametrization)
           commit('setAuthDigest', authDigest)
@@ -78,7 +80,7 @@ export default {
           if (state.encryptionKey === null) {
             throw new Error('Expected `state.encryptionKey` not to be `null`.')
           }
-          const vault = await SodiumClient.encryptMessage(
+          const vault = await sodiumInterface.encryptMessage(
             state.encryptionKey, convertUserKeysToVault(userKeys))
           commit('setUserKeys', vault)
         }
