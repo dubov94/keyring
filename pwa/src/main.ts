@@ -1,10 +1,10 @@
 // https://github.com/microsoft/tsyringe#installation
 import 'reflect-metadata'
 import { container } from 'tsyringe'
-import { SodiumInterface } from './sodium_interface'
+import { SODIUM_TOKEN, SodiumInterface } from './sodium_interface'
 import SodiumWorker from './sodium.worker.ts'
 import './main.js'
 
-container.register<SodiumInterface>('SodiumInterface', {
+container.register<SodiumInterface>(SODIUM_TOKEN, {
   useValue: SodiumWorker<SodiumInterface>()
 })

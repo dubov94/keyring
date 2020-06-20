@@ -56,7 +56,7 @@ export class SodiumClient {
   async computeAuthDigestAndEncryptionKey (parametrization: string, password: string): Promise<MasterKeyDerivatives> {
     const hash = await this.computeArgon2HashForDigestAndKey(
       parametrization, password)
-    return await this.extractAuthDigestAndEncryptionKey(hash)
+    return this.extractAuthDigestAndEncryptionKey(hash)
   }
 
   async encryptMessage (encryptionKey: string, message: string): Promise<string> {
