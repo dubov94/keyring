@@ -1,4 +1,6 @@
-export default {
+import { LocaleMessages } from 'vue-i18n/types'
+
+export const LOCALE_MESSAGES: LocaleMessages = {
   en: {
     EMAIL_ADDRESS_IS_INVALID: 'E-mail address is invalid',
     EMAIL_ADDRESS_IS_REQUIRED: 'E-mail address is required',

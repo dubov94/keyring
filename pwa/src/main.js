@@ -3,7 +3,7 @@ import sodium from 'libsodium-wrappers'
 import './register_service_worker'
 import Application from './Application'
 import FormTextField from './components/FormTextField'
-import Messages from './messages'
+import { LOCALE_MESSAGES } from './messages'
 import Vue from 'vue'
 import VueI18n from 'vue-i18n'
 import Vuelidate from 'vuelidate'
@@ -50,7 +50,7 @@ sodium.ready.then(() =>
     store,
     i18n: new VueI18n({
       locale: 'en',
-      messages: Messages
+      messages: LOCALE_MESSAGES
     })
   }).$mount('#application')
 )
