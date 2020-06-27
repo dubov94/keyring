@@ -12,9 +12,22 @@ copy_file(
     out = "stable_status.json",
 )
 
+SPEC_PATTERNS = [
+    "src/**/*.spec.js",
+    "src/**/*.spec.ts",
+]
+
 filegroup_copy(
     name = "src",
-    srcs = glob(["src/**/*"]),
+    srcs = glob(
+        ["src/**/*"],
+        exclude = SPEC_PATTERNS,
+    ),
+)
+
+filegroup_copy(
+    name = "specs",
+    srcs = glob(SPEC_PATTERNS),
 )
 
 filegroup_copy(
@@ -100,6 +113,7 @@ vue_cli_launcher_test(
         "pwa/src/**/*.spec.{js,ts}",
     ],
     data = [
+        ":specs",
         "@pwa_npm//@types/chai",
         "@pwa_npm//@types/mocha",
         "@pwa_npm//chai",
