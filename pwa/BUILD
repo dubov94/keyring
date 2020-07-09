@@ -86,7 +86,7 @@ DEPENDENCIES = [
     "@pwa_npm//axios",
     "@pwa_npm//eslint-plugin-vue",
     "@pwa_npm//libsodium-wrappers",
-    "@pwa_npm//particles_vue",
+    "@pwa_npm//particles.vue",
     "@pwa_npm//reflect-metadata",
     "@pwa_npm//register-service-worker",
     "@pwa_npm//sass-loader",
