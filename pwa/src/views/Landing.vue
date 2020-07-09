@@ -10,7 +10,6 @@
     bottom: 0;
     left: 0;
     z-index: -1;
-    background: #1976d2;
   }
 
   .background__canvas {
@@ -21,10 +20,8 @@
 
 <template>
   <v-app class="app">
-    <div class="background">
-      <particles id="tsparticles" :lineLinked="true"
-          :particleSize="1" :linesWidth="0.5" :linesDistance="150"
-          :particleOpacity="0.3" :linesOpacity="0.3"></particles>
+    <div class="background" v-resize="renderBackground">
+      <canvas class="background__canvas" ref="backgroundCanvas"></canvas>
     </div>
     <v-content>
       <v-container fluid fill-height>
@@ -48,12 +45,9 @@
 </template>
 
 <script>
-import Particles from 'particles.vue'
+import trianglify from 'trianglify'
 
 export default {
-  components: {
-    particles: Particles
-  },
   computed: {
     headerClasses () {
       return {
@@ -76,6 +70,15 @@ export default {
     },
     goToRegistration () {
       this.$router.push('/register')
+    },
+    renderBackground () {
+      const canvas = this.$refs.backgroundCanvas
+      const pattern = trianglify({
+        width: canvas.clientWidth,
+        height: canvas.clientHeight,
+        xColors: 'YlGnBu'
+      })
+      pattern.toCanvas(canvas)
     }
   }
 }
