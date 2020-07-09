@@ -4,9 +4,16 @@ services:
     image: 'bazel:reverse_proxy'
     volumes:
       - '$HOME/.caddy:/root/.caddy'
+    # https://github.com/moby/moby/issues/25526
     ports:
-      - '80:80'
-      - '443:443'
+      - mode: host
+        protocol: tcp
+        published: 80
+        target: 80
+      - mode: host
+        protocol: tcp
+        published: 443
+        target: 443
   pwa:
     image: 'bazel/pwa:pwa'
   grpc-gateway:
