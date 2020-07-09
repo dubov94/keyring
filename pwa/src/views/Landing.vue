@@ -10,6 +10,7 @@
     bottom: 0;
     left: 0;
     z-index: -1;
+    background: #1976d2;
   }
 
   .background__canvas {
@@ -21,7 +22,9 @@
 <template>
   <v-app class="app">
     <div class="background">
-      <div class="background__canvas" ref="vantaRef"></div>
+      <particles id="tsparticles" :lineLinked="true"
+          :particleSize="1" :linesWidth="0.5" :linesDistance="150"
+          :particleOpacity="0.3" :linesOpacity="0.3"></particles>
     </div>
     <v-content>
       <v-container fluid fill-height>
@@ -45,14 +48,11 @@
 </template>
 
 <script>
-import * as THREE from 'three'
-import VantaWaves from 'vanta/dist/vanta.waves.min'
+import Particles from 'particles.vue'
 
 export default {
-  data () {
-    return {
-      vantaEffect: null
-    }
+  components: {
+    particles: Particles
   },
   computed: {
     headerClasses () {
@@ -76,17 +76,6 @@ export default {
     },
     goToRegistration () {
       this.$router.push('/register')
-    }
-  },
-  mounted () {
-    this.vantaEffect = VantaWaves({
-      THREE,
-      el: this.$refs.vantaRef
-    })
-  },
-  beforeDestroy () {
-    if (this.vantaEffect !== null) {
-      this.vantaEffect.destroy()
     }
   }
 }
