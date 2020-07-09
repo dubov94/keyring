@@ -3,6 +3,7 @@ package com.floreina.keyring;
 import com.floreina.keyring.interceptors.RequestMetadataInterceptor;
 import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
 import com.floreina.keyring.interceptors.SessionInterceptorKeys;
+import com.floreina.keyring.interceptors.VersionInterceptor;
 import com.google.gson.Gson;
 import dagger.Module;
 import dagger.Provides;
@@ -48,5 +49,11 @@ class AppModule {
   @Singleton
   static Chronometry provideChronometry() {
     return new Chronometry();
+  }
+
+  @Provides
+  @Singleton
+  static VersionInterceptor provideVersionInterceptor() {
+    return new VersionInterceptor();
   }
 }

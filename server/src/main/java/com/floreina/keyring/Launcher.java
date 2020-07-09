@@ -49,10 +49,12 @@ class Launcher {
             .addService(
                 ServerInterceptors.intercept(
                     appComponent.authenticationService(),
+                    appComponent.versionInterceptor(),
                     appComponent.requestMetadataInterceptor()))
             .addService(
                 ServerInterceptors.intercept(
                     appComponent.administrationService(),
+                    appComponent.versionInterceptor(),
                     appComponent.requestMetadataInterceptor(),
                     appComponent.sessionInterceptor()))
             .build();

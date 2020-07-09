@@ -4,6 +4,7 @@ import com.floreina.keyring.geolocation.GeolocationModule;
 import com.floreina.keyring.interceptors.RequestMetadataInterceptor;
 import com.floreina.keyring.interceptors.SessionInterceptor;
 import com.floreina.keyring.interceptors.SessionInterceptorKeys;
+import com.floreina.keyring.interceptors.VersionInterceptor;
 import com.floreina.keyring.keyvalue.KeyValueModule;
 import com.floreina.keyring.services.AdministrationService;
 import com.floreina.keyring.services.AuthenticationService;
@@ -38,6 +39,8 @@ interface AppComponent {
   AccountOperationsInterface accountOperationsInterface();
 
   RequestMetadataInterceptor requestMetadataInterceptor();
+
+  VersionInterceptor versionInterceptor();
 
   EntitiesExpiration expireEntitiesMethods();
 

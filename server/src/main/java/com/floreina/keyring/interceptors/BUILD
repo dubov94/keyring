@@ -57,3 +57,25 @@ java_library(
         "@maven//:javax_inject_javax_inject",
     ],
 )
+
+java_library(
+    name = "version_interceptor_keys",
+    srcs = ["VersionInterceptorKeys.java"],
+    deps = [
+        "@maven//:io_grpc_grpc_api",
+        "@maven//:io_grpc_grpc_context",
+    ],
+)
+
+java_library(
+    name = "version_interceptor",
+    srcs = ["VersionInterceptor.java"],
+    visibility = [
+        "//server/src/main/java/com/floreina/keyring:__pkg__",
+    ],
+    deps = [
+        ":version_interceptor_keys",
+        "@maven//:io_grpc_grpc_api",
+        "@maven//:io_grpc_grpc_context",
+    ],
+)
