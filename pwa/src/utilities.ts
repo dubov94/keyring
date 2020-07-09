@@ -30,42 +30,19 @@ export const createCharacterRange = (first: string, last: string): string => {
   return range
 }
 
-/** Given an array of ranges, generates a sequence having at least one symbol from each of the ranges. */
+/** Given an array of ranges generates a sequence having at least one symbol from each of the ranges. */
 export const generateSequenceOffRanges = (ranges: Array<string>, length: number, rng: RNG = random): string => {
-  // Each 'bit' is a boolean indicating whether at least one character from a range
-  // with the same index has been used.
-  const bits = new Array(ranges.length).fill(false)
-  let numberOfUsedRanges = 0
-  // `true` if the number of positions left is equal to the number of unused ranges.
-  let isTail = false
-  const numberOfAllOptions = ranges.reduce(
-    (accumulator, current) => accumulator + current.length, 0)
-  let numberOfTailOptions = numberOfAllOptions
-  let sequence = ''
-  while (length--) {
-    const optionIndex = rng(
-      0, isTail ? numberOfTailOptions : numberOfAllOptions)
-    let lengthAccumulator = 0
-    let rangeIndex = -1
-    let rangeLength = 0
-    do {
-      lengthAccumulator += rangeLength
-      do {
-        rangeIndex += 1
-      } while (isTail && bits[rangeIndex]) // eslint-disable-line no-unmodified-loop-condition
-      rangeLength = ranges[rangeIndex].length
-    } while (optionIndex >= lengthAccumulator + rangeLength)
-    sequence += ranges[rangeIndex][optionIndex - lengthAccumulator]
-    if (!bits[rangeIndex]) {
-      bits[rangeIndex] = true
-      numberOfUsedRanges += 1
-      numberOfTailOptions -= rangeLength
-    }
-    if (bits.length - numberOfUsedRanges === length) {
-      isTail = true
-    }
+  const sequence = []
+  let pool = ''
+  for (const range of ranges) {
+    sequence.push(range[rng(0, range.length)])
+    pool += range
   }
-  return sequence
+  for (let i = ranges.length; i < length; ++i) {
+    sequence.push(pool[rng(0, pool.length)])
+  }
+  shuffle(sequence, rng)
+  return sequence.join('')
 }
 
 export const areArraysEqual = <T>(left: Array<T>, right: Array<T>): boolean => {
