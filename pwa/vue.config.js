@@ -1,5 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable @typescript-eslint/no-var-requires
 const StableStatus = require('./stable_status.json')
+// eslint-enable @typescript-eslint/no-var-requires
 
 module.exports = {
   devServer: {
@@ -43,6 +44,8 @@ module.exports = {
     themeColor: '#1976d2',
     msTileColor: '#2d89ef',
     assetsVersion: 'MoVydmAfvrT9cZ7Q',
+    // Disables manifest auto-generation. See
+    // https://github.com/vuejs/vue-cli/blob/dev/packages/%40vue/cli-plugin-pwa/lib/HtmlPwaPlugin.js#L168.
     manifestPath: 'https://pwd.floreina.me/site.webmanifest',
     iconPaths: {
       favicon32: 'img/icons/favicon-32x32.png',
@@ -52,7 +55,16 @@ module.exports = {
       msTileImage: 'img/icons/mstile-144x144.png'
     },
     workboxOptions: {
-      navigateFallback: 'index.html'
+      navigateFallback: '/index.html',
+      // Inherited from https://github.com/vuejs/vue-cli/pull/769.
+      exclude: [
+        'robots.txt',
+        'favicon.ico',
+        /^img\/icons\//,
+        'browserconfig.xml',
+        'site.webmanifest',
+        /\.map$/
+      ]
     }
   }
 }
