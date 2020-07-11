@@ -20,7 +20,7 @@
 
 <template>
   <v-app class="app">
-    <div class="background" v-resize="renderBackground">
+    <div class="background" v-resize.quiet="renderBackground">
       <canvas class="background__canvas" ref="backgroundCanvas"></canvas>
     </div>
     <v-content>
@@ -76,10 +76,14 @@ export default {
       const pattern = trianglify({
         width: canvas.clientWidth,
         height: canvas.clientHeight,
-        xColors: 'YlGnBu'
+        xColors: 'YlGnBu',
+        seed: 'keyring'
       })
       pattern.toCanvas(canvas)
     }
+  },
+  mounted () {
+    this.renderBackground()
   }
 }
 </script>
