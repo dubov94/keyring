@@ -2,6 +2,16 @@ workbox.core.setCacheNameDetails({
   prefix: 'keyring.pwa'
 });
 
+const getRequestUrl = (value) => {
+  if (typeof value === 'string') {
+    return value;
+  } else if (value instanceof Request) {
+    return value.url;
+  } else {
+    throw new Error('Value is neither `string` nor `Request`');
+  }
+};
+
 const patchCacheWithExpiration = (cacheExpiration) => {
   const oCachesOpen = caches.open.bind(caches);
   caches.open = async (cacheName) => {
@@ -11,8 +21,7 @@ const patchCacheWithExpiration = (cacheExpiration) => {
       cache.match = async (request, options) => {
         // Mimic `workbox.expiration.Plugin.cachedResponseWillBeUsed`.
         await cacheExpiration.expireEntries();
-        await cacheExpiration.updateTimestamp(
-            typeof request === 'string' ? request : request.url);
+        await cacheExpiration.updateTimestamp(getRequestUrl(request));
 
         return await oCacheMatch(request, options);
       };
@@ -31,8 +40,8 @@ workbox.precaching.addPlugins([
   {
     // Mimic `workbox.expiration.Plugin.cacheDidUpdate`.
     async cacheDidUpdate ({ request }) {
+      await cacheExpiration.updateTimestamp(getRequestUrl(request));
       await cacheExpiration.expireEntries();
-      await cacheExpiration.updateTimestamp(request.url);
     }
   }
 ]);
