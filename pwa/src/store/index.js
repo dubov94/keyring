@@ -2,8 +2,8 @@ import Depot from './modules/depot'
 import Interface from './modules/interface'
 import RootActions from './root/actions'
 import RootGetters from './root/getters'
-import RootMutations from './root/mutations'
-import { INITIAL_STATE } from './root/state'
+import { mutations } from './root/mutations'
+import { constructInitialState } from './root/state'
 import Session from './modules/session'
 import Threats from './modules/threats'
 import Vue from 'vue'
@@ -31,9 +31,9 @@ const vuexSession = new VuexPersist({
 
 const store = new Vuex.Store({
   plugins: [vuexLocal.plugin, vuexSession.plugin],
-  state: INITIAL_STATE,
+  state: constructInitialState(),
   getters: RootGetters,
-  mutations: RootMutations,
+  mutations,
   actions: RootActions,
   modules: {
     depot: Depot,

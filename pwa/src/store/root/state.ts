@@ -31,7 +31,7 @@ export interface RootState {
   recentSessions: Array<Session> | null;
 }
 
-export const INITIAL_STATE: RootState = {
+export const constructInitialState = (): RootState => ({
   status: Status.OFFLINE,
   isUserActive: false,
   parametrization: null,
@@ -39,4 +39,4 @@ export const INITIAL_STATE: RootState = {
   sessionKey: null,
   userKeys: [],
   recentSessions: null
-}
+})
