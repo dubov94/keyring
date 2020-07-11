@@ -6,6 +6,10 @@ load("//bazel:files.bzl", "filegroup_copy")
 
 package(default_visibility = ["//:__pkg__"])
 
+# `filegroup_copy` targets below ensure that all files end up
+# under `bazel-out`, which is where `stable_status` output
+# resides. This way we can reference `stable_status.js` from
+# `vue.config.js` directly.
 copy_file(
     name = "stable_status",
     src = "//bazel/workspace:stable_status",
@@ -46,10 +50,11 @@ filegroup_copy(
     ],
 )
 
-# `filegroup_copy` ensures all files end up under `bazel-out`,
-# which is where `stable_status` output resides. This way we
-# can reference `stable_status.js` from `vue.config.js`
-# directly.
+filegroup_copy(
+    name = "service_worker",
+    srcs = ["service-worker.js"],
+)
+
 filegroup_copy(
     name = "package_json",
     srcs = ["package.json"],
@@ -59,6 +64,7 @@ SOURCES = [
     ":configs",
     ":package_json",
     ":public",
+    ":service_worker",
     ":src",
     ":stable_status",
 ]

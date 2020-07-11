@@ -54,8 +54,9 @@ module.exports = {
       maskIcon: 'img/icons/safari-pinned-tab.svg',
       msTileImage: 'img/icons/mstile-144x144.png'
     },
+    workboxPluginMode: 'InjectManifest',
     workboxOptions: {
-      navigateFallback: '/index.html',
+      swSrc: `${__dirname}/service-worker.js`,
       // Inherited from https://github.com/vuejs/vue-cli/pull/769.
       exclude: [
         'robots.txt',

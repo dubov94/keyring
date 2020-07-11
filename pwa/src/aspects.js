@@ -20,12 +20,7 @@ export const applyGoOfflineOnRequestError = () => {
   axios.interceptors.response.use(undefined, (error) => {
     let message = 'Network is unavailable'
     if (error.response) {
-      const { status } = error.response
-      if (status === 501) {
-        message = 'The application is outdated. Please refresh!'
-      } else {
-        message = `Error status code: ${status}`
-      }
+      message = `Error code: ${error.response.status}`
     }
     store.commit('setStatus', Status.OFFLINE)
     store.commit('setSessionKey', null)
