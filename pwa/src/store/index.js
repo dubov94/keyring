@@ -31,7 +31,7 @@ const vuexSession = new VuexPersist({
 
 const store = new Vuex.Store({
   plugins: [vuexLocal.plugin, vuexSession.plugin],
-  state: constructInitialState(),
+  state: constructInitialState,
   getters: RootGetters,
   mutations,
   actions: RootActions,
