@@ -24,7 +24,7 @@
 <template>
   <page>
     <user-menu v-model="showMenu"></user-menu>
-    <toolbar has-menu v-model="showMenu">
+    <toolbar :has-menu="true" v-model="showMenu">
       <v-text-field solo-inverted flat ref="search" v-model="query"
         prepend-icon="search" label="Search" class="search"></v-text-field>
     </toolbar>

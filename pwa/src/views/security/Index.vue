@@ -1,7 +1,7 @@
 <template>
   <page>
     <user-menu v-model="showMenu"></user-menu>
-    <toolbar has-menu v-model="showMenu"></toolbar>
+    <toolbar :has-menu="true" v-model="showMenu"></toolbar>
     <v-content>
         <v-tabs fixed-tabs>
           <v-tab to="/security/threat-analysis">Threat analysis</v-tab>
