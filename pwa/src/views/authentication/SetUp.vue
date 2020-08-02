@@ -10,37 +10,51 @@
 </style>
 
 <template>
-  <v-card>
-    <v-toolbar color="primary" dark>
-      <v-toolbar-title>Key Ring</v-toolbar-title>
-    </v-toolbar>
-    <v-card-text class="card-text">
-      <v-stepper :value="2" vertical class="stepper">
-        <v-stepper-step :complete="true" step="1">Register</v-stepper-step>
-        <v-stepper-step step="2">Activate</v-stepper-step>
-        <v-stepper-content step="2">
-          <v-form @keydown.native.enter.prevent="submit">
-            <form-text-field type="text" label="Code" prepend-icon="verified_user"
-              v-model="code" :dirty="$v.code.$dirty" :errors="codeErrors" ref="code"
-              @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
-          </v-form>
-        </v-stepper-content>
-        <v-stepper-step step="3">Enjoy!</v-stepper-step>
-        <v-stepper-items>
-        </v-stepper-items>
-      </v-stepper>
-    </v-card-text>
-    <v-card-actions>
-      <v-btn block color="primary" class="mx-3 mb-2"
-        @click="submit" :loading="requestInProgress">Activate</v-btn>
-    </v-card-actions>
-  </v-card>
+  <page>
+    <v-content>
+      <v-container fluid>
+        <v-layout justify-center mt-5>
+          <v-flex xs12 sm6 md4 lg3 xl2>
+            <v-card>
+              <v-toolbar color="primary" dark>
+                <v-toolbar-title>Key Ring</v-toolbar-title>
+              </v-toolbar>
+              <v-card-text class="card-text">
+                <v-stepper :value="2" vertical class="stepper">
+                  <v-stepper-step :complete="true" step="1">Register</v-stepper-step>
+                  <v-stepper-step step="2">Activate</v-stepper-step>
+                  <v-stepper-content step="2">
+                    <v-form @keydown.native.enter.prevent="submit">
+                      <form-text-field type="text" label="Code" prepend-icon="verified_user"
+                        v-model="code" :dirty="$v.code.$dirty" :errors="codeErrors" ref="code"
+                        @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
+                    </v-form>
+                  </v-stepper-content>
+                  <v-stepper-step step="3">Enjoy!</v-stepper-step>
+                  <v-stepper-items>
+                  </v-stepper-items>
+                </v-stepper>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn block color="primary" class="mx-3 mb-2"
+                  @click="submit" :loading="requestInProgress">Activate</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-flex>
+        </v-layout>
+      </v-container>
+    </v-content>
+  </page>
 </template>
 
 <script>
 import { mapActions } from 'vuex'
+import Page from '@/components/Page'
 
 export default {
+  components: {
+    page: Page
+  },
   data () {
     return {
       code: '',

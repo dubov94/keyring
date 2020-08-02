@@ -1,4 +1,13 @@
 <style scoped>
+  .article {
+    margin-top: 128px;
+  }
+
+  .heading {
+    color: white;
+    text-align: center;
+  }
+
   .background {
     position: absolute;
     top: 0;
@@ -20,22 +29,16 @@
       <canvas class="background__canvas" ref="backgroundCanvas"></canvas>
     </div>
     <v-content>
-      <v-container fluid fill-height>
-        <v-layout align-center>
-          <v-flex xs12 class="text-xs-center white--text">
-            <h1 :class="headerClasses">
-              Your passwords.
-            </h1>
-            <h2 :class="subHeaderClasses">
-              Accessible. Safe.
-            </h2>
-            <div class="mt-5">
-              <v-btn large outline color="white" @click="goToLogin">Log in</v-btn>
-              <v-btn large outline color="white" @click="goToRegistration">Register</v-btn>
-            </div>
-          </v-flex>
-        </v-layout>
-      </v-container>
+      <div class="article">
+        <h1 class="heading" :class="nameDynamicClasses">Key Ring</h1>
+        <h2 class="heading mt-3" :class="descriptionDynamicClasses">
+          An unobtrusive password manager.
+        </h2>
+        <div class="mt-5 text-xs-center">
+          <v-btn large outline color="white" @click="goToLogin">Log in</v-btn>
+          <v-btn large outline color="white" @click="goToRegistration">Register</v-btn>
+        </div>
+      </div>
     </v-content>
   </page>
 </template>
@@ -49,18 +52,18 @@ export default {
     page: Page
   },
   computed: {
-    headerClasses () {
+    nameDynamicClasses () {
       return {
         'display-4': this.$vuetify.breakpoint.lgAndUp,
         'display-3': this.$vuetify.breakpoint.mdOnly,
         'display-2': this.$vuetify.breakpoint.smAndDown
       }
     },
-    subHeaderClasses () {
+    descriptionDynamicClasses () {
       return {
-        'display-3': this.$vuetify.breakpoint.lgAndUp,
-        'display-2': this.$vuetify.breakpoint.mdOnly,
-        'display-1': this.$vuetify.breakpoint.smAndDown
+        'display-2': this.$vuetify.breakpoint.lgAndUp,
+        'display-1': this.$vuetify.breakpoint.mdOnly,
+        headline: this.$vuetify.breakpoint.smAndDown
       }
     }
   },

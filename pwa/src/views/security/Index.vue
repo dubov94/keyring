@@ -1,7 +1,6 @@
 <template>
-  <page>
+  <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch">
     <user-menu v-model="showMenu"></user-menu>
-    <toolbar :has-menu="true" v-model="showMenu"></toolbar>
     <v-content>
         <v-tabs fixed-tabs>
           <v-tab to="/security/threat-analysis">Threat analysis</v-tab>
@@ -15,16 +14,19 @@
 <script>
 import Page from '@/components/Page'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu'
-import Toolbar from '@/components/toolbar-with-menu/Toolbar'
 
 export default {
   components: {
     page: Page,
-    userMenu: UserMenu,
-    toolbar: Toolbar
+    userMenu: UserMenu
   },
   data () {
     return { showMenu: false }
+  },
+  methods: {
+    menuSwitch (value) {
+      this.showMenu = value
+    }
   }
 }
 </script>

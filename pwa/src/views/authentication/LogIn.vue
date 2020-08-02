@@ -1,38 +1,52 @@
 <template>
-  <v-card>
-    <v-toolbar color="primary" dark>
-      <v-toolbar-title>Key Ring</v-toolbar-title>
-    </v-toolbar>
-    <v-card-text>
-      <v-form @keydown.native.enter.prevent="submit">
-        <form-text-field type="text" label="Username" prepend-icon="person"
-          v-model="username" :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
-          @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
-          :autofocus="!hasUsername"></form-text-field>
-        <form-text-field type="password" label="Password" prepend-icon="lock"
-          v-model="password" :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
-          @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
-          :autofocus="hasUsername"></form-text-field>
-        <v-switch hide-details color="primary" label="Remember me"
-          v-model="persist"></v-switch>
-      </v-form>
-    </v-card-text>
-    <v-card-actions>
-      <v-btn block color="primary" class="mx-4"
-        @click="submit" :loading="requestInProgress">Log in</v-btn>
-    </v-card-actions>
-    <v-layout justify-center py-2>
-      <router-link to="/register">Register</router-link>
-    </v-layout>
-  </v-card>
+  <page>
+    <v-content>
+      <v-container fluid>
+        <v-layout justify-center mt-5>
+          <v-flex xs12 sm6 md4 lg3 xl2>
+            <v-card>
+              <v-toolbar color="primary" dark>
+                <v-toolbar-title>Key Ring</v-toolbar-title>
+              </v-toolbar>
+              <v-card-text>
+                <v-form @keydown.native.enter.prevent="submit">
+                  <form-text-field type="text" label="Username" prepend-icon="person"
+                    v-model="username" :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
+                    @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
+                    :autofocus="!hasUsername"></form-text-field>
+                  <form-text-field type="password" label="Password" prepend-icon="lock"
+                    v-model="password" :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
+                    @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
+                    :autofocus="hasUsername"></form-text-field>
+                  <v-switch hide-details color="primary" label="Remember me"
+                    v-model="persist"></v-switch>
+                </v-form>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn block color="primary" class="mx-4"
+                  @click="submit" :loading="requestInProgress">Log in</v-btn>
+              </v-card-actions>
+              <v-layout justify-center py-2>
+                <router-link to="/register">Register</router-link>
+              </v-layout>
+            </v-card>
+          </v-flex>
+        </v-layout>
+      </v-container>
+    </v-content>
+  </page>
 </template>
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
 import { required } from 'vuelidate/lib/validators'
+import Page from '@/components/Page'
 import { getShortHash } from '@/utilities'
 
 export default {
+  components: {
+    page: Page
+  },
   data () {
     const hasLocalData = this.$store.getters['depot/hasLocalData']
     let username = ''

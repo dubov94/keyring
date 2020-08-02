@@ -1,10 +1,9 @@
 <template>
-  <page>
+  <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch">
     <user-menu v-model="showMenu"></user-menu>
-    <toolbar :has-menu="true" v-model="showMenu"></toolbar>
     <v-content>
       <v-container fluid>
-        <v-layout row wrap justify-center align-center>
+        <v-layout wrap justify-center align-center>
           <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
             <change-master-key></change-master-key>
           </v-flex>
@@ -30,7 +29,6 @@ import ChangeUsername from './ChangeUsername'
 import DeleteAccount from './DeleteAccount'
 import Page from '@/components/Page'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu'
-import Toolbar from '@/components/toolbar-with-menu/Toolbar'
 
 export default {
   components: {
@@ -39,12 +37,16 @@ export default {
     changeUsername: ChangeUsername,
     deleteAccount: DeleteAccount,
     page: Page,
-    userMenu: UserMenu,
-    toolbar: Toolbar
+    userMenu: UserMenu
   },
   data () {
     return {
       showMenu: false
+    }
+  },
+  methods: {
+    menuSwitch (value) {
+      this.showMenu = value
     }
   }
 }

@@ -1,4 +1,3 @@
-import Authentication from '@/views/authentication/Index'
 import Dashboard from '@/views/Dashboard'
 import Landing from '@/views/Landing'
 import LogIn from '@/views/authentication/LogIn'
@@ -38,16 +37,13 @@ const router = new VueRouter({
       component: Landing
     }, {
       path: '/log-in',
-      component: Authentication,
-      children: [{ path: '', component: LogIn }]
+      component: LogIn
     }, {
       path: '/register',
-      component: Authentication,
-      children: [{ path: '', component: Register }]
+      component: Register
     }, {
       path: '/set-up',
-      component: Authentication,
-      children: [{ path: '', component: SetUp }]
+      component: SetUp
     }, {
       path: '/dashboard',
       component: Dashboard,
