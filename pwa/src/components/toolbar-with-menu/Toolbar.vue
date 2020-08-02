@@ -1,9 +1,3 @@
-<style scoped>
-  .home-link {
-    cursor: pointer;
-  }
-</style>
-
 <template>
   <v-toolbar app clipped-left prominent color="primary" dark>
     <v-toolbar-side-icon v-if="hasMenu" @click="toggle">
