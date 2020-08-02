@@ -1,7 +1,7 @@
 <template>
   <page>
-    <side-menu v-model="showMenu"></side-menu>
-    <toolbar v-model="showMenu"></toolbar>
+    <user-menu v-model="showMenu"></user-menu>
+    <toolbar has-menu v-model="showMenu"></toolbar>
     <v-content>
       <v-container fluid>
         <v-layout row wrap justify-center align-center>
@@ -29,7 +29,7 @@ import ChangeMasterKey from './ChangeMasterKey'
 import ChangeUsername from './ChangeUsername'
 import DeleteAccount from './DeleteAccount'
 import Page from '@/components/Page'
-import SideMenu from '@/components/toolbar-with-menu/SideMenu'
+import UserMenu from '@/components/toolbar-with-menu/UserMenu'
 import Toolbar from '@/components/toolbar-with-menu/Toolbar'
 
 export default {
@@ -39,7 +39,7 @@ export default {
     changeUsername: ChangeUsername,
     deleteAccount: DeleteAccount,
     page: Page,
-    sideMenu: SideMenu,
+    userMenu: UserMenu,
     toolbar: Toolbar
   },
   data () {

@@ -1,7 +1,7 @@
 <template>
   <page>
-    <side-menu v-model="showMenu"></side-menu>
-    <toolbar v-model="showMenu"></toolbar>
+    <user-menu v-model="showMenu"></user-menu>
+    <toolbar has-menu v-model="showMenu"></toolbar>
     <v-content>
         <v-tabs fixed-tabs>
           <v-tab to="/security/threat-analysis">Threat analysis</v-tab>
@@ -14,13 +14,13 @@
 
 <script>
 import Page from '@/components/Page'
-import SideMenu from '@/components/toolbar-with-menu/SideMenu'
+import UserMenu from '@/components/toolbar-with-menu/UserMenu'
 import Toolbar from '@/components/toolbar-with-menu/Toolbar'
 
 export default {
   components: {
     page: Page,
-    sideMenu: SideMenu,
+    userMenu: UserMenu,
     toolbar: Toolbar
   },
   data () {

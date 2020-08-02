@@ -3,12 +3,8 @@
     max-width: var(--max-content-width);
   }
 
-  .search--desktop {
-    margin: 0 128px !important;
-  }
-
-  .search--mobile {
-    margin: 0 32px 0 4px !important;
+  .search {
+    margin: 0 32px !important;
   }
 
   .toolbar {
@@ -27,14 +23,10 @@
 
 <template>
   <page>
-    <side-menu v-model="showMenu"></side-menu>
-    <toolbar v-model="showMenu">
-      <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp">
-        <toolbar-title @click.native="clearQuery"></toolbar-title>
-      </v-toolbar-title>
-      <v-text-field solo-inverted flat ref="search" v-model="query" :class=
-        "$vuetify.breakpoint.mdAndUp ? 'search--desktop' : 'search--mobile'"
-        prepend-icon="search" label="Search"></v-text-field>
+    <user-menu v-model="showMenu"></user-menu>
+    <toolbar has-menu v-model="showMenu">
+      <v-text-field solo-inverted flat ref="search" v-model="query"
+        prepend-icon="search" label="Search" class="search"></v-text-field>
     </toolbar>
     <v-content>
       <v-container fluid mx-auto>
@@ -59,8 +51,7 @@
 import Editor from '@/components/Editor'
 import Page from '@/components/Page'
 import PasswordMasonry from '@/components/PasswordMasonry'
-import SideMenu from '@/components/toolbar-with-menu/SideMenu'
-import Title from '@/components/toolbar-with-menu/Title'
+import UserMenu from '@/components/toolbar-with-menu/UserMenu'
 import Toolbar from '@/components/toolbar-with-menu/Toolbar'
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
 
@@ -71,8 +62,7 @@ export default {
     editor: Editor,
     page: Page,
     passwordMasonry: PasswordMasonry,
-    sideMenu: SideMenu,
-    toolbarTitle: Title,
+    userMenu: UserMenu,
     toolbar: Toolbar
   },
   data () {
