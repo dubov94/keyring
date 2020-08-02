@@ -1,4 +1,4 @@
-# Key Ring
+# keyring
 
 Install Python (with PIP), Java 11, [Bazel](https://bazel.build) and Docker.
 
