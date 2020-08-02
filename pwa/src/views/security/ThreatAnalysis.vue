@@ -3,12 +3,6 @@
     max-width: var(--max-content-width);
     margin: 0 auto;
   }
-
-  .analysis-switch {
-    position: fixed;
-    right: 16px;
-    bottom: 16px;
-  }
 </style>
 
 <template>
