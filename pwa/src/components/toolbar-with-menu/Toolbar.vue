@@ -1,16 +1,26 @@
+<style scoped>
+  .user-button {
+    text-transform: none;
+  }
+</style>
+
 <template>
   <v-toolbar app clipped-left prominent color="primary" dark>
     <v-toolbar-side-icon v-if="hasMenu" @click="toggle">
     </v-toolbar-side-icon>
+    <v-btn icon :to="homeTarget">
+      <v-icon>home</v-icon>
+    </v-btn>
     <slot>
       <v-spacer></v-spacer>
     </slot>
-    <v-btn v-if="!isUserActive" icon>
+    <v-btn v-if="!isUserActive" icon to="/log-in">
       <v-icon>login</v-icon>
     </v-btn>
-    <v-menu v-if="isUserActive" offset-y>
-      <v-btn slot="activator" icon>
-        <v-icon>account_circle</v-icon>
+    <v-menu v-if="isUserActive" offset-y :nudge-bottom="5">
+      <v-btn slot="activator" flat class="user-button">
+        {{ username }}
+        <v-icon right>account_circle</v-icon>
       </v-btn>
       <v-list two-line class="py-0">
         <v-list-tile v-on="isOffline ? {'click': reload} : {}">
@@ -50,7 +60,8 @@ export default {
   props: ['value', 'hasMenu'],
   computed: {
     ...mapState({
-      status: (state) => state.status
+      status: (state) => state.status,
+      username: (state) => state.session.username
     }),
     ...mapGetters({
       isUserActive: 'isUserActive'
@@ -71,6 +82,9 @@ export default {
     },
     isOffline () {
       return this.status === Status.OFFLINE
+    },
+    homeTarget () {
+      return this.isUserActive ? '/dashboard' : '/'
     }
   },
   methods: {

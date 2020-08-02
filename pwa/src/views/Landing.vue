@@ -1,8 +1,4 @@
 <style scoped>
-  .app {
-    background: none;
-  }
-
   .background {
     position: fixed;
     top: 0;
@@ -19,7 +15,7 @@
 </style>
 
 <template>
-  <v-app class="app">
+  <page :no-background="true">
     <div class="background" v-resize.quiet="renderBackground">
       <canvas class="background__canvas" ref="backgroundCanvas"></canvas>
     </div>
@@ -41,13 +37,17 @@
         </v-layout>
       </v-container>
     </v-content>
-  </v-app>
+  </page>
 </template>
 
 <script>
 import trianglify from 'trianglify'
+import Page from '@/components/Page'
 
 export default {
+  components: {
+    page: Page
+  },
   computed: {
     headerClasses () {
       return {
