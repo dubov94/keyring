@@ -32,7 +32,7 @@
       <div class="article">
         <h1 class="heading" :class="nameDynamicClasses">Key Ring</h1>
         <h2 class="heading mt-3" :class="descriptionDynamicClasses">
-          An unobtrusive password manager.
+          An unobtrusive password manager 😋
         </h2>
         <div class="mt-5 text-xs-center">
           <v-btn large outline color="white" @click="goToLogin">Log in</v-btn>
