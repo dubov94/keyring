@@ -1,9 +1,3 @@
-<style scoped>
-  .user-button {
-    text-transform: none;
-  }
-</style>
-
 <template>
   <v-toolbar app clipped-left prominent color="primary" dark>
     <v-toolbar-side-icon v-if="hasMenu" @click="toggle">
@@ -18,7 +12,7 @@
       <v-icon>login</v-icon>
     </v-btn>
     <v-menu v-if="isUserActive" offset-y :nudge-bottom="5">
-      <v-btn slot="activator" flat class="user-button">
+      <v-btn slot="activator" flat>
         {{ username }}
         <v-icon right>account_circle</v-icon>
       </v-btn>
