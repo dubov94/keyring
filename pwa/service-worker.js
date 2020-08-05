@@ -1,63 +1,56 @@
-const getRequestUrl = (value) => {
-  if (typeof value === 'string') {
-    return value;
-  } else if (value instanceof Request) {
-    return value.url;
-  } else {
-    throw new Error('Value is neither `string` nor `Request`');
-  }
-};
-
-const getResponseTimestamp = (response) => {
-  if (!response) {
-    return null;
-  }
-  const dateHeader = response.headers.get('date');
-  if (!dateHeader) {
-    return null;
-  }
-  const timestamp = new Date(dateHeader).getTime();
-  if (isNaN(timestamp)) {
-    return null;
-  }
-  return timestamp;
-};
-
-const patchCacheWithExpiration = (
-    targetName, precacheManifest, shellCacheKey, maxAgeSeconds) => {
-  const oCachesOpen = caches.open.bind(caches);
-  caches.open = async (cacheName) => {
-    const cache = await oCachesOpen(cacheName);
-    if (cacheName === targetName) {
-      const oCacheMatch = cache.match.bind(cache);
-      cache.match = async (request, options) => {
-        if (getRequestUrl(request) === shellCacheKey) {
-          const timestamp = getResponseTimestamp(await oCacheMatch(shellCacheKey));
-          if (timestamp === null || timestamp < Date.now() - maxAgeSeconds * 1000) {
-            const ok = await Promise.all(precacheManifest.map(({ url }) =>
-                cache.delete(workbox.precaching.getCacheKeyForURL(url))));
-            if (!ok) {
-              throw new Error('Unable to expire entries');
-            }
-          }
-        }
-        return oCacheMatch(request, options);
-      };
-    }
-    return cache;
-  };
-};
-
 workbox.core.setCacheNameDetails({ prefix: 'keyring.pwa' });
-workbox.precaching.precacheAndRoute(self.__precacheManifest);
-const indexCacheKey = workbox.precaching.getCacheKeyForURL('/index.html');
-workbox.routing.registerNavigationRoute(indexCacheKey);
-patchCacheWithExpiration(
-  workbox.core.cacheNames.precache,
-  self.__precacheManifest,
-  indexCacheKey,
-  2 * 28 * 24 * 60 * 60
+
+const precacheController = new workbox.precaching.PrecacheController();
+precacheController.addToCacheList(self.__precacheManifest);
+
+const precacheName = workbox.core.cacheNames.precache;
+const expirationManager = new workbox.expiration.CacheExpiration(
+  precacheName,
+  { maxAgeSeconds: 2 * 28 * 24 * 60 * 60 }
 );
+
+const indexCacheKey = precacheController.getCacheKeyForURL('/index.html');
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(precacheController.install({
+    plugins: [{
+      cacheDidUpdate: async ({ request }) => {
+        if (request.url === indexCacheKey) {
+          await expirationManager.updateTimestamp(indexCacheKey);
+        }
+      }
+    }]
+  }));
+});
+
+self.addEventListener('activate', (event) => {
+  // `expirationManager` leftovers stay in IndexedDB.
+  event.waitUntil(precacheController.activate());
+});
+
+self.addEventListener('fetch', (event) => {
+  let cacheKey = precacheController.getCacheKeyForURL(event.request.url);
+  if (!cacheKey && event.request.mode === 'navigate') {
+    // Intentional console output.
+    console.debug(`${event.request.url} -> ${indexCacheKey}`);
+    cacheKey = indexCacheKey;
+  }
+  if (cacheKey) {
+    event.respondWith((async () => {
+      const precache = await caches.open(precacheName);
+      if (cacheKey === indexCacheKey) {
+        if (await expirationManager.isURLExpired(indexCacheKey)) {
+          // It either stays the same and we just update freshness, or it's
+          // different and the new service worker will take the reins eventually.
+          await precache.add(indexCacheKey);
+          await expirationManager.updateTimestamp(indexCacheKey);
+        }
+      }
+      const response = await precache.match(cacheKey);
+      return response ? response : await fetch(cacheKey);
+    })());
+  }
+});
 
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
