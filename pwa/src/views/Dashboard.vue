@@ -24,9 +24,10 @@
 <template>
   <page>
     <user-menu v-model="showMenu"></user-menu>
-    <toolbar :has-menu="true" v-model="showMenu">
-      <v-text-field solo-inverted flat ref="search" v-model="query"
-        prepend-icon="search" label="Search" class="search"></v-text-field>
+    <toolbar :has-menu="true" v-model="showMenu" :extended="toolbarIsExtended">
+      <v-text-field :slot="toolbarSearchSlot" solo-inverted flat ref="search"
+        v-model="query" prepend-icon="search" label="Search" class="search">
+      </v-text-field>
     </toolbar>
     <v-content>
       <v-container fluid mx-auto>
@@ -104,6 +105,12 @@ export default {
     },
     cardsCount () {
       return this.matchingCards.length
+    },
+    toolbarIsExtended () {
+      return this.$vuetify.breakpoint.xsOnly
+    },
+    toolbarSearchSlot () {
+      return this.toolbarIsExtended ? 'extension' : 'default'
     }
   },
   methods: {

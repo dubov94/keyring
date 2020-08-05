@@ -42,6 +42,9 @@
         </v-list-tile>
       </v-list>
     </v-menu>
+    <template slot="extension" v-if="extended">
+      <slot name="extension"></slot>
+    </template>
   </v-toolbar>
 </template>
 
@@ -51,7 +54,7 @@ import { Status } from '../../store/root/status'
 import { reloadPage, purgeSessionStorageAndLoadLogIn } from '../../utilities'
 
 export default {
-  props: ['value', 'hasMenu'],
+  props: ['value', 'hasMenu', 'extended'],
   computed: {
     ...mapState({
       status: (state) => state.status,
