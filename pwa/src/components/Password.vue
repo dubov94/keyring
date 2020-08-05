@@ -14,23 +14,24 @@
     <v-card-title>
       <v-text-field :type="reveal ? 'text' : 'password'" solo flat readonly
         :value="value"></v-text-field>
-      <v-btn icon @click="copyText(value)">
+      <v-btn icon @click="copyText(value)" class="mx-0">
         <v-icon small>fa-copy</v-icon>
       </v-btn>
       <v-menu>
-        <v-btn icon slot="activator">
+        <v-btn icon slot="activator" class="mx-0">
           <v-icon small>fa-ellipsis-v</v-icon>
         </v-btn>
         <v-list>
-          <v-list-tile @click="edit" :disabled="!isOnline">
-            <v-list-tile-title>
-              Edit
-            </v-list-tile-title>
-          </v-list-tile>
           <v-list-tile @click="toggleReveal">
-            <v-list-tile-title>
+            <v-list-tile-content>
               {{ reveal ? 'Hide' : 'Show' }}
-            </v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-divider></v-divider>
+          <v-list-tile @click="edit" :disabled="!isOnline">
+            <v-list-tile-content>
+              Edit
+            </v-list-tile-content>
           </v-list-tile>
         </v-list>
       </v-menu>

@@ -52,22 +52,30 @@
         <v-text-field :type="reveal ? 'text' : 'password'" solo flat
           placeholder="Secret" class="key" v-model="secret">
         </v-text-field>
-        <v-btn flat color="primary" :disabled="requestInProgress"
-          @click="suggest">
-          Generate
-        </v-btn>
-        <v-btn icon @click="copySecret">
-          <v-icon>fa-copy</v-icon>
+        <v-btn icon @click="copySecret" class="mx-0">
+          <v-icon small>fa-copy</v-icon>
         </v-btn>
         <v-menu>
-          <v-btn icon slot="activator">
+          <v-btn icon slot="activator" class="mx-0">
             <v-icon small>fa-ellipsis-v</v-icon>
           </v-btn>
           <v-list>
             <v-list-tile @click="reveal = !reveal">
-              <v-list-tile-title>
+              <v-list-tile-content>
                 {{ reveal ? 'Hide' : 'Show' }}
-              </v-list-tile-title>
+              </v-list-tile-content>
+            </v-list-tile>
+            <v-divider></v-divider>
+            <v-list-tile :disabled="!isOnline || requestInProgress" @click="save">
+              <v-list-tile-content>
+                Save
+              </v-list-tile-content>
+            </v-list-tile>
+            <v-list-tile v-if="identifier !== null" color="error"
+              :disabled="!isOnline || requestInProgress" @click="maybeRemove">
+              <v-list-tile-content>
+                Remove
+              </v-list-tile-content>
             </v-list-tile>
           </v-list>
         </v-menu>
@@ -97,17 +105,13 @@
         <v-progress-circular indeterminate color="green"
           v-if="requestInProgress"></v-progress-circular>
         <v-spacer></v-spacer>
-        <v-btn flat color="error" :disabled="!isOnline || requestInProgress"
-          v-if="identifier !== null" @click="maybeRemove">
-          Remove
+        <v-btn flat color="primary" :disabled="requestInProgress"
+          @click="suggest">
+          Generate
         </v-btn>
         <v-btn flat color="primary" :disabled="requestInProgress"
           @click="maybeDiscard">
           Cancel
-        </v-btn>
-        <v-btn flat color="primary" :disabled="!isOnline || requestInProgress"
-          @click="save">
-          Save
         </v-btn>
       </v-card-actions>
     </v-card>
