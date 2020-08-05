@@ -14,11 +14,11 @@
     <v-card-title>
       <v-text-field :type="reveal ? 'text' : 'password'" solo flat readonly
         :value="value"></v-text-field>
-      <v-btn icon @click="copyText(value)" class="mx-0">
+      <v-btn icon @click="copyText(value)">
         <v-icon small>fa-copy</v-icon>
       </v-btn>
       <v-menu>
-        <v-btn icon slot="activator" class="mx-0">
+        <v-btn icon slot="activator">
           <v-icon small>fa-ellipsis-v</v-icon>
         </v-btn>
         <v-list>

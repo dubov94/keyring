@@ -52,11 +52,11 @@
         <v-text-field :type="reveal ? 'text' : 'password'" solo flat
           placeholder="Secret" class="key" v-model="secret">
         </v-text-field>
-        <v-btn icon @click="copySecret" class="mx-0">
+        <v-btn icon @click="copySecret">
           <v-icon small>fa-copy</v-icon>
         </v-btn>
         <v-menu>
-          <v-btn icon slot="activator" class="mx-0">
+          <v-btn icon slot="activator">
             <v-icon small>fa-ellipsis-v</v-icon>
           </v-btn>
           <v-list>
