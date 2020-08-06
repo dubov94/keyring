@@ -22,13 +22,12 @@
 </style>
 
 <template>
-  <page>
+  <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch"
+    :toolbar-is-extended="toolbarIsExtended">
+    <v-text-field :slot="toolbarSearchSlot" solo-inverted flat ref="search"
+      v-model="query" prepend-icon="search" label="Search" class="search">
+    </v-text-field>
     <user-menu v-model="showMenu"></user-menu>
-    <toolbar :has-menu="true" v-model="showMenu" :extended="toolbarIsExtended">
-      <v-text-field :slot="toolbarSearchSlot" solo-inverted flat ref="search"
-        v-model="query" prepend-icon="search" label="Search" class="search">
-      </v-text-field>
-    </toolbar>
     <v-content>
       <v-container fluid mx-auto>
         <div class="mb-3 text-xs-center">
@@ -53,7 +52,6 @@ import Editor from '@/components/Editor'
 import Page from '@/components/Page'
 import PasswordMasonry from '@/components/PasswordMasonry'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu'
-import Toolbar from '@/components/toolbar-with-menu/Toolbar'
 import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
 
 const CARDS_PER_PAGE = 12
@@ -63,8 +61,7 @@ export default {
     editor: Editor,
     page: Page,
     passwordMasonry: PasswordMasonry,
-    userMenu: UserMenu,
-    toolbar: Toolbar
+    userMenu: UserMenu
   },
   data () {
     return {
@@ -110,7 +107,7 @@ export default {
       return this.$vuetify.breakpoint.xsOnly
     },
     toolbarSearchSlot () {
-      return this.toolbarIsExtended ? 'extension' : 'default'
+      return this.toolbarIsExtended ? 'toolbarExtension' : 'toolbarDefault'
     }
   },
   methods: {
@@ -121,6 +118,9 @@ export default {
       openEditor: 'interface/openEditor',
       closeEditor: 'interface/closeEditor'
     }),
+    menuSwitch (value) {
+      this.showMenu = value
+    },
     addKey () {
       this.openEditor({ identifier: null, reveal: false })
     },

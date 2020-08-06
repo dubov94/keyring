@@ -6,8 +6,12 @@
 
 <template>
   <v-app :class="appClasses">
-    <toolbar :has-menu="hasMenu" :value="showMenu" @input="menuSwitch">
-      <slot name="menu"></slot>
+    <toolbar :has-menu="hasMenu" :value="showMenu" @input="menuSwitch"
+      :extended="toolbarIsExtended">
+      <slot name="toolbarDefault"></slot>
+      <template slot="extension" v-if="toolbarIsExtended">
+        <slot name="toolbarExtension"></slot>
+      </template>
     </toolbar>
     <slot></slot>
     <toast></toast>
@@ -19,7 +23,7 @@ import Toast from '@/components/Toast'
 import Toolbar from '@/components/toolbar-with-menu/Toolbar'
 
 export default {
-  props: ['hasMenu', 'showMenu', 'noBackground'],
+  props: ['hasMenu', 'showMenu', 'noBackground', 'toolbarIsExtended'],
   components: {
     toast: Toast,
     toolbar: Toolbar
