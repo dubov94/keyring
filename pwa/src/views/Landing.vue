@@ -36,8 +36,13 @@
             An unobtrusive password manager 😋
           </h2>
           <div class="mt-5 text-xs-center">
-            <v-btn large outline color="white" @click="goToLogin">Log in</v-btn>
-            <v-btn large outline color="white" @click="goToRegistration">Register</v-btn>
+            <template v-if="!isUserActive">
+              <v-btn large outline color="white" to="/log-in">Log in</v-btn>
+              <v-btn large outline color="white" to="/register">Register</v-btn>
+            </template>
+            <template v-if="isUserActive">
+              <v-btn large outline color="white" to="/dashboard">Go to dashboard</v-btn>
+            </template>
           </div>
         </div>
       </v-container>
@@ -46,6 +51,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import trianglify from 'trianglify'
 import Page from '@/components/Page'
 
@@ -54,6 +60,9 @@ export default {
     page: Page
   },
   computed: {
+    ...mapGetters({
+      isUserActive: 'isUserActive'
+    }),
     nameDynamicClasses () {
       return {
         'display-4': this.$vuetify.breakpoint.lgAndUp,
@@ -70,12 +79,6 @@ export default {
     }
   },
   methods: {
-    goToLogin () {
-      this.$router.push('/log-in')
-    },
-    goToRegistration () {
-      this.$router.push('/register')
-    },
     renderBackground () {
       const canvas = this.$refs.backgroundCanvas
       const pattern = trianglify({
