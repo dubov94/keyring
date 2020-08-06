@@ -28,22 +28,23 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(precacheController.activate());
 });
 
+const refreshIndex = async (precache) => {
+  await precache.add(indexCacheKey);
+  await expirationManager.updateTimestamp(indexCacheKey);
+};
+
 self.addEventListener('fetch', (event) => {
-  let cacheKey = precacheController.getCacheKeyForURL(event.request.url);
-  if (!cacheKey && event.request.mode === 'navigate') {
-    // Intentional console output.
-    console.debug(`${event.request.url} -> ${indexCacheKey}`);
-    cacheKey = indexCacheKey;
-  }
+  const cacheKey = event.request.mode === 'navigate' ? (
+    indexCacheKey
+  ) : precacheController.getCacheKeyForURL(event.request.url);
   if (cacheKey) {
     event.respondWith((async () => {
       const precache = await caches.open(precacheName);
       if (cacheKey === indexCacheKey) {
         if (await expirationManager.isURLExpired(indexCacheKey)) {
-          // It either stays the same and we just update freshness, or it's
-          // different and the new service worker will take the reins eventually.
-          await precache.add(indexCacheKey);
-          await expirationManager.updateTimestamp(indexCacheKey);
+          await refreshIndex(precache);
+        } else {
+          event.waitUntil(refreshIndex(precache));
         }
       }
       const response = await precache.match(cacheKey);
