@@ -2,7 +2,7 @@
   <v-toolbar app clipped-left prominent color="primary" dark>
     <v-toolbar-side-icon v-if="hasMenu" @click="toggle">
     </v-toolbar-side-icon>
-    <v-btn icon :to="homeTarget">
+    <v-btn icon to="/">
       <v-icon>home</v-icon>
     </v-btn>
     <slot>
