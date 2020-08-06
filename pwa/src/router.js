@@ -9,21 +9,8 @@ import Settings from '@/views/settings/Index'
 import ThreatAnalysis from '@/views/security/ThreatAnalysis'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from '@/store'
 
 Vue.use(VueRouter)
-
-const getPathOrAuthFallback = (path) => {
-  if (store.getters.isUserActive) {
-    return path
-  } else {
-    return '/log-in'
-  }
-}
-
-const activeUserGuard = (to, from, next) => {
-  next(getPathOrAuthFallback(undefined))
-}
 
 const router = new VueRouter({
   mode: 'history',
@@ -46,12 +33,10 @@ const router = new VueRouter({
       component: SetUp
     }, {
       path: '/dashboard',
-      component: Dashboard,
-      beforeEnter: activeUserGuard
+      component: Dashboard
     }, {
       path: '/security',
       component: Security,
-      beforeEnter: activeUserGuard,
       redirect: '/security/threat-analysis',
       children: [
         {
@@ -64,8 +49,7 @@ const router = new VueRouter({
       ]
     }, {
       path: '/settings',
-      component: Settings,
-      beforeEnter: activeUserGuard
+      component: Settings
     }, {
       path: '*',
       redirect: () => '/'
