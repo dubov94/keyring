@@ -113,14 +113,14 @@ export default {
           try {
             this.requestInProgress = true
             const [username, password] = [this.username, this.password]
-            const { success, local, requirements } = await this.logIn({
+            const { success, local, requiresMailVerification } = await this.logIn({
               username,
               password,
               persist: this.persist
             })
             if (success) {
-              if (requirements.length > 0) {
-                this.$router.replace('/set-up')
+              if (requiresMailVerification) {
+                this.$router.replace('/mail-verification')
               } else {
                 this.$router.replace('/dashboard')
               }

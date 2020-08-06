@@ -43,7 +43,11 @@ export default {
           digest: authDigest
         })
       if (authResponse.error === 'NONE') {
-        const { requirements, key_set, session_key } = authResponse.payload
+        const {
+          requires_mail_verification,
+          key_set,
+          session_key
+        } = authResponse.payload
         commit('setParametrization', parametrization)
         commit('setEncryptionKey', encryptionKey)
         await dispatch('acceptUserKeys', {
@@ -52,9 +56,9 @@ export default {
         })
         commit('setSessionKey', session_key)
         if (persist) {
-          // Ensures there will be no offline authentication until all the
-          // requirements are met.
-          if (requirements.length === 0) {
+          // Ensures there will be no offline authentication until
+          // the account is all set.
+          if (!requires_mail_verification) {
             commit('depot/setUsername', username)
             await dispatch('depot/maybeUpdateDepot', {
               password,
@@ -62,13 +66,14 @@ export default {
             })
           }
         }
+        commit('setRequiresMailVerification', requires_mail_verification)
         commit('session/setUsername', username)
         commit('setStatus', Status.ONLINE)
         commit('setIsUserActive', true)
         return {
           success: true,
           local: false,
-          requirements
+          requiresMailVerification: requires_mail_verification
         }
       }
     }
@@ -88,13 +93,13 @@ export default {
           dispatch(
             'attemptOnlineAuthentication',
             { username, password, persist }
-          ).then(async ({ success, requirements }) => {
-            if (!success || requirements.length > 0) {
+          ).then(async ({ success, requiresMailVerification }) => {
+            if (!success || requiresMailVerification) {
               await dispatch('depot/purgeDepot')
               purgeSessionStorageAndLoadLogIn()
             }
           })
-          return { success: true, local: true, requirements: [] }
+          return { success: true, local: true, requiresMailVerification: false }
         } else {
           return { success: false, local: true }
         }

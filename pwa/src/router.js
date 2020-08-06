@@ -3,7 +3,7 @@ import Landing from '@/views/Landing'
 import LogIn from '@/views/authentication/LogIn'
 import RecentSessions from '@/views/security/RecentSessions'
 import Register from '@/views/authentication/Register'
-import SetUp from '@/views/authentication/SetUp'
+import MailVerification from '@/views/authentication/MailVerification'
 import Security from '@/views/security/Index'
 import Settings from '@/views/settings/Index'
 import ThreatAnalysis from '@/views/security/ThreatAnalysis'
@@ -29,8 +29,8 @@ const router = new VueRouter({
       path: '/register',
       component: Register
     }, {
-      path: '/set-up',
-      component: SetUp
+      path: '/mail-verification',
+      component: MailVerification
     }, {
       path: '/dashboard',
       component: Dashboard

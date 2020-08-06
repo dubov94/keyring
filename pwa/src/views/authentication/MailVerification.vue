@@ -48,7 +48,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapMutations } from 'vuex'
 import Page from '@/components/Page'
 
 export default {
@@ -84,6 +84,9 @@ export default {
     ...mapActions({
       releaseMailToken: 'releaseMailToken'
     }),
+    ...mapMutations({
+      setRequiresMailVerification: 'setRequiresMailVerification'
+    }),
     async submit () {
       if (!this.requestInProgress) {
         this.$v.$touch()
@@ -92,6 +95,7 @@ export default {
             this.requestInProgress = true
             const error = await this.releaseMailToken({ code: this.code })
             if (error === 'NONE') {
+              this.setRequiresMailVerification(false)
               this.$router.replace('/dashboard')
             } else if (error === 'INVALID_CODE') {
               this.invalidCodes.push(this.code)

@@ -29,6 +29,7 @@ export interface RootState {
   sessionKey: string | null;
   userKeys: Array<Key>;
   recentSessions: Array<Session> | null;
+  requiresMailVerification: boolean;
 }
 
 export const constructInitialState = (): RootState => ({
@@ -38,5 +39,6 @@ export const constructInitialState = (): RootState => ({
   encryptionKey: null,
   sessionKey: null,
   userKeys: [],
-  recentSessions: null
+  recentSessions: null,
+  requiresMailVerification: false
 })

@@ -13,6 +13,7 @@ export enum Type {
   MODIFY_USER_KEY = 'modifyUserKey',
   DELETE_USER_KEY = 'deleteUserKey',
   SET_RECENT_SESSIONS = 'setRecentSessions',
+  SET_REQUIRES_MAIL_VERIFICATION = 'setRequiresMailVerification',
 }
 
 export const mutations: MutationTree<RootState> = {
@@ -72,5 +73,8 @@ export const mutations: MutationTree<RootState> = {
   },
   [Type.SET_RECENT_SESSIONS] (state, list: Array<Session>) {
     state.recentSessions = list
+  },
+  [Type.SET_REQUIRES_MAIL_VERIFICATION] (state, value: boolean) {
+    state.requiresMailVerification = value
   }
 }
