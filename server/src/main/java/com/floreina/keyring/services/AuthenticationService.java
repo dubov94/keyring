@@ -98,6 +98,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         payloadBuilder.setSessionKey(sessionKey);
         if (user.getMail() == null) {
           payloadBuilder.addRequirements(LogInResponse.Payload.Requirement.MAIL);
+          payloadBuilder.setRequiresMailVerification(true);
         }
         payloadBuilder.setKeySet(
             LogInResponse.Payload.KeySet.newBuilder()

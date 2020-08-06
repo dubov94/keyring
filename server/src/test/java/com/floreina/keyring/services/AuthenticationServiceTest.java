@@ -195,6 +195,7 @@ class AuthenticationServiceTest {
                     LogInResponse.Payload.newBuilder()
                         .setSessionKey("identifier")
                         .addRequirements(LogInResponse.Payload.Requirement.MAIL)
+                        .setRequiresMailVerification(true)
                         .setKeySet(LogInResponse.Payload.KeySet.getDefaultInstance())
                         .build())
                 .build());

@@ -56,14 +56,14 @@ message LogInResponse {
             NONE = 0;
             MAIL = 1;
         }
+        repeated Requirement requirements = 5 [deprecated = true];
 
         message KeySet {
             repeated IdentifiedKey items = 1;
         }
 
         string session_key = 1;
-
-        repeated Requirement requirements = 5;
+        bool requires_mail_verification = 6;
         KeySet key_set = 4;
     }
 
