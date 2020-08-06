@@ -25,7 +25,7 @@
 
 <template>
   <page :no-background="true">
-    <div class="background" v-resize.quiet="renderBackground">
+    <div class="background" ref="background">
       <canvas class="background__canvas" ref="backgroundCanvas"></canvas>
     </div>
     <v-content>
@@ -87,8 +87,16 @@ export default {
       pattern.toCanvas(canvas)
     }
   },
+  created () {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.renderBackground()
+    })
+  },
   mounted () {
-    this.renderBackground()
+    this.resizeObserver.observe(this.$refs.background)
+  },
+  beforeDestroy () {
+    this.resizeObserver.unobserve(this.$refs.background)
   }
 }
 </script>
