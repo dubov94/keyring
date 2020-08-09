@@ -28,8 +28,8 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(precacheController.activate());
 });
 
-const refreshIndex = async (precache) => {
-  await precache.add(indexCacheKey);
+const refreshIndex = async (event, precache) => {
+  await precacheController._addURLToCache({ event, url: indexCacheKey });
   await expirationManager.updateTimestamp(indexCacheKey);
 };
 
@@ -42,9 +42,9 @@ self.addEventListener('fetch', (event) => {
       const precache = await caches.open(precacheName);
       if (cacheKey === indexCacheKey) {
         if (await expirationManager.isURLExpired(indexCacheKey)) {
-          await refreshIndex(precache);
+          await refreshIndex(event, precache);
         } else {
-          event.waitUntil(refreshIndex(precache));
+          event.waitUntil(refreshIndex(event, precache));
         }
       }
       const response = await precache.match(cacheKey);
