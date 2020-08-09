@@ -93,7 +93,7 @@ export default {
             const error = await this.releaseMailToken({ code: this.code })
             if (error === 'NONE') {
               this.setRequiresMailVerification(false)
-              this.$router.replace('/dashboard')
+              this.$router.push('/dashboard')
             } else if (error === 'INVALID_CODE') {
               this.invalidCodes.push(this.code)
             }

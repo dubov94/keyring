@@ -9,8 +9,27 @@ import Settings from '@/views/settings/Index'
 import ThreatAnalysis from '@/views/security/ThreatAnalysis'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import store from '@/store'
 
 Vue.use(VueRouter)
+
+const authenticationGuard = (to, from, next) => {
+  if (!store.getters.isUserActive) {
+    next('/log-in')
+  } else if (store.state.requiresMailVerification) {
+    next('/mail-verification')
+  } else {
+    next()
+  }
+}
+
+const noActiveUserGuard = (to, from, next) => {
+  if (store.getters.isUserActive) {
+    next('/dashboard')
+  } else {
+    next()
+  }
+}
 
 const router = new VueRouter({
   mode: 'history',
@@ -24,20 +43,33 @@ const router = new VueRouter({
       component: Landing
     }, {
       path: '/log-in',
-      component: LogIn
+      component: LogIn,
+      beforeEnter: noActiveUserGuard
     }, {
       path: '/register',
-      component: Register
+      component: Register,
+      beforeEnter: noActiveUserGuard
     }, {
       path: '/mail-verification',
-      component: MailVerification
+      component: MailVerification,
+      beforeEnter: (to, from, next) => {
+        if (!store.getters.isUserActive) {
+          next('/log-in')
+        } else if (!store.state.requiresMailVerification) {
+          next('/dashboard')
+        } else {
+          next()
+        }
+      }
     }, {
       path: '/dashboard',
-      component: Dashboard
+      component: Dashboard,
+      beforeEnter: authenticationGuard
     }, {
       path: '/security',
       component: Security,
       redirect: '/security/threat-analysis',
+      beforeEnter: authenticationGuard,
       children: [
         {
           path: 'recent-sessions',
@@ -49,7 +81,8 @@ const router = new VueRouter({
       ]
     }, {
       path: '/settings',
-      component: Settings
+      component: Settings,
+      beforeEnter: authenticationGuard
     }, {
       path: '*',
       redirect: () => '/'

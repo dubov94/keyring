@@ -111,7 +111,7 @@ export default {
               mail: this.mail
             })
             if (error === 'NONE') {
-              this.$router.replace('/mail-verification')
+              this.$router.push('/mail-verification')
             } else if (error === 'NAME_TAKEN') {
               this.takenUserNames.push(username)
             }
