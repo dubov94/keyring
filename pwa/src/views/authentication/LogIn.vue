@@ -5,9 +5,6 @@
         <v-layout justify-center mt-5>
           <v-flex xs12 sm6 md4 lg3 xl2>
             <v-card>
-              <v-toolbar color="primary" dark>
-                <v-toolbar-title>Key Ring</v-toolbar-title>
-              </v-toolbar>
               <v-card-text>
                 <v-form @keydown.native.enter.prevent="submit">
                   <form-text-field type="text" label="Username" prepend-icon="person"

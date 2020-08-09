@@ -16,9 +16,6 @@
         <v-layout justify-center mt-5>
           <v-flex xs12 sm6 md4 lg3 xl2>
             <v-card>
-              <v-toolbar color="primary" dark>
-                <v-toolbar-title>Key Ring</v-toolbar-title>
-              </v-toolbar>
               <v-card-text class="card-text">
                 <v-stepper :value="2" vertical class="stepper">
                   <v-stepper-step :complete="true" step="1">Register</v-stepper-step>
