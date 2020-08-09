@@ -60,7 +60,7 @@
         </v-flex>
         <v-divider></v-divider>
         <v-text-field :type="reveal ? 'text' : 'password'" solo flat
-          placeholder="Secret" class="key" v-model="secret">
+          placeholder="..." class="key" v-model="secret">
         </v-text-field>
         <v-btn icon @click="copySecret">
           <v-icon small>fa-copy</v-icon>
