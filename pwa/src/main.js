@@ -28,6 +28,9 @@ Vue.directive('focus', {
     element.focus()
   }
 })
+Vue.directive('visible', (element, binding) => {
+  element.style.visibility = binding.value ? 'visible' : 'hidden'
+})
 
 Vue.component('form-text-field', FormTextField)
 
