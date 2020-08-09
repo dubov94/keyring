@@ -60,7 +60,7 @@
         </v-flex>
         <v-divider></v-divider>
         <v-text-field :type="reveal ? 'text' : 'password'" solo flat
-          placeholder="..." class="key" v-model="secret">
+          placeholder="qwerty 🙃" class="key" v-model="secret">
         </v-text-field>
         <v-btn icon @click="copySecret">
           <v-icon small>fa-copy</v-icon>
@@ -89,7 +89,7 @@
       <v-divider></v-divider>
       <v-card-actions>
         <v-progress-circular indeterminate color="green"
-          v-visible="requestInProgress"></v-progress-circular>
+          v-if="requestInProgress"></v-progress-circular>
         <v-spacer></v-spacer>
         <v-btn flat v-if="identifier !== null" color="error"
           :disabled="!isOnline || requestInProgress" @click="maybeRemove">
