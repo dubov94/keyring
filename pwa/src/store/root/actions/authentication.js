@@ -2,7 +2,7 @@ import axios from 'axios'
 import { container } from 'tsyringe'
 import { SodiumClient } from '@/sodium_client'
 import { Status } from '../status'
-import { purgeSessionStorageAndLoadLogIn } from '../../../utilities'
+import { purgeSessionStorageAndRedirect } from '../../../utilities'
 
 export default {
   async register ({ commit }, { username, password, mail }) {
@@ -97,7 +97,7 @@ export default {
           ).then(async ({ success, requiresMailVerification }) => {
             if (!success || requiresMailVerification) {
               await dispatch('depot/purgeDepot')
-              purgeSessionStorageAndLoadLogIn()
+              purgeSessionStorageAndRedirect()
             }
           })
           return { success: true, local: true, requiresMailVerification: false }

@@ -80,9 +80,9 @@ export const sleep = (timeInMs: number): Promise<void> =>
     }, timeInMs)
   })
 
-export const purgeSessionStorageAndLoadLogIn = (): void => {
+export const purgeSessionStorageAndRedirect = (): void => {
   sessionStorage.clear()
-  location.assign('/log-in')
+  location.assign('/')
 }
 
 export const purgeAllStoragesAndLoadIndex = (): void => {

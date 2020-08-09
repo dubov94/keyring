@@ -51,7 +51,7 @@
 <script>
 import { mapGetters, mapState } from 'vuex'
 import { Status } from '../../store/root/status'
-import { reloadPage, purgeSessionStorageAndLoadLogIn } from '../../utilities'
+import { reloadPage, purgeSessionStorageAndRedirect } from '../../utilities'
 
 export default {
   props: ['value', 'hasMenu', 'extended'],
@@ -92,7 +92,7 @@ export default {
       reloadPage()
     },
     logOut () {
-      purgeSessionStorageAndLoadLogIn()
+      purgeSessionStorageAndRedirect()
     }
   }
 }
