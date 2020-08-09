@@ -27,7 +27,6 @@
               {{ reveal ? 'Hide' : 'Show' }}
             </v-list-tile-content>
           </v-list-tile>
-          <v-divider></v-divider>
           <v-list-tile @click="edit" :disabled="!isOnline">
             <v-list-tile-content>
               Edit
