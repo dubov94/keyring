@@ -21,6 +21,7 @@ export default {
       commit('setParametrization', parametrization)
       commit('setEncryptionKey', encryptionKey)
       commit('setSessionKey', response.session_key)
+      commit('setRequiresMailVerification', true)
       commit('session/setUsername', username)
       commit('setStatus', Status.ONLINE)
       commit('setIsUserActive', true)
@@ -66,8 +67,8 @@ export default {
             })
           }
         }
-        commit('setRequiresMailVerification', requires_mail_verification)
         commit('session/setUsername', username)
+        commit('setRequiresMailVerification', requires_mail_verification)
         commit('setStatus', Status.ONLINE)
         commit('setIsUserActive', true)
         return {

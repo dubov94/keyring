@@ -22,32 +22,35 @@
 </style>
 
 <template>
-  <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch"
-    :toolbar-is-extended="toolbarIsExtended">
-    <v-text-field :slot="toolbarSearchSlot" solo-inverted flat ref="search"
-      v-model="query" prepend-icon="search" label="Search" class="search">
-    </v-text-field>
-    <user-menu v-model="showMenu"></user-menu>
-    <v-content>
-      <v-container fluid mx-auto>
-        <div class="mb-3 text-xs-center">
-          <v-pagination v-model="pageNumber" :length="pageCount"
-            :total-visible="paginationVisibleCount" circle></v-pagination>
+  <auth-guard>
+    <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch"
+      :toolbar-is-extended="toolbarIsExtended">
+      <v-text-field :slot="toolbarSearchSlot" solo-inverted flat ref="search"
+        v-model="query" prepend-icon="search" label="Search" class="search">
+      </v-text-field>
+      <user-menu v-model="showMenu"></user-menu>
+      <v-content>
+        <v-container fluid mx-auto>
+          <div class="mb-3 text-xs-center">
+            <v-pagination v-model="pageNumber" :length="pageCount"
+              :total-visible="paginationVisibleCount" circle></v-pagination>
+          </div>
+          <password-masonry :user-keys="visibleCards" @edit="handleEditKey">
+          </password-masonry>
+        </v-container>
+        <div class="dial">
+          <v-btn fab color="error" @click="addKey" :disabled="!isOnline">
+            <v-icon small>fa-plus</v-icon>
+          </v-btn>
         </div>
-        <password-masonry :user-keys="visibleCards" @edit="handleEditKey">
-        </password-masonry>
-      </v-container>
-      <div class="dial">
-        <v-btn fab color="error" @click="addKey" :disabled="!isOnline">
-          <v-icon small>fa-plus</v-icon>
-        </v-btn>
-      </div>
-    </v-content>
-    <editor></editor>
-  </page>
+      </v-content>
+      <editor></editor>
+    </page>
+  </auth-guard>
 </template>
 
 <script>
+import AuthGuard from '@/components/AuthGuard'
 import Editor from '@/components/Editor'
 import Page from '@/components/Page'
 import PasswordMasonry from '@/components/PasswordMasonry'
@@ -58,6 +61,7 @@ const CARDS_PER_PAGE = 12
 
 export default {
   components: {
+    authGuard: AuthGuard,
     editor: Editor,
     page: Page,
     passwordMasonry: PasswordMasonry,
