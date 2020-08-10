@@ -16,11 +16,6 @@
     left: 0;
     z-index: -1;
   }
-
-  .background__canvas {
-    width: 100%;
-    height: 100%;
-  }
 </style>
 
 <template>
@@ -59,11 +54,6 @@ export default {
   components: {
     page: Page
   },
-  data () {
-    return {
-      animationRequestId: null
-    }
-  },
   computed: {
     ...mapGetters({
       isUserActive: 'isUserActive'
@@ -85,27 +75,26 @@ export default {
   },
   methods: {
     renderBackground () {
-      const canvas = this.$refs.backgroundCanvas
+      const background = this.$refs.background
       const pattern = trianglify({
-        width: canvas.clientWidth,
-        height: canvas.clientHeight,
+        width: background.clientWidth,
+        height: background.clientHeight,
         xColors: 'YlGnBu',
         seed: 'keyring'
       })
-      pattern.toCanvas(canvas)
-    },
-    scheduleAnimationFrame () {
-      this.animationRequestId = window.requestAnimationFrame(() => {
-        this.renderBackground()
-        this.scheduleAnimationFrame()
-      })
+      pattern.toCanvas(this.$refs.backgroundCanvas)
     }
   },
+  created () {
+    this.resizeObserver = new ResizeObserver(() => {
+      this.renderBackground()
+    })
+  },
   mounted () {
-    this.scheduleAnimationFrame()
+    this.resizeObserver.observe(this.$refs.background)
   },
   beforeDestroy () {
-    window.cancelAnimationFrame(this.animationRequestId)
+    this.resizeObserver.unobserve(this.$refs.background)
   }
 }
 </script>
