@@ -59,6 +59,12 @@ export default {
   components: {
     page: Page
   },
+  data () {
+    return {
+      animationRequestId: null,
+      lastBackgroundHeight: 0
+    }
+  },
   computed: {
     ...mapGetters({
       isUserActive: 'isUserActive'
@@ -88,20 +94,26 @@ export default {
         seed: 'keyring'
       })
       pattern.toCanvas(canvas)
+    },
+    scheduleAnimationFrame () {
+      // `ResizeObserver` does not work properly on mobile Chrome
+      // if the previous view had the keyboard open -- it causes
+      // the canvas to be smaller in height.
+      this.animationRequestId = window.requestAnimationFrame(() => {
+        const newBackgroundHeight = this.$refs.background.clientHeight
+        if (this.lastBackgroundHeight !== newBackgroundHeight) {
+          this.renderBackground()
+          this.lastBackgroundHeight = newBackgroundHeight
+        }
+        this.scheduleAnimationFrame()
+      })
     }
   },
-  created () {
-    this.resizeObserver = new ResizeObserver(() => {
-      window.requestAnimationFrame(() => {
-        this.renderBackground()
-      })
-    })
-  },
   mounted () {
-    this.resizeObserver.observe(this.$refs.background)
+    this.scheduleAnimationFrame()
   },
   beforeDestroy () {
-    this.resizeObserver.unobserve(this.$refs.background)
+    window.cancelAnimationFrame(this.animationRequestId)
   }
 }
 </script>
