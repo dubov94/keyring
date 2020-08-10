@@ -92,7 +92,9 @@ export default {
   },
   created () {
     this.resizeObserver = new ResizeObserver(() => {
-      this.renderBackground()
+      window.requestAnimationFrame(() => {
+        this.renderBackground()
+      })
     })
   },
   mounted () {
