@@ -6,6 +6,7 @@
 
   .chip {
     font-size: 14px;
+    border: none;
   }
 
   .chip >>> .chip__close {
@@ -32,13 +33,19 @@
     padding: 0 4px;
   }
 
+  .key {
+    border-radius: 28px;
+    margin: 0 4px;
+  }
+
   .key >>> input,
   .tag__input {
     caret-color: black !important;
   }
 
   /* Matches `.chip`. */
-  .new_tag_button {
+  .new-tag-button {
+    border: none;
     height: 34px;
     margin: 4px;
     min-width: 0;
@@ -48,28 +55,27 @@
 <template>
   <v-dialog :value="isVisible" persistent :max-width="maxWidth">
     <v-card>
-      <v-card-title>
-        <v-flex xs12 class="text-xs-center">
-          <v-btn flat color="primary" :disabled="requestInProgress"
-            @click="suggest">
-            Generate
-          </v-btn>
-          <v-btn flat color="primary" @click="reveal = !reveal">
-            {{ reveal ? 'Hide' : 'Show' }}
-          </v-btn>
-        </v-flex>
-        <v-divider></v-divider>
-        <v-text-field :type="reveal ? 'text' : 'password'" solo flat
-          placeholder="qwerty 🙃" class="key" v-model="secret">
-        </v-text-field>
-        <v-btn icon @click="copySecret">
-          <v-icon small>fa-copy</v-icon>
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn flat color="primary" :disabled="requestInProgress"
+          @click="suggest">
+          Generate
         </v-btn>
-      </v-card-title>
-      <v-divider></v-divider>
-      <v-card-text>
-        <draggable v-model="chips" :options="draggableOptions" :move="move">
-          <v-chip disabled outline color="black"
+        <v-spacer></v-spacer>
+        <v-btn flat color="primary" @click="copySecret">
+          Copy
+        </v-btn>
+        <v-spacer></v-spacer>
+      </v-card-actions>
+      <v-card-text class="pt-0">
+        <v-text-field :type="reveal ? 'text' : 'password'"
+          solo class="key" v-model="secret"
+          :append-icon="reveal ? 'visibility' : 'visibility_off'"
+          :append-icon-cb="() => reveal = !reveal">
+        </v-text-field>
+        <draggable v-model="chips" :options="draggableOptions"
+          :move="move" class="mt-3">
+          <v-chip disabled outline class="elevation-3" color="black"
             :close="chips.length > 1 || index > 0"
             v-for="(value, index) in chips" :key="index"
             @input="removeTag(index)">
@@ -80,8 +86,8 @@
               <span class="tag__label">{{ value }}</span>
             </div>
           </v-chip>
-          <v-btn @click="addTag" outline round class="new_tag_button"
-            :disabled="requestInProgress">
+          <v-btn @click="addTag" outline round :disabled="requestInProgress"
+            class="new-tag-button elevation-3">
             <v-icon left small>fa-plus</v-icon>Label
           </v-btn>
         </draggable>
