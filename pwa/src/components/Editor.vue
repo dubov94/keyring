@@ -70,7 +70,7 @@
       <v-card-text class="pt-0">
         <v-text-field :type="reveal ? 'text' : 'password'"
           solo class="key" v-model="secret"
-          :append-icon="reveal ? 'visibility' : 'visibility_off'"
+          :append-icon="reveal ? 'visibility_off' : 'visibility'"
           :append-icon-cb="() => reveal = !reveal">
         </v-text-field>
         <draggable v-model="chips" :options="draggableOptions"
