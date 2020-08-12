@@ -3,6 +3,8 @@
     "target": "esnext",
     "module": "esnext",
     "strict": true,
+    // For `ts_swagger_api` output.
+    "strictPropertyInitialization": false,
     "jsx": "preserve",
     "importHelpers": true,
     "moduleResolution": "node",

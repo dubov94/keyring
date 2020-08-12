@@ -56,6 +56,23 @@ rules_proto_grpc_toolchains()
 
 rules_proto_grpc_repos()
 
+# external_proto_dependencies.rules_openapi_dependencies
+
+RULES_OPEN_API_VERSION = "4e35a7b968908213e3c6eedc4435d140dbb577b3"
+
+RULES_OPEN_API_SHA256 = "d1af6e9bd23b24a07f059b1a97f0bc305d7cf74a2965f06fc11c182d568a0e1c"
+
+http_archive(
+    name = "io_bazel_rules_openapi",
+    sha256 = RULES_OPEN_API_SHA256,
+    strip_prefix = "rules_openapi-{}".format(RULES_OPEN_API_VERSION),
+    urls = ["https://github.com/meetup/rules_openapi/archive/{}.tar.gz".format(RULES_OPEN_API_VERSION)],
+)
+
+load("@io_bazel_rules_openapi//openapi:openapi.bzl", "openapi_repositories")
+
+openapi_repositories()
+
 # language_specific_dependencies
 
 # language_specific_dependencies.external_java_dependencies
@@ -160,6 +177,14 @@ rules_proto_grpc_gateway_repos()
 load("@grpc_ecosystem_grpc_gateway//:repositories.bzl", "go_repositories")
 
 go_repositories()
+
+# language_specific_dependencies.external_node_dependencies
+
+# language_specific_dependencies.external_node_dependencies.rules_proto_grpc_dependencies
+
+load("@rules_proto_grpc//closure:repositories.bzl", rules_proto_grpc_closure_repos = "closure_repos")
+
+rules_proto_grpc_closure_repos()
 
 # language_specific_dependencies.external_node_dependencies
 
