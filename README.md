@@ -1,6 +1,7 @@
 # keyring
 
-Install Python (with PIP), Java 11, [Bazel](https://bazel.build) and Docker.
+Install Python (with PIP), Java 11, [Bazel](https://bazel.build) and Docker on
+a Linux distribution.
 
 ## Development
 
