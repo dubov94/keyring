@@ -21,6 +21,10 @@ enum MutationType {
   CLOSE_EDITOR = 'closeEditor',
 }
 
+enum ActionType {
+  DISPLAY_SNACKBAR = 'displaySnackbar',
+}
+
 export const Interface: Module<InterfaceState, RootState> = {
   namespaced: true,
   state: {
@@ -46,7 +50,10 @@ export const Interface: Module<InterfaceState, RootState> = {
     }
   },
   actions: {
-    async displaySnackbar ({ commit }, configuration: { message: string, timeout: Number }): Promise<void> {
+    async [ActionType.DISPLAY_SNACKBAR] (
+      { commit },
+      configuration: { message: string, timeout: Number }
+    ): Promise<void> {
       commit(MutationType.HIDE_TOAST)
       await Vue.nextTick()
       commit(MutationType.SHOW_TOAST, configuration)
