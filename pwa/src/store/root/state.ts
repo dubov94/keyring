@@ -46,3 +46,11 @@ export const constructInitialState = (): RootState => ({
 export interface SessionState {
   username: string | null;
 }
+
+export interface DepotState {
+  username: string | null;
+  parametrization: string | null;
+  authDigest: string | null;
+  encryptionKey: string | null;
+  userKeys: string | null;
+}
