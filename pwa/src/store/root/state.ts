@@ -54,3 +54,18 @@ export interface DepotState {
   encryptionKey: string | null;
   userKeys: string | null;
 }
+
+export interface InterfaceState {
+  toast: {
+    message: string | null,
+    timeout: Number,
+    show: boolean
+  };
+  editor: {
+    // Whether the key is visible.
+    reveal: boolean,
+    // Key identifier. `null` stands for new.
+    identifier: string | null | undefined,
+    show: boolean
+  }
+}
