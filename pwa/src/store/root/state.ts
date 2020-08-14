@@ -1,4 +1,5 @@
 import { Status } from './status'
+import { Interface } from 'mocha'
 
 export interface Password {
   value: string;
@@ -76,4 +77,11 @@ export interface ThreatsState {
   duplicateGroups: Array<Array<string>>;
   gettingExposedUserKeys: boolean;
   exposedUserKeyIds: Array<string>;
+}
+
+export interface StateAssembly extends RootState {
+  depot: DepotState;
+  interface: InterfaceState;
+  session: SessionState;
+  threats: ThreatsState;
 }
