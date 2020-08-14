@@ -69,3 +69,11 @@ export interface InterfaceState {
     show: boolean
   }
 }
+
+export interface ThreatsState {
+  isAnalysisEnabled: boolean;
+  gettingDuplicateGroups: boolean;
+  duplicateGroups: Array<Array<string>>;
+  gettingExposedUserKeys: boolean;
+  exposedUserKeyIds: Array<string>;
+}
