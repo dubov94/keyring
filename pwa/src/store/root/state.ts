@@ -42,3 +42,7 @@ export const constructInitialState = (): RootState => ({
   recentSessions: null,
   requiresMailVerification: false
 })
+
+export interface SessionState {
+  username: string | null;
+}
