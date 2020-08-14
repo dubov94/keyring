@@ -14,14 +14,14 @@ const createEditorState = () => ({
   show: false
 })
 
-enum MutationType {
+export enum MutationType {
   SHOW_TOAST = 'showToast',
   HIDE_TOAST = 'hideToast',
   OPEN_EDITOR = 'openEditor',
   CLOSE_EDITOR = 'closeEditor',
 }
 
-enum ActionType {
+export enum ActionType {
   DISPLAY_SNACKBAR = 'displaySnackbar',
 }
 
