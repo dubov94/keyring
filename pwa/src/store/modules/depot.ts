@@ -26,11 +26,19 @@ export enum MutationType {
   SET_USER_KEYS = 'setUserKeys',
 }
 
+export enum ActionType {
+  PURGE_DEPOT = 'purgeDepot',
+  VERIFY_PASSWORD = 'verifyPassword',
+  COMPUTE_ENCRYPTION_KEY = 'computeEncryptionKey',
+  GET_USER_KEYS = 'getUserKeys',
+  MAYBE_UPDATE_DEPOT = 'maybeUpdateDepot',
+}
+
 export const Depot: Module<DepotState, RootState> = {
   namespaced: true,
   state: createInitialState,
   getters: {
-    hasLocalData: (state) => state.username !== null
+    [GetterType.HAS_LOCAL_DATA]: (state) => state.username !== null
   },
   mutations: {
     [MutationType.SET_INITIAL_VALUES] (state) {
@@ -53,10 +61,10 @@ export const Depot: Module<DepotState, RootState> = {
     }
   },
   actions: {
-    purgeDepot ({ commit }) {
+    [ActionType.PURGE_DEPOT] ({ commit }) {
       commit(MutationType.SET_INITIAL_VALUES)
     },
-    async verifyPassword ({ state }, password: string): Promise<boolean> {
+    async [ActionType.VERIFY_PASSWORD] ({ state }, password: string): Promise<boolean> {
       if (state.parametrization === null) {
         throw new Error('`DepotState.parametrization` is null')
       }
@@ -65,7 +73,7 @@ export const Depot: Module<DepotState, RootState> = {
           state.parametrization, password)).authDigest
       return state.authDigest === candidate
     },
-    async computeEncryptionKey ({ commit, state }, password: string): Promise<void> {
+    async [ActionType.COMPUTE_ENCRYPTION_KEY] ({ commit, state }, password: string): Promise<void> {
       if (state.parametrization === null) {
         throw new Error('`DepotState.parametrization` is null')
       }
@@ -73,7 +81,7 @@ export const Depot: Module<DepotState, RootState> = {
         (await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).encryptionKey)
     },
-    async getUserKeys ({ state }): Promise<Array<Key>> {
+    async [ActionType.GET_USER_KEYS] ({ state }): Promise<Array<Key>> {
       if (state.encryptionKey === null) {
         throw new Error('`DepotState.encryptionKey` is null')
       }
@@ -83,7 +91,7 @@ export const Depot: Module<DepotState, RootState> = {
       return JSON.parse(await container.resolve(SodiumClient).decryptMessage(
         state.encryptionKey, state.userKeys))
     },
-    async maybeUpdateDepot (
+    async [ActionType.MAYBE_UPDATE_DEPOT] (
       { commit, state, getters },
       { password, userKeys }: {
         password: string | undefined,
