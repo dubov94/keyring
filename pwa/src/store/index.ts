@@ -49,6 +49,6 @@ const store = new Vuex.Store<RootState>({
 
 store.watch((state) => state as FullState, (value) => {
   state$.next(value)
-})
+}, { deep: true })
 
 export default store

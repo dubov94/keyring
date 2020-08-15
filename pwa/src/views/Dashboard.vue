@@ -52,7 +52,8 @@ import Editor from '@/components/Editor'
 import Page from '@/components/Page'
 import PasswordMasonry from '@/components/PasswordMasonry'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu'
-import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
+import { mapActions, mapMutations, mapState } from 'vuex'
+import { isOnline$ } from '@/store/root/getters'
 
 const CARDS_PER_PAGE = 12
 
@@ -70,12 +71,14 @@ export default {
       query: ''
     }
   },
+  subscriptions () {
+    return {
+      isOnline: isOnline$
+    }
+  },
   computed: {
     ...mapState({
       userKeys: state => state.userKeys
-    }),
-    ...mapGetters({
-      isOnline: 'isOnline'
     }),
     pageCount () {
       return Math.max(Math.floor(
@@ -145,6 +148,7 @@ export default {
     }
   },
   mounted () {
+    window.C = this
     this.unsubscribeFromStore = this.$store.subscribe((mutation) => {
       if (mutation.type === 'unshiftUserKey') {
         this.clearQuery()

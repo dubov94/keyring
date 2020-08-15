@@ -1,6 +1,8 @@
 import { Status } from './status'
 import { GetterTree } from 'vuex'
 import { RootState } from './state'
+import { state$ } from '@/store/subject'
+import { map, share } from 'rxjs/operators'
 
 export enum Type {
   IS_ONLINE = 'isOnline',
@@ -15,3 +17,5 @@ export const getters: GetterTree<RootState, RootState> = {
   [Type.HAS_SESSION_KEY]: (state) => state.sessionKey !== null,
   [Type.HAS_SESSIONS_DATA]: (state) => state.recentSessions !== null
 }
+
+export const isOnline$ = state$.pipe(map((state) => state.status === Status.ONLINE), share())
