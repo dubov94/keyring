@@ -8,6 +8,7 @@ import {
   ServiceAcquireMailTokenResponseError,
   ServiceReleaseMailTokenResponseError
 } from '@/api/definitions'
+import { ADMINISTRATION_API_TOKEN } from '@/api/tokens'
 
 export enum Type {
   ACQUIRE_MAIL_TOKEN = 'acquireMailToken',
@@ -26,7 +27,7 @@ export const MailActions: ActionTree<RootState, RootState> = {
       throw new Error('`RootState.sessionKey` is null')
     }
     return (
-      await container.resolve(AdministrationApi).acquireMailToken({
+      await container.resolve<AdministrationApi>(ADMINISTRATION_API_TOKEN).acquireMailToken({
         digest: (await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).authDigest,
         mail
@@ -40,7 +41,7 @@ export const MailActions: ActionTree<RootState, RootState> = {
       throw new Error('`RootState.sessionKey` is null')
     }
     return (
-      await container.resolve(AdministrationApi).releaseMailToken({ code }, {
+      await container.resolve<AdministrationApi>(ADMINISTRATION_API_TOKEN).releaseMailToken({ code }, {
         headers: createSessionHeader(state.sessionKey)
       })
     ).error!
