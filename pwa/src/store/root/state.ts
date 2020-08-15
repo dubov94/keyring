@@ -1,5 +1,4 @@
 import { Status } from './status'
-import { Interface } from 'mocha'
 
 export interface Password {
   value: string;
