@@ -57,17 +57,17 @@ export interface DepotState {
 
 export interface InterfaceState {
   toast: {
-    message: string | null,
-    timeout: Number,
-    show: boolean
+    message: string | null;
+    timeout: number;
+    show: boolean;
   };
   editor: {
     // Whether the key is visible.
-    reveal: boolean,
+    reveal: boolean;
     // Key identifier. `null` stands for new.
-    identifier: string | null | undefined,
-    show: boolean
-  }
+    identifier: string | null | undefined;
+    show: boolean;
+  };
 }
 
 export interface ThreatsState {

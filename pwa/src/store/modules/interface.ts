@@ -32,7 +32,7 @@ export const Interface: Module<InterfaceState, RootState> = {
     editor: createEditorState()
   },
   mutations: {
-    [MutationType.SHOW_TOAST] (state, { message, timeout }: { message: string, timeout: Number }) {
+    [MutationType.SHOW_TOAST] (state, { message, timeout }: { message: string; timeout: number }) {
       state.toast.message = message
       state.toast.timeout = timeout
       state.toast.show = true
@@ -40,7 +40,7 @@ export const Interface: Module<InterfaceState, RootState> = {
     [MutationType.HIDE_TOAST] (state) {
       Object.assign(state.toast, createToastState())
     },
-    [MutationType.OPEN_EDITOR] (state, { identifier, reveal }: { identifier: string | null, reveal: boolean}) {
+    [MutationType.OPEN_EDITOR] (state, { identifier, reveal }: { identifier: string | null; reveal: boolean}) {
       state.editor.reveal = reveal
       state.editor.identifier = identifier
       state.editor.show = true
@@ -52,7 +52,7 @@ export const Interface: Module<InterfaceState, RootState> = {
   actions: {
     async [ActionType.DISPLAY_SNACKBAR] (
       { commit },
-      configuration: { message: string, timeout: Number }
+      configuration: { message: string; timeout: number }
     ): Promise<void> {
       commit(MutationType.HIDE_TOAST)
       await Vue.nextTick()
