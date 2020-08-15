@@ -7,10 +7,11 @@ export const fetchFromApi: FetchAPI = (url: string, init: any = {}): Promise<Res
   const headers = Object.assign({}, {
     [CLIENT_VERSION_HEADER_NAME]: window.globals.version
   }, init.headers)
-  const requestInit = Object.assign({}, init, {
-    headers,
-    body: JSON.stringify(snakecaseKeys(JSON.parse(init.body), { deep: true }))
-  })
+  const requestInit = Object.assign({}, init, { headers })
+  if (init.body) {
+    requestInit.body = JSON.stringify(
+      snakecaseKeys(JSON.parse(init.body), { deep: true }))
+  }
   return fetch(url, requestInit).then(async (value: Response) => {
     const contentType = value.headers.get('Content-Type')
     if (contentType && contentType.includes('application/json')) {
