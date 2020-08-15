@@ -12,7 +12,7 @@ gateway_grpc_library(
 
 gateway_swagger_compile(
     name = "swagger_specification",
-    visibility = ["//pwa/src/api:__pkg__"],
+    visibility = ["//pwa/src/api/definitions:__pkg__"],
     deps = ["//proto:service_proto"],
 )
 

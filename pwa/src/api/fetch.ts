@@ -1,12 +1,16 @@
-import { FetchAPI } from './api'
+import { FetchAPI } from './definitions'
 import { CLIENT_VERSION_HEADER_NAME } from '@/constants'
 import camelcaseKeys from 'camelcase-keys'
+import snakecaseKeys from 'snakecase-keys'
 
 export const fetchFromApi: FetchAPI = (url: string, init: any = {}): Promise<Response> => {
   const headers = Object.assign({}, {
     [CLIENT_VERSION_HEADER_NAME]: window.globals.version
   }, init.headers)
-  const requestInit = Object.assign({}, init, { headers })
+  const requestInit = Object.assign({}, init, {
+    headers,
+    body: JSON.stringify(snakecaseKeys(JSON.parse(init.body), { deep: true }))
+  })
   return fetch(url, requestInit).then(async (value: Response) => {
     const contentType = value.headers.get('Content-Type')
     if (contentType && contentType.includes('application/json')) {

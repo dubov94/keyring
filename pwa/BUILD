@@ -67,7 +67,7 @@ SOURCES = [
     ":service_worker",
     ":src",
     ":stable_status",
-    "//pwa/src/api:swagger_api",
+    "//pwa/src/api/definitions:swagger_api",
 ]
 
 # ESLint indications might be unstable, see
