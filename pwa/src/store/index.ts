@@ -9,7 +9,7 @@ import { RootState, FullState, constructInitialState } from './root/state'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import VuexPersist from 'vuex-persist'
-import { Subject } from 'rxjs'
+import { state$ } from './subject'
 
 Vue.use(Vuex)
 
@@ -47,7 +47,6 @@ const store = new Vuex.Store<RootState>({
   }
 })
 
-const state$ = new Subject<FullState>()
 store.watch((state) => state as FullState, (value) => {
   state$.next(value)
 })
