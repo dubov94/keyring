@@ -1,5 +1,5 @@
 import { ActionTree } from 'vuex'
-import { RootState, Key, StateAssembly } from '@/store/root/state'
+import { RootState, Key, FullState } from '@/store/root/state'
 import { container } from 'tsyringe'
 import { SodiumClient } from '@/sodium_client'
 import { Status } from '../status'
@@ -120,9 +120,9 @@ export const AuthenticationActions: ActionTree<RootState, RootState> = {
     { commit, dispatch, getters, state },
     { username, password, persist }: { username: string; password: string; persist: boolean }
   ) {
-    const assembly = state as StateAssembly
+    const fullState = state as FullState
     if (getters[`depot/${DepotGetter.HAS_LOCAL_DATA}`]) {
-      if (assembly.depot.username === username) {
+      if (fullState.depot.username === username) {
         if (await dispatch(`depot/${DepotAction.VERIFY_PASSWORD}`, password)) {
           commit(`session/${SessionMutation.SET_USERNAME}`, username)
           await dispatch(`depot/${DepotAction.COMPUTE_ENCRYPTION_KEY}`, password)

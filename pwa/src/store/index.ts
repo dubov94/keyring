@@ -5,7 +5,7 @@ import { getters } from './root/getters'
 import { mutations } from './root/mutations'
 import { Session } from './modules/session'
 import { Threats } from './modules/threats'
-import { RootState, StateAssembly, constructInitialState } from './root/state'
+import { RootState, FullState, constructInitialState } from './root/state'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import VuexPersist from 'vuex-persist'
@@ -16,13 +16,13 @@ Vue.use(Vuex)
 const vuexLocal = new VuexPersist<RootState>({
   storage: localStorage,
   reducer: (state) => {
-    const assembly = state as StateAssembly
+    const fullState = state as FullState
     return {
       depot: {
-        username: assembly.depot.username,
-        parametrization: assembly.depot.parametrization,
-        authDigest: assembly.depot.authDigest,
-        userKeys: assembly.depot.userKeys
+        username: fullState.depot.username,
+        parametrization: fullState.depot.parametrization,
+        authDigest: fullState.depot.authDigest,
+        userKeys: fullState.depot.userKeys
       }
     }
   }
@@ -47,8 +47,8 @@ const store = new Vuex.Store<RootState>({
   }
 })
 
-const state$ = new Subject<StateAssembly>()
-store.watch((state) => state as StateAssembly, (value) => {
+const state$ = new Subject<FullState>()
+store.watch((state) => state as FullState, (value) => {
   state$.next(value)
 })
 

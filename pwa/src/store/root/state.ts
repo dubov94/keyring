@@ -78,7 +78,7 @@ export interface ThreatsState {
   exposedUserKeyIds: Array<string>;
 }
 
-export interface StateAssembly extends RootState {
+export interface FullState extends RootState {
   depot: DepotState;
   interface: InterfaceState;
   session: SessionState;
