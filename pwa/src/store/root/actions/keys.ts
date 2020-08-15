@@ -11,8 +11,15 @@ import { Type as RootMutation } from '../mutations'
 import { ActionType as DepotAction } from '@/store/modules/depot'
 import { ActionType as ThreatsAction } from '@/store/modules/threats'
 
+export enum Type {
+  ACCEPT_USER_KEYS = 'acceptUserKeys',
+  CREATE_USER_KEY = 'createUserKey',
+  UPDATE_USER_KEY = 'updateUserKey',
+  REMOVE_USER_KEY = 'removeUserKey'
+}
+
 export const KeysActions: ActionTree<RootState, RootState> = {
-  async acceptUserKeys (
+  async [Type.ACCEPT_USER_KEYS] (
     { commit, dispatch, state },
     { userKeys, updateDepot }: { userKeys: Array<Key>; updateDepot: boolean }
   ) {
@@ -31,7 +38,7 @@ export const KeysActions: ActionTree<RootState, RootState> = {
     }
     await dispatch(`threats/${ThreatsAction.MAYBE_ASSESS_USER_KEYS}`, state.userKeys)
   },
-  async createUserKey (
+  async [Type.CREATE_USER_KEY] (
     { commit, dispatch, state },
     { value, tags }: { value: string; tags: Array<string> }) {
     if (state.sessionKey === null) {
@@ -49,7 +56,7 @@ export const KeysActions: ActionTree<RootState, RootState> = {
     await dispatch(`depot/${DepotAction.MAYBE_UPDATE_DEPOT}`, { userKeys: state.userKeys })
     await dispatch(`threats/${ThreatsAction.MAYBE_ASSESS_USER_KEYS}`, state.userKeys)
   },
-  async updateUserKey (
+  async [Type.UPDATE_USER_KEY] (
     { commit, dispatch, state }, { identifier, value, tags }: Key) {
     if (state.sessionKey === null) {
       throw new Error('`RootState.sessionKey` is null')
@@ -68,7 +75,7 @@ export const KeysActions: ActionTree<RootState, RootState> = {
     await dispatch(`depot/${DepotAction.MAYBE_UPDATE_DEPOT}`, { userKeys: state.userKeys })
     await dispatch(`threats/${ThreatsAction.MAYBE_ASSESS_USER_KEYS}`, state.userKeys)
   },
-  async removeUserKey ({ commit, dispatch, state }, { identifier }: { identifier: string }) {
+  async [Type.REMOVE_USER_KEY] ({ commit, dispatch, state }, { identifier }: { identifier: string }) {
     if (state.sessionKey === null) {
       throw new Error('`RootState.sessionKey` is null')
     }

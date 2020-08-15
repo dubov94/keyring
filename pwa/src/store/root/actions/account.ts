@@ -15,8 +15,16 @@ import { Type as RootMutation } from '../mutations'
 import { ActionType as DepotAction, GetterType as DepotGetter, MutationType as DepotMutation } from '@/store/modules/depot'
 import { MutationType as SessionMutation } from '@/store/modules/session'
 
+export enum Type {
+  CHANGE_MASTER_KEY = 'changeMasterKey',
+  CHANGE_USERNAME = 'changeUsername',
+  DELETE_ACCOUNT = 'deleteAccount',
+  FETCH_RECENT_SESSIONS = 'fetchRecentSessions',
+  CLEAR_RECENT_SESSIONS = 'clearRecentSessions',
+}
+
 export const AccountActions: ActionTree<RootState, RootState> = {
-  async changeMasterKey (
+  async [Type.CHANGE_MASTER_KEY] (
     { commit, dispatch, state },
     { current, renewal }: { current: string; renewal: string }
   ): Promise<ServiceChangeMasterKeyResponseError> {
@@ -60,7 +68,7 @@ export const AccountActions: ActionTree<RootState, RootState> = {
     }
     return response.error!
   },
-  async changeUsername (
+  async [Type.CHANGE_USERNAME] (
     { commit, getters, state },
     { username, password }: { username: string; password: string }
   ): Promise<ServiceChangeUsernameResponseError> {
@@ -86,7 +94,7 @@ export const AccountActions: ActionTree<RootState, RootState> = {
     }
     return error!
   },
-  async deleteAccount ({ state }, { password }: { password: string }): Promise<ServiceDeleteAccountResponseError> {
+  async [Type.DELETE_ACCOUNT] ({ state }, { password }: { password: string }): Promise<ServiceDeleteAccountResponseError> {
     if (state.parametrization === null) {
       throw new Error('`RootState.parametrization` is null')
     }
@@ -102,7 +110,7 @@ export const AccountActions: ActionTree<RootState, RootState> = {
       })
     ).error!
   },
-  async fetchRecentSessions ({ commit, state }) {
+  async [Type.FETCH_RECENT_SESSIONS] ({ commit, state }) {
     if (state.sessionKey === null) {
       throw new Error('`RootState.sessionKey` is null')
     }
@@ -120,7 +128,7 @@ export const AccountActions: ActionTree<RootState, RootState> = {
       } as Session)
     ))
   },
-  clearRecentSessions ({ commit }) {
+  [Type.CLEAR_RECENT_SESSIONS] ({ commit }) {
     commit(RootMutation.SET_RECENT_SESSIONS, [])
   }
 }

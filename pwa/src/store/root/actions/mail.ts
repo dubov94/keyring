@@ -9,8 +9,13 @@ import {
   ServiceReleaseMailTokenResponseError
 } from '@/api/definitions'
 
+export enum Type {
+  ACQUIRE_MAIL_TOKEN = 'acquireMailToken',
+  RELEASE_MAIL_TOKEN = 'releaseMailToken',
+}
+
 export const MailActions: ActionTree<RootState, RootState> = {
-  async acquireMailToken (
+  async [Type.ACQUIRE_MAIL_TOKEN] (
     { state },
     { mail, password }: { mail: string; password: string }
   ): Promise<ServiceAcquireMailTokenResponseError> {
@@ -30,7 +35,7 @@ export const MailActions: ActionTree<RootState, RootState> = {
       })
     ).error!
   },
-  async releaseMailToken ({ state }, { code }: { code: string }): Promise<ServiceReleaseMailTokenResponseError> {
+  async [Type.RELEASE_MAIL_TOKEN] ({ state }, { code }: { code: string }): Promise<ServiceReleaseMailTokenResponseError> {
     if (state.sessionKey === null) {
       throw new Error('`RootState.sessionKey` is null')
     }
