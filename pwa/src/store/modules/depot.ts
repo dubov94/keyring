@@ -70,7 +70,7 @@ export const Depot: Module<DepotState, RootState> = {
       }
       const candidate = (await container.resolve(
         SodiumClient).computeAuthDigestAndEncryptionKey(
-          state.parametrization, password)).authDigest
+        state.parametrization, password)).authDigest
       return state.authDigest === candidate
     },
     async [ActionType.COMPUTE_ENCRYPTION_KEY] ({ commit, state }, password: string): Promise<void> {
@@ -94,8 +94,8 @@ export const Depot: Module<DepotState, RootState> = {
     async [ActionType.MAYBE_UPDATE_DEPOT] (
       { commit, state, getters },
       { password, userKeys }: {
-        password: string | undefined,
-        userKeys: Array<Key> | undefined
+        password: string | undefined;
+        userKeys: Array<Key> | undefined;
       }
     ) {
       const sodiumInterface = container.resolve(SodiumClient)
