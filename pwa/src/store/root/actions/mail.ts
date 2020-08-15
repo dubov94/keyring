@@ -10,7 +10,10 @@ import {
 } from '@/api/definitions'
 
 export const MailActions: ActionTree<RootState, RootState> = {
-  async acquireMailToken ({ state }, { mail, password }): Promise<ServiceAcquireMailTokenResponseError> {
+  async acquireMailToken (
+    { state },
+    { mail, password }: { mail: string; password: string }
+  ): Promise<ServiceAcquireMailTokenResponseError> {
     if (state.parametrization === null) {
       throw new Error('`RootState.parametrization` is null')
     }
@@ -27,7 +30,7 @@ export const MailActions: ActionTree<RootState, RootState> = {
       })
     ).error!
   },
-  async releaseMailToken ({ state }, { code }): Promise<ServiceReleaseMailTokenResponseError> {
+  async releaseMailToken ({ state }, { code }: { code: string }): Promise<ServiceReleaseMailTokenResponseError> {
     if (state.sessionKey === null) {
       throw new Error('`RootState.sessionKey` is null')
     }

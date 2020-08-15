@@ -60,7 +60,10 @@ export const AccountActions: ActionTree<RootState, RootState> = {
     }
     return response.error!
   },
-  async changeUsername ({ commit, getters, state }, { username, password }): Promise<ServiceChangeUsernameResponseError> {
+  async changeUsername (
+    { commit, getters, state },
+    { username, password }: { username: string; password: string }
+  ): Promise<ServiceChangeUsernameResponseError> {
     if (state.parametrization === null) {
       throw new Error('`RootState.parametrization` is null')
     }
@@ -83,7 +86,7 @@ export const AccountActions: ActionTree<RootState, RootState> = {
     }
     return error!
   },
-  async deleteAccount ({ state }, { password }): Promise<ServiceDeleteAccountResponseError> {
+  async deleteAccount ({ state }, { password }: { password: string }): Promise<ServiceDeleteAccountResponseError> {
     if (state.parametrization === null) {
       throw new Error('`RootState.parametrization` is null')
     }
