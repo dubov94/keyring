@@ -6,6 +6,7 @@ import FormTextField from './components/FormTextField'
 import { LOCALE_MESSAGES } from './messages'
 import Vue from 'vue'
 import VueI18n from 'vue-i18n'
+import VueRx from 'vue-rx'
 import Vuelidate from 'vuelidate'
 import Vuetify from 'vuetify'
 import router from './router'
@@ -17,6 +18,7 @@ import {
 } from './aspects'
 
 Vue.use(VueI18n)
+Vue.use(VueRx)
 Vue.use(Vuetify)
 Vue.use(Vuelidate)
 
