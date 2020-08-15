@@ -12,6 +12,7 @@ def ts_swagger_api(name, spec):
 
     openapi_gen(
         name = archive_target_name,
+        # Requires 'portable-fetch' and 'url'.
         language = "typescript-fetch",
         spec = "//grpc_gateway:swagger_specification",
     )

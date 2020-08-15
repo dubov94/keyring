@@ -11,7 +11,6 @@ import Vuetify from 'vuetify'
 import router from './router'
 import store from './store'
 import {
-  applyAttachVersionHeaderOnRequest,
   applyFreezeWhenPageIsHidden,
   applySendKeepAliveWhileIdle,
   applyGoOfflineOnRequestError
@@ -41,7 +40,6 @@ Vue.component('form-text-field', FormTextField)
 // expected by the developer. We are actively trying to reduce their number,
 // but it's a perpetual battle -- in practice as soon as one is eliminated
 // it's a matter of time before another pops up.
-applyAttachVersionHeaderOnRequest()
 applyGoOfflineOnRequestError()
 applySendKeepAliveWhileIdle()
 applyFreezeWhenPageIsHidden()

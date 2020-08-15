@@ -7,15 +7,6 @@ import {
 } from './constants'
 import { reloadPage } from './utilities'
 
-export const applyAttachVersionHeaderOnRequest = () => {
-  axios.interceptors.request.use((configuration) => {
-    if (configuration.url.startsWith('/api')) {
-      configuration.headers['X-Client-Version'] = window.globals.version
-    }
-    return configuration
-  })
-}
-
 export const applyGoOfflineOnRequestError = () => {
   axios.interceptors.response.use(undefined, (error) => {
     let message = 'Network is unavailable'

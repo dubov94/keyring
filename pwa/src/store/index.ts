@@ -1,6 +1,6 @@
 import { Depot } from './modules/depot'
 import { Interface } from './modules/interface'
-import RootActions from './root/actions'
+import { RootActions } from './root/actions'
 import { getters } from './root/getters'
 import { mutations } from './root/mutations'
 import { constructInitialState } from './root/state'
