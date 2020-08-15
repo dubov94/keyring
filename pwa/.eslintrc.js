@@ -29,6 +29,27 @@ module.exports = {
         'no-unused-expressions': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off'
       }
+    },
+    {
+      files: ['src/api/definitions/*.{js,ts}'],
+      rules: {
+        'comma-dangle': 'off',
+        'comma-spacing': 'off',
+        'indent': 'off',
+        'no-multi-spaces': 'off',
+        'no-multiple-empty-lines': 'off',
+        'no-trailing-spaces': 'off',
+        'padded-blocks': 'off',
+        'quotes': 'off',
+        'semi': 'off',
+        'space-before-function-paren': 'off',
+        'node/no-deprecated-api': 'off',
+        '@typescript-eslint/consistent-type-assertions': 'off',
+        '@typescript-eslint/no-empty-interface': 'off',
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unused-vars': 'off',
+        '@typescript-eslint/triple-slash-reference': 'off'
+      }
     }
   ]
 }
