@@ -1,4 +1,4 @@
-import { Status } from './status'
+import { Status } from './root/status'
 
 export interface Password {
   value: string;

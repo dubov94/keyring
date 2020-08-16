@@ -1,5 +1,5 @@
 import { Module } from 'vuex'
-import { ThreatsState, RootState, Key, constructInitialThreatsState } from '@/store/root/state'
+import { ThreatsState, RootState, Key, constructInitialThreatsState } from '@/store/state'
 import { cutHashToPrefix, cutHashToSuffix, getSuffixesByPrefix } from '@/haveibeenpwned'
 import { sha1 } from '@/utilities'
 

@@ -1,6 +1,6 @@
 import { Status } from './status'
 import { GetterTree } from 'vuex'
-import { RootState } from './state'
+import { RootState } from '../state'
 import { state$ } from '@/store/subject'
 import { map, share } from 'rxjs/operators'
 

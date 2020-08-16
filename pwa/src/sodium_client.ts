@@ -1,6 +1,6 @@
 import { inject, injectable } from 'tsyringe'
 import { SODIUM_TOKEN, SodiumInterface } from './sodium_interface'
-import { Password } from '@/store/root/state'
+import { Password } from '@/store/state'
 
 const ARGON2_DEFAULT_M = 64 * 1024 * 1024
 const ARGON2_DEFAULT_T = 1

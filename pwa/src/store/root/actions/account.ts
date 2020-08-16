@@ -1,5 +1,5 @@
 import { ActionTree } from 'vuex'
-import { RootState, Session } from '@/store/root/state'
+import { RootState, Session } from '@/store/state'
 import { container } from 'tsyringe'
 import { SodiumClient } from '@/sodium_client'
 import { createSessionHeader } from './utilities'

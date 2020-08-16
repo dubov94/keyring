@@ -1,6 +1,6 @@
 import { container } from 'tsyringe'
 import { Module } from 'vuex'
-import { DepotState, RootState, Key, constructInitialDepotState } from '@/store/root/state'
+import { DepotState, RootState, Key, constructInitialDepotState } from '@/store/state'
 import { SodiumClient } from '@/sodium_client'
 
 const convertUserKeysToVault = (userKeys: Array<Key>): string => JSON.stringify(userKeys)

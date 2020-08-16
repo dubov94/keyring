@@ -1,5 +1,5 @@
 import { MutationTree } from 'vuex'
-import { RootState, Key, Session } from './state'
+import { RootState, Key, Session } from '../state'
 import { Status } from './status'
 
 export enum Type {

@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { Type, getters } from './getters'
-import { constructInitialRootState } from './state'
+import { constructInitialRootState } from '../state'
 import { Status } from './status'
 
 describe(Type.IS_ONLINE, () => {

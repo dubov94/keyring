@@ -6,7 +6,7 @@ import {
   constructInitialToastState,
   constructInitialEditorState,
   constructInitialInterfaceState
-} from '@/store/root/state'
+} from '@/store/state'
 
 export enum MutationType {
   SHOW_TOAST = 'showToast',

@@ -1,5 +1,5 @@
 import { Module } from 'vuex'
-import { RootState, SessionState, constructInitialSessionState } from '@/store/root/state'
+import { RootState, SessionState, constructInitialSessionState } from '@/store/state'
 
 export enum GetterType {
   HAS_USERNAME = 'hasUsername',

@@ -1,5 +1,5 @@
 import { ActionTree } from 'vuex'
-import { RootState } from '../state'
+import { RootState } from '../../state'
 import { AccountActions as Account } from './account'
 import { AuthenticationActions as Authentication } from './authentication'
 import { KeysActions as Keys } from './keys'

@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { mutations, Type } from './mutations'
-import { constructInitialRootState, Key, Session } from './state'
+import { constructInitialRootState, Key, Session } from '../state'
 import { Status } from './status'
 
 describe(Type.SET_STATUS, () => {

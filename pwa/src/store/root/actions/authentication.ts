@@ -1,5 +1,5 @@
 import { ActionTree } from 'vuex'
-import { RootState, Key, FullState } from '@/store/root/state'
+import { RootState, Key, FullState } from '@/store/state'
 import { container } from 'tsyringe'
 import { SodiumClient } from '@/sodium_client'
 import { Status } from '../status'
