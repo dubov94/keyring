@@ -32,7 +32,7 @@ export interface RootState {
   requiresMailVerification: boolean;
 }
 
-export const constructInitialState = (): RootState => ({
+export const constructRootState = (): RootState => ({
   status: Status.OFFLINE,
   isUserActive: false,
   parametrization: null,

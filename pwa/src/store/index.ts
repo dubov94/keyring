@@ -5,7 +5,7 @@ import { getters } from './root/getters'
 import { mutations } from './root/mutations'
 import { Session } from './modules/session'
 import { Threats } from './modules/threats'
-import { RootState, FullState, constructInitialState } from './root/state'
+import { RootState, FullState, constructRootState } from './root/state'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import VuexPersist from 'vuex-persist'
@@ -35,7 +35,7 @@ const vuexSession = new VuexPersist<RootState>({
 
 const store = new Vuex.Store<RootState>({
   plugins: [vuexLocal.plugin, vuexSession.plugin],
-  state: constructInitialState(),
+  state: constructRootState(),
   getters,
   mutations,
   actions: RootActions,
