@@ -1,18 +1,12 @@
 import Vue from 'vue'
 import { Module } from 'vuex'
-import { InterfaceState, RootState } from '@/store/root/state'
-
-const createToastState = () => ({
-  message: null,
-  timeout: NaN,
-  show: false
-})
-
-const createEditorState = () => ({
-  reveal: false,
-  identifier: undefined,
-  show: false
-})
+import {
+  InterfaceState,
+  RootState,
+  constructInitialToastState,
+  constructInitialEditorState,
+  constructInitialInterfaceState
+} from '@/store/root/state'
 
 export enum MutationType {
   SHOW_TOAST = 'showToast',
@@ -27,10 +21,7 @@ export enum ActionType {
 
 export const Interface: Module<InterfaceState, RootState> = {
   namespaced: true,
-  state: {
-    toast: createToastState(),
-    editor: createEditorState()
-  },
+  state: constructInitialInterfaceState,
   mutations: {
     [MutationType.SHOW_TOAST] (state, { message, timeout }: { message: string; timeout: number }) {
       state.toast.message = message
@@ -38,7 +29,7 @@ export const Interface: Module<InterfaceState, RootState> = {
       state.toast.show = true
     },
     [MutationType.HIDE_TOAST] (state) {
-      Object.assign(state.toast, createToastState())
+      Object.assign(state.toast, constructInitialToastState())
     },
     [MutationType.OPEN_EDITOR] (state, { identifier, reveal }: { identifier: string | null; reveal: boolean}) {
       state.editor.reveal = reveal
@@ -46,7 +37,7 @@ export const Interface: Module<InterfaceState, RootState> = {
       state.editor.show = true
     },
     [MutationType.CLOSE_EDITOR] (state) {
-      Object.assign(state.editor, createEditorState())
+      Object.assign(state.editor, constructInitialEditorState())
     }
   },
   actions: {

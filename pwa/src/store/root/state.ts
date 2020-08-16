@@ -82,6 +82,23 @@ export interface InterfaceState {
   };
 }
 
+export const constructInitialToastState = () => ({
+  message: null,
+  timeout: NaN,
+  show: false
+})
+
+export const constructInitialEditorState = () => ({
+  reveal: false,
+  identifier: undefined,
+  show: false
+})
+
+export const constructInitialInterfaceState = (): InterfaceState => ({
+  toast: constructInitialToastState(),
+  editor: constructInitialEditorState()
+})
+
 export interface ThreatsState {
   isAnalysisEnabled: boolean;
   gettingDuplicateGroups: boolean;
