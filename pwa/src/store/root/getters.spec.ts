@@ -1,11 +1,11 @@
 import { expect } from 'chai'
 import { Type, getters } from './getters'
-import { constructRootState } from './state'
+import { constructInitialRootState } from './state'
 import { Status } from './status'
 
 describe(Type.IS_ONLINE, () => {
   it('returns true if online', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     state.status = Status.ONLINE
 
     const isOnline = getters[Type.IS_ONLINE](state, {}, state, {})
@@ -14,7 +14,7 @@ describe(Type.IS_ONLINE, () => {
   })
 
   it('returns false if not online', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     state.status = Status.CONNECTING
 
     const isOnline = getters[Type.IS_ONLINE](state, {}, state, {})
@@ -25,7 +25,7 @@ describe(Type.IS_ONLINE, () => {
 
 describe(Type.IS_USER_ACTIVE, () => {
   it('returns true if user is active', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     state.isUserActive = true
 
     const isUserActive = getters[Type.IS_USER_ACTIVE](state, {}, state, {})
@@ -34,7 +34,7 @@ describe(Type.IS_USER_ACTIVE, () => {
   })
 
   it('returns false if user is not active', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     state.isUserActive = false
 
     const isUserActive = getters[Type.IS_USER_ACTIVE](state, {}, state, {})
@@ -45,7 +45,7 @@ describe(Type.IS_USER_ACTIVE, () => {
 
 describe(Type.HAS_SESSION_KEY, () => {
   it('returns true if session key is present', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     state.sessionKey = 'key'
 
     const hasSessionKey = getters[Type.HAS_SESSION_KEY](state, {}, state, {})
@@ -54,7 +54,7 @@ describe(Type.HAS_SESSION_KEY, () => {
   })
 
   it('returns false if session key is absent', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     state.sessionKey = null
 
     const hasSessionKey = getters[Type.HAS_SESSION_KEY](state, {}, state, {})
@@ -65,7 +65,7 @@ describe(Type.HAS_SESSION_KEY, () => {
 
 describe(Type.HAS_SESSIONS_DATA, () => {
   it('returns true if `recentSessions` is not `null`', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     state.recentSessions = []
 
     const hasSessionsData = getters[Type.HAS_SESSIONS_DATA](state, {}, state, {})
@@ -74,7 +74,7 @@ describe(Type.HAS_SESSIONS_DATA, () => {
   })
 
   it('returns false if `recentSessions` is `null`', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     state.recentSessions = null
 
     const hasSessionsData = getters[Type.HAS_SESSIONS_DATA](state, {}, state, {})

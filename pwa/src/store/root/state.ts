@@ -32,7 +32,7 @@ export interface RootState {
   requiresMailVerification: boolean;
 }
 
-export const constructRootState = (): RootState => ({
+export const constructInitialRootState = (): RootState => ({
   status: Status.OFFLINE,
   isUserActive: false,
   parametrization: null,
@@ -121,3 +121,14 @@ export interface FullState extends RootState {
   session: SessionState;
   threats: ThreatsState;
 }
+
+export const constructInitialFullState = (): FullState => Object.assign(
+  {},
+  constructInitialRootState(),
+  {
+    depot: constructInitialDepotState(),
+    interface: constructInitialInterfaceState(),
+    session: constructInitialSessionState(),
+    threats: constructInitialThreatsState()
+  }
+)

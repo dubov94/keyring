@@ -1,11 +1,11 @@
 import { expect } from 'chai'
 import { mutations, Type } from './mutations'
-import { constructRootState, Key, Session } from './state'
+import { constructInitialRootState, Key, Session } from './state'
 import { Status } from './status'
 
 describe(Type.SET_STATUS, () => {
   it('sets a different status', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     expect(state.status).to.equal(Status.OFFLINE)
 
     mutations[Type.SET_STATUS](state, Status.ONLINE)
@@ -16,7 +16,7 @@ describe(Type.SET_STATUS, () => {
 
 describe(Type.SET_PARAMETRIZATION, () => {
   it('sets parametrization', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
 
     mutations[Type.SET_PARAMETRIZATION](state, 'parametrization')
 
@@ -26,7 +26,7 @@ describe(Type.SET_PARAMETRIZATION, () => {
 
 describe(Type.SET_SESSION_KEY, () => {
   it('sets session key', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
 
     mutations[Type.SET_SESSION_KEY](state, 'key')
 
@@ -36,7 +36,7 @@ describe(Type.SET_SESSION_KEY, () => {
 
 describe(Type.SET_ENCRYPTION_KEY, () => {
   it('sets encryption key', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
 
     mutations[Type.SET_ENCRYPTION_KEY](state, 'key')
 
@@ -46,7 +46,7 @@ describe(Type.SET_ENCRYPTION_KEY, () => {
 
 describe(Type.SET_IS_USER_ACTIVE, () => {
   it('changes `isUserActive`', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     expect(state.isUserActive).to.be.false
 
     mutations[Type.SET_IS_USER_ACTIVE](state, true)
@@ -57,7 +57,7 @@ describe(Type.SET_IS_USER_ACTIVE, () => {
 
 describe(Type.SET_USER_KEYS, () => {
   it('sorts by tags left to right', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     const keys: Array<Key> = [
       { identifier: '1', value: '', tags: ['a', 'c', 'd'] },
       { identifier: '2', value: '', tags: ['a', 'b', 'd'] },
@@ -70,7 +70,7 @@ describe(Type.SET_USER_KEYS, () => {
   })
 
   it('puts keys with fewer tags earlier', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     const keys: Array<Key> = [
       { identifier: '1', value: '', tags: ['a', 'b'] },
       { identifier: '2', value: '', tags: ['a', 'b', 'c'] },
@@ -83,7 +83,7 @@ describe(Type.SET_USER_KEYS, () => {
   })
 
   it('resorts to value comparison if tags are equal', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     const keys: Array<Key> = [
       { identifier: '1', value: 'c', tags: ['a'] },
       { identifier: '2', value: 'b', tags: ['a'] },
@@ -98,7 +98,7 @@ describe(Type.SET_USER_KEYS, () => {
 
 describe(Type.UNSHIFT_USER_KEY, () => {
   it('adds to the beginning', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     const key1: Key = { identifier: '1', value: 'v', tags: ['t'] }
     const key2: Key = { identifier: '2', value: 'v', tags: ['x'] }
 
@@ -111,7 +111,7 @@ describe(Type.UNSHIFT_USER_KEY, () => {
 
 describe(Type.MODIFY_USER_KEY, () => {
   it('updates a key by identifier', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     const key: Key = { identifier: '1', value: 'v', tags: ['t'] }
     const keyUpdate: Key = { identifier: '1', value: 'y', tags: ['x'] }
     mutations[Type.UNSHIFT_USER_KEY](state, key)
@@ -126,7 +126,7 @@ describe(Type.MODIFY_USER_KEY, () => {
 
 describe(Type.DELETE_USER_KEY, () => {
   it('deletes a key by identifier', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     const key: Key = { identifier: '1', value: 'v', tags: ['t'] }
     mutations[Type.UNSHIFT_USER_KEY](state, key)
 
@@ -138,7 +138,7 @@ describe(Type.DELETE_USER_KEY, () => {
 
 describe(Type.SET_RECENT_SESSIONS, () => {
   it('sets given sessions', () => {
-    const state = constructRootState()
+    const state = constructInitialRootState()
     const recentSessions: Array<Session> = [
       {
         creationTimeInMillis: 1,
