@@ -1,4 +1,4 @@
 import { BehaviorSubject } from 'rxjs'
-import { FullState } from './state'
+import { FullState, constructInitialFullState } from './state'
 
-export const state$ = new BehaviorSubject<FullState>({} as FullState)
+export const state$ = new BehaviorSubject<FullState>(constructInitialFullState())
