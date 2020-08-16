@@ -1,5 +1,5 @@
 import { Module } from 'vuex'
-import { ThreatsState, RootState, Key } from '@/store/root/state'
+import { ThreatsState, RootState, Key, constructInitialThreatsState } from '@/store/root/state'
 import { cutHashToPrefix, cutHashToSuffix, getSuffixesByPrefix } from '@/haveibeenpwned'
 import { sha1 } from '@/utilities'
 
@@ -26,13 +26,7 @@ export enum ActionType {
 
 export const Threats: Module<ThreatsState, RootState> = {
   namespaced: true,
-  state: {
-    isAnalysisEnabled: false,
-    gettingDuplicateGroups: false,
-    duplicateGroups: [],
-    gettingExposedUserKeys: false,
-    exposedUserKeyIds: []
-  },
+  state: constructInitialThreatsState,
   mutations: {
     [MutationType.SET_ANALYSIS_ENABLED] (state, value) {
       state.isAnalysisEnabled = value

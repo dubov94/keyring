@@ -107,6 +107,14 @@ export interface ThreatsState {
   exposedUserKeyIds: Array<string>;
 }
 
+export const constructInitialThreatsState = (): ThreatsState => ({
+  isAnalysisEnabled: false,
+  gettingDuplicateGroups: false,
+  duplicateGroups: [],
+  gettingExposedUserKeys: false,
+  exposedUserKeyIds: []
+})
+
 export interface FullState extends RootState {
   depot: DepotState;
   interface: InterfaceState;
