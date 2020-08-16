@@ -47,6 +47,10 @@ export interface SessionState {
   username: string | null;
 }
 
+export const constructInitialSessionState = (): SessionState => ({
+  username: null
+})
+
 export interface DepotState {
   username: string | null;
   parametrization: string | null;

@@ -1,5 +1,5 @@
 import { Module } from 'vuex'
-import { RootState, SessionState } from '@/store/root/state'
+import { RootState, SessionState, constructInitialSessionState } from '@/store/root/state'
 
 export enum GetterType {
   HAS_USERNAME = 'hasUsername',
@@ -11,9 +11,7 @@ export enum MutationType {
 
 export const Session: Module<SessionState, RootState> = {
   namespaced: true,
-  state: {
-    username: null
-  },
+  state: constructInitialSessionState,
   getters: {
     [GetterType.HAS_USERNAME]: (state) => state.username !== null
   },
