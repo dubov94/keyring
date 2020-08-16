@@ -1,15 +1,7 @@
 import { container } from 'tsyringe'
 import { Module } from 'vuex'
-import { DepotState, RootState, Key } from '@/store/root/state'
+import { DepotState, RootState, Key, constructInitialDepotState } from '@/store/root/state'
 import { SodiumClient } from '@/sodium_client'
-
-const createInitialState = (): DepotState => ({
-  username: null,
-  parametrization: null,
-  authDigest: null,
-  encryptionKey: null,
-  userKeys: null
-})
 
 const convertUserKeysToVault = (userKeys: Array<Key>): string => JSON.stringify(userKeys)
 
@@ -36,13 +28,13 @@ export enum ActionType {
 
 export const Depot: Module<DepotState, RootState> = {
   namespaced: true,
-  state: createInitialState,
+  state: constructInitialDepotState,
   getters: {
     [GetterType.HAS_LOCAL_DATA]: (state) => state.username !== null
   },
   mutations: {
     [MutationType.SET_INITIAL_VALUES] (state) {
-      Object.assign(state, createInitialState())
+      Object.assign(state, constructInitialDepotState())
     },
     [MutationType.SET_USERNAME] (state, value: string) {
       state.username = value

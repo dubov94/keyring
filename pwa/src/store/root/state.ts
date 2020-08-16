@@ -59,6 +59,14 @@ export interface DepotState {
   userKeys: string | null;
 }
 
+export const constructInitialDepotState = (): DepotState => ({
+  username: null,
+  parametrization: null,
+  authDigest: null,
+  encryptionKey: null,
+  userKeys: null
+})
+
 export interface InterfaceState {
   toast: {
     message: string | null;
