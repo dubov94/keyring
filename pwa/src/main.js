@@ -13,7 +13,6 @@ import router from './router'
 import store from './store'
 import {
   applyFreezeWhenPageIsHidden,
-  applySendKeepAliveWhileIdle,
   applyGoOfflineOnRequestError
 } from './aspects'
 
@@ -42,8 +41,10 @@ Vue.component('form-text-field', FormTextField)
 // expected by the developer. We are actively trying to reduce their number,
 // but it's a perpetual battle -- in practice as soon as one is eliminated
 // it's a matter of time before another pops up.
+//
+// That said, given the migration to RxJS we may be able to get rid of all
+// of them soon!
 applyGoOfflineOnRequestError()
-applySendKeepAliveWhileIdle()
 applyFreezeWhenPageIsHidden()
 
 sodium.ready.then(() =>

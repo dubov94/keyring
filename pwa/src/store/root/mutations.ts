@@ -18,7 +18,7 @@ export enum Type {
   SET_REQUIRES_MAIL_VERIFICATION = 'setRequiresMailVerification',
 }
 
-export const setSessionKey$ = new Subject<string>()
+export const setSessionKey$ = new Subject<string | null>()
 setSessionKey$.subscribe((sessionKey) => {
   getState().commit(Type.SET_SESSION_KEY, sessionKey)
 })
