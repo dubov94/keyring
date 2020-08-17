@@ -14,7 +14,7 @@ import {
 import { Type as RootMutation } from '../mutations'
 import { ActionType as DepotAction, GetterType as DepotGetter, MutationType as DepotMutation } from '@/store/modules/depot'
 import { MutationType as SessionMutation } from '@/store/modules/session'
-import { ADMINISTRATION_API_TOKEN } from '@/api/tokens'
+import { ADMINISTRATION_API_TOKEN } from '@/api/injection_tokens'
 
 export enum Type {
   CHANGE_MASTER_KEY = 'changeMasterKey',

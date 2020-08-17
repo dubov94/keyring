@@ -21,7 +21,7 @@ import {
   ActionType as DepotAction,
   GetterType as DepotGetter
 } from '@/store/modules/depot'
-import { AUTHENTICATION_API_TOKEN } from '@/api/tokens'
+import { AUTHENTICATION_API_TOKEN } from '@/api/injection_tokens'
 
 export enum Type {
   REGISTER = 'register',

@@ -10,7 +10,7 @@ import {
 import { Type as RootMutation } from '../mutations'
 import { ActionType as DepotAction } from '@/store/modules/depot'
 import { ActionType as ThreatsAction } from '@/store/modules/threats'
-import { ADMINISTRATION_API_TOKEN } from '@/api/tokens'
+import { ADMINISTRATION_API_TOKEN } from '@/api/injection_tokens'
 
 export enum Type {
   ACCEPT_USER_KEYS = 'acceptUserKeys',

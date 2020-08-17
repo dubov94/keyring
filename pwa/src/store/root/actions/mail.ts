@@ -8,7 +8,7 @@ import {
   ServiceAcquireMailTokenResponseError,
   ServiceReleaseMailTokenResponseError
 } from '@/api/definitions'
-import { ADMINISTRATION_API_TOKEN } from '@/api/tokens'
+import { ADMINISTRATION_API_TOKEN } from '@/api/injection_tokens'
 
 export enum Type {
   ACQUIRE_MAIL_TOKEN = 'acquireMailToken',

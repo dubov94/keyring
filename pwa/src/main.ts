@@ -5,7 +5,7 @@ import { SODIUM_TOKEN, SodiumInterface } from './sodium_interface'
 import SodiumWorker from './sodium.worker.ts'
 import { fetchFromApi } from '@/api/fetch'
 import { AdministrationApi, AuthenticationApi } from '@/api/definitions'
-import { ADMINISTRATION_API_TOKEN, AUTHENTICATION_API_TOKEN } from '@/api/tokens'
+import { ADMINISTRATION_API_TOKEN, AUTHENTICATION_API_TOKEN } from '@/api/injection_tokens'
 import './main.js'
 
 container.register<SodiumInterface>(SODIUM_TOKEN, {

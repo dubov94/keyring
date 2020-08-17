@@ -1,6 +1,7 @@
 import { MutationTree } from 'vuex'
 import { RootState, Key, Session } from '../state'
 import { Status } from './status'
+import { Subject } from 'rxjs'
 
 export enum Type {
   SET_STATUS = 'setStatus',
@@ -15,6 +16,11 @@ export enum Type {
   SET_RECENT_SESSIONS = 'setRecentSessions',
   SET_REQUIRES_MAIL_VERIFICATION = 'setRequiresMailVerification',
 }
+
+export const setSessionKey$ = new Subject<string>()
+setSessionKey$.subscribe((sessionKey) => {
+  
+})
 
 export const mutations: MutationTree<RootState> = {
   [Type.SET_STATUS] (state, status: Status) {
