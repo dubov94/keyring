@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import 'reflect-metadata'
 import { container } from 'tsyringe'
-import { SODIUM_TOKEN, SodiumInterface } from './sodium_interface'
+import { SODIUM_INTERFACE_TOKEN, SodiumInterface } from './sodium_interface'
 import { SodiumClient } from './sodium_client'
 
 const toUtf8 = (uint8Array: Uint8Array) => new TextDecoder().decode(uint8Array)
@@ -9,7 +9,7 @@ const fromUtf8 = (utf8String: string) => new TextEncoder().encode(utf8String)
 
 describe('SodiumClient', () => {
   before(() => {
-    container.register<SodiumInterface>(SODIUM_TOKEN, {
+    container.register<SodiumInterface>(SODIUM_INTERFACE_TOKEN, {
       useValue: {
         toBase64: (uint8Array) => Promise.resolve(toUtf8(uint8Array)),
         fromBase64: (base64String) => Promise.resolve(fromUtf8(base64String)),

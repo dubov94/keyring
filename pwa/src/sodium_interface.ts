@@ -1,4 +1,4 @@
-export const SODIUM_TOKEN = 'SodiumInterface'
+export const SODIUM_INTERFACE_TOKEN = 'SodiumInterface'
 
 export interface SodiumInterface {
   toBase64(unit8Array: Uint8Array): Promise<string>;

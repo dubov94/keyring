@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe'
-import { SODIUM_TOKEN, SodiumInterface } from './sodium_interface'
+import { SODIUM_INTERFACE_TOKEN, SodiumInterface } from './sodium_interface'
 import { Password } from '@/store/state'
 
 const ARGON2_DEFAULT_M = 64 * 1024 * 1024
@@ -21,7 +21,7 @@ export interface MasterKeyDerivatives {
 
 @injectable()
 export class SodiumClient {
-  constructor (@inject(SODIUM_TOKEN) private sodiumInterface: SodiumInterface) {}
+  constructor (@inject(SODIUM_INTERFACE_TOKEN) private sodiumInterface: SodiumInterface) {}
 
   async generateArgon2Parametrization (): Promise<string> {
     return '$argon2id' +
