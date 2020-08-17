@@ -10,6 +10,8 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import VuexPersist from 'vuex-persist'
 import { state$ } from './subject'
+import { container } from 'tsyringe'
+import { STORE_TOKEN } from './injection_tokens'
 
 Vue.use(Vuex)
 
@@ -45,6 +47,10 @@ const store = new Vuex.Store<RootState>({
     session: Session,
     threats: Threats
   }
+})
+
+container.register(STORE_TOKEN, {
+  useValue: store
 })
 
 store.watch((state) => state as FullState, (value) => {
