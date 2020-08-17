@@ -11,7 +11,7 @@ import {
   ServiceDeleteAccountResponseError,
   ServiceGetRecentSessionsResponse
 } from '@/api/definitions'
-import { Type as RootMutation } from '../mutations'
+import { Type as RootMutation, setSessionKey$ } from '../mutations'
 import { ActionType as DepotAction, GetterType as DepotGetter, MutationType as DepotMutation } from '@/store/modules/depot'
 import { MutationType as SessionMutation } from '@/store/modules/session'
 import { ADMINISTRATION_API_TOKEN } from '@/api/injection_tokens'
@@ -61,7 +61,7 @@ export const AccountActions: ActionTree<RootState, RootState> = {
     if (response.error === ServiceChangeMasterKeyResponseError.NONE) {
       commit(RootMutation.SET_PARAMETRIZATION, newParametrization)
       commit(RootMutation.SET_ENCRYPTION_KEY, encryptionKey)
-      commit(RootMutation.SET_SESSION_KEY, response.sessionKey)
+      setSessionKey$.next(response.sessionKey)
       await dispatch(`depot/${DepotAction.MAYBE_UPDATE_DEPOT}`, {
         password: renewal,
         userKeys: state.userKeys

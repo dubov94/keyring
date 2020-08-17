@@ -13,7 +13,7 @@ import {
   ServiceLogInResponse,
   ServiceLogInResponseError
 } from '@/api/definitions'
-import { Type as RootMutation } from '../mutations'
+import { Type as RootMutation, setSessionKey$ } from '../mutations'
 import { MutationType as SessionMutation } from '@/store/modules/session'
 import { Type as KeysActions } from './keys'
 import {
@@ -47,7 +47,7 @@ export const AuthenticationActions: ActionTree<RootState, RootState> = {
     if (response.error === ServiceRegisterResponseError.NONE) {
       commit(RootMutation.SET_PARAMETRIZATION, parametrization)
       commit(RootMutation.SET_ENCRYPTION_KEY, encryptionKey)
-      commit(RootMutation.SET_SESSION_KEY, response.sessionKey)
+      setSessionKey$.next(response.sessionKey)
       commit(RootMutation.SET_REQUIRES_MAIL_VERIFICATION, true)
       commit(`session/${SessionMutation.SET_USERNAME}`, username)
       commit(RootMutation.SET_STATUS, Status.ONLINE)
@@ -90,7 +90,7 @@ export const AuthenticationActions: ActionTree<RootState, RootState> = {
           }),
           updateDepot: false
         })
-        commit(RootMutation.SET_SESSION_KEY, sessionKey)
+        setSessionKey$.next(sessionKey)
         if (persist) {
           // Ensures there will be no offline authentication until
           // the account is all set.
