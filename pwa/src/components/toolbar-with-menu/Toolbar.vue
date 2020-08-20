@@ -50,7 +50,7 @@
 
 <script>
 import { mapGetters, mapState } from 'vuex'
-import { Status } from '../../store/root/status'
+import { Status } from '@/store/root/status'
 import { reloadPage, purgeSessionStorageAndRedirect } from '../../utilities'
 
 export default {
