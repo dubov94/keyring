@@ -4,11 +4,10 @@ import { container } from 'tsyringe'
 import { SodiumClient } from '@/sodium_client'
 import { createSessionHeader } from './utilities'
 import {
-  AdministrationApi,
   ServiceAcquireMailTokenResponseError,
   ServiceReleaseMailTokenResponseError
 } from '@/api/definitions'
-import { ADMINISTRATION_API_TOKEN } from '@/api/injections'
+import { getAdministrationApi } from '@/api/injections'
 
 export enum Type {
   ACQUIRE_MAIL_TOKEN = 'acquireMailToken',
@@ -27,7 +26,7 @@ export const MailActions: ActionTree<RootState, RootState> = {
       throw new Error('`RootState.sessionKey` is null')
     }
     return (
-      await container.resolve<AdministrationApi>(ADMINISTRATION_API_TOKEN).acquireMailToken({
+      await getAdministrationApi().acquireMailToken({
         digest: (await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
           state.parametrization, password)).authDigest,
         mail
@@ -41,7 +40,7 @@ export const MailActions: ActionTree<RootState, RootState> = {
       throw new Error('`RootState.sessionKey` is null')
     }
     return (
-      await container.resolve<AdministrationApi>(ADMINISTRATION_API_TOKEN).releaseMailToken({ code }, {
+      await getAdministrationApi().releaseMailToken({ code }, {
         headers: createSessionHeader(state.sessionKey)
       })
     ).error!

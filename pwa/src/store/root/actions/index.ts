@@ -6,11 +6,9 @@ import { KeysActions as Keys } from './keys'
 import { MailActions as Mail } from './mail'
 import { sessionKey$, isUserActive$ } from '../getters'
 import { switchMap, retryWhen, delay, withLatestFrom, filter } from 'rxjs/operators'
-import { empty, timer, defer, fromEvent, of } from 'rxjs'
+import { empty, timer, defer, fromEvent } from 'rxjs'
 import { SESSION_LIFETIME_IN_MILLIS } from '@/constants'
-import { container } from 'tsyringe'
-import { AdministrationApi } from '@/api/definitions'
-import { ADMINISTRATION_API_TOKEN } from '@/api/injections'
+import { getAdministrationApi } from '@/api/injections'
 import { createSessionHeader } from './utilities'
 import { reloadPage } from '@/utilities'
 
@@ -20,7 +18,7 @@ sessionKey$.pipe(
       SESSION_LIFETIME_IN_MILLIS / 2, SESSION_LIFETIME_IN_MILLIS / 2
     ).pipe(
       switchMap(
-        () => defer(() => container.resolve<AdministrationApi>(ADMINISTRATION_API_TOKEN).keepAlive({}, {
+        () => defer(() => getAdministrationApi().keepAlive({}, {
           headers: createSessionHeader(sessionKey)
         })).pipe(retryWhen(errors => errors.pipe(delay(1000))))
       )
@@ -28,14 +26,13 @@ sessionKey$.pipe(
   )
 ).subscribe()
 
-
 fromEvent(document, 'visibilitychange').pipe(
   switchMap(
     () => document.visibilityState === 'visible' ? empty() : timer(
       SESSION_LIFETIME_IN_MILLIS).pipe(
-        withLatestFrom(isUserActive$),
-        filter(([, isUserActive]) => isUserActive)
-      )
+      withLatestFrom(isUserActive$),
+      filter(([, isUserActive]) => isUserActive)
+    )
   )
 ).subscribe(() => {
   reloadPage()

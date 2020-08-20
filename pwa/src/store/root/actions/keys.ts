@@ -4,13 +4,12 @@ import { container } from 'tsyringe'
 import { SodiumClient } from '@/sodium_client'
 import { createSessionHeader } from './utilities'
 import {
-  AdministrationApi,
   ServiceCreateKeyResponse
 } from '@/api/definitions'
 import { Type as RootMutation } from '../mutations'
 import { ActionType as DepotAction } from '@/store/modules/depot'
 import { ActionType as ThreatsAction } from '@/store/modules/threats'
-import { ADMINISTRATION_API_TOKEN } from '@/api/injections'
+import { getAdministrationApi } from '@/api/injections'
 
 export enum Type {
   ACCEPT_USER_KEYS = 'acceptUserKeys',
@@ -49,7 +48,7 @@ export const KeysActions: ActionTree<RootState, RootState> = {
       throw new Error('`RootState.encryptionKey` is null')
     }
     const response: ServiceCreateKeyResponse =
-      await container.resolve<AdministrationApi>(ADMINISTRATION_API_TOKEN).createKey({
+      await getAdministrationApi().createKey({
         password: await container.resolve(SodiumClient).encryptPassword(
           state.encryptionKey, { value, tags })
       }, { headers: createSessionHeader(state.sessionKey) })
@@ -65,7 +64,7 @@ export const KeysActions: ActionTree<RootState, RootState> = {
     if (state.encryptionKey === null) {
       throw new Error('`RootState.encryptionKey` is null')
     }
-    await container.resolve<AdministrationApi>(ADMINISTRATION_API_TOKEN).updateKey({
+    await getAdministrationApi().updateKey({
       key: {
         identifier,
         password: await container.resolve(SodiumClient).encryptPassword(
@@ -80,7 +79,7 @@ export const KeysActions: ActionTree<RootState, RootState> = {
     if (state.sessionKey === null) {
       throw new Error('`RootState.sessionKey` is null')
     }
-    await container.resolve<AdministrationApi>(ADMINISTRATION_API_TOKEN).deleteKey({ identifier }, {
+    await getAdministrationApi().deleteKey({ identifier }, {
       headers: createSessionHeader(state.sessionKey)
     })
     commit(RootMutation.DELETE_USER_KEY, identifier)

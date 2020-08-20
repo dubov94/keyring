@@ -5,7 +5,6 @@ import { SodiumClient } from '@/sodium_client'
 import { Status } from '../status'
 import { purgeSessionStorageAndRedirect } from '../../../utilities'
 import {
-  AuthenticationApi,
   ServiceRegisterResponse,
   ServiceRegisterResponseError,
   ServiceGetSaltResponse,
@@ -21,7 +20,7 @@ import {
   ActionType as DepotAction,
   GetterType as DepotGetter
 } from '@/store/modules/depot'
-import { AUTHENTICATION_API_TOKEN } from '@/api/injections'
+import { getAuthenticationApi } from '@/api/injections'
 
 export enum Type {
   REGISTER = 'register',
@@ -38,7 +37,7 @@ export const AuthenticationActions: ActionTree<RootState, RootState> = {
       await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
         parametrization, password)
     const response: ServiceRegisterResponse =
-      await container.resolve<AuthenticationApi>(AUTHENTICATION_API_TOKEN).register({
+      await getAuthenticationApi().register({
         username,
         salt: parametrization,
         digest: authDigest,
@@ -61,14 +60,14 @@ export const AuthenticationActions: ActionTree<RootState, RootState> = {
   ): Promise<{ success: boolean; local: boolean; requiresMailVerification?: boolean }> {
     commit(RootMutation.SET_STATUS, Status.CONNECTING)
     const saltResponse: ServiceGetSaltResponse =
-      await container.resolve<AuthenticationApi>(AUTHENTICATION_API_TOKEN).getSalt(username)
+      await getAuthenticationApi().getSalt(username)
     if (saltResponse.error === ServiceGetSaltResponseError.NONE) {
       const { salt: parametrization } = saltResponse
       const { authDigest, encryptionKey } =
         await container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
           parametrization!, password)
       const authResponse: ServiceLogInResponse =
-        await container.resolve<AuthenticationApi>(AUTHENTICATION_API_TOKEN).logIn({
+        await getAuthenticationApi().logIn({
           username,
           digest: authDigest
         })
