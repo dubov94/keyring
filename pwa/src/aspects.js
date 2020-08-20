@@ -1,11 +1,6 @@
 import axios from 'axios'
 import store from './store'
 import { Status } from './store/root/status'
-import {
-  SESSION_LIFETIME_IN_MILLIS,
-  SESSION_TOKEN_HEADER_NAME
-} from './constants'
-import { reloadPage } from './utilities'
 
 export const applyGoOfflineOnRequestError = () => {
   axios.interceptors.response.use(undefined, (error) => {
@@ -20,21 +15,5 @@ export const applyGoOfflineOnRequestError = () => {
       timeout: 1500
     })
     return Promise.reject(error)
-  })
-}
-
-export const applyFreezeWhenPageIsHidden = () => {
-  let visibilityTimer = null
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      visibilityTimer = setTimeout(() => {
-        if (store.getters.isUserActive) {
-          reloadPage()
-        }
-      }, SESSION_LIFETIME_IN_MILLIS)
-    } else {
-      clearTimeout(visibilityTimer)
-    }
   })
 }

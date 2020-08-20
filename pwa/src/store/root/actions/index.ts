@@ -4,14 +4,15 @@ import { AccountActions as Account } from './account'
 import { AuthenticationActions as Authentication } from './authentication'
 import { KeysActions as Keys } from './keys'
 import { MailActions as Mail } from './mail'
-import { sessionKey$ } from '../getters'
-import { switchMap, retryWhen, delay } from 'rxjs/operators'
-import { empty, timer, defer } from 'rxjs'
+import { sessionKey$, isUserActive$ } from '../getters'
+import { switchMap, retryWhen, delay, withLatestFrom, filter } from 'rxjs/operators'
+import { empty, timer, defer, fromEvent, of } from 'rxjs'
 import { SESSION_LIFETIME_IN_MILLIS } from '@/constants'
 import { container } from 'tsyringe'
 import { AdministrationApi } from '@/api/definitions'
 import { ADMINISTRATION_API_TOKEN } from '@/api/injections'
 import { createSessionHeader } from './utilities'
+import { reloadPage } from '@/utilities'
 
 sessionKey$.pipe(
   switchMap(
@@ -26,5 +27,18 @@ sessionKey$.pipe(
     )
   )
 ).subscribe()
+
+
+fromEvent(document, 'visibilitychange').pipe(
+  switchMap(
+    () => document.visibilityState === 'visible' ? empty() : timer(
+      SESSION_LIFETIME_IN_MILLIS).pipe(
+        withLatestFrom(isUserActive$),
+        filter(([, isUserActive]) => isUserActive)
+      )
+  )
+).subscribe(() => {
+  reloadPage()
+})
 
 export const RootActions: ActionTree<RootState, RootState> = Object.assign({}, Account, Authentication, Keys, Mail)

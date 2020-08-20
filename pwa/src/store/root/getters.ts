@@ -21,3 +21,5 @@ export const getters: GetterTree<RootState, RootState> = {
 export const isOnline$ = state$.pipe(map((state) => state.status === Status.ONLINE), share())
 
 export const sessionKey$ = state$.pipe(map((state) => state.sessionKey), share())
+
+export const isUserActive$ = state$.pipe(map((state) => state.isUserActive), share())

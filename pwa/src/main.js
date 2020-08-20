@@ -12,7 +12,6 @@ import Vuetify from 'vuetify'
 import router from './router'
 import store from './store'
 import {
-  applyFreezeWhenPageIsHidden,
   applyGoOfflineOnRequestError
 } from './aspects'
 
@@ -45,7 +44,6 @@ Vue.component('form-text-field', FormTextField)
 // That said, given the migration to RxJS we may be able to get rid of all
 // of them soon!
 applyGoOfflineOnRequestError()
-applyFreezeWhenPageIsHidden()
 
 sodium.ready.then(() =>
   new Vue({
