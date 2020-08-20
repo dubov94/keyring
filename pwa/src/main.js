@@ -10,7 +10,8 @@ import VueRx from 'vue-rx'
 import Vuelidate from 'vuelidate'
 import Vuetify from 'vuetify'
 import router from './router'
-import store from './store'
+import '@/store'
+import { getStore } from '@/store/injections'
 
 Vue.use(VueI18n)
 Vue.use(VueRx)
@@ -34,7 +35,7 @@ sodium.ready.then(() =>
   new Vue({
     render: h => h(Application),
     router,
-    store,
+    store: getStore(),
     i18n: new VueI18n({
       locale: 'en',
       messages: LOCALE_MESSAGES

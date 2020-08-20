@@ -9,14 +9,14 @@ import Settings from '@/views/settings/Index'
 import ThreatAnalysis from '@/views/security/ThreatAnalysis'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import store from '@/store'
+import { getStore } from '@/store/injections'
 
 Vue.use(VueRouter)
 
 const authenticationGuard = (to, from, next) => {
-  if (!store.getters.isUserActive) {
+  if (!getStore().getters.isUserActive) {
     next('/log-in')
-  } else if (store.state.requiresMailVerification) {
+  } else if (getStore().state.requiresMailVerification) {
     next('/mail-verification')
   } else {
     next()
@@ -24,7 +24,7 @@ const authenticationGuard = (to, from, next) => {
 }
 
 const noActiveUserGuard = (to, from, next) => {
-  if (store.getters.isUserActive) {
+  if (getStore().getters.isUserActive) {
     next('/dashboard')
   } else {
     next()
@@ -53,9 +53,9 @@ const router = new VueRouter({
       path: '/mail-verification',
       component: MailVerification,
       beforeEnter: (to, from, next) => {
-        if (!store.getters.isUserActive) {
+        if (!getStore().getters.isUserActive) {
           next('/log-in')
-        } else if (!store.state.requiresMailVerification) {
+        } else if (!getStore().state.requiresMailVerification) {
           next('/dashboard')
         } else {
           next()

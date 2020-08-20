@@ -4,4 +4,4 @@ import { container } from 'tsyringe'
 
 export const STORE_TOKEN = 'Store'
 
-export const getState = () => container.resolve<Store<RootState>>(STORE_TOKEN)
+export const getStore = () => container.resolve<Store<RootState>>(STORE_TOKEN)

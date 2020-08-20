@@ -2,7 +2,7 @@ import { MutationTree } from 'vuex'
 import { RootState, Key, Session } from '../state'
 import { Status } from './status'
 import { Subject } from 'rxjs'
-import { getState } from '../injections'
+import { getStore } from '../injections'
 
 export enum Type {
   SET_STATUS = 'setStatus',
@@ -20,7 +20,7 @@ export enum Type {
 
 export const setSessionKey$ = new Subject<string | null>()
 setSessionKey$.subscribe((sessionKey) => {
-  getState().commit(Type.SET_SESSION_KEY, sessionKey)
+  getStore().commit(Type.SET_SESSION_KEY, sessionKey)
 })
 
 export const mutations: MutationTree<RootState> = {
