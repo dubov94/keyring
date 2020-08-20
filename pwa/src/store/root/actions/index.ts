@@ -4,7 +4,7 @@ import { AccountActions as Account } from './account'
 import { AuthenticationActions as Authentication } from './authentication'
 import { KeysActions as Keys } from './keys'
 import { MailActions as Mail } from './mail'
-import { setSessionKey$ } from '../mutations'
+import { sessionKey$ } from '../getters'
 import { switchMap, retryWhen, delay } from 'rxjs/operators'
 import { empty, timer, defer } from 'rxjs'
 import { SESSION_LIFETIME_IN_MILLIS } from '@/constants'
@@ -13,7 +13,7 @@ import { AdministrationApi } from '@/api/definitions'
 import { ADMINISTRATION_API_TOKEN } from '@/api/injections'
 import { createSessionHeader } from './utilities'
 
-setSessionKey$.pipe(
+sessionKey$.pipe(
   switchMap(
     (sessionKey) => sessionKey === null ? empty() : timer(
       SESSION_LIFETIME_IN_MILLIS / 2, SESSION_LIFETIME_IN_MILLIS / 2
