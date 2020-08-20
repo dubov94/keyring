@@ -11,7 +11,7 @@ import Vuex from 'vuex'
 import VuexPersist from 'vuex-persist'
 import { state$ } from './subject'
 import { container } from 'tsyringe'
-import { STORE_TOKEN } from './injection_tokens'
+import { STORE_TOKEN } from './injections'
 
 Vue.use(Vuex)
 

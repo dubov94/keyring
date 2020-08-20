@@ -2,7 +2,7 @@ import { MutationTree } from 'vuex'
 import { RootState, Key, Session } from '../state'
 import { Status } from './status'
 import { Subject } from 'rxjs'
-import { getState } from '../injection_tokens'
+import { getState } from '../injections'
 
 export enum Type {
   SET_STATUS = 'setStatus',

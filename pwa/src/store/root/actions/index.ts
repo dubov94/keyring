@@ -10,7 +10,7 @@ import { empty, timer, defer } from 'rxjs'
 import { SESSION_LIFETIME_IN_MILLIS } from '@/constants'
 import { container } from 'tsyringe'
 import { AdministrationApi } from '@/api/definitions'
-import { ADMINISTRATION_API_TOKEN } from '@/api/injection_tokens'
+import { ADMINISTRATION_API_TOKEN } from '@/api/injections'
 import { createSessionHeader } from './utilities'
 
 setSessionKey$.pipe(
