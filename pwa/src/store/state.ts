@@ -1,4 +1,5 @@
 import { Status } from './root/status'
+import { ServiceRegisterResponseError } from '@/api/definitions'
 
 export interface Password {
   value: string;
@@ -21,9 +22,39 @@ export interface Session {
   geolocation: Geolocation;
 }
 
+export enum RegistrationState {
+  IDLE,
+  GENERATING_PARAMETRIZATION,
+  COMPUTING_MASTER_KEY_DERIVATIVES,
+  MAKING_REQUEST,
+  ERROR,
+  SUCCESS,
+}
+
+export enum RegistrationErrorType {
+  EXCEPTION = 'EXCEPTION',
+  FAILURE = 'FAILURE',
+}
+
+export interface RegistrationException {
+  type: RegistrationErrorType.EXCEPTION;
+  message: string;
+}
+
+export interface RegistrationFailure {
+  type: RegistrationErrorType.FAILURE;
+  error: ServiceRegisterResponseError;
+}
+
+export interface RegistrationData {
+  state: RegistrationState;
+  error?: RegistrationException | RegistrationFailure;
+}
+
 export interface RootState {
   status: Status;
   isUserActive: boolean;
+  registrationData: RegistrationData;
   parametrization: string | null;
   encryptionKey: string | null;
   sessionKey: string | null;
@@ -35,6 +66,10 @@ export interface RootState {
 export const constructInitialRootState = (): RootState => ({
   status: Status.OFFLINE,
   isUserActive: false,
+  registrationData: {
+    state: RegistrationState.IDLE,
+    error: undefined
+  },
   parametrization: null,
   encryptionKey: null,
   sessionKey: null,

@@ -1,8 +1,7 @@
 import { MutationTree } from 'vuex'
-import { RootState, Key, Session } from '../state'
+import { RootState, Key, Session, RegistrationData } from '../state'
 import { Status } from './status'
-import { Subject } from 'rxjs'
-import { getStore } from '../injections'
+import { createCommitSubject } from '../subject'
 
 export enum Type {
   SET_STATUS = 'setStatus',
@@ -16,12 +15,16 @@ export enum Type {
   DELETE_USER_KEY = 'deleteUserKey',
   SET_RECENT_SESSIONS = 'setRecentSessions',
   SET_REQUIRES_MAIL_VERIFICATION = 'setRequiresMailVerification',
+  SET_REGISTRATION_DATA = 'setRegistrationData',
 }
 
-export const setSessionKey$ = new Subject<string | null>()
-setSessionKey$.subscribe((sessionKey) => {
-  getStore().commit(Type.SET_SESSION_KEY, sessionKey)
-})
+export const setRegistrationData$ = createCommitSubject<RegistrationData>(Type.SET_REGISTRATION_DATA)
+export const setSessionKey$ = createCommitSubject<string | null>(Type.SET_SESSION_KEY)
+export const setParametrization$ = createCommitSubject<string>(Type.SET_PARAMETRIZATION)
+export const setEncryptionKey$ = createCommitSubject<string>(Type.SET_ENCRYPTION_KEY);
+export const setRequiresMailVerification$ = createCommitSubject<boolean>(Type.SET_REQUIRES_MAIL_VERIFICATION);
+export const setStatus$ = createCommitSubject<Status>(Type.SET_STATUS)
+export const setIsUserActive$ = createCommitSubject<boolean>(Type.SET_IS_USER_ACTIVE)
 
 export const mutations: MutationTree<RootState> = {
   [Type.SET_STATUS] (state, status: Status) {
@@ -83,5 +86,8 @@ export const mutations: MutationTree<RootState> = {
   },
   [Type.SET_REQUIRES_MAIL_VERIFICATION] (state, value: boolean) {
     state.requiresMailVerification = value
+  },
+  [Type.SET_REGISTRATION_DATA] (state, value: RegistrationData) {
+    state.registrationData = value
   }
 }

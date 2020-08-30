@@ -8,7 +8,8 @@
               <v-card-text>
                 <v-form @keydown.native.enter.prevent="submit">
                   <form-text-field type="text" label="Username" prepend-icon="person" autofocus
-                    v-model="username" :dirty="$v.username.$dirty" :errors="usernameErrors"
+                    :value="username.value" @input="setUsername"
+                    :dirty="$v.username.$dirty" :errors="usernameErrors"
                     @touch="$v.username.$touch()" @reset="$v.username.$reset()">
                   </form-text-field>
                   <form-text-field type="password" label="Password" prepend-icon="lock"
@@ -26,8 +27,15 @@
                 </v-form>
               </v-card-text>
               <v-card-actions>
-                <v-btn block color="primary" class="mx-4"
-                  @click="submit" :loading="requestInProgress">Register</v-btn>
+                <v-btn block color="primary" class="mx-4" @click="submit"
+                  :loading="hasProgressMessage">
+                  <span>Register</span>
+                  <template v-slot:loader>
+                    <v-progress-circular indeterminate :size="23" :width="2">
+                    </v-progress-circular>
+                    <span class="ml-3">{{ progressMessage }}</span>
+                  </template>
+                </v-btn>
               </v-card-actions>
               <v-layout justify-center py-2>
                 <router-link to="/log-in">Log in</router-link>
@@ -41,9 +49,18 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex'
 import { email, required, sameAs } from 'vuelidate/lib/validators'
 import Page from '@/components/Page'
+import { register$, RegisterActionType } from '@/store/root/actions/authentication'
+import { registrationData$ } from '@/store/root/getters'
+import { RegistrationState, RegistrationErrorType } from '@/store/state'
+import { ServiceRegisterResponseError } from '@/api/definitions'
+
+const STATE_TO_MESSAGE = new Map([
+  [RegistrationState.GENERATING_PARAMETRIZATION, 'Generating salt'],
+  [RegistrationState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
+  [RegistrationState.MAKING_REQUEST, 'Making request']
+])
 
 export default {
   components: {
@@ -51,19 +68,32 @@ export default {
   },
   data () {
     return {
-      username: '',
+      username: {
+        value: '',
+        frozen: false
+      },
       password: '',
       repeat: '',
-      mail: '',
-      requestInProgress: false,
-      takenUserNames: []
+      mail: ''
+    }
+  },
+  subscriptions () {
+    return {
+      registrationData: registrationData$
     }
   },
   validations: {
     username: {
       required,
-      valid () {
-        return !this.takenUserNames.includes(this.username)
+      isAvailable () {
+        if (this.registrationData.state === RegistrationState.ERROR) {
+          if (this.registrationData.error.type === RegistrationErrorType.FAILURE) {
+            if (this.registrationData.error.error === ServiceRegisterResponseError.NAMETAKEN) {
+              return !this.username.frozen
+            }
+          }
+        }
+        return true
       }
     },
     password: { required },
@@ -74,7 +104,7 @@ export default {
     usernameErrors () {
       return {
         [this.$t('USERNAME_CANNOT_BE_EMPTY')]: !this.$v.username.required,
-        [this.$t('USERNAME_IS_ALREADY_TAKEN')]: !this.$v.username.valid
+        [this.$t('USERNAME_IS_ALREADY_TAKEN')]: !this.$v.username.isAvailable
       }
     },
     passwordErrors () {
@@ -92,35 +122,37 @@ export default {
         [this.$t('EMAIL_ADDRESS_IS_REQUIRED')]: !this.$v.mail.required,
         [this.$t('EMAIL_ADDRESS_IS_INVALID')]: !this.$v.mail.email
       }
+    },
+    progressMessage () {
+      if (STATE_TO_MESSAGE.has(this.registrationData.state)) {
+        return STATE_TO_MESSAGE.get(this.registrationData.state)
+      }
+      return null
+    },
+    hasProgressMessage () {
+      return this.progressMessage !== null
     }
   },
   methods: {
-    ...mapActions({
-      register: 'register'
-    }),
-    async submit () {
-      if (!this.requestInProgress) {
-        this.$v.$touch()
-        if (!this.$v.$invalid) {
-          try {
-            this.requestInProgress = true
-            const username = this.username
-            const error = await this.register({
-              username,
-              password: this.password,
-              mail: this.mail
-            })
-            if (error === 'NONE') {
-              this.$router.push('/mail-verification')
-            } else if (error === 'NAME_TAKEN') {
-              this.takenUserNames.push(username)
-            }
-          } finally {
-            this.requestInProgress = false
-          }
-        }
+    setUsername (value) {
+      this.username.value = value
+      this.username.frozen = false
+    },
+    submit () {
+      this.$v.$touch()
+      if (!this.$v.$invalid) {
+        this.username.frozen = true
+        register$.next({
+          type: RegisterActionType.REGISTER,
+          username: this.username.value,
+          password: this.password,
+          mail: this.mail
+        })
       }
     }
+  },
+  beforeDestroy () {
+    register$.next({ type: RegisterActionType.RESET })
   }
 }
 </script>

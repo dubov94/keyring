@@ -23,3 +23,5 @@ export const isOnline$ = state$.pipe(map((state) => state.status === Status.ONLI
 export const sessionKey$ = state$.pipe(map((state) => state.sessionKey), share())
 
 export const isUserActive$ = state$.pipe(map((state) => state.isUserActive), share())
+
+export const registrationData$ = state$.pipe(map((state) => state.registrationData), share())
