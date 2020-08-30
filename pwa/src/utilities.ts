@@ -32,7 +32,7 @@ export const createCharacterRange = (first: string, last: string): string => {
 
 /** Given an array of ranges generates a sequence having at least one symbol from each of the ranges. */
 export const generateSequenceOffRanges = (ranges: Array<string>, length: number, rng: RNG = random): string => {
-  const sequence = []
+  const sequence: Array<string> = []
   let pool = ''
   for (const range of ranges) {
     sequence.push(range[rng(0, range.length)])
