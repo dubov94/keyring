@@ -69,9 +69,9 @@ export default Vue.extend({
       if (this.groupCount > 0) {
         const list = []
         for (const identifier of data(this.duplicateGroups!, [])[this.groupNumber - 1]) {
-          const index = this.userKeys!.findIndex(key => key.identifier === identifier) || -1
-          if (index > -1) {
-            list.push(this.userKeys![index])
+          const maybeIndex = this.userKeys!.findIndex(key => key.identifier === identifier)
+          if (maybeIndex !== undefined && maybeIndex > -1) {
+            list.push(this.userKeys![maybeIndex])
           }
         }
         return list
