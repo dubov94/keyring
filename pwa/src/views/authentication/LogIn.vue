@@ -61,7 +61,6 @@ import {
 } from '@/store/state'
 import { act, reset } from '@/store/resettable_action'
 import { Undefinable } from '@/utilities'
-import { isAuthenticated$ } from '@/store/root/modules/user'
 import { showToast$ } from '@/store/root/modules/interface/toast'
 
 const STATE_TO_MESSAGE = new Map<FlowProgressBasicState | AuthenticationViaApiProgressState | AuthenticationViaDepotProgressState, string>([
@@ -196,7 +195,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   beforeDestroy () {
     logInViaApi$.next(reset())
     logInViaDepot$.next(reset())
-    if (this.depotUsername === null && depotBit$.getValue()) {
+    if (depotUsername$.getValue() === null && depotBit$.getValue()) {
       depotBit$.next(false)
     }
   }
