@@ -6,102 +6,136 @@
     <v-card-text>
       <v-form @keydown.native.enter.prevent="submit">
         <form-text-field type="text" label="New username" prepend-icon="person_outline"
-          v-model="username" :dirty="$v.username.$dirty" :errors="usernameErrors"
+          :value="username" @input="setUsername"
+          :dirty="$v.username.$dirty" :errors="usernameErrors"
           @touch="$v.username.$touch()" @reset="$v.username.$reset()"></form-text-field>
         <form-text-field type="password" label="Password" prepend-icon="lock"
-          v-model="password" :dirty="$v.password.$dirty" :errors="passwordErrors"
+          :value="password" @input="setPassword"
+          :dirty="$v.password.$dirty" :errors="passwordErrors"
           @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
-        <div class="text-xs-right">
-          <v-btn class="mr-0" :loading="requestInProgress"
-            color="primary" @click="submit" :disabled="!isOnline">Submit</v-btn>
+        <div class="mx-3">
+          <v-btn block :loading="inProgress"
+            color="primary" @click="submit" :disabled="!canAccessApi">Submit</v-btn>
         </div>
       </v-form>
     </v-card-text>
   </v-card>
 </template>
 
-<script>
-import { mapActions, mapGetters } from 'vuex'
+<script lang="ts">
+import Vue, { VueConstructor } from 'vue'
 import { required } from 'vuelidate/lib/validators'
-import { getShortHash } from '@/utilities'
+import { Undefinable } from '@/utilities'
+import { ChangeUsernameProgress, ChangeUsernameProgressState } from '@/store/state'
+import { canAccessApi$ } from '@/store/root/modules/user'
+import { changeUsername$, changeUsernameProgress$ } from '@/store/root/modules/user/modules/settings'
+import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
+import { ServiceChangeUsernameResponseError } from '@/api/definitions'
+import { act, reset } from '@/store/resettable_action'
 
-export default {
+interface Mixins {
+  frozen: boolean;
+}
+
+export default (Vue as VueConstructor<Vue & Mixins>).extend({
   validations: {
     username: {
       required,
-      valid () {
-        return !this.takenUserNames.includes(this.username)
+      isAvailable () {
+        if (this.changeUsernameProgress?.state === FlowProgressBasicState.ERROR) {
+          if (this.changeUsernameProgress?.error.type === FlowProgressErrorType.FAILURE) {
+            if (this.changeUsernameProgress?.error.error === ServiceChangeUsernameResponseError.NAMETAKEN) {
+              return !this.frozen
+            }
+          }
+        }
+        return true
       }
     },
     password: {
-      async valid () {
-        return !this.invalidShortHashes.includes(
-          await getShortHash(this.password))
+      valid () {
+        if (this.changeUsernameProgress?.state === FlowProgressBasicState.ERROR) {
+          if (this.changeUsernameProgress?.error.type === FlowProgressErrorType.FAILURE) {
+            if (this.changeUsernameProgress?.error.error === ServiceChangeUsernameResponseError.INVALIDDIGEST) {
+              return !this.frozen
+            }
+          }
+        }
+        return true
       }
     }
   },
   data () {
     return {
-      requestInProgress: false,
-      username: '',
-      password: '',
-      takenUserNames: [],
-      invalidShortHashes: []
+      ...{
+        username: '',
+        password: '',
+        frozen: false
+      },
+      ...{
+        canAccessApi: undefined as Undefinable<boolean>,
+        changeUsernameProgress: undefined as Undefinable<ChangeUsernameProgress>
+      }
+    }
+  },
+  subscriptions () {
+    return {
+      canAccessApi: canAccessApi$,
+      changeUsernameProgress: changeUsernameProgress$
     }
   },
   computed: {
-    ...mapGetters({
-      isOnline: 'isOnline'
-    }),
-    usernameErrors () {
+    inProgress (): boolean {
+      return Object.keys(ChangeUsernameProgressState).includes(this.changeUsernameProgress?.state || FlowProgressBasicState.IDLE)
+    },
+    usernameErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('USERNAME_CANNOT_BE_EMPTY')]: !this.$v.username.required,
-        [this.$t('USERNAME_IS_ALREADY_TAKEN')]: !this.$v.username.valid
+        [this.$t('USERNAME_CANNOT_BE_EMPTY') as string]: !this.$v.username.required,
+        [this.$t('USERNAME_IS_ALREADY_TAKEN') as string]: !this.$v.username.isAvailable
       }
     },
-    passwordErrors () {
+    passwordErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
+        [this.$t('INVALID_PASSWORD') as string]: !this.$v.password.valid
       }
     }
   },
   methods: {
-    ...mapActions({
-      changeUsername: 'changeUsername',
-      displaySnackbar: 'interface/displaySnackbar'
-    }),
-    async submit () {
-      if (this.isOnline && !this.requestInProgress) {
+    setUsername (value: string): void {
+      this.username = value
+      this.frozen = false
+    },
+    setPassword (value: string): void {
+      this.password = value
+      this.frozen = false
+    },
+    submit (): void {
+      if (this.canAccessApi && !this.inProgress) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
-          try {
-            this.requestInProgress = true
-            const username = this.username
-            const password = this.password
-            const error = await this.changeUsername({ username, password })
-            if (error === 'NONE') {
-              document.activeElement.blur()
-              this.$v.$reset()
-              this.username = ''
-              this.password = ''
-              this.takenUserNames = []
-              this.invalidShortHashes = []
-              this.displaySnackbar({
-                message: this.$t('SUCCESS'),
-                timeout: 1500
-              })
-            } else if (error === 'NAME_TAKEN') {
-              this.takenUserNames.push(username)
-            } else if (error === 'INVALID_DIGEST') {
-              this.invalidShortHashes.push(
-                await getShortHash(password))
-            }
-          } finally {
-            this.requestInProgress = false
-          }
+          this.frozen = true
+          changeUsername$.next(act({
+            username: this.username,
+            password: this.password
+          }))
         }
       }
     }
+  },
+  watch: {
+    changeUsernameProgress (newValue) {
+      if (newValue?.state === FlowProgressBasicState.SUCCESS) {
+        this.username = ''
+        this.password = ''
+        this.frozen = false
+        this.$v.$reset()
+        changeUsername$.next(reset())
+        ;(document.activeElement as HTMLInputElement).blur()
+      }
+    }
+  },
+  beforeDestroy () {
+    changeUsername$.next(reset())
   }
-}
+})
 </script>

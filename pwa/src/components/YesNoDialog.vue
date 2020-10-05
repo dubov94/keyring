@@ -16,10 +16,11 @@
   </v-dialog>
 </template>
 
-<script>
+<script lang="ts">
+import Vue from 'vue'
 import { XL_MINIMAL_WIDTH } from './constants'
 
-export default {
+export default Vue.extend({
   props: ['value', 'message'],
   data () {
     return {
@@ -41,5 +42,5 @@ export default {
       this.affirm()
     }
   }
-}
+})
 </script>

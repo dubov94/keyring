@@ -31,11 +31,11 @@
             An unobtrusive password manager 😋
           </h2>
           <div class="mt-5 text-xs-center">
-            <template v-if="!isUserActive">
+            <template v-if="!isAuthenticated">
               <v-btn large outline color="white" to="/log-in">Log in</v-btn>
               <v-btn large outline color="white" to="/register">Register</v-btn>
             </template>
-            <template v-if="isUserActive">
+            <template v-if="isAuthenticated">
               <v-btn large outline color="white" to="/dashboard">Go to dashboard</v-btn>
             </template>
           </div>
@@ -45,27 +45,34 @@
   </page>
 </template>
 
-<script>
-import { mapGetters } from 'vuex'
+<script lang="ts">
+import Vue, { VueConstructor } from 'vue'
 import trianglify from 'trianglify'
-import Page from '@/components/Page'
+import Page from '@/components/Page.vue'
+import { isAuthenticated$ } from '@/store/root/modules/user'
 
-export default {
+interface Mixins {
+  resizeObserver: any;
+}
+
+export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
     page: Page
   },
+  subscriptions () {
+    return {
+      isAuthenticated: isAuthenticated$
+    }
+  },
   computed: {
-    ...mapGetters({
-      isUserActive: 'isUserActive'
-    }),
-    nameDynamicClasses () {
+    nameDynamicClasses (): { [key: string]: boolean } {
       return {
         'display-4': this.$vuetify.breakpoint.lgAndUp,
         'display-3': this.$vuetify.breakpoint.mdOnly,
         'display-2': this.$vuetify.breakpoint.smAndDown
       }
     },
-    descriptionDynamicClasses () {
+    descriptionDynamicClasses (): { [key: string]: boolean } {
       return {
         'display-2': this.$vuetify.breakpoint.lgAndUp,
         'display-1': this.$vuetify.breakpoint.mdOnly,
@@ -74,19 +81,20 @@ export default {
     }
   },
   methods: {
-    renderBackground () {
-      const background = this.$refs.background
+    renderBackground (): void {
+      const background = this.$refs.background as HTMLElement
       const pattern = trianglify({
         width: background.clientWidth,
         height: background.clientHeight,
         xColors: 'YlGnBu',
         seed: 'keyring'
       })
-      pattern.toCanvas(this.$refs.backgroundCanvas)
+      pattern.toCanvas(this.$refs.backgroundCanvas as HTMLElement)
     }
   },
   created () {
-    this.resizeObserver = new ResizeObserver(() => {
+    // https://github.com/microsoft/TypeScript/issues/37861
+    this.resizeObserver = new (window as any).ResizeObserver(() => {
       this.renderBackground()
     })
   },
@@ -96,5 +104,5 @@ export default {
   beforeDestroy () {
     this.resizeObserver.unobserve(this.$refs.background)
   }
-}
+})
 </script>

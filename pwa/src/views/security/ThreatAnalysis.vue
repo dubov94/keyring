@@ -11,7 +11,7 @@
       <v-flex xs8>
         <h2>Threat analysis</h2>
         <p class="mb-0">
-          Click the button to enable reactive password scrutiny for this
+          Click the button to toggle reactive password scrutiny for this
           session. Note that we use
           <a href="https://haveibeenpwned.com/Passwords"
             target="_blank" rel="noopener noreferrer">Have I Been Pwned</a>
@@ -19,52 +19,46 @@
         </p>
       </v-flex>
       <v-flex xs3 offset-xs1 class="text-xs-right">
-        <v-btn color="primary" :disabled="!isOnline || isAnalysisEnabled"
-          @click="enableAnalysis">
-          {{ isAnalysisEnabled ? 'Enabled' : 'Enable'}}
+        <v-btn color="primary" @click="toggle">
+          {{ isEnabled ? 'Disable' : 'Enable'}}
         </v-btn>
       </v-flex>
     </v-layout>
-    <duplicate-passwords v-if="isAnalysisEnabled" class="mt-4"
-      @edit="handleEditKey">
+    <duplicate-passwords v-if="isEnabled" class="mt-4" @edit="editKey">
     </duplicate-passwords>
-    <compromised-passwords v-if="isAnalysisEnabled" class="mt-4"
-      @edit="handleEditKey">
+    <compromised-passwords v-if="isEnabled" class="mt-4" @edit="editKey">
     </compromised-passwords>
     <editor></editor>
   </v-container>
 </template>
 
-<script>
-import CompromisedPasswords from './CompromisedPasswords'
-import DuplicatePasswords from './DuplicatePasswords'
-import Editor from '@/components/Editor'
-import { mapActions, mapGetters, mapMutations, mapState } from 'vuex'
+<script lang="ts">
+import Vue from 'vue'
+import CompromisedPasswords from './CompromisedPasswords.vue'
+import DuplicatePasswords from './DuplicatePasswords.vue'
+import Editor from '@/components/Editor.vue'
+import { openEditor$ } from '@/store/root/modules/interface/editor'
+import { securityOn$ } from '@/store/root/modules/user/modules/security'
 
-export default {
+export default Vue.extend({
   components: {
     compromisedPasswords: CompromisedPasswords,
     duplicatePasswords: DuplicatePasswords,
     editor: Editor
   },
-  computed: {
-    ...mapState({
-      isAnalysisEnabled: state => state.threats.isAnalysisEnabled
-    }),
-    ...mapGetters({
-      isOnline: 'isOnline'
-    })
+  data () {
+    return {
+      isEnabled: securityOn$.getValue()
+    }
   },
   methods: {
-    ...mapMutations({
-      openEditor: 'interface/openEditor'
-    }),
-    ...mapActions({
-      enableAnalysis: 'threats/enableAnalysis'
-    }),
-    handleEditKey ({ identifier, reveal }) {
-      this.openEditor({ identifier, reveal })
+    toggle () {
+      this.isEnabled = !this.isEnabled
+      securityOn$.next(this.isEnabled)
+    },
+    editKey ({ identifier, reveal }: { identifier: string; reveal: boolean }) {
+      openEditor$.next({ identifier, reveal })
     }
   }
-}
+})
 </script>

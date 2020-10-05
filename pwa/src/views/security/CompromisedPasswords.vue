@@ -4,9 +4,8 @@
       <v-layout justify-space-between align-center>
         <h3>
           Compromised passwords &mdash;
-          <span v-if="keyCount === 0" class="success--text">
-            0
-          </span>
+          <span v-if="keyCount < 0">⚠️</span>
+          <span v-else-if="keyCount === 0" class="success--text">0</span>
           <span v-else class="error--text">{{ keyCount }}</span>
         </h3>
         <v-progress-circular v-show="inProgress" indeterminate
@@ -16,33 +15,59 @@
     </v-card-title>
     <v-divider v-if="keyCount > 0"></v-divider>
     <v-card-text v-if="keyCount > 0">
-      <password-masonry :user-keys="exposedKeys" @edit="handleEditKey">
+      <password-masonry :user-keys="exposedKeys" @edit="editKey">
       </password-masonry>
     </v-card-text>
   </v-card>
 </template>
 
-<script>
-import PasswordMasonry from '@/components/PasswordMasonry'
-import { mapState } from 'vuex'
+<script lang="ts">
+import Vue from 'vue'
+import PasswordMasonry from '@/components/PasswordMasonry.vue'
+import { userKeys$ } from '@/store/root/modules/user'
+import { exposedUserKeyIds$ } from '@/store/root/modules/user/modules/security'
+import { Undefinable } from '@/utilities'
+import { ExposedUserKeyIdsProgress, Key, ExposedUserKeyIdsProgressState } from '@/store/state'
+import { data, isError } from '@/store/flow'
 
-export default {
+export default Vue.extend({
   components: {
     passwordMasonry: PasswordMasonry
   },
+  data () {
+    return {
+      ...{
+        userKeys: undefined as Undefinable<Array<Key>>,
+        exposedKeyIds: undefined as Undefinable<ExposedUserKeyIdsProgress>
+      }
+    }
+  },
+  subscriptions () {
+    return {
+      userKeys: userKeys$,
+      exposedKeyIds: exposedUserKeyIds$
+    }
+  },
   computed: {
-    ...mapState({
-      userKeys: state => state.userKeys,
-      exposedKeys: state => state.userKeys.filter(({ identifier }) =>
-        state.threats.exposedUserKeyIds.includes(identifier)),
-      keyCount: state => state.threats.exposedUserKeyIds.length,
-      inProgress: state => state.threats.gettingExposedUserKeys
-    })
+    exposedKeys (): Undefinable<Array<Key>> {
+      if (this.userKeys && this.exposedKeyIds && !isError(this.exposedKeyIds)) {
+        return this.userKeys.filter(({ identifier }) =>
+          data(this.exposedKeyIds!, []).includes(identifier))
+      }
+      return undefined
+    },
+    keyCount (): number {
+      const count = this.exposedKeys?.length
+      return count === undefined ? -1 : count
+    },
+    inProgress (): boolean {
+      return this.exposedKeyIds?.state === ExposedUserKeyIdsProgressState.WORKING
+    }
   },
   methods: {
-    handleEditKey ({ identifier, reveal }) {
+    editKey ({ identifier, reveal }: { identifier: string; reveal: boolean }) {
       this.$emit('edit', { identifier, reveal })
     }
   }
-}
+})
 </script>

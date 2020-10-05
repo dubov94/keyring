@@ -4,14 +4,9 @@
       <v-flex xs10>
         <h2>Recent sessions</h2>
         <p>The table contains entries from the last 28 days.</p>
-        <v-data-table :loading="isOnline && !hasSessionsData"
+        <v-data-table :loading="isLoading"
           class="elevation-1" disable-initial-sort
           :headers="headers" :items="items">
-          <template slot="no-data">
-            <p v-if="!isOnline" class="text-xs-center my-0">
-              Connect to see recent sessions.
-            </p>
-          </template>
           <template slot="items" slot-scope="slotProps">
             <td>{{ slotProps.item.moment }}</td>
             <td>{{ slotProps.item.location }}</td>
@@ -26,63 +21,66 @@
   </v-container>
 </template>
 
-<script>
-import UaParser from 'ua-parser-js'
-import { mapActions, mapGetters, mapState } from 'vuex'
+<script lang="ts">
+import Vue from 'vue'
+import { UAParser } from 'ua-parser-js'
+import { Undefinable } from '@/utilities'
+import { RecentSessionsProgress, RecentSessionsProgressState } from '@/store/state'
+import { recentSessions$, fetchRecentSessions$ } from '@/store/root/modules/user/modules/security'
+import { data } from '@/store/flow'
+import { act, reset } from '@/store/resettable_action'
 
-export default {
+export default Vue.extend({
+  data () {
+    return {
+      ...{
+        recentSessions: undefined as Undefinable<RecentSessionsProgress>
+      }
+    }
+  },
+  subscriptions () {
+    return {
+      recentSessions: recentSessions$
+    }
+  },
   computed: {
-    ...mapState({
-      recentSessions: state => state.recentSessions || []
-    }),
-    ...mapGetters({
-      hasSessionsData: 'hasSessionsData',
-      isOnline: 'isOnline'
-    }),
-    headers () {
+    isLoading (): boolean {
+      return this.recentSessions?.state === RecentSessionsProgressState.WORKING
+    },
+    headers (): Array<{ text: string; value: string }> {
       return [
         { text: 'Timestamp', value: 'moment' },
         { text: 'IP address', value: 'location' },
         { text: 'User agent', value: 'browser' }
       ]
     },
-    items () {
-      return this.recentSessions.map(
-        ({ creationTimeInMillis, ipAddress, userAgent, geolocation }) => {
-          const moment = new Date(creationTimeInMillis).toLocaleString()
-          let area = null
-          if (geolocation.country) {
-            if (geolocation.city) {
-              area = `${geolocation.city}, ${geolocation.country}`
-            } else {
-              area = geolocation.country
+    items (): Array<{ moment: string; location: string; browser: { name?: string; version?: string } }> {
+      if (this.recentSessions) {
+        return data(this.recentSessions, []).map(
+          ({ creationTimeInMillis, ipAddress, userAgent, geolocation }) => {
+            const moment = new Date(creationTimeInMillis).toLocaleString()
+            let area = null
+            if (geolocation.country) {
+              if (geolocation.city) {
+                area = `${geolocation.city}, ${geolocation.country}`
+              } else {
+                area = geolocation.country
+              }
             }
+            const location = area === null ? ipAddress : `${ipAddress}, ${area}`
+            const browser = new UAParser(userAgent).getBrowser()
+            return { moment, location, browser }
           }
-          const location = area === null ? ipAddress : `${ipAddress}, ${area}`
-          const browser = new UaParser(userAgent).getBrowser()
-          return { moment, location, browser }
-        }
-      )
+        )
+      }
+      return []
     }
   },
-  methods: {
-    ...mapActions({
-      clearRecentSessions: 'clearRecentSessions',
-      fetchRecentSessions: 'fetchRecentSessions'
-    })
+  created () {
+    fetchRecentSessions$.next(act(undefined))
   },
   beforeDestroy () {
-    this.clearRecentSessions()
-  },
-  watch: {
-    isOnline: {
-      immediate: true,
-      handler (newValue) {
-        if (newValue) {
-          this.fetchRecentSessions()
-        }
-      }
-    }
+    fetchRecentSessions$.next(reset())
   }
-}
+})
 </script>

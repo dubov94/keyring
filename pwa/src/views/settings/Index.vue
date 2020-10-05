@@ -22,15 +22,16 @@
   </page>
 </template>
 
-<script>
-import ChangeMail from './ChangeMail'
-import ChangeMasterKey from './ChangeMasterKey'
-import ChangeUsername from './ChangeUsername'
-import DeleteAccount from './DeleteAccount'
-import Page from '@/components/Page'
-import UserMenu from '@/components/toolbar-with-menu/UserMenu'
+<script lang="ts">
+import Vue from 'vue'
+import ChangeMail from './ChangeMail.vue'
+import ChangeMasterKey from './ChangeMasterKey.vue'
+import ChangeUsername from './ChangeUsername.vue'
+import DeleteAccount from './DeleteAccount.vue'
+import Page from '@/components/Page.vue'
+import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
 
-export default {
+export default Vue.extend({
   components: {
     changeMail: ChangeMail,
     changeMasterKey: ChangeMasterKey,
@@ -45,9 +46,9 @@ export default {
     }
   },
   methods: {
-    menuSwitch (value) {
+    menuSwitch (value: boolean): void {
       this.showMenu = value
     }
   }
-}
+})
 </script>

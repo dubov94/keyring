@@ -23,7 +23,8 @@
                   <v-stepper-content step="2">
                     <v-form @keydown.native.enter.prevent="submit">
                       <form-text-field type="text" label="Code" prepend-icon="verified_user"
-                        v-model="code" :dirty="$v.code.$dirty" :errors="codeErrors" ref="code"
+                        :value="code.value" @input="setCode"
+                        :dirty="$v.code.$dirty" :errors="codeErrors" ref="code"
                         @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
                     </v-form>
                   </v-stepper-content>
@@ -34,7 +35,7 @@
               </v-card-text>
               <v-card-actions>
                 <v-btn block color="primary" class="mx-3 mb-2"
-                  @click="submit" :loading="requestInProgress">Activate</v-btn>
+                  @click="submit" :loading="inProgress">Activate</v-btn>
               </v-card-actions>
             </v-card>
           </v-flex>
@@ -44,65 +45,90 @@
   </page>
 </template>
 
-<script>
-import { mapActions, mapMutations } from 'vuex'
-import Page from '@/components/Page'
+<script lang="ts">
+import Vue, { VueConstructor } from 'vue'
+import Page from '@/components/Page.vue'
+import { releaseMailToken$, releaseMailTokenProgress$ } from '@/store/root/modules/user/modules/settings'
+import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
+import { ServiceReleaseMailTokenResponseError } from '@/api/definitions'
+import { act, reset } from '@/store/resettable_action'
+import { ReleaseMailTokenProgress, ReleaseMailTokenProgressState } from '@/store/state'
+import { Undefinable } from '@/utilities'
 
-export default {
+interface Mixins {
+  code: { frozen: boolean };
+}
+
+export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
     page: Page
   },
   data () {
     return {
-      code: '',
-      requestInProgress: false,
-      invalidCodes: []
+      ...{
+        code: {
+          value: '',
+          frozen: false
+        }
+      },
+      ...{
+        releaseMailTokenProgress: undefined as Undefinable<ReleaseMailTokenProgress>
+      }
     }
   },
-  async mounted () {
-    await this.$nextTick()
-    this.$refs.code.focus()
+  subscriptions () {
+    return {
+      releaseMailTokenProgress: releaseMailTokenProgress$
+    }
   },
   validations: {
     code: {
       valid () {
-        return !this.invalidCodes.includes(this.code)
+        if (this.releaseMailTokenProgress?.state === FlowProgressBasicState.ERROR) {
+          if (this.releaseMailTokenProgress?.error.type === FlowProgressErrorType.FAILURE) {
+            if (this.releaseMailTokenProgress?.error.error === ServiceReleaseMailTokenResponseError.INVALIDCODE) {
+              return !this.code.frozen
+            }
+          }
+        }
+        return true
       }
     }
   },
   computed: {
-    codeErrors () {
+    codeErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('INVALID_CODE')]: !this.$v.code.valid
+        [this.$t('INVALID_CODE') as string]: !this.$v.code.valid
       }
+    },
+    inProgress (): boolean {
+      return Object.keys(ReleaseMailTokenProgressState).includes(this.releaseMailTokenProgress?.state || FlowProgressBasicState.IDLE)
     }
   },
   methods: {
-    ...mapActions({
-      releaseMailToken: 'releaseMailToken'
-    }),
-    ...mapMutations({
-      setRequiresMailVerification: 'setRequiresMailVerification'
-    }),
-    async submit () {
-      if (!this.requestInProgress) {
+    setCode (value: string): void {
+      this.code.value = value
+      this.code.frozen = false
+    },
+    submit () {
+      if (!this.inProgress) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
-          try {
-            this.requestInProgress = true
-            const error = await this.releaseMailToken({ code: this.code })
-            if (error === 'NONE') {
-              this.setRequiresMailVerification(false)
-              this.$router.push('/dashboard')
-            } else if (error === 'INVALID_CODE') {
-              this.invalidCodes.push(this.code)
-            }
-          } finally {
-            this.requestInProgress = false
-          }
+          this.code.frozen = true
+          releaseMailToken$.next(act({
+            code: this.code.value,
+            redirect: true
+          }))
         }
       }
     }
+  },
+  async mounted () {
+    await (this as Vue).$nextTick()
+    ;(this.$refs.code as HTMLInputElement).focus()
+  },
+  beforeDestroy () {
+    releaseMailToken$.next(reset())
   }
-}
+})
 </script>

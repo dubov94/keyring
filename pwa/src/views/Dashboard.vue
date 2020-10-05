@@ -38,7 +38,7 @@
         </password-masonry>
       </v-container>
       <div class="dial">
-        <v-btn fab color="error" @click="addKey" :disabled="!isOnline">
+        <v-btn fab color="error" @click="addKey" :disabled="!canAccessApi">
           <v-icon small>fa-plus</v-icon>
         </v-btn>
       </div>
@@ -47,17 +47,21 @@
   </page>
 </template>
 
-<script>
-import Editor from '@/components/Editor'
-import Page from '@/components/Page'
-import PasswordMasonry from '@/components/PasswordMasonry'
-import UserMenu from '@/components/toolbar-with-menu/UserMenu'
-import { mapActions, mapMutations, mapState } from 'vuex'
-import { isOnline$ } from '@/store/root/getters'
+<script lang="ts">
+import Vue from 'vue'
+import Editor from '@/components/Editor.vue'
+import Page from '@/components/Page.vue'
+import PasswordMasonry from '@/components/PasswordMasonry.vue'
+import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
+import { takeUntil, tap } from 'rxjs/operators'
+import { canAccessApi$, userKeys$, createUserKeyHook$ } from '@/store/root/modules/user/index'
+import { openEditor$ } from '@/store/root/modules/interface/editor'
+import { Key } from '@/store/state'
+import { Undefinable } from '@/utilities'
 
 const CARDS_PER_PAGE = 12
 
-export default {
+export default Vue.extend({
   components: {
     editor: Editor,
     page: Page,
@@ -66,74 +70,70 @@ export default {
   },
   data () {
     return {
-      showMenu: false,
-      pageNumber: 1,
-      query: ''
+      ...{
+        showMenu: false,
+        pageNumber: 1,
+        query: ''
+      },
+      ...{
+        userKeys: undefined as Undefinable<Array<Key>>
+      }
     }
   },
   subscriptions () {
     return {
-      isOnline: isOnline$
+      canAccessApi: canAccessApi$,
+      userKeys: userKeys$
     }
   },
   computed: {
-    ...mapState({
-      userKeys: state => state.userKeys
-    }),
-    pageCount () {
+    pageCount (): number {
       return Math.max(Math.floor(
         (this.matchingCards.length + CARDS_PER_PAGE - 1) / CARDS_PER_PAGE), 1)
     },
-    paginationVisibleCount () {
+    paginationVisibleCount (): number {
       return this.$vuetify.breakpoint.smAndUp ? 7 : 5
     },
-    normalizedQuery () {
+    normalizedQuery (): string {
       return this.query.trim().toLowerCase()
     },
-    matchingCards () {
+    matchingCards (): Array<Key> {
       const prefix = this.normalizedQuery
-      let list = this.userKeys
+      let list = this.userKeys || []
       if (prefix !== '') {
         list = list.filter(key =>
           key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
       }
       return list
     },
-    visibleCards () {
+    visibleCards (): Array<Key> {
       const startIndex = (this.pageNumber - 1) * CARDS_PER_PAGE
       return this.matchingCards.slice(startIndex, startIndex + CARDS_PER_PAGE)
     },
-    cardsCount () {
+    cardsCount (): number {
       return this.matchingCards.length
     },
-    toolbarIsExtended () {
+    toolbarIsExtended (): boolean {
       return this.$vuetify.breakpoint.xsOnly
     },
-    toolbarSearchSlot () {
+    toolbarSearchSlot (): string {
       return this.toolbarIsExtended ? 'toolbarExtension' : 'toolbarDefault'
     }
   },
   methods: {
-    ...mapActions({
-      displaySnackbar: 'interface/displaySnackbar'
-    }),
-    ...mapMutations({
-      openEditor: 'interface/openEditor',
-      closeEditor: 'interface/closeEditor'
-    }),
-    menuSwitch (value) {
+    menuSwitch (value: boolean): void {
       this.showMenu = value
     },
-    addKey () {
-      this.openEditor({ identifier: null, reveal: false })
+    addKey (): void {
+      openEditor$.next({ identifier: null, reveal: false })
     },
-    handleEditKey ({ identifier, reveal }) {
-      this.openEditor({ identifier, reveal })
+    handleEditKey ({ identifier, reveal }: { identifier: string; reveal: boolean }): void {
+      openEditor$.next({ identifier, reveal })
     },
-    clearQuery () {
+    clearQuery (): void {
       this.query = ''
     },
-    resetNavigation () {
+    resetNavigation (): void {
       this.pageNumber = 1
     }
   },
@@ -147,20 +147,19 @@ export default {
       this.resetNavigation()
     }
   },
-  mounted () {
-    window.C = this
-    this.unsubscribeFromStore = this.$store.subscribe((mutation) => {
-      if (mutation.type === 'unshiftUserKey') {
+  created () {
+    createUserKeyHook$.pipe(
+      tap(() => {
         this.clearQuery()
         this.resetNavigation()
-      }
-    })
-    if (this.userKeys.length > 0) {
-      this.$refs.search.focus()
-    }
+      }),
+      takeUntil(this.beforeDestroy$)
+    ).subscribe()
   },
-  beforeDestroy () {
-    this.unsubscribeFromStore()
+  mounted () {
+    if ((this.userKeys?.length || 0) > 0) {
+      (this.$refs.search as HTMLInputElement).focus()
+    }
   }
-}
+})
 </script>

@@ -2,34 +2,21 @@
   <v-toolbar app clipped-left prominent color="primary" dark>
     <v-toolbar-side-icon v-if="hasMenu" @click="toggle">
     </v-toolbar-side-icon>
-    <v-btn icon to="/">
+    <v-btn icon :to="homeTarget">
       <v-icon>home</v-icon>
     </v-btn>
     <slot>
       <v-spacer></v-spacer>
     </slot>
-    <v-btn v-if="!isUserActive" icon to="/log-in">
+    <v-btn v-if="!isAuthenticated" icon to="/log-in">
       <v-icon>login</v-icon>
     </v-btn>
-    <v-menu v-if="isUserActive" offset-y :nudge-bottom="5">
+    <v-menu v-if="isAuthenticated" offset-y :nudge-bottom="5">
       <v-btn slot="activator" flat>
         {{ username }}
         <v-icon right>account_circle</v-icon>
       </v-btn>
       <v-list two-line class="py-0">
-        <v-list-tile v-on="isOffline ? {'click': reload} : {}">
-          <v-list-tile-action>
-            <v-icon :color="connectionIconColor">wifi</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>
-              {{ connectionTitle }}
-            </v-list-tile-title>
-            <v-list-tile-sub-title v-if="isOffline">
-              Click to reload
-            </v-list-tile-sub-title>
-          </v-list-tile-content>
-        </v-list-tile>
         <v-list-tile @click="logOut">
           <v-list-tile-action>
             <v-icon>fa-sign-out-alt</v-icon>
@@ -48,52 +35,39 @@
   </v-toolbar>
 </template>
 
-<script>
-import { mapGetters, mapState } from 'vuex'
-import { Status } from '@/store/root/status'
-import { reloadPage, purgeSessionStorageAndRedirect } from '../../utilities'
+<script lang="ts">
+import Vue from 'vue'
+import { isAuthenticated$, logOut$ } from '@/store/root/modules/user'
+import { sessionUsername$ } from '@/store/root/modules/session'
+import { Undefinable } from '@/utilities'
 
-export default {
+export default Vue.extend({
   props: ['value', 'hasMenu', 'extended'],
+  data () {
+    return {
+      ...{
+        isAuthenticated: undefined as Undefinable<boolean>
+      }
+    }
+  },
+  subscriptions () {
+    return {
+      isAuthenticated: isAuthenticated$,
+      username: sessionUsername$
+    }
+  },
   computed: {
-    ...mapState({
-      status: (state) => state.status,
-      username: (state) => state.session.username
-    }),
-    ...mapGetters({
-      isUserActive: 'isUserActive'
-    }),
-    connectionIconColor () {
-      return {
-        [Status.OFFLINE]: 'error',
-        [Status.CONNECTING]: 'warning',
-        [Status.ONLINE]: 'success'
-      }[this.status]
-    },
-    connectionTitle () {
-      return {
-        [Status.OFFLINE]: 'Offline',
-        [Status.CONNECTING]: 'Connecting...',
-        [Status.ONLINE]: 'Online'
-      }[this.status]
-    },
-    isOffline () {
-      return this.status === Status.OFFLINE
-    },
-    homeTarget () {
-      return this.isUserActive ? '/dashboard' : '/'
+    homeTarget (): string {
+      return this.isAuthenticated ? '/dashboard' : '/'
     }
   },
   methods: {
-    toggle () {
+    toggle (): void {
       this.$emit('input', !this.value)
     },
-    reload () {
-      reloadPage()
-    },
-    logOut () {
-      purgeSessionStorageAndRedirect()
+    logOut (): void {
+      logOut$.next()
     }
   }
-}
+})
 </script>

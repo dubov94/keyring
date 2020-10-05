@@ -48,47 +48,59 @@
   </page>
 </template>
 
-<script>
+<script lang="ts">
+import Vue, { VueConstructor } from 'vue'
 import { email, required, sameAs } from 'vuelidate/lib/validators'
-import Page from '@/components/Page'
-import { register$, RegisterActionType } from '@/store/root/actions/authentication'
-import { registrationData$ } from '@/store/root/getters'
-import { RegistrationState, RegistrationErrorType } from '@/store/state'
+import Page from '@/components/Page.vue'
+import { register$, registrationProgress$ } from '@/store/root'
+import { RegistrationProgress, RegistrationProgressState } from '@/store/state'
+import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
+import { act, reset } from '@/store/resettable_action'
 import { ServiceRegisterResponseError } from '@/api/definitions'
+import { Undefinable } from '@/utilities'
 
-const STATE_TO_MESSAGE = new Map([
-  [RegistrationState.GENERATING_PARAMETRIZATION, 'Generating salt'],
-  [RegistrationState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
-  [RegistrationState.MAKING_REQUEST, 'Making request']
+const STATE_TO_MESSAGE = new Map<FlowProgressBasicState | RegistrationProgressState, string>([
+  [RegistrationProgressState.GENERATING_PARAMETRIZATION, 'Generating salt'],
+  [RegistrationProgressState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
+  [RegistrationProgressState.MAKING_REQUEST, 'Making request']
 ])
 
-export default {
+interface Mixins {
+  username: { frozen: boolean };
+}
+
+export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
     page: Page
   },
   data () {
     return {
-      username: {
-        value: '',
-        frozen: false
+      ...{
+        username: {
+          value: '',
+          frozen: false
+        },
+        password: '',
+        repeat: '',
+        mail: ''
       },
-      password: '',
-      repeat: '',
-      mail: ''
+      ...{
+        registrationProgress: undefined as Undefinable<RegistrationProgress>
+      }
     }
   },
   subscriptions () {
     return {
-      registrationData: registrationData$
+      registrationProgress: registrationProgress$
     }
   },
   validations: {
     username: {
       required,
       isAvailable () {
-        if (this.registrationData.state === RegistrationState.ERROR) {
-          if (this.registrationData.error.type === RegistrationErrorType.FAILURE) {
-            if (this.registrationData.error.error === ServiceRegisterResponseError.NAMETAKEN) {
+        if (this.registrationProgress?.state === FlowProgressBasicState.ERROR) {
+          if (this.registrationProgress?.error.type === FlowProgressErrorType.FAILURE) {
+            if (this.registrationProgress?.error.error === ServiceRegisterResponseError.NAMETAKEN) {
               return !this.username.frozen
             }
           }
@@ -101,58 +113,61 @@ export default {
     mail: { email, required }
   },
   computed: {
-    usernameErrors () {
+    usernameErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('USERNAME_CANNOT_BE_EMPTY')]: !this.$v.username.required,
-        [this.$t('USERNAME_IS_ALREADY_TAKEN')]: !this.$v.username.isAvailable
+        [this.$t('USERNAME_CANNOT_BE_EMPTY') as string]: !this.$v.username.required,
+        [this.$t('USERNAME_IS_ALREADY_TAKEN') as string]: !this.$v.username.isAvailable
       }
     },
-    passwordErrors () {
+    passwordErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('PASSWORD_CANNOT_BE_EMPTY')]: !this.$v.password.required
+        [this.$t('PASSWORD_CANNOT_BE_EMPTY') as string]: !this.$v.password.required
       }
     },
-    repeatErrors () {
+    repeatErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('PASSWORDS_DO_NOT_MATCH')]: !this.$v.repeat.sameAs
+        [this.$t('PASSWORDS_DO_NOT_MATCH') as string]: !this.$v.repeat.sameAs
       }
     },
-    mailErrors () {
+    mailErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('EMAIL_ADDRESS_IS_REQUIRED')]: !this.$v.mail.required,
-        [this.$t('EMAIL_ADDRESS_IS_INVALID')]: !this.$v.mail.email
+        [this.$t('EMAIL_ADDRESS_IS_REQUIRED') as string]: !this.$v.mail.required,
+        [this.$t('EMAIL_ADDRESS_IS_INVALID') as string]: !this.$v.mail.email
       }
     },
-    progressMessage () {
-      if (STATE_TO_MESSAGE.has(this.registrationData.state)) {
-        return STATE_TO_MESSAGE.get(this.registrationData.state)
+    progressMessage (): string | null {
+      if (this.registrationProgress) {
+        if (STATE_TO_MESSAGE.has(this.registrationProgress.state)) {
+          return STATE_TO_MESSAGE.get(this.registrationProgress.state)!
+        }
       }
       return null
     },
-    hasProgressMessage () {
+    hasProgressMessage (): boolean {
       return this.progressMessage !== null
     }
   },
   methods: {
-    setUsername (value) {
+    setUsername (value: string): void {
       this.username.value = value
       this.username.frozen = false
     },
-    submit () {
-      this.$v.$touch()
-      if (!this.$v.$invalid) {
-        this.username.frozen = true
-        register$.next({
-          type: RegisterActionType.REGISTER,
-          username: this.username.value,
-          password: this.password,
-          mail: this.mail
-        })
+    submit (): void {
+      if (!this.hasProgressMessage) {
+        this.$v.$touch()
+        if (!this.$v.$invalid) {
+          this.username.frozen = true
+          register$.next(act({
+            username: this.username.value,
+            password: this.password,
+            mail: this.mail
+          }))
+        }
       }
     }
   },
   beforeDestroy () {
-    register$.next({ type: RegisterActionType.RESET })
+    register$.next(reset())
   }
-}
+})
 </script>

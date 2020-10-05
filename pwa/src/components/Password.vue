@@ -27,7 +27,7 @@
               {{ reveal ? 'Hide' : 'Show' }}
             </v-list-tile-content>
           </v-list-tile>
-          <v-list-tile @click="edit" :disabled="!isOnline">
+          <v-list-tile @click="edit" :disabled="!canAccessApi">
             <v-list-tile-content>
               Edit
             </v-list-tile-content>
@@ -47,41 +47,43 @@
   </v-card>
 </template>
 
-<script>
-import { mapActions, mapGetters } from 'vuex'
+<script lang="ts">
+import Vue from 'vue'
+import { showToast$ } from '@/store/root/modules/interface/toast'
+import { canAccessApi$ } from '@/store/root/modules/user'
+import { Undefinable } from '@/utilities'
 
-export default {
+export default Vue.extend({
   props: ['identifier', 'value', 'tags'],
-  computed: {
-    ...mapGetters({
-      isOnline: 'isOnline'
-    })
-  },
   data () {
     return {
-      reveal: false
+      ...{
+        reveal: false
+      },
+      ...{
+        canAccessApi: undefined as Undefinable<boolean>
+      }
+    }
+  },
+  subscriptions () {
+    return {
+      canAccessApi: canAccessApi$
     }
   },
   methods: {
-    ...mapActions({
-      displaySnackbar: 'interface/displaySnackbar'
-    }),
-    async copyText (string) {
+    async copyText (string: string): Promise<void> {
       await navigator.clipboard.writeText(string)
-      this.displaySnackbar({
-        message: 'Copied. Some clipboards retain history — be careful! 😱',
-        timeout: 3000
-      })
+      showToast$.next({ message: 'Done. Some clipboards retain history — be careful! 😱' })
     },
-    toggleReveal () {
+    toggleReveal (): void {
       this.reveal = !this.reveal
     },
-    edit () {
-      if (this.isOnline) {
+    edit (): void {
+      if (this.canAccessApi) {
         this.$emit('edit', { reveal: this.reveal })
         this.reveal = false
       }
     }
   }
-}
+})
 </script>

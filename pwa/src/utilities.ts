@@ -45,19 +45,6 @@ export const generateSequenceOffRanges = (ranges: Array<string>, length: number,
   return sequence.join('')
 }
 
-export const areArraysEqual = <T>(left: Array<T>, right: Array<T>): boolean => {
-  if (left.length !== right.length) {
-    return false
-  } else {
-    for (let index = 0; index < left.length; ++index) {
-      if (left[index] !== right[index]) {
-        return false
-      }
-    }
-    return true
-  }
-}
-
 export const sha1 = async (message: string): Promise<string> => {
   const messageUint8Array = new TextEncoder().encode(message)
   const hashArrayBuffer = await crypto.subtle.digest('SHA-1', messageUint8Array)
@@ -68,30 +55,14 @@ export const sha1 = async (message: string): Promise<string> => {
     .toUpperCase()
 }
 
-export const getShortHash = async (message: string, length = 3): Promise<string> => {
-  const hash = await sha1(message)
-  return hash.slice(0, length)
-}
+export const generatePassword = (length: number): string => generateSequenceOffRanges(
+  [
+    '@#$_&-+()/' + '*"\':;!?',
+    createCharacterRange('0', '9'),
+    createCharacterRange('A', 'Z'),
+    createCharacterRange('a', 'z')
+  ],
+  length
+)
 
-export const sleep = (timeInMs: number): Promise<void> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve()
-    }, timeInMs)
-  })
-
-export const purgeSessionStorageAndRedirect = (): void => {
-  sessionStorage.clear()
-  location.assign('/')
-}
-
-export const purgeAllStoragesAndLoadIndex = (): void => {
-  sessionStorage.clear()
-  localStorage.clear()
-  location.assign('/')
-}
-
-export const reloadPage = (): void => {
-  // May trigger `beforeunload` if the editor is open.
-  location.reload()
-}
+export type Undefinable<T> = T | undefined

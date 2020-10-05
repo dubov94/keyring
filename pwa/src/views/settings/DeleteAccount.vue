@@ -6,71 +6,93 @@
     <v-card-text>
       <v-form @keydown.native.enter.prevent="submit">
         <form-text-field type="password" label="Password" prepend-icon="lock"
-          v-model="password" :dirty="$v.password.$dirty" :errors="passwordErrors"
+          :value="password" @input="setPassword" :dirty="$v.password.$dirty" :errors="passwordErrors"
           @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
-        <div class="text-xs-right">
-          <v-btn class="mr-0" :loading="requestInProgress"
-            color="error" @click="submit" :disabled="!isOnline">Submit</v-btn>
+        <div class="mx-3">
+          <v-btn block :loading="inProgress"
+            color="error" @click="submit" :disabled="!canAccessApi">Submit</v-btn>
         </div>
       </v-form>
     </v-card-text>
   </v-card>
 </template>
 
-<script>
-import { mapActions, mapGetters } from 'vuex'
-import { getShortHash, purgeAllStoragesAndLoadIndex } from '@/utilities'
+<script lang="ts">
+import Vue, { VueConstructor } from 'vue'
+import { act, reset } from '@/store/resettable_action'
+import { ServiceDeleteAccountResponseError } from '@/api/definitions'
+import { deleteAccount$, deleteAccountProgress$ } from '@/store/root/modules/user/modules/settings'
+import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
+import { canAccessApi$ } from '@/store/root/modules/user'
+import { Undefinable } from '@/utilities'
+import { DeleteAccountProgress, DeleteAccountProgressState } from '@/store/state'
 
-export default {
+interface Mixins {
+  frozen: boolean;
+}
+
+export default (Vue as VueConstructor<Vue & Mixins>).extend({
   validations: {
     password: {
-      async valid () {
-        return !this.invalidShortHashes.includes(
-          await getShortHash(this.password))
+      valid () {
+        if (this.deleteAccountProgress?.state === FlowProgressBasicState.ERROR) {
+          if (this.deleteAccountProgress?.error.type === FlowProgressErrorType.FAILURE) {
+            if (this.deleteAccountProgress?.error.error === ServiceDeleteAccountResponseError.INVALIDDIGEST) {
+              return !this.frozen
+            }
+          }
+        }
+        return true
       }
     }
   },
   data () {
     return {
-      requestInProgress: false,
-      password: '',
-      invalidShortHashes: []
+      ...{
+        password: '',
+        frozen: false
+      },
+      ...{
+        canAccessApi: undefined as Undefinable<boolean>,
+        deleteAccountProgress: undefined as Undefinable<DeleteAccountProgress>
+      }
+    }
+  },
+  subscriptions () {
+    return {
+      canAccessApi: canAccessApi$,
+      deleteAccountProgress: deleteAccountProgress$
     }
   },
   computed: {
-    ...mapGetters({
-      isOnline: 'isOnline'
-    }),
+    inProgress (): boolean {
+      return Object.keys(DeleteAccountProgressState).includes(this.deleteAccountProgress?.state || FlowProgressBasicState.IDLE)
+    },
     passwordErrors () {
       return {
-        [this.$t('INVALID_PASSWORD')]: !this.$v.password.valid
+        [this.$t('INVALID_PASSWORD') as string]: !this.$v.password.valid
       }
     }
   },
   methods: {
-    ...mapActions({
-      deleteAccount: 'deleteAccount'
-    }),
-    async submit () {
-      if (this.isOnline && !this.requestInProgress) {
+    setPassword (value: string): void {
+      this.password = value
+      this.frozen = false
+    },
+    submit (): void {
+      if (this.canAccessApi && !this.inProgress) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
-          try {
-            this.requestInProgress = true
-            const password = this.password
-            const error = await this.deleteAccount({ password })
-            if (error === 'NONE') {
-              purgeAllStoragesAndLoadIndex()
-            } else if (error === 'INVALID_DIGEST') {
-              this.invalidShortHashes.push(
-                await getShortHash(password))
-            }
-          } finally {
-            this.requestInProgress = false
-          }
+          this.frozen = true
+          deleteAccount$.next(act({
+            password: this.password
+          }))
         }
       }
     }
+  },
+  beforeDestroy () {
+    deleteAccount$.next(reset())
   }
-}
+})
 </script>

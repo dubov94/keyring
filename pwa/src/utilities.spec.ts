@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { areArraysEqual, createCharacterRange, generateSequenceOffRanges, shuffle } from './utilities'
+import { createCharacterRange, generateSequenceOffRanges, shuffle } from './utilities'
 
 const SIMPLE_RNG = (lower: number, upper: number): number =>
   lower + Math.floor(Math.random() * (upper - lower))
@@ -68,24 +68,5 @@ describe('generateSequenceOffRanges', () => {
 describe('createCharacterRange', () => {
   it('should produce [a-e]', () => {
     expect(createCharacterRange('a', 'e')).to.equal('abcde')
-  })
-})
-
-describe('areArraysEqual', () => {
-  it('should fail for arrays of different sizes', () => {
-    expect(areArraysEqual([1, 2, 3], [1, 2])).to.be.false
-    expect(areArraysEqual([1, 2], [1, 2, 3])).to.be.false
-  })
-
-  it('should fail if one of the positions mismatches', () => {
-    expect(areArraysEqual([1, 2, 3], [1, 5, 3])).to.be.false
-  })
-
-  it('should succeed if two arrays are equal', () => {
-    expect(areArraysEqual([1, 2, 3], [1, 2, 3])).to.be.true
-  })
-
-  it('should succeed for two empty arrays', () => {
-    expect(areArraysEqual([], [])).to.be.true
   })
 })

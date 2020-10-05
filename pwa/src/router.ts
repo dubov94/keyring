@@ -1,37 +1,40 @@
-import Dashboard from '@/views/Dashboard'
-import Landing from '@/views/Landing'
-import LogIn from '@/views/authentication/LogIn'
-import RecentSessions from '@/views/security/RecentSessions'
-import Register from '@/views/authentication/Register'
-import MailVerification from '@/views/authentication/MailVerification'
-import Security from '@/views/security/Index'
-import Settings from '@/views/settings/Index'
-import ThreatAnalysis from '@/views/security/ThreatAnalysis'
+import Dashboard from '@/views/Dashboard.vue'
+import Landing from '@/views/Landing.vue'
+import LogIn from '@/views/authentication/LogIn.vue'
+import RecentSessions from '@/views/security/RecentSessions.vue'
+import Register from '@/views/authentication/Register.vue'
+import MailVerification from '@/views/authentication/MailVerification.vue'
+import Security from '@/views/security/Index.vue'
+import Settings from '@/views/settings/Index.vue'
+import ThreatAnalysis from '@/views/security/ThreatAnalysis.vue'
 import Vue from 'vue'
-import VueRouter from 'vue-router'
-import { getStore } from '@/store/injections'
+import VueRouter, { NavigationGuard } from 'vue-router'
+import { getStore } from '@/store/store_di'
+import { FullState } from './store/state'
 
 Vue.use(VueRouter)
 
-const authenticationGuard = (to, from, next) => {
-  if (!getStore().getters.isUserActive) {
+const authenticationGuard: NavigationGuard = (_to, _from, next) => {
+  const fullState = getStore().state as FullState
+  if (!fullState.user.isAuthenticated) {
     next('/log-in')
-  } else if (getStore().state.requiresMailVerification) {
+  } else if (fullState.user.requiresMailVerification) {
     next('/mail-verification')
   } else {
     next()
   }
 }
 
-const noActiveUserGuard = (to, from, next) => {
-  if (getStore().getters.isUserActive) {
+const noActiveUserGuard: NavigationGuard = (_to, _from, next) => {
+  const fullState = getStore().state as FullState
+  if (fullState.user.isAuthenticated) {
     next('/dashboard')
   } else {
     next()
   }
 }
 
-const router = new VueRouter({
+export const Router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   scrollBehavior () {
@@ -52,10 +55,11 @@ const router = new VueRouter({
     }, {
       path: '/mail-verification',
       component: MailVerification,
-      beforeEnter: (to, from, next) => {
-        if (!getStore().getters.isUserActive) {
+      beforeEnter: (_to, _from, next) => {
+        const fullState = getStore().state as FullState
+        if (!fullState.user.isAuthenticated) {
           next('/log-in')
-        } else if (!getStore().state.requiresMailVerification) {
+        } else if (!fullState.user.requiresMailVerification) {
           next('/dashboard')
         } else {
           next()
@@ -89,5 +93,3 @@ const router = new VueRouter({
     }
   ]
 })
-
-export default router

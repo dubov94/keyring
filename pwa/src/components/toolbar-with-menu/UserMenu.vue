@@ -35,8 +35,10 @@
   </v-navigation-drawer>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from 'vue'
+
+export default Vue.extend({
   props: ['value'],
   data () {
     return {
@@ -44,9 +46,9 @@ export default {
     }
   },
   methods: {
-    input (value) {
+    input (value: boolean): void {
       this.$emit('input', value)
     }
   }
-}
+})
 </script>

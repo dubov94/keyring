@@ -83,6 +83,10 @@ vue_cli_launcher(
 
 DEPENDENCIES = [
     "@pwa_npm//@types/libsodium-wrappers",
+    "@pwa_npm//@types/lodash",
+    "@pwa_npm//@types/ua-parser-js",
+    "@pwa_npm//@types/vuedraggable",
+    "@pwa_npm//@types/vuelidate",
     "@pwa_npm//@vue/cli-plugin-babel",
     "@pwa_npm//@vue/cli-plugin-eslint",
     "@pwa_npm//@vue/cli-plugin-pwa",
@@ -94,6 +98,7 @@ DEPENDENCIES = [
     "@pwa_npm//camelcase-keys",
     "@pwa_npm//eslint-plugin-vue",
     "@pwa_npm//libsodium-wrappers",
+    "@pwa_npm//lodash",
     # For `ts_swagger_api`.
     "@pwa_npm//portable-fetch",
     "@pwa_npm//reflect-metadata",

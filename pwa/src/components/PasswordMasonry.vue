@@ -15,18 +15,19 @@
   </v-layout>
 </template>
 
-<script>
-import Password from './Password'
+<script lang="ts">
+import Vue from 'vue'
+import Password from './Password.vue'
 
-export default {
+export default Vue.extend({
   components: {
     password: Password
   },
   props: ['userKeys'],
   methods: {
-    handleEditKey (identifier, { reveal }) {
+    handleEditKey (identifier: string, { reveal }: { reveal: boolean }): void {
       this.$emit('edit', { identifier, reveal })
     }
   }
-}
+})
 </script>

@@ -8,20 +8,29 @@
               <v-card-text>
                 <v-form @keydown.native.enter.prevent="submit">
                   <form-text-field type="text" label="Username" prepend-icon="person"
-                    v-model="username" :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
+                    :value="username" @input="setUsername"
+                    :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
                     @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
-                    :autofocus="!hasUsername"></form-text-field>
+                    :autofocus="usernameIsEmpty" :disabled="usernameMatchesDepot"></form-text-field>
                   <form-text-field type="password" label="Password" prepend-icon="lock"
-                    v-model="password" :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
+                    :value="password" @input="setPassword"
+                    :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
                     @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
-                    :autofocus="hasUsername"></form-text-field>
+                    :autofocus="!usernameIsEmpty"></form-text-field>
                   <v-switch hide-details color="primary" label="Remember me"
-                    v-model="persist"></v-switch>
+                    :input-value="depotBit" @change="setPersist"></v-switch>
                 </v-form>
               </v-card-text>
               <v-card-actions>
                 <v-btn block color="primary" class="mx-4"
-                  @click="submit" :loading="requestInProgress">Log in</v-btn>
+                  @click="submit" :loading="hasProgressMessage">
+                  <span>Log in</span>
+                  <template v-slot:loader>
+                    <v-progress-circular indeterminate :size="23" :width="2">
+                    </v-progress-circular>
+                    <span class="ml-3">{{ progressMessage }}</span>
+                  </template>
+                </v-btn>
               </v-card-actions>
               <v-layout justify-center py-2>
                 <router-link to="/register">Register</router-link>
@@ -34,30 +43,62 @@
   </page>
 </template>
 
-<script>
-import { mapActions, mapGetters } from 'vuex'
+<script lang="ts">
+import Vue, { VueConstructor } from 'vue'
 import { required } from 'vuelidate/lib/validators'
-import Page from '@/components/Page'
-import { getShortHash } from '@/utilities'
+import Page from '@/components/Page.vue'
+import { sessionUsername$ } from '@/store/root/modules/session'
+import { depotUsername$, depotBit$ } from '@/store/root/modules/depot'
+import { ServiceLogInResponseError, ServiceGetSaltResponseError } from '@/api/definitions'
+import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
+import { authenticationViaApiProgress$, authenticationViaDepotProgress$, logInViaApi$, logInViaDepot$ } from '@/store/root'
+import {
+  AuthenticationViaDepotProgressError,
+  AuthenticationViaApiProgress,
+  AuthenticationViaApiProgressState,
+  AuthenticationViaDepotProgress,
+  AuthenticationViaDepotProgressState
+} from '@/store/state'
+import { act, reset } from '@/store/resettable_action'
+import { Undefinable } from '@/utilities'
+import { isAuthenticated$ } from '@/store/root/modules/user'
 
-export default {
+const STATE_TO_MESSAGE = new Map<FlowProgressBasicState | AuthenticationViaApiProgressState | AuthenticationViaDepotProgressState, string>([
+  [AuthenticationViaApiProgressState.RETRIEVING_PARAMETRIZATION, 'Getting salt'],
+  [AuthenticationViaApiProgressState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
+  [AuthenticationViaApiProgressState.MAKING_REQUEST, 'Making request'],
+  [AuthenticationViaApiProgressState.DECRYPTING_DATA, 'Decrypting data'],
+  [AuthenticationViaDepotProgressState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Loading']
+])
+
+interface Mixins {
+  frozen: boolean;
+}
+
+export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
     page: Page
   },
   data () {
-    const hasLocalData = this.$store.getters['depot/hasLocalData']
-    let username = ''
-    if (this.$store.getters['session/hasUsername']) {
-      username = this.$store.state.session.username
-    } else if (hasLocalData) {
-      username = this.$store.state.depot.username
-    }
     return {
-      username,
-      password: '',
-      requestInProgress: false,
-      invalidPairs: [],
-      persist: hasLocalData
+      ...{
+        username: depotUsername$.getValue() || sessionUsername$.getValue() || '',
+        password: '',
+        frozen: false
+      },
+      ...{
+        depotUsername: undefined as Undefinable<string>,
+        authenticationViaApiProgress: undefined as Undefinable<AuthenticationViaApiProgress>,
+        authenticationViaDepotProgress: undefined as Undefinable<AuthenticationViaDepotProgress>
+      }
+    }
+  },
+  subscriptions () {
+    return {
+      depotBit: depotBit$,
+      depotUsername: depotUsername$,
+      authenticationViaApiProgress: authenticationViaApiProgress$,
+      authenticationViaDepotProgress: authenticationViaDepotProgress$
     }
   },
   validations: {
@@ -66,11 +107,20 @@ export default {
     },
     password: {},
     forCredentials: {
-      async valid () {
-        for (const { username, shortHash } of this.invalidPairs) {
-          if (this.username === username &&
-              await getShortHash(this.password) === shortHash) {
-            return false
+      valid () {
+        if (this.authenticationViaApiProgress?.state === FlowProgressBasicState.ERROR) {
+          if (this.authenticationViaApiProgress?.error.type === FlowProgressErrorType.FAILURE) {
+            if (this.authenticationViaApiProgress?.error.error === ServiceLogInResponseError.INVALIDCREDENTIALS ||
+              this.authenticationViaApiProgress?.error.error === ServiceGetSaltResponseError.NOTFOUND) {
+              return !this.frozen
+            }
+          }
+        }
+        if (this.authenticationViaDepotProgress?.state === FlowProgressBasicState.ERROR) {
+          if (this.authenticationViaDepotProgress?.error.type === FlowProgressErrorType.FAILURE) {
+            if (this.authenticationViaDepotProgress?.error.error === AuthenticationViaDepotProgressError.INVALID_CREDENTIALS) {
+              return !this.frozen
+            }
           }
         }
         return true
@@ -79,85 +129,70 @@ export default {
     credentialsGroup: ['username', 'password']
   },
   computed: {
-    ...mapGetters({
-      hasLocalData: 'depot/hasLocalData'
-    }),
-    hasUsername () {
-      return this.username !== ''
+    usernameIsEmpty (): boolean {
+      return this.username === ''
+    },
+    usernameMatchesDepot (): boolean {
+      return this.username === this.depotUsername
     },
     usernameErrors () {
       return {
-        [this.$t('USERNAME_IS_REQUIRED')]: !this.$v.username.required,
-        [this.$t('INVALID_USERNAME_OR_PASSWORD')]: !this.$v.forCredentials.valid
+        [this.$t('USERNAME_IS_REQUIRED') as string]: !this.$v.username.required,
+        [this.$t('INVALID_USERNAME_OR_PASSWORD') as string]: !this.$v.forCredentials.valid
       }
     },
     passwordErrors () {
       return {
-        [this.$t('INVALID_USERNAME_OR_PASSWORD')]: !this.$v.forCredentials.valid
+        [this.$t('INVALID_USERNAME_OR_PASSWORD') as string]: !this.$v.forCredentials.valid
       }
+    },
+    progressMessage (): string | null {
+      return STATE_TO_MESSAGE.get(this.authenticationViaApiProgress?.state || FlowProgressBasicState.IDLE) ||
+        STATE_TO_MESSAGE.get(this.authenticationViaDepotProgress?.state || FlowProgressBasicState.IDLE) || null
+    },
+    hasProgressMessage (): boolean {
+      return this.progressMessage !== null
     }
   },
   methods: {
-    ...mapActions({
-      logIn: 'logIn',
-      purgeDepot: 'depot/purgeDepot',
-      displaySnackbar: 'interface/displaySnackbar'
-    }),
-    async submit () {
-      if (!this.requestInProgress) {
+    setUsername (value: string): void {
+      this.username = value
+      this.frozen = false
+    },
+    setPassword (value: string): void {
+      this.password = value
+      this.frozen = false
+    },
+    setPersist (value: boolean): void {
+      depotBit$.next(value)
+    },
+    submit () {
+      if (!this.hasProgressMessage) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
-          try {
-            this.requestInProgress = true
-            const [username, password] = [this.username, this.password]
-            const { success, local, requiresMailVerification } = await this.logIn({
-              username,
-              password,
-              persist: this.persist
-            })
-            if (success) {
-              if (requiresMailVerification) {
-                this.$router.push('/mail-verification')
-              } else {
-                this.$router.push('/dashboard')
-              }
-            } else {
-              this.invalidPairs.push({
-                username,
-                shortHash: await getShortHash(password)
-              })
-              if (local) {
-                this.displaySnackbar({
-                  message: 'Changed the password recently? Toggle \'Remember me\' twice.',
-                  timeout: 3000
-                })
-              }
-            }
-          } finally {
-            this.requestInProgress = false
+          this.frozen = true
+          if (this.depotUsername === null) {
+            logInViaApi$.next(act({
+              username: this.username,
+              password: this.password,
+              inBackground: false
+            }))
+          } else {
+            logInViaDepot$.next(act({
+              username: this.username,
+              password: this.password
+            }))
           }
         }
       }
     }
   },
-  watch: {
-    persist (value) {
-      if (value) {
-        this.displaySnackbar({
-          message: 'Okay, we will store your encrypted data locally.',
-          timeout: 3000
-        })
-      } else {
-        if (this.hasLocalData) {
-          this.purgeDepot()
-          this.invalidPairs.splice(0)
-          this.displaySnackbar({
-            message: 'Alright, we wiped out all saved data from this device.',
-            timeout: 3000
-          })
-        }
-      }
+  beforeDestroy () {
+    logInViaApi$.next(reset())
+    logInViaDepot$.next(reset())
+    if (!isAuthenticated$.getValue() && depotBit$.getValue()) {
+      depotBit$.next(false)
     }
   }
-}
+})
 </script>

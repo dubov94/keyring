@@ -18,27 +18,28 @@
   </v-app>
 </template>
 
-<script>
-import Toast from '@/components/Toast'
-import Toolbar from '@/components/toolbar-with-menu/Toolbar'
+<script lang="ts">
+import Vue from 'vue'
+import Toast from '@/components/Toast.vue'
+import Toolbar from '@/components/toolbar-with-menu/Toolbar.vue'
 
-export default {
+export default Vue.extend({
   props: ['hasMenu', 'showMenu', 'noBackground', 'toolbarIsExtended'],
   components: {
     toast: Toast,
     toolbar: Toolbar
   },
   computed: {
-    appClasses () {
+    appClasses (): { [key: string]: boolean } {
       return {
         'no-background': this.noBackground
       }
     }
   },
   methods: {
-    menuSwitch (value) {
+    menuSwitch (value: boolean): void {
       this.$emit('menuSwitch', value)
     }
   }
-}
+})
 </script>

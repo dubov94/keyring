@@ -4,10 +4,11 @@ import camelcaseKeys from 'camelcase-keys'
 import snakecaseKeys from 'snakecase-keys'
 
 export const fetchFromApi: FetchAPI = (url: string, init: any = {}): Promise<Response> => {
-  const headers = Object.assign({}, {
-    [CLIENT_VERSION_HEADER_NAME]: window.globals.version
-  }, init.headers)
-  const requestInit = Object.assign({}, init, { headers })
+  const headers = {
+    [CLIENT_VERSION_HEADER_NAME]: window.globals.version,
+    ...init.headers
+  }
+  const requestInit = { ...init, headers }
   if (init.body) {
     requestInit.body = JSON.stringify(
       snakecaseKeys(JSON.parse(init.body), { deep: true }))

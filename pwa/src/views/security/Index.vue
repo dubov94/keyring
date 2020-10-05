@@ -11,11 +11,12 @@
   </page>
 </template>
 
-<script>
-import Page from '@/components/Page'
-import UserMenu from '@/components/toolbar-with-menu/UserMenu'
+<script lang="ts">
+import Vue from 'vue'
+import Page from '@/components/Page.vue'
+import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
 
-export default {
+export default Vue.extend({
   components: {
     page: Page,
     userMenu: UserMenu
@@ -24,9 +25,9 @@ export default {
     return { showMenu: false }
   },
   methods: {
-    menuSwitch (value) {
+    menuSwitch (value: boolean): void {
       this.showMenu = value
     }
   }
-}
+})
 </script>

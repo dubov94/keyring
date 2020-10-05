@@ -1,5 +1,5 @@
 <template>
-  <v-text-field :value="value" :type="type" :label="label"
+  <v-text-field :value="value" :type="type" :label="label" :disabled="disabled"
     :prepend-icon="prependIcon" :autofocus="autofocus" ref="input"
     :error-messages="errorMessages" @blur="touch" @keydown.native.enter="touch"
     @focus="reset" @input="input"></v-text-field>
@@ -9,6 +9,7 @@
 export default {
   props: [
     'autofocus',
+    'disabled',
     'dirty',
     'errors',
     'label',

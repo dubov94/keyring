@@ -1,5 +1,14 @@
-import { Status } from './root/status'
-import { ServiceRegisterResponseError } from '@/api/definitions'
+import {
+  ServiceRegisterResponseError,
+  ServiceLogInResponseError,
+  ServiceGetSaltResponseError,
+  ServiceChangeMasterKeyResponseError,
+  ServiceChangeUsernameResponseError,
+  ServiceDeleteAccountResponseError,
+  ServiceAcquireMailTokenResponseError,
+  ServiceReleaseMailTokenResponseError
+} from '@/api/definitions'
+import { FlowProgress, FlowProgressBasicState, indicator } from './flow'
 
 export interface Password {
   value: string;
@@ -11,8 +20,8 @@ export interface Key extends Password {
 }
 
 export interface Geolocation {
-  country: string | undefined;
-  city: string | undefined;
+  country?: string;
+  city?: string;
 }
 
 export interface Session {
@@ -22,59 +31,69 @@ export interface Session {
   geolocation: Geolocation;
 }
 
-export enum RegistrationState {
-  IDLE,
-  GENERATING_PARAMETRIZATION,
-  COMPUTING_MASTER_KEY_DERIVATIVES,
-  MAKING_REQUEST,
-  ERROR,
-  SUCCESS,
+export enum RegistrationProgressState {
+  GENERATING_PARAMETRIZATION = 'GENERATING_PARAMETRIZATION',
+  COMPUTING_MASTER_KEY_DERIVATIVES = 'COMPUTING_MASTER_KEY_DERIVATIVES',
+  MAKING_REQUEST = 'MAKING_REQUEST',
 }
+export type RegistrationProgress = FlowProgress<RegistrationProgressState, void, ServiceRegisterResponseError>
 
-export enum RegistrationErrorType {
-  EXCEPTION = 'EXCEPTION',
-  FAILURE = 'FAILURE',
+export enum AuthenticationViaApiProgressState {
+  RETRIEVING_PARAMETRIZATION = 'API_AUTH_RETRIEVING_PARAMETRIZATION',
+  COMPUTING_MASTER_KEY_DERIVATIVES = 'API_AUTH_COMPUTING_MASTER_KEY_DERIVATIVES',
+  MAKING_REQUEST = 'API_AUTH_MAKING_REQUEST',
+  DECRYPTING_DATA = 'API_AUTH_DECRYPTING_DATA'
 }
+export type AuthenticationViaApiProgress = FlowProgress<
+  AuthenticationViaApiProgressState,
+  void,
+  ServiceGetSaltResponseError | ServiceLogInResponseError
+>
 
-export interface RegistrationException {
-  type: RegistrationErrorType.EXCEPTION;
-  message: string;
+export enum AuthenticationViaDepotProgressState {
+  COMPUTING_MASTER_KEY_DERIVATIVES = 'DEPOT_AUTH_COMPUTING_MASTER_KEY_DERIVATIVES',
 }
-
-export interface RegistrationFailure {
-  type: RegistrationErrorType.FAILURE;
-  error: ServiceRegisterResponseError;
+export enum AuthenticationViaDepotProgressError {
+  INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
 }
-
-export interface RegistrationData {
-  state: RegistrationState;
-  error?: RegistrationException | RegistrationFailure;
-}
+export type AuthenticationViaDepotProgress = FlowProgress<
+  AuthenticationViaDepotProgressState,
+  void,
+  AuthenticationViaDepotProgressError
+>
 
 export interface RootState {
-  status: Status;
-  isUserActive: boolean;
-  registrationData: RegistrationData;
-  parametrization: string | null;
-  encryptionKey: string | null;
-  sessionKey: string | null;
-  userKeys: Array<Key>;
-  recentSessions: Array<Session> | null;
-  requiresMailVerification: boolean;
+  registrationProgress: RegistrationProgress;
+  authenticationViaApi: AuthenticationViaApiProgress;
+  authenticationViaDepot: AuthenticationViaDepotProgress;
 }
 
 export const constructInitialRootState = (): RootState => ({
-  status: Status.OFFLINE,
-  isUserActive: false,
-  registrationData: {
-    state: RegistrationState.IDLE,
-    error: undefined
-  },
+  registrationProgress: indicator(FlowProgressBasicState.IDLE, undefined),
+  authenticationViaApi: indicator(FlowProgressBasicState.IDLE, undefined),
+  authenticationViaDepot: indicator(FlowProgressBasicState.IDLE, undefined)
+})
+
+export enum UserKeysProgressState {
+  WORKING = 'WORKING',
+}
+export type UserKeysProgress = FlowProgress<UserKeysProgressState, Array<Key>, void>
+
+export interface UserState {
+  isAuthenticated: boolean;
+  parametrization: string | null;
+  encryptionKey: string | null;
+  sessionKey: string | null;
+  userKeysProgress: UserKeysProgress;
+  requiresMailVerification: boolean;
+}
+
+export const constructInitialUserState = (): UserState => ({
+  isAuthenticated: false,
   parametrization: null,
   encryptionKey: null,
   sessionKey: null,
-  userKeys: [],
-  recentSessions: null,
+  userKeysProgress: indicator(FlowProgressBasicState.IDLE, []),
   requiresMailVerification: false
 })
 
@@ -86,13 +105,21 @@ export const constructInitialSessionState = (): SessionState => ({
   username: null
 })
 
-export interface DepotState {
+export interface DepotEssence {
   username: string | null;
   parametrization: string | null;
   authDigest: string | null;
-  encryptionKey: string | null;
   userKeys: string | null;
 }
+
+export type DepotState = DepotEssence & { encryptionKey: string | null }
+
+export const getDepotEssense = (depot: DepotState): DepotEssence => ({
+  username: depot.username,
+  parametrization: depot.parametrization,
+  authDigest: depot.authDigest,
+  userKeys: depot.userKeys
+})
 
 export const constructInitialDepotState = (): DepotState => ({
   username: null,
@@ -102,19 +129,10 @@ export const constructInitialDepotState = (): DepotState => ({
   userKeys: null
 })
 
-export interface InterfaceState {
-  toast: {
-    message: string | null;
-    timeout: number;
-    show: boolean;
-  };
-  editor: {
-    // Whether the key is visible.
-    reveal: boolean;
-    // Key identifier. `null` stands for new.
-    identifier: string | null | undefined;
-    show: boolean;
-  };
+export interface ToastState {
+  message: string | null;
+  timeout: number;
+  show: boolean;
 }
 
 export const constructInitialToastState = () => ({
@@ -123,47 +141,114 @@ export const constructInitialToastState = () => ({
   show: false
 })
 
+export interface EditorState {
+  // Whether the key is visible.
+  reveal: boolean;
+  // Key identifier. `null` stands for new.
+  identifier: string | null | undefined;
+  show: boolean;
+}
+
 export const constructInitialEditorState = () => ({
   reveal: false,
   identifier: undefined,
   show: false
 })
 
-export const constructInitialInterfaceState = (): InterfaceState => ({
-  toast: constructInitialToastState(),
-  editor: constructInitialEditorState()
-})
+export enum RecentSessionsProgressState { WORKING = 'WORKING' }
+export type RecentSessionsProgress = FlowProgress<RecentSessionsProgressState, Array<Session>, void>
 
-export interface ThreatsState {
-  isAnalysisEnabled: boolean;
-  gettingDuplicateGroups: boolean;
-  duplicateGroups: Array<Array<string>>;
-  gettingExposedUserKeys: boolean;
-  exposedUserKeyIds: Array<string>;
+export enum DuplicateGroupsProgressState { WORKING = 'WORKING' }
+export type DuplicateGroupsProgress = FlowProgress<DuplicateGroupsProgressState, Array<Array<string>>, void>
+
+export enum ExposedUserKeyIdsProgressState { WORKING = 'WORKING' }
+export type ExposedUserKeyIdsProgress = FlowProgress<ExposedUserKeyIdsProgressState, Array<string>, void>
+
+export interface SecurityState {
+  recentSessions: RecentSessionsProgress;
+  duplicateGroups: DuplicateGroupsProgress;
+  exposedUserKeyIds: ExposedUserKeyIdsProgress;
 }
 
-export const constructInitialThreatsState = (): ThreatsState => ({
-  isAnalysisEnabled: false,
-  gettingDuplicateGroups: false,
-  duplicateGroups: [],
-  gettingExposedUserKeys: false,
-  exposedUserKeyIds: []
+export const constructInitialSecurityState = (): SecurityState => ({
+  recentSessions: indicator(FlowProgressBasicState.IDLE, []),
+  duplicateGroups: indicator(FlowProgressBasicState.IDLE, []),
+  exposedUserKeyIds: indicator(FlowProgressBasicState.IDLE, [])
 })
 
-export interface FullState extends RootState {
-  depot: DepotState;
-  interface: InterfaceState;
-  session: SessionState;
-  threats: ThreatsState;
+export enum ChangeMasterKeyProgressState {
+  REENCRYPTING = 'REENCRYPTING',
+  MAKING_REQUEST = 'MAKING_REQUEST',
+}
+export type ChangeMasterKeyProgress = FlowProgress<ChangeMasterKeyProgressState, void, ServiceChangeMasterKeyResponseError>
+
+export enum ChangeUsernameProgressState {
+  COMPUTING_MASTER_KEY_DERIVATIVES = 'COMPUTING_MASTER_KEY_DERIVATIVES',
+  MAKING_REQUEST = 'MAKING_REQUEST',
+}
+export type ChangeUsernameProgress = FlowProgress<ChangeUsernameProgressState, void, ServiceChangeUsernameResponseError>
+
+export enum DeleteAccountProgressState {
+  COMPUTING_MASTER_KEY_DERIVATIVES = 'COMPUTING_MASTER_KEY_DERIVATIVES',
+  MAKING_REQUEST = 'MAKING_REQUEST',
+}
+export type DeleteAccountProgress = FlowProgress<DeleteAccountProgressState, void, ServiceDeleteAccountResponseError>
+
+export enum AcquireMailTokenProgressState {
+  COMPUTING_MASTER_KEY_DERIVATIVES = 'COMPUTING_MASTER_KEY_DERIVATIVES',
+  MAKING_REQUEST = 'MAKING_REQUEST',
+}
+export type AcquireMailTokenProgress = FlowProgress<AcquireMailTokenProgressState, string, ServiceAcquireMailTokenResponseError>
+
+export enum ReleaseMailTokenProgressState {
+  MAKING_REQUEST = 'MAKING_REQUEST',
+}
+export type ReleaseMailTokenProgress = FlowProgress<ReleaseMailTokenProgressState, void, ServiceReleaseMailTokenResponseError>
+
+export interface SettingsState {
+  changeMasterKeyProgress: ChangeMasterKeyProgress;
+  changeUsernameProgress: ChangeUsernameProgress;
+  deleteAccountProgress: DeleteAccountProgress;
+  mailToken: {
+    acquireProgress: AcquireMailTokenProgress;
+    releaseProgress: ReleaseMailTokenProgress;
+  };
 }
 
-export const constructInitialFullState = (): FullState => Object.assign(
-  {},
-  constructInitialRootState(),
-  {
-    depot: constructInitialDepotState(),
-    interface: constructInitialInterfaceState(),
-    session: constructInitialSessionState(),
-    threats: constructInitialThreatsState()
+export const constructInitialSettingsState = (): SettingsState => ({
+  changeMasterKeyProgress: indicator(FlowProgressBasicState.IDLE, undefined),
+  changeUsernameProgress: indicator(FlowProgressBasicState.IDLE, undefined),
+  deleteAccountProgress: indicator(FlowProgressBasicState.IDLE, undefined),
+  mailToken: {
+    acquireProgress: indicator(FlowProgressBasicState.IDLE, ''),
+    releaseProgress: indicator(FlowProgressBasicState.IDLE, undefined)
   }
-)
+})
+
+export type FullState = RootState & {
+  depot: DepotState;
+  session: SessionState;
+  user: UserState & {
+    security: SecurityState;
+    settings: SettingsState;
+  };
+  interface: {
+    toast: ToastState;
+    editor: EditorState;
+  };
+}
+
+export const constructInitialFullState = (): FullState => ({
+  ...constructInitialRootState(),
+  depot: constructInitialDepotState(),
+  session: constructInitialSessionState(),
+  user: {
+    ...constructInitialUserState(),
+    security: constructInitialSecurityState(),
+    settings: constructInitialSettingsState()
+  },
+  interface: {
+    toast: constructInitialToastState(),
+    editor: constructInitialEditorState()
+  }
+})

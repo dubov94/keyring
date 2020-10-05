@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "esnext",
+    "target": "es2019",
     "module": "esnext",
     "strict": true,
     // For `ts_swagger_api` output.
@@ -14,9 +14,14 @@
     "sourceMap": true,
     "baseUrl": ".",
     "types": [
-      "webpack-env",
+      "chai",
+      "libsodium-wrappers",
+      "lodash",
       "mocha",
-      "chai"
+      "vue-rx",
+      "vuelidate",
+      "vuetify",
+      "webpack-env"
     ],
     "paths": {
       "@/*": [
