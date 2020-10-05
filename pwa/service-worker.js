@@ -29,7 +29,8 @@ self.addEventListener('activate', (event) => {
 });
 
 const refreshIndex = async (event, precache) => {
-  await precacheController._addURLToCache({ event, url: indexCacheKey });
+  // https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-precaching.prod.js
+  await precacheController.o({ event, url: indexCacheKey });
   await expirationManager.updateTimestamp(indexCacheKey);
 };
 
