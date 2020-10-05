@@ -14,7 +14,7 @@ import {
 import { createCommitSubject, createGetter } from '@/store/state_rx'
 import { Subject, of, from, forkJoin, BehaviorSubject } from 'rxjs'
 import { switchMap, tap, map, catchError, skip, defaultIfEmpty } from 'rxjs/operators'
-import { FlowProgressBasicState, indicator, data, success, exception } from '@/store/flow'
+import { FlowProgressBasicState, indicator, data, success, exception, stringify } from '@/store/flow'
 import { sessionKey$, userKeys$ } from '@/store/root/modules/user'
 import { container } from 'tsyringe'
 import { PWNED_SERVICE_TOKEN, PwnedService } from '@/pwned_service'
@@ -67,8 +67,8 @@ fetchRecentSessions$.pipe(switchMap((action) => {
           setRecentSessions$.next(success(sessions))
         }),
         catchError((error) => of(error).pipe(tap((error) => {
-          setRecentSessions$.next(exception(`${error}`))
-          showToast$.next({ message: `${error}` })
+          setRecentSessions$.next(exception(stringify(error)))
+          showToast$.next({ message: stringify(error) })
         })))
       )
     case ResettableActionType.RESET:
@@ -108,8 +108,8 @@ securityOn$.pipe(skip(1), switchMap((on) => {
         setDuplicateGroups$.next(success(duplicateGroups))
       }),
       catchError((error) => of(error).pipe(tap((error) => {
-        setDuplicateGroups$.next(exception(`${error}`))
-        showToast$.next({ message: `${error}` })
+        setDuplicateGroups$.next(exception(stringify(error)))
+        showToast$.next({ message: stringify(error) })
       })))
     )
   } else {
@@ -138,8 +138,8 @@ securityOn$.pipe(skip(1), switchMap((on) => {
         setExposedUserKeyIds$.next(success(exposedUserKeyIds))
       }),
       catchError((error) => of(error).pipe(tap((error) => {
-        setExposedUserKeyIds$.next(exception(`${error}`))
-        showToast$.next({ message: `${error}` })
+        setExposedUserKeyIds$.next(exception(stringify(error)))
+        showToast$.next({ message: stringify(error) })
       })))
     )
   } else {

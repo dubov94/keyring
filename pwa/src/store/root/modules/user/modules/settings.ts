@@ -20,7 +20,7 @@ import { switchMap, map, tap, catchError, takeUntil, filter, defaultIfEmpty } fr
 import { Subject, of, from, forkJoin } from 'rxjs'
 import { SESSION_TOKEN_HEADER_NAME } from '@/constants'
 import { getAdministrationApi } from '@/api/api_di'
-import { success, indicator, exception, failure, FlowProgressBasicState } from '@/store/flow'
+import { success, indicator, exception, failure, FlowProgressBasicState, stringify } from '@/store/flow'
 import {
   ServiceChangeMasterKeyResponse,
   ServiceChangeMasterKeyResponseError,
@@ -136,8 +136,8 @@ changeMasterKey$.pipe(switchMap((action) => {
           }
         }),
         catchError((error) => of(error).pipe(tap((error) => {
-          setChangeMasterKeyProgress$.next(exception(`${error}`))
-          showToast$.next({ message: `${error}` })
+          setChangeMasterKeyProgress$.next(exception(stringify(error)))
+          showToast$.next({ message: stringify(error) })
         }))),
         takeUntil(hasNoSessionKey$)
       )
@@ -193,8 +193,8 @@ changeUsername$.pipe(switchMap((action) => {
           }
         }),
         catchError((error) => of(error).pipe(tap((error) => {
-          setChangeUsernameProgress$.next(exception(`${error}`))
-          showToast$.next({ message: `${error}` })
+          setChangeUsernameProgress$.next(exception(stringify(error)))
+          showToast$.next({ message: stringify(error) })
         }))),
         takeUntil(hasNoSessionKey$)
       )
@@ -251,8 +251,8 @@ deleteAccount$.pipe(switchMap((action) => {
           }
         }),
         catchError((error) => of(error).pipe(tap((error) => {
-          setDeleteAccountProgress$.next(exception(`${error}`))
-          showToast$.next({ message: `${error}` })
+          setDeleteAccountProgress$.next(exception(stringify(error)))
+          showToast$.next({ message: stringify(error) })
         }))),
         takeUntil(hasNoSessionKey$)
       )
@@ -310,8 +310,8 @@ acquireMailToken$.pipe(switchMap((action) => {
           }
         }),
         catchError((error) => of(error).pipe(tap((error) => {
-          setAcquireMailTokenProgress$.next(exception(`${error}`))
-          showToast$.next({ message: `${error}` })
+          setAcquireMailTokenProgress$.next(exception(stringify(error)))
+          showToast$.next({ message: stringify(error) })
         }))),
         takeUntil(hasNoSessionKey$)
       )
@@ -363,8 +363,8 @@ releaseMailToken$.pipe(switchMap((action) => {
           }
         }),
         catchError((error) => of(error).pipe(tap((error) => {
-          setReleaseMailTokenProgress$.next(exception(`${error}`))
-          showToast$.next({ message: `${error}` })
+          setReleaseMailTokenProgress$.next(exception(stringify(error)))
+          showToast$.next({ message: stringify(error) })
         }))),
         takeUntil(hasNoSessionKey$)
       )

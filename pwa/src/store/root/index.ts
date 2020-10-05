@@ -14,7 +14,7 @@ import { MutationTree } from 'vuex'
 import { Subject, of, from, asapScheduler, forkJoin } from 'rxjs'
 import { ResettableAction, ResettableActionType, act } from '../resettable_action'
 import { switchMap, tap, catchError, map, skip, takeUntil, filter, defaultIfEmpty } from 'rxjs/operators'
-import { indicator, FlowProgressBasicState, exception, failure, success } from '../flow'
+import { indicator, FlowProgressBasicState, exception, failure, success, stringify } from '../flow'
 import { container } from 'tsyringe'
 import { SodiumClient } from '@/sodium_client'
 import {
@@ -109,8 +109,8 @@ register$.pipe(switchMap((action) => {
           }
         }),
         catchError((error) => of(error).pipe(tap((error) => {
-          setRegistrationProgress$.next(exception(`${error}`))
-          showToast$.next({ message: `${error}` })
+          setRegistrationProgress$.next(exception(stringify(error)))
+          showToast$.next({ message: stringify(error) })
         })))
       )
     case ResettableActionType.RESET:
@@ -210,9 +210,9 @@ logInViaApi$.pipe(switchMap((action) => {
           }
         }),
         catchError((error) => of({ error, action }).pipe(tap(({ error, action }) => {
-          setAuthenticationViaApiProgress$.next(exception(`${error}`))
+          setAuthenticationViaApiProgress$.next(exception(stringify(error)))
           if (!action.inBackground) {
-            showToast$.next({ message: `${error}` })
+            showToast$.next({ message: stringify(error) })
           }
         }))),
         takeUntil(isAuthenticated$.pipe(

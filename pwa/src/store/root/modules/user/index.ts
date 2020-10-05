@@ -13,7 +13,7 @@ import { SESSION_LIFETIME_IN_MILLIS, HALF_SESSION_IN_MILLIS, SESSION_TOKEN_HEADE
 import { getAdministrationApi } from '@/api/api_di'
 import { closeEditor$ } from '../interface/editor'
 import Vue from 'vue'
-import { data, success, indicator } from '@/store/flow'
+import { data, success, indicator, stringify } from '@/store/flow'
 import {
   ServiceCreateKeyResponse,
   ServiceUpdateKeyResponse,
@@ -147,7 +147,7 @@ createUserKey$.pipe(switchMap((password) => of({ password }).pipe(
   }),
   catchError((error) => of(error).pipe(tap((error) => {
     setUserKeysProgress$.next(success(userKeys$.getValue()))
-    showToast$.next({ message: `${error}` })
+    showToast$.next({ message: stringify(error) })
   }))),
   takeUntil(unableToOperateOnKeys$)
 ))).subscribe()
@@ -173,7 +173,7 @@ deleteUserKey$.pipe(switchMap((identifier) => of({ identifier }).pipe(
   }),
   catchError((error) => of(error).pipe(tap((error) => {
     setUserKeysProgress$.next(success(userKeys$.getValue()))
-    showToast$.next({ message: `${error}` })
+    showToast$.next({ message: stringify(error) })
   }))),
   takeUntil(unableToOperateOnKeys$)
 ))).subscribe()
@@ -218,7 +218,7 @@ updateUserKey$.pipe(switchMap((key) => of({ key }).pipe(
   }),
   catchError((error) => of(error).pipe(tap((error) => {
     setUserKeysProgress$.next(success(userKeys$.getValue()))
-    showToast$.next({ message: `${error}` })
+    showToast$.next({ message: stringify(error) })
   }))),
   takeUntil(unableToOperateOnKeys$)
 ))).subscribe()

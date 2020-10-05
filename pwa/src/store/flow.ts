@@ -69,6 +69,8 @@ export const exception = <E>(message: string): FlowProgressError<E> => ({
   }
 })
 
+export const stringify = (object: any): string => JSON.stringify(object)
+
 export const failure = <E>(error: E): FlowProgressError<E> => ({
   state: FlowProgressBasicState.ERROR,
   error: {
