@@ -32,19 +32,6 @@ const setUserKeys$ = createCommitSubject<string | null>(NAMESPACE, MutationType.
 export const depotBit$ = new BehaviorSubject<boolean>(false)
 
 depotBit$.pipe(
-  // Initial value and `localStorage` reconciliation.
-  skip(2),
-  distinctUntilChanged(),
-  tap((on) => {
-    if (on) {
-      showToast$.next({ message: 'Okay, we will store your data encrypted on this device. Try it offline!' })
-    } else {
-      showToast$.next({ message: 'Alright, we wiped out all saved data on this device.' })
-    }
-  })
-).subscribe()
-
-depotBit$.pipe(
   skip(1),
   filter((on) => !on),
   tap(() => {

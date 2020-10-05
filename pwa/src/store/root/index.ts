@@ -64,6 +64,7 @@ export const register$ = new Subject<ResettableAction<RegisterPayload>>()
 register$.pipe(switchMap((action) => {
   switch (action.type) {
     case ResettableActionType.ACT:
+      depotBit$.next(false)
       return of(action).pipe(
         tap(() => {
           setRegistrationProgress$.next(indicator(RegistrationProgressState.GENERATING_PARAMETRIZATION, undefined))

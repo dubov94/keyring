@@ -62,6 +62,7 @@ import {
 import { act, reset } from '@/store/resettable_action'
 import { Undefinable } from '@/utilities'
 import { isAuthenticated$ } from '@/store/root/modules/user'
+import { showToast$ } from '@/store/root/modules/interface/toast'
 
 const STATE_TO_MESSAGE = new Map<FlowProgressBasicState | AuthenticationViaApiProgressState | AuthenticationViaDepotProgressState, string>([
   [AuthenticationViaApiProgressState.RETRIEVING_PARAMETRIZATION, 'Getting salt'],
@@ -165,6 +166,11 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     setPersist (value: boolean): void {
       depotBit$.next(value)
+      showToast$.next(value ? {
+        message: 'Okay, we will store your data encrypted on this device. Try it offline!'
+      } : {
+        message: 'Alright, we wiped out all saved data on this device.'
+      })
     },
     submit () {
       if (!this.hasProgressMessage) {
@@ -190,7 +196,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   beforeDestroy () {
     logInViaApi$.next(reset())
     logInViaDepot$.next(reset())
-    if (!isAuthenticated$.getValue() && depotBit$.getValue()) {
+    if (this.depotUsername === null && depotBit$.getValue()) {
       depotBit$.next(false)
     }
   }

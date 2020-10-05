@@ -54,5 +54,7 @@ store.watch((state) => state as FullState, (value) => {
 
 ;(async () => {
   await ((store as any).restored as Promise<void>)
-  depotBit$.next((store.state as FullState).depot.username !== null)
+  if ((store.state as FullState).depot.username !== null) {
+    depotBit$.next(true)
+  }
 })()
