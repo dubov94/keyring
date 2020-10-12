@@ -28,9 +28,9 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(precacheController.activate());
 });
 
-const refreshIndex = async (event, precache) => {
+const refreshIndex = async (event) => {
   // https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-precaching.prod.js
-  await precacheController.o({ event, url: indexCacheKey });
+  await precacheController./* _addURLToCache */o({ event, url: indexCacheKey });
   await expirationManager.updateTimestamp(indexCacheKey);
 };
 
@@ -43,9 +43,9 @@ self.addEventListener('fetch', (event) => {
       const precache = await caches.open(precacheName);
       if (cacheKey === indexCacheKey) {
         if (await expirationManager.isURLExpired(indexCacheKey)) {
-          await refreshIndex(event, precache);
+          await refreshIndex(event);
         } else {
-          event.waitUntil(refreshIndex(event, precache));
+          event.waitUntil(refreshIndex(event));
         }
       }
       const response = await precache.match(cacheKey);
