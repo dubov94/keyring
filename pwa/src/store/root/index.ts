@@ -252,6 +252,9 @@ logInViaDepot$.pipe(switchMap((action) => {
               switchMap((context) => {
                 if (context.authDigest === context.depot.authDigest) {
                   return of(context).pipe(
+                    tap(() => {
+                      setAuthenticationViaDepotProgress$.next(indicator(AuthenticationViaDepotProgressState.DECRYPTING_DATA, undefined))
+                    }),
                     switchMap((context) => from(container.resolve(SodiumClient).decryptMessage(context.encryptionKey, context.depot.userKeys!)).pipe(
                       map((value) => ({ ...context, userKeys: JSON.parse(value) as Array<Key> }))
                     )),

@@ -52,6 +52,7 @@ export type AuthenticationViaApiProgress = FlowProgress<
 
 export enum AuthenticationViaDepotProgressState {
   COMPUTING_MASTER_KEY_DERIVATIVES = 'DEPOT_AUTH_COMPUTING_MASTER_KEY_DERIVATIVES',
+  DECRYPTING_DATA = 'DEPOT_AUTH_DECRYPTING_DATA',
 }
 export enum AuthenticationViaDepotProgressError {
   INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',

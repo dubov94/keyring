@@ -68,7 +68,8 @@ const STATE_TO_MESSAGE = new Map<FlowProgressBasicState | AuthenticationViaApiPr
   [AuthenticationViaApiProgressState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
   [AuthenticationViaApiProgressState.MAKING_REQUEST, 'Making request'],
   [AuthenticationViaApiProgressState.DECRYPTING_DATA, 'Decrypting data'],
-  [AuthenticationViaDepotProgressState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Loading']
+  [AuthenticationViaDepotProgressState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
+  [AuthenticationViaDepotProgressState.DECRYPTING_DATA, 'Decrypting data']
 ])
 
 interface Mixins {
