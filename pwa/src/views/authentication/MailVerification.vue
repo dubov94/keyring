@@ -22,7 +22,7 @@
                   <v-stepper-step step="2">Activate</v-stepper-step>
                   <v-stepper-content step="2">
                     <v-form @keydown.native.enter.prevent="submit">
-                      <form-text-field type="text" label="Code" prepend-icon="verified_user"
+                      <form-text-field type="text" label="Verification code" prepend-icon="verified_user"
                         :value="code.value" @input="setCode"
                         :dirty="$v.code.$dirty" :errors="codeErrors" ref="code"
                         @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
