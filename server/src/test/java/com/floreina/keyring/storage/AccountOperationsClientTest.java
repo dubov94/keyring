@@ -1,5 +1,6 @@
 package com.floreina.keyring.storage;
 
+import com.floreina.keyring.Chronometry;
 import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.StorageManagerAspect;
@@ -8,20 +9,27 @@ import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.entities.Utilities;
 import com.google.common.collect.ImmutableList;
+import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 
 import javax.persistence.Persistence;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class AccountOperationsClientTest {
+  @Mock private Chronometry mockChronometry;
   private AccountOperationsClient accountOperationsClient;
   private KeyOperationsClient keyOperationsClient;
 
@@ -33,7 +41,7 @@ class AccountOperationsClientTest {
 
   @BeforeEach
   void beforeEach() {
-    accountOperationsClient = new AccountOperationsClient();
+    accountOperationsClient = new AccountOperationsClient(mockChronometry);
     keyOperationsClient = new KeyOperationsClient();
   }
 
@@ -139,6 +147,8 @@ class AccountOperationsClientTest {
 
   @Test
   void createSession_putsSession() {
+    Instant instant = Instant.ofEpochSecond(1);
+    when(mockChronometry.currentTime()).thenReturn(instant);
     long userIdentifier = createActiveUser();
 
     accountOperationsClient.createSession(userIdentifier, "key", "127.0.0.1", "Chrome/0.0.0");
@@ -149,6 +159,8 @@ class AccountOperationsClientTest {
     assertEquals("key", session.getKey());
     assertEquals("127.0.0.1", session.getIpAddress());
     assertEquals("Chrome/0.0.0", session.getUserAgent());
+    User user = accountOperationsClient.getUserByIdentifier(userIdentifier).get();
+    assertEquals(instant, user.getLastSession());
   }
 
   @Test

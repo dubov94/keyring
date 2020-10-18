@@ -1,5 +1,6 @@
 package com.floreina.keyring.storage;
 
+import com.floreina.keyring.Chronometry;
 import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.Annotations.EntityController;
@@ -10,6 +11,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -18,7 +20,12 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toMap;
 
 public class AccountOperationsClient implements AccountOperationsInterface {
+  private Chronometry chronometry;
   @EntityController private EntityManager entityManager;
+
+  AccountOperationsClient(Chronometry chronometry) {
+    this.chronometry = chronometry;
+  }
 
   @Override
   @LocalTransaction
@@ -134,13 +141,21 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public void createSession(long userIdentifier, String key, String ipAddress, String userAgent) {
-    Session session =
-        new Session()
-            .setUser(entityManager.getReference(User.class, userIdentifier))
-            .setKey(key)
-            .setIpAddress(ipAddress)
-            .setUserAgent(userAgent);
-    entityManager.persist(session);
+    Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
+    if (maybeUser.isPresent()) {
+      User user = maybeUser.get();
+      user.setLastSession(chronometry.currentTime());
+      entityManager.persist(user);
+      Session session =
+          new Session()
+              .setUser(entityManager.getReference(User.class, userIdentifier))
+              .setKey(key)
+              .setIpAddress(ipAddress)
+              .setUserAgent(userAgent);
+      entityManager.persist(session);
+    } else {
+      throw new IllegalArgumentException();
+    }
   }
 
   @Override

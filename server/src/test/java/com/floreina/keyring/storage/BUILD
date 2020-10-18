@@ -12,6 +12,8 @@ woven_junit5_test(
         "@maven//:javax_xml_bind_jaxb_api",
     ],
     deps = [
+        "//proto:service_java_grpc",
+        "//server/src/main/java/com/floreina/keyring:chronometry",
         "//server/src/main/java/com/floreina/keyring/aspects:storage_manager_aspect",
         "//server/src/main/java/com/floreina/keyring/entities:mail_token",
         "//server/src/main/java/com/floreina/keyring/entities:session",
@@ -20,10 +22,11 @@ woven_junit5_test(
         "//server/src/main/java/com/floreina/keyring/storage:account_operations_client",
         "//server/src/main/java/com/floreina/keyring/storage:key_operations_client",
         "//server/src/main/java/com/floreina/keyring/storage:storage_exception",
-        "//proto:service_java_grpc",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_persistence_javax_persistence_api",
+        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
+        "@maven//:org_mockito_mockito_core",
     ],
 )
 
@@ -37,11 +40,11 @@ woven_junit5_test(
         "@maven//:javax_xml_bind_jaxb_api",
     ],
     deps = [
+        "//proto:service_java_grpc",
         "//server/src/main/java/com/floreina/keyring/aspects:storage_manager_aspect",
         "//server/src/main/java/com/floreina/keyring/entities:utilities",
         "//server/src/main/java/com/floreina/keyring/storage:account_operations_client",
         "//server/src/main/java/com/floreina/keyring/storage:key_operations_client",
-        "//proto:service_java_grpc",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_aspectj_aspectjrt",

@@ -1,5 +1,6 @@
 package com.floreina.keyring.storage;
 
+import com.floreina.keyring.Chronometry;
 import com.floreina.keyring.Environment;
 import dagger.Module;
 import dagger.Provides;
@@ -18,8 +19,8 @@ public class StorageModule {
   }
 
   @Provides
-  static AccountOperationsInterface provideAccountOperationsInterface() {
-    return new AccountOperationsClient();
+  static AccountOperationsInterface provideAccountOperationsInterface(Chronometry chronometry) {
+    return new AccountOperationsClient(chronometry);
   }
 
   @Provides

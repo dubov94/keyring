@@ -18,10 +18,10 @@ java_library(
         "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = [
+        "//proto:service_java_grpc",
         "//server/src/main/java/com/floreina/keyring/entities:mail_token",
         "//server/src/main/java/com/floreina/keyring/entities:session",
         "//server/src/main/java/com/floreina/keyring/entities:user",
-        "//proto:service_java_grpc",
     ],
 )
 
@@ -34,13 +34,14 @@ java_library(
     deps = [
         ":account_operations_interface",
         ":queries",
+        "//proto:service_java_grpc",
+        "//server/src/main/java/com/floreina/keyring:chronometry",
         "//server/src/main/java/com/floreina/keyring/aspects:annotations",
         "//server/src/main/java/com/floreina/keyring/entities:key",
         "//server/src/main/java/com/floreina/keyring/entities:mail_token",
         "//server/src/main/java/com/floreina/keyring/entities:session",
         "//server/src/main/java/com/floreina/keyring/entities:user",
         "//server/src/main/java/com/floreina/keyring/entities:utilities",
-        "//proto:service_java_grpc",
         "@maven//:javax_persistence_javax_persistence_api",
     ],
 )
@@ -53,8 +54,8 @@ java_library(
         "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = [
-        "//server/src/main/java/com/floreina/keyring/entities:key",
         "//proto:service_java_grpc",
+        "//server/src/main/java/com/floreina/keyring/entities:key",
     ],
 )
 
@@ -67,11 +68,11 @@ java_library(
     deps = [
         ":key_operations_interface",
         ":queries",
+        "//proto:service_java_grpc",
         "//server/src/main/java/com/floreina/keyring/aspects:annotations",
         "//server/src/main/java/com/floreina/keyring/entities:key",
         "//server/src/main/java/com/floreina/keyring/entities:user",
         "//server/src/main/java/com/floreina/keyring/entities:utilities",
-        "//proto:service_java_grpc",
         "@maven//:javax_persistence_javax_persistence_api",
     ],
 )
@@ -98,6 +99,7 @@ java_library(
     deps = [
         ":account_operations_client",
         ":key_operations_client",
+        "//server/src/main/java/com/floreina/keyring:chronometry",
         "//server/src/main/java/com/floreina/keyring:environment",
         "//server/src/main/java/com/floreina/keyring/storage:account_operations_interface",
         "//server/src/main/java/com/floreina/keyring/storage:key_operations_interface",

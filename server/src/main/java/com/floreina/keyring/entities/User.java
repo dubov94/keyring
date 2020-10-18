@@ -3,6 +3,7 @@ package com.floreina.keyring.entities;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.sql.Timestamp;
 
 @Entity
@@ -25,6 +26,9 @@ public class User {
   @Column private String hash;
 
   @Column private String mail;
+
+  @Column(name = "last_session")
+  private Timestamp lastSession;
 
   public long getIdentifier() {
     return identifier;
@@ -77,6 +81,15 @@ public class User {
 
   public User setMail(String mail) {
     this.mail = mail;
+    return this;
+  }
+
+  public Instant getLastSession() {
+    return lastSession.toInstant();
+  }
+
+  public User setLastSession(Instant instant) {
+    this.lastSession = Timestamp.from(instant);
     return this;
   }
 

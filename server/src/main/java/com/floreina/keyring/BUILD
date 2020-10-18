@@ -3,8 +3,10 @@ java_library(
     srcs = ["Chronometry.java"],
     visibility = [
         "//server/src/main/java/com/floreina/keyring/keyvalue:__pkg__",
+        "//server/src/main/java/com/floreina/keyring/storage:__pkg__",
         "//server/src/test/java/com/floreina/keyring:__pkg__",
         "//server/src/test/java/com/floreina/keyring/keyvalue:__pkg__",
+        "//server/src/test/java/com/floreina/keyring/storage:__pkg__",
     ],
 )
 
