@@ -1,4 +1,4 @@
-importScripts('https://unpkg.com/dexie@3.0.2/dist/dexie.min.js')
+importScripts('https://unpkg.com/dexie@3.0.2/dist/dexie.min.js');
 
 const APP_VERSION = '$APP_VERSION';
 
