@@ -8,7 +8,7 @@ package(default_visibility = ["//:__pkg__"])
 
 # `filegroup_copy` targets below ensure that all files end up
 # under `bazel-out`, which is where `stable_status` output
-# resides. This way we can reference `stable_status.js` from
+# resides. This way we can reference `stable_status.json` from
 # `vue.config.js` directly.
 copy_file(
     name = "stable_status",
@@ -36,7 +36,7 @@ filegroup_copy(
 
 filegroup_copy(
     name = "public",
-    srcs = glob(["public/**/*"]),
+    srcs = glob(["public/**"]),
 )
 
 filegroup_copy(
@@ -50,9 +50,33 @@ filegroup_copy(
     ],
 )
 
-filegroup_copy(
+py_binary(
+    name = "metadata_producer",
+    srcs = ["metadata_producer.py"],
+)
+
+genrule(
+    name = "metadata_json",
+    srcs = ["//pwa:stable_status"],
+    outs = ["public/metadata.json"],
+    cmd = "$(execpath :metadata_producer) $(execpath //pwa:stable_status) > $@",
+    tools = [":metadata_producer"],
+)
+
+py_binary(
+    name = "service_worker_renderer",
+    srcs = ["service_worker_renderer.py"],
+)
+
+genrule(
     name = "service_worker",
-    srcs = ["service-worker.js"],
+    srcs = [
+        "service_worker.template",
+        ":stable_status",
+    ],
+    outs = ["service-worker.js"],
+    cmd = "$(execpath :service_worker_renderer) $(execpath service_worker.template) $(execpath :stable_status) > $@",
+    tools = [":service_worker_renderer"],
 )
 
 filegroup_copy(
@@ -64,6 +88,7 @@ SOURCES = [
     ":configs",
     ":package_json",
     ":public",
+    ":metadata_json",
     ":service_worker",
     ":src",
     ":stable_status",

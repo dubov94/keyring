@@ -64,7 +64,8 @@ module.exports = {
         /^img\/icons\//,
         'browserconfig.xml',
         'site.webmanifest',
-        /\.map$/
+        /\.map$/,
+        'metadata.json'
       ]
     }
   }
