@@ -14,8 +14,9 @@ const precacheController = new workbox.precaching.PrecacheController();
 precacheController.addToCacheList(self.__precacheManifest);
 
 const applicationDatabase = new Dexie('application');
-applicationDatabase.version(1).stores({
-  swEvents: '++id, version, event, timestamp'
+applicationDatabase.version(2).stores({
+  swEvents: '++id, version, event, timestamp',
+  independentClients: '++id, clientId'
 });
 
 const MAX_AGE_S = 2 * 28 * 24 * 60 * 60;
@@ -52,12 +53,16 @@ self.addEventListener('install', (event) => {
   event.waitUntil(installHandler());
 });
 
-const reloadClients = async () => {
+const reloadDependentClients = async () => {
   const windowClients = await self.clients.matchAll({ type: 'window' });
   // Do not block on `navigate` as it goes through the service worker.
   windowClients.forEach(async (client) => {
     try {
-      await client.navigate(client.url);
+      const entries = await applicationDatabase.independentClients
+        .where('clientId').equals(client.id);
+      if (entries.length === 0) {
+        await client.navigate(client.url);
+      }
     } catch (error) {
       console.warn(error);
     }
@@ -68,19 +73,25 @@ const dropObsoleteSwEvents = async () => {
   await applicationDatabase.swEvents
     .where('version').notEqual(APP_VERSION)
     .delete();
-};  
+};
+
+const dropObsoleteIndependentClients = async () => {
+  const entries = await applicationDatabase.independentClients.toArray();
+  await Promise.all(entries.map(async (entry) => {
+    if (!await self.clients.get(entry.clientId)) {
+      await applicationDatabase.independentClients.delete(entry.id);
+    }
+  }));
+};
 
 const activateHandler = async () => {
   await precacheController.activate();
   // Primarily for older versions that had an indefinite retention period.
-  // Note that it may also cause an unnecessary refresh for newer clients
-  // that have been stale for too long. A potential solution to that would
-  // be to store ids of the clients that were received by `fetch`, but for
-  // now the gain does not quite justify the effort.
   if (await isCacheObsolete()) {
-    await reloadClients();
+    await reloadDependentClients();
   }
   await dropObsoleteSwEvents();
+  await dropObsoleteIndependentClients();
   await writeSwEvent(SwEvent.ACTIVATE);
 };
 
@@ -107,11 +118,19 @@ const ingestIsLatest = async (eventName) => {
   return isLatest;
 };
 
+const saveIndependentClient = async (clientId) => {
+  await applicationDatabase.independentClients.add({
+    clientId: clientId
+  });
+};
+
 const fetchHandler = async (event, isNavigationRequest, cacheKey) => {
   if (isNavigationRequest) {
     if (await isCacheObsolete()) {
       if (!await ingestIsLatest(SwEvent.NAVIGATE)) {
-        return await fetch(indexCacheKey);
+        await saveIndependentClient(event.clientId);
+        // Some of the assets may still come from the cache.
+        return fetch(indexCacheKey);
       }
     } else {
       event.waitUntil(ingestIsLatest(SwEvent.NAVIGATE));
@@ -119,7 +138,7 @@ const fetchHandler = async (event, isNavigationRequest, cacheKey) => {
   }
   const precache = await self.caches.open(precacheName);
   const response = await precache.match(cacheKey);
-  return response ? response : await fetch(cacheKey);
+  return response ? response : fetch(cacheKey);
 };
 
 self.addEventListener('fetch', (event) => {
