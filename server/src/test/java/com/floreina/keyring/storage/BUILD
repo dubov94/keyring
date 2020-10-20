@@ -41,6 +41,7 @@ woven_junit5_test(
     ],
     deps = [
         "//proto:service_java_grpc",
+        "//server/src/main/java/com/floreina/keyring:chronometry",
         "//server/src/main/java/com/floreina/keyring/aspects:storage_manager_aspect",
         "//server/src/main/java/com/floreina/keyring/entities:utilities",
         "//server/src/main/java/com/floreina/keyring/storage:account_operations_client",

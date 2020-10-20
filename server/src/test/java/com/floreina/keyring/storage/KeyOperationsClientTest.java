@@ -1,5 +1,6 @@
 package com.floreina.keyring.storage;
 
+import com.floreina.keyring.Chronometry;
 import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.StorageManagerAspect;
@@ -24,6 +25,7 @@ class KeyOperationsClientTest {
   private static final EntityManagerFactory entityManagerFactory =
       Persistence.createEntityManagerFactory("testing");
   private static Random random = new Random();
+  private AccountOperationsClient accountOperationsClient;
   private KeyOperationsClient keyOperationsClient;
 
   @BeforeAll
@@ -33,6 +35,7 @@ class KeyOperationsClientTest {
 
   @BeforeEach
   void beforeEach() {
+    accountOperationsClient = new AccountOperationsClient(new Chronometry());
     keyOperationsClient = new KeyOperationsClient();
   }
 
@@ -95,7 +98,6 @@ class KeyOperationsClientTest {
   }
 
   private long createUniqueUser() {
-    AccountOperationsClient accountOperationsClient = new AccountOperationsClient();
     return accountOperationsClient
         .createUser(UUID.randomUUID().toString(), "", "", "", "")
         .getIdentifier();
