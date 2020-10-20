@@ -53,14 +53,23 @@ self.addEventListener('install', (event) => {
   event.waitUntil(installHandler());
 });
 
+const isClientDependent = async (clientId) => {
+  try {
+    const entries = await applicationDatabase.independentClients
+      .where('clientId').equals(clientId);
+    return entries.length === 0;
+  } catch (error) {
+    console.warn(error);
+    return true;
+  }
+};
+
 const reloadDependentClients = async () => {
   const windowClients = await self.clients.matchAll({ type: 'window' });
   // Do not block on `navigate` as it goes through the service worker.
   windowClients.forEach(async (client) => {
     try {
-      const entries = await applicationDatabase.independentClients
-        .where('clientId').equals(client.id);
-      if (entries.length === 0) {
+      if (await isClientDependent(client.id)) {
         await client.navigate(client.url);
       }
     } catch (error) {
