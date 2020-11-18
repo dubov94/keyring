@@ -1,6 +1,6 @@
 import { Module } from 'vuex'
 import { DepotState, RootState, constructInitialDepotState, getDepotEssense, DepotEssence } from '@/store/state'
-import { createGetter, createCommitSubject } from '@/store/state_rx'
+import { createGetter, createMutation } from '@/store/state_rx'
 import { Subject, of, combineLatest, from, BehaviorSubject, EMPTY } from 'rxjs'
 import { switchMap, map, tap, filter, takeUntil, skip, takeWhile, distinctUntilChanged } from 'rxjs/operators'
 import { userKeys$, isAuthenticated$ } from './user'
@@ -23,11 +23,11 @@ enum MutationType {
 
 const NAMESPACE = ['depot']
 
-const setUsername$ = createCommitSubject<string | null>(NAMESPACE, MutationType.SET_USERNAME)
-const setParametrization$ = createCommitSubject<string | null>(NAMESPACE, MutationType.SET_PARAMETRIZATION)
-const setAuthDigest$ = createCommitSubject<string | null>(NAMESPACE, MutationType.SET_AUTH_DIGEST)
-const setEncryptionKey$ = createCommitSubject<string | null>(NAMESPACE, MutationType.SET_ENCRYPTION_KEY)
-const setUserKeys$ = createCommitSubject<string | null>(NAMESPACE, MutationType.SET_USER_KEYS)
+const setUsername$ = createMutation<string | null>(NAMESPACE, MutationType.SET_USERNAME)
+const setParametrization$ = createMutation<string | null>(NAMESPACE, MutationType.SET_PARAMETRIZATION)
+const setAuthDigest$ = createMutation<string | null>(NAMESPACE, MutationType.SET_AUTH_DIGEST)
+const setEncryptionKey$ = createMutation<string | null>(NAMESPACE, MutationType.SET_ENCRYPTION_KEY)
+const setUserKeys$ = createMutation<string | null>(NAMESPACE, MutationType.SET_USER_KEYS)
 
 export const depotBit$ = new BehaviorSubject<boolean>(false)
 

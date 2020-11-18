@@ -7,7 +7,7 @@ import isEqual from 'lodash/isEqual'
 
 export const state$ = new BehaviorSubject<FullState>(constructInitialFullState())
 
-export const createCommitSubject = <T>(namespace: Array<string> | null, type: string) => {
+export const createMutation = <T>(namespace: Array<string> | null, type: string) => {
   const subject = new Subject<T>()
   const fullType = namespace === null ? type : `${namespace.join('/')}/${type}`
   subject.subscribe((value) => {

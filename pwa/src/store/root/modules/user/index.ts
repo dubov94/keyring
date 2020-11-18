@@ -6,7 +6,7 @@ import {
   UserKeysProgress,
   UserKeysProgressState
 } from '@/store/state'
-import { createCommitSubject, createGetter } from '@/store/state_rx'
+import { createMutation, createGetter } from '@/store/state_rx'
 import { switchMap, retryWhen, delay, map, tap, catchError, takeUntil, filter } from 'rxjs/operators'
 import { timer, defer, fromEvent, Subject, of, from, combineLatest, EMPTY } from 'rxjs'
 import { SESSION_LIFETIME_IN_MILLIS, HALF_SESSION_IN_MILLIS, SESSION_TOKEN_HEADER_NAME } from '@/constants'
@@ -47,13 +47,13 @@ enum MutationType {
 
 const NAMESPACE = ['user']
 
-export const setIsAuthenticated$ = createCommitSubject<boolean>(NAMESPACE, MutationType.SET_IS_AUTHENTICATED)
-export const setParametrization$ = createCommitSubject<string>(NAMESPACE, MutationType.SET_PARAMETRIZATION)
-export const setSessionKey$ = createCommitSubject<string>(NAMESPACE, MutationType.SET_SESSION_KEY)
-export const setEncryptionKey$ = createCommitSubject<string>(NAMESPACE, MutationType.SET_ENCRYPTION_KEY)
-export const setRequiresMailVerification$ = createCommitSubject<boolean>(NAMESPACE, MutationType.SET_REQUIRES_MAIL_VERIFICATION)
+export const setIsAuthenticated$ = createMutation<boolean>(NAMESPACE, MutationType.SET_IS_AUTHENTICATED)
+export const setParametrization$ = createMutation<string>(NAMESPACE, MutationType.SET_PARAMETRIZATION)
+export const setSessionKey$ = createMutation<string>(NAMESPACE, MutationType.SET_SESSION_KEY)
+export const setEncryptionKey$ = createMutation<string>(NAMESPACE, MutationType.SET_ENCRYPTION_KEY)
+export const setRequiresMailVerification$ = createMutation<boolean>(NAMESPACE, MutationType.SET_REQUIRES_MAIL_VERIFICATION)
 
-const setUserKeysProgress$ = createCommitSubject<UserKeysProgress>(NAMESPACE, MutationType.SET_USER_KEYS_PROGRESS)
+const setUserKeysProgress$ = createMutation<UserKeysProgress>(NAMESPACE, MutationType.SET_USER_KEYS_PROGRESS)
 
 sessionKey$.pipe(
   switchMap(

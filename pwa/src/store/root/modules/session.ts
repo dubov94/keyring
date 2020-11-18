@@ -1,6 +1,6 @@
 import { Module } from 'vuex'
 import { RootState, SessionState, constructInitialSessionState } from '@/store/state'
-import { createCommitSubject, createGetter } from '@/store/state_rx'
+import { createMutation, createGetter } from '@/store/state_rx'
 
 export const sessionUsername$ = createGetter<string | null>((state) => state.session.username)
 
@@ -10,7 +10,7 @@ enum MutationType {
 
 const NAMESPACE = ['session']
 
-export const setSessionUsername$ = createCommitSubject<string>(NAMESPACE, MutationType.SET_USERNAME)
+export const setSessionUsername$ = createMutation<string>(NAMESPACE, MutationType.SET_USERNAME)
 
 export const Session: Module<SessionState, RootState> = {
   namespaced: true,

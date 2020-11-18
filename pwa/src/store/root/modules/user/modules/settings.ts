@@ -15,7 +15,7 @@ import {
   ReleaseMailTokenProgressState,
   Password
 } from '@/store/state'
-import { createCommitSubject, createGetter } from '@/store/state_rx'
+import { createMutation, createGetter } from '@/store/state_rx'
 import { switchMap, map, tap, catchError, takeUntil, filter, defaultIfEmpty } from 'rxjs/operators'
 import { Subject, of, from, forkJoin } from 'rxjs'
 import { SESSION_TOKEN_HEADER_NAME } from '@/constants'
@@ -60,11 +60,11 @@ enum MutationType {
 
 const NAMESPACE = ['user', 'settings']
 
-const setChangeMasterKeyProgress$ = createCommitSubject<ChangeMasterKeyProgress>(NAMESPACE, MutationType.SET_CHANGE_MASTER_KEY_PROGRESS)
-const setChangeUsernameProgress$ = createCommitSubject<ChangeUsernameProgress>(NAMESPACE, MutationType.SET_CHANGE_USERNAME_PROGRESS)
-const setDeleteAccountProgress$ = createCommitSubject<DeleteAccountProgress>(NAMESPACE, MutationType.SET_DELETE_ACCOUNT_PROGRESS)
-const setAcquireMailTokenProgress$ = createCommitSubject<AcquireMailTokenProgress>(NAMESPACE, MutationType.SET_ACQUIRE_MAIL_TOKEN_PROGRESS)
-const setReleaseMailTokenProgress$ = createCommitSubject<ReleaseMailTokenProgress>(NAMESPACE, MutationType.SET_RELEASE_MAIL_TOKEN_PROGRESS)
+const setChangeMasterKeyProgress$ = createMutation<ChangeMasterKeyProgress>(NAMESPACE, MutationType.SET_CHANGE_MASTER_KEY_PROGRESS)
+const setChangeUsernameProgress$ = createMutation<ChangeUsernameProgress>(NAMESPACE, MutationType.SET_CHANGE_USERNAME_PROGRESS)
+const setDeleteAccountProgress$ = createMutation<DeleteAccountProgress>(NAMESPACE, MutationType.SET_DELETE_ACCOUNT_PROGRESS)
+const setAcquireMailTokenProgress$ = createMutation<AcquireMailTokenProgress>(NAMESPACE, MutationType.SET_ACQUIRE_MAIL_TOKEN_PROGRESS)
+const setReleaseMailTokenProgress$ = createMutation<ReleaseMailTokenProgress>(NAMESPACE, MutationType.SET_RELEASE_MAIL_TOKEN_PROGRESS)
 
 const hasNoSessionKey$ = sessionKey$.pipe(filter((sessionKey) => sessionKey === null))
 

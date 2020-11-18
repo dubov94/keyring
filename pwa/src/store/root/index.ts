@@ -1,4 +1,4 @@
-import { createCommitSubject, createGetter } from '../state_rx'
+import { createMutation, createGetter } from '../state_rx'
 import {
   RootState,
   RegistrationProgress,
@@ -51,9 +51,9 @@ enum MutationType {
   SET_AUTHENTICATION_VIA_DEPOT_PROGRESS = 'setAuthenticationViaDepotProgress',
 }
 
-const setRegistrationProgress$ = createCommitSubject<RegistrationProgress>(null, MutationType.SET_REGISTRATION_PROGRESS)
-const setAuthenticationViaApiProgress$ = createCommitSubject<AuthenticationViaApiProgress>(null, MutationType.SET_AUTHENTICATION_VIA_API_PROGRESS)
-const setAuthenticationViaDepotProgress$ = createCommitSubject<AuthenticationViaDepotProgress>(null, MutationType.SET_AUTHENTICATION_VIA_DEPOT_PROGRESS)
+const setRegistrationProgress$ = createMutation<RegistrationProgress>(null, MutationType.SET_REGISTRATION_PROGRESS)
+const setAuthenticationViaApiProgress$ = createMutation<AuthenticationViaApiProgress>(null, MutationType.SET_AUTHENTICATION_VIA_API_PROGRESS)
+const setAuthenticationViaDepotProgress$ = createMutation<AuthenticationViaDepotProgress>(null, MutationType.SET_AUTHENTICATION_VIA_DEPOT_PROGRESS)
 
 export interface RegisterPayload {
   username: string;

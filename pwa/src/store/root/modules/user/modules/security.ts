@@ -11,7 +11,7 @@ import {
   RecentSessionsProgressState,
   Session
 } from '@/store/state'
-import { createCommitSubject, createGetter } from '@/store/state_rx'
+import { createMutation, createGetter } from '@/store/state_rx'
 import { Subject, of, from, forkJoin, BehaviorSubject } from 'rxjs'
 import { switchMap, tap, map, catchError, skip, defaultIfEmpty } from 'rxjs/operators'
 import { FlowProgressBasicState, indicator, data, success, exception, stringify } from '@/store/flow'
@@ -36,9 +36,9 @@ enum MutationType {
 
 const NAMESPACE = ['user', 'security']
 
-const setRecentSessions$ = createCommitSubject<RecentSessionsProgress>(NAMESPACE, MutationType.SET_RECENT_SESSIONS)
-const setDuplicateGroups$ = createCommitSubject<DuplicateGroupsProgress>(NAMESPACE, MutationType.SET_DUPLICATE_GROUPS)
-const setExposedUserKeyIds$ = createCommitSubject<ExposedUserKeyIdsProgress>(NAMESPACE, MutationType.SET_EXPOSED_USER_KEY_IDS)
+const setRecentSessions$ = createMutation<RecentSessionsProgress>(NAMESPACE, MutationType.SET_RECENT_SESSIONS)
+const setDuplicateGroups$ = createMutation<DuplicateGroupsProgress>(NAMESPACE, MutationType.SET_DUPLICATE_GROUPS)
+const setExposedUserKeyIds$ = createMutation<ExposedUserKeyIdsProgress>(NAMESPACE, MutationType.SET_EXPOSED_USER_KEY_IDS)
 
 export const fetchRecentSessions$ = new Subject<ResettableAction<void>>()
 fetchRecentSessions$.pipe(switchMap((action) => {

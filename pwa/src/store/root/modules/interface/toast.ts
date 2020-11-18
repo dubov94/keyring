@@ -6,7 +6,7 @@ import {
   ToastState
 } from '@/store/state'
 import { Subject, of, from } from 'rxjs'
-import { createCommitSubject, createGetter } from '@/store/state_rx'
+import { createMutation, createGetter } from '@/store/state_rx'
 import { tap, switchMap, map } from 'rxjs/operators'
 
 export const toastState$ = createGetter<ToastState>((state) => state.interface.toast)
@@ -19,9 +19,9 @@ enum MutationType {
 const NAMESPACE = ['interface', 'toast']
 
 type ShowToastPayload = { message: string; timeout?: number }
-const _showToast$ = createCommitSubject<ShowToastPayload>(NAMESPACE, MutationType.SHOW_TOAST)
+const _showToast$ = createMutation<ShowToastPayload>(NAMESPACE, MutationType.SHOW_TOAST)
 
-export const hideToast$ = createCommitSubject<void>(NAMESPACE, MutationType.HIDE_TOAST)
+export const hideToast$ = createMutation<void>(NAMESPACE, MutationType.HIDE_TOAST)
 
 export const showToast$ = new Subject<ShowToastPayload>()
 showToast$.pipe(switchMap((configuration) => of(configuration).pipe(
