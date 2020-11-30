@@ -1,23 +1,17 @@
-import { Module } from 'vuex'
-import { RootState, SessionState, constructInitialSessionState } from '@/store/state'
-import { createMutation, createGetter } from '@/store/state_rx'
+import { constructInitialSessionState, ReduxFullState } from '@/store/state'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export const sessionUsername$ = createGetter<string | null>((state) => state.session.username)
+export const getSessionUsername = (state: ReduxFullState) => state.session.username
 
-enum MutationType {
-  SET_USERNAME = 'setUsername',
-}
-
-const NAMESPACE = ['session']
-
-export const setSessionUsername$ = createMutation<string>(NAMESPACE, MutationType.SET_USERNAME)
-
-export const Session: Module<SessionState, RootState> = {
-  namespaced: true,
-  state: constructInitialSessionState,
-  mutations: {
-    [MutationType.SET_USERNAME] (state, value: string | null) {
-      state.username = value
+export const sessionSlice = createSlice({
+  name: 'session',
+  initialState: constructInitialSessionState(),
+  reducers: {
+    setUsername: (state, action: PayloadAction<string | null>) => {
+      state.username = action.payload
+    },
+    rehydrate: (state, action: PayloadAction<{ username: string | null }>) => {
+      state.username = action.payload.username
     }
   }
-}
+})

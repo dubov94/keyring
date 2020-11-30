@@ -1,13 +1,12 @@
 import { Module } from 'vuex'
 import { DepotState, RootState, constructInitialDepotState, getDepotEssense, DepotEssence } from '@/store/state'
-import { createGetter, createMutation } from '@/store/state_rx'
+import { applySelector, createGetter, createMutation } from '@/store/state_rx'
 import { Subject, of, combineLatest, from, BehaviorSubject, EMPTY } from 'rxjs'
 import { switchMap, map, tap, filter, takeUntil, skip, takeWhile, distinctUntilChanged } from 'rxjs/operators'
 import { userKeys$, isAuthenticated$ } from './user'
-import { sessionUsername$ } from './session'
 import { SodiumClient } from '@/sodium_client'
 import { container } from 'tsyringe'
-import { showToast$ } from './interface/toast'
+import { getSessionUsername } from './session'
 
 export const depotUsername$ = createGetter<string | null>((state) => state.depot.username)
 export const depotEssence$ = createGetter<DepotEssence>((state) => getDepotEssense(state.depot))
@@ -68,7 +67,7 @@ setUpDepot$.pipe(switchMap((masterKey) => of({ masterKey }).pipe(
 ))).subscribe()
 
 isEnabled$.pipe(
-  switchMap((isEnabled) => isEnabled ? sessionUsername$.pipe(
+  switchMap((isEnabled) => isEnabled ? applySelector(getSessionUsername).pipe(
     tap((username) => { setUsername$.next(username) })
   ) : EMPTY)
 ).subscribe()

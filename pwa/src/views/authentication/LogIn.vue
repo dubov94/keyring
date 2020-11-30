@@ -47,7 +47,8 @@
 import Vue, { VueConstructor } from 'vue'
 import { required } from 'vuelidate/lib/validators'
 import Page from '@/components/Page.vue'
-import { sessionUsername$ } from '@/store/root/modules/session'
+import { getSessionUsername } from '@/store/root/modules/session'
+import { reduxGetStore } from '@/store/store_di'
 import { depotUsername$, depotBit$ } from '@/store/root/modules/depot'
 import { ServiceLogInResponseError, ServiceGetSaltResponseError } from '@/api/definitions'
 import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
@@ -83,7 +84,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   data () {
     return {
       ...{
-        username: depotUsername$.getValue() || sessionUsername$.getValue() || '',
+        username: depotUsername$.getValue() || getSessionUsername(reduxGetStore().getState()) || '',
         password: '',
         frozen: false
       },

@@ -228,7 +228,6 @@ export const constructInitialSettingsState = (): SettingsState => ({
 
 export type FullState = RootState & {
   depot: DepotState;
-  session: SessionState;
   user: UserState & {
     security: SecurityState;
     settings: SettingsState;
@@ -242,7 +241,6 @@ export type FullState = RootState & {
 export const constructInitialFullState = (): FullState => ({
   ...constructInitialRootState(),
   depot: constructInitialDepotState(),
-  session: constructInitialSessionState(),
   user: {
     ...constructInitialUserState(),
     security: constructInitialSecurityState(),
@@ -252,4 +250,12 @@ export const constructInitialFullState = (): FullState => ({
     toast: constructInitialToastState(),
     editor: constructInitialEditorState()
   }
+})
+
+export type ReduxFullState = {
+  session: SessionState;
+}
+
+export const reduxConstructInitialFullState = (): ReduxFullState => ({
+  session: constructInitialSessionState()
 })

@@ -112,6 +112,7 @@ DEPENDENCIES = [
     "@pwa_npm//@types/ua-parser-js",
     "@pwa_npm//@types/vuedraggable",
     "@pwa_npm//@types/vuelidate",
+    "@pwa_npm//@reduxjs/toolkit",
     "@pwa_npm//@vue/cli-plugin-babel",
     "@pwa_npm//@vue/cli-plugin-eslint",
     "@pwa_npm//@vue/cli-plugin-pwa",
@@ -131,6 +132,7 @@ DEPENDENCIES = [
     "@pwa_npm//sass-loader",
     "@pwa_npm//snakecase-keys",
     "@pwa_npm//trianglify",
+    "@pwa_npm//ts-essentials",
     "@pwa_npm//tsyringe",
     "@pwa_npm//ua-parser-js",
     # For `ts_swagger_api`.

@@ -1,16 +1,18 @@
 import { Depot, depotBit$ } from './root/modules/depot'
 import { Interface } from './root/modules/interface'
 import { Mutations } from './root'
-import { RootState, FullState, constructInitialRootState, getDepotEssense } from './state'
+import { RootState, FullState, constructInitialRootState, getDepotEssense, ReduxFullState } from './state'
 import Vue from 'vue'
 import Vuex from 'vuex'
 import VuexPersist from 'vuex-persist'
-import { state$ } from './state_rx'
+import { applySelector, reduxState$, state$ } from './state_rx'
 import { container } from 'tsyringe'
-import { STORE_TOKEN } from './store_di'
+import { REDUX_STORE_TOKEN, STORE_TOKEN } from './store_di'
 import { User } from './root/modules/user/module'
-import { Session } from './root/modules/session'
-import { persistanceBits } from './storages'
+import { sessionSlice } from './root/modules/session'
+import { persistanceBits, StorageManager } from './storages'
+import { configureStore } from '@reduxjs/toolkit'
+import { SESSION_STORAGE_MANAGER_TOKEN } from './storages_di'
 
 Vue.use(Vuex)
 
@@ -25,21 +27,14 @@ const vuexLocal = new VuexPersist<RootState>({
   }
 })
 
-const vuexSession = new VuexPersist<RootState>({
-  storage: sessionStorage,
-  modules: ['session'],
-  filter: () => persistanceBits.session
-})
-
 const store = new Vuex.Store<RootState>({
-  plugins: [vuexLocal.plugin, vuexSession.plugin],
+  plugins: [vuexLocal.plugin],
   state: constructInitialRootState,
   mutations: Mutations,
   modules: {
     depot: Depot,
     interface: Interface,
-    user: User,
-    session: Session
+    user: User
   }
 })
 
@@ -58,3 +53,39 @@ store.watch((state) => state as FullState, (value) => {
     depotBit$.next(true)
   }
 })()
+
+const sessionStorageManager = new StorageManager(sessionStorage, [
+  [2, (get, set, remove) => {
+    const VUEX_KEY = 'vuex'
+    const vuex = get<{ session: { username: string | null } }>(VUEX_KEY)
+    if (vuex !== null) {
+      set('username', vuex.session.username)
+    }
+    remove(VUEX_KEY)
+  }]
+])
+sessionStorageManager.open()
+container.register(SESSION_STORAGE_MANAGER_TOKEN, {
+  useValue: sessionStorageManager
+})
+
+const reduxStore = configureStore<ReduxFullState>({
+  reducer: {
+    session: sessionSlice.reducer
+  }
+})
+container.register(REDUX_STORE_TOKEN, {
+  useValue: reduxStore
+})
+
+reduxStore.subscribe(() => {
+  reduxState$.next(reduxStore.getState())
+})
+
+reduxStore.dispatch(sessionSlice.actions.rehydrate({
+  username: sessionStorageManager.getObject<string>('username')
+}))
+
+applySelector((state) => state.session).subscribe((session) => {
+  sessionStorageManager.setObject('username', session.username)
+})

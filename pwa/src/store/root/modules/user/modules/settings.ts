@@ -38,11 +38,13 @@ import { SodiumClient } from '@/sodium_client'
 import { ResettableAction, ResettableActionType } from '@/store/resettable_action'
 import { setSessionKey$, setParametrization$, setEncryptionKey$, userKeys$, parametrization$, sessionKey$, setRequiresMailVerification$ } from '..'
 import { setUpDepot$ } from '../../depot'
-import { setSessionUsername$ } from '../../session'
 import { showToast$ } from '../../interface/toast'
 import { Router } from '@/router'
 import VueI18n from 'vue-i18n'
-import { shutDownLocalStorage, shutDownSessionStorage } from '@/store/storages'
+import { shutDownLocalStorage, StorageManager } from '@/store/storages'
+import { reduxGetStore } from '@/store/store_di'
+import { sessionSlice } from '../../session'
+import { SESSION_STORAGE_MANAGER_TOKEN } from '@/store/storages_di'
 
 export const acquireMailTokenProgress$ = createGetter<AcquireMailTokenProgress>((state) => state.user.settings.mailToken.acquireProgress)
 export const releaseMailTokenProgress$ = createGetter<ReleaseMailTokenProgress>((state) => state.user.settings.mailToken.releaseProgress)
@@ -184,7 +186,7 @@ changeUsername$.pipe(switchMap((action) => {
           switch (context.error) {
             case ServiceChangeUsernameResponseError.NONE:
               setChangeUsernameProgress$.next(success(undefined))
-              setSessionUsername$.next(context.action.username)
+              reduxGetStore().dispatch(sessionSlice.actions.setUsername(context.action.username))
               showToast$.next({ message: container.resolve(VueI18n).t('DONE') as string })
               break
             default:
@@ -242,7 +244,7 @@ deleteAccount$.pipe(switchMap((action) => {
             case ServiceDeleteAccountResponseError.NONE:
               setDeleteAccountProgress$.next(success(undefined))
               shutDownLocalStorage()
-              shutDownSessionStorage()
+              container.resolve<StorageManager>(SESSION_STORAGE_MANAGER_TOKEN).destroy()
               location.assign('/')
               break
             default:

@@ -22,7 +22,8 @@ import {
 import { container } from 'tsyringe'
 import { SodiumClient } from '@/sodium_client'
 import { showToast$ } from '../interface/toast'
-import { shutDownSessionStorage } from '@/store/storages'
+import { StorageManager } from '@/store/storages'
+import { SESSION_STORAGE_MANAGER_TOKEN } from '@/store/storages_di'
 
 export const createUserKeyHook$ = new Subject<string>()
 
@@ -82,7 +83,7 @@ fromEvent(document, 'visibilitychange').pipe(
 
 export const logOut$ = new Subject<void>()
 logOut$.subscribe(() => {
-  shutDownSessionStorage()
+  container.resolve<StorageManager>(SESSION_STORAGE_MANAGER_TOKEN).destroy()
   location.assign('/')
 })
 
