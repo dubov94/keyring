@@ -41,10 +41,9 @@ import { setUpDepot$ } from '../../depot'
 import { showToast$ } from '../../interface/toast'
 import { Router } from '@/router'
 import VueI18n from 'vue-i18n'
-import { shutDownLocalStorage, StorageManager } from '@/store/storages'
-import { reduxGetStore } from '@/store/store_di'
-import { sessionSlice } from '../../session'
-import { SESSION_STORAGE_MANAGER_TOKEN } from '@/store/storages_di'
+import { shutDownLocalStorage } from '@/store/storages'
+import { setUsername } from '@/redux/modules/session/actions'
+import { getRedux } from '@/redux/store_di'
 
 export const acquireMailTokenProgress$ = createGetter<AcquireMailTokenProgress>((state) => state.user.settings.mailToken.acquireProgress)
 export const releaseMailTokenProgress$ = createGetter<ReleaseMailTokenProgress>((state) => state.user.settings.mailToken.releaseProgress)
@@ -186,7 +185,7 @@ changeUsername$.pipe(switchMap((action) => {
           switch (context.error) {
             case ServiceChangeUsernameResponseError.NONE:
               setChangeUsernameProgress$.next(success(undefined))
-              reduxGetStore().dispatch(sessionSlice.actions.setUsername(context.action.username))
+              getRedux().dispatch(setUsername(context.action.username))
               showToast$.next({ message: container.resolve(VueI18n).t('DONE') as string })
               break
             default:
@@ -244,7 +243,7 @@ deleteAccount$.pipe(switchMap((action) => {
             case ServiceDeleteAccountResponseError.NONE:
               setDeleteAccountProgress$.next(success(undefined))
               shutDownLocalStorage()
-              container.resolve<StorageManager>(SESSION_STORAGE_MANAGER_TOKEN).destroy()
+              getRedux().dispatch(setUsername(null))
               location.assign('/')
               break
             default:

@@ -47,8 +47,7 @@
 import Vue, { VueConstructor } from 'vue'
 import { required } from 'vuelidate/lib/validators'
 import Page from '@/components/Page.vue'
-import { getSessionUsername } from '@/store/root/modules/session'
-import { reduxGetStore } from '@/store/store_di'
+import { getSessionUsername } from '@/redux/modules/session/selectors'
 import { depotUsername$, depotBit$ } from '@/store/root/modules/depot'
 import { ServiceLogInResponseError, ServiceGetSaltResponseError } from '@/api/definitions'
 import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
@@ -63,6 +62,7 @@ import {
 import { act, reset } from '@/store/resettable_action'
 import { Undefinable } from '@/utilities'
 import { showToast$ } from '@/store/root/modules/interface/toast'
+import { state$ } from '@/redux/selectors'
 
 const STATE_TO_MESSAGE = new Map<FlowProgressBasicState | AuthenticationViaApiProgressState | AuthenticationViaDepotProgressState, string>([
   [AuthenticationViaApiProgressState.RETRIEVING_PARAMETRIZATION, 'Getting salt'],
@@ -84,7 +84,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   data () {
     return {
       ...{
-        username: depotUsername$.getValue() || getSessionUsername(reduxGetStore().getState()) || '',
+        username: depotUsername$.getValue() || getSessionUsername(state$.getValue()) || '',
         password: '',
         frozen: false
       },

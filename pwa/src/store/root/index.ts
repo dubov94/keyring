@@ -39,8 +39,8 @@ import {
 import { depotEssence$, depotBit$, setUpDepot$ } from './modules/depot'
 import { showToast$ } from './modules/interface/toast'
 import { Router } from '@/router'
-import { getStore, reduxGetStore } from '../store_di'
-import { sessionSlice } from './modules/session'
+import { getRedux } from '@/redux/store_di'
+import { setUsername } from '@/redux/modules/session/actions'
 
 export const registrationProgress$ = createGetter<RegistrationProgress>((state) => state.registrationProgress)
 export const authenticationViaApiProgress$ = createGetter<AuthenticationViaApiProgress>((state) => state.authenticationViaApi)
@@ -96,7 +96,7 @@ register$.pipe(switchMap((action) => {
             case ServiceRegisterResponseError.NONE:
               setRegistrationProgress$.next(success(undefined))
               setIsAuthenticated$.next(true)
-              reduxGetStore().dispatch(sessionSlice.actions.setUsername(context.action.username))
+              getRedux().dispatch(setUsername(context.action.username))
               setParametrization$.next(context.parametrization)
               setEncryptionKey$.next(context.encryptionKey)
               setSessionKey$.next(context.response.sessionKey!)
@@ -177,7 +177,7 @@ logInViaApi$.pipe(switchMap((action) => {
                         tap((context) => {
                           setAuthenticationViaApiProgress$.next(success(undefined))
                           setIsAuthenticated$.next(true)
-                          reduxGetStore().dispatch(sessionSlice.actions.setUsername(context.action.username))
+                          getRedux().dispatch(setUsername(context.action.username))
                           setParametrization$.next(context.getSaltResponse.salt!)
                           setEncryptionKey$.next(context.encryptionKey)
                           setSessionKey$.next(context.logInResponse.payload!.sessionKey!)
@@ -262,7 +262,7 @@ logInViaDepot$.pipe(switchMap((action) => {
                     tap((context) => {
                       setAuthenticationViaDepotProgress$.next(success(undefined))
                       setIsAuthenticated$.next(true)
-                      reduxGetStore().dispatch(sessionSlice.actions.setUsername(context.action.username))
+                      getRedux().dispatch(setUsername(context.action.username))
                       setUserKeys$.next(context.userKeys)
                       setUpDepot$.next(context.action.password)
                       asapScheduler.schedule(() => {

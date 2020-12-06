@@ -22,8 +22,8 @@ import {
 import { container } from 'tsyringe'
 import { SodiumClient } from '@/sodium_client'
 import { showToast$ } from '../interface/toast'
-import { StorageManager } from '@/store/storages'
-import { SESSION_STORAGE_MANAGER_TOKEN } from '@/store/storages_di'
+import { getRedux } from '@/redux/store_di'
+import { setUsername } from '@/redux/modules/session/actions'
 
 export const createUserKeyHook$ = new Subject<string>()
 
@@ -83,7 +83,7 @@ fromEvent(document, 'visibilitychange').pipe(
 
 export const logOut$ = new Subject<void>()
 logOut$.subscribe(() => {
-  container.resolve<StorageManager>(SESSION_STORAGE_MANAGER_TOKEN).destroy()
+  getRedux().dispatch(setUsername(null))
   location.assign('/')
 })
 

@@ -24,6 +24,7 @@ import SodiumWorker from './sodium.worker.ts'
 import { SODIUM_INTERFACE_TOKEN, SodiumInterface } from '@/sodium_interface'
 import '@/store'
 import { getStore } from '@/store/store_di'
+import '@/redux'
 
 container.register<SodiumInterface>(SODIUM_INTERFACE_TOKEN, {
   useValue: SodiumWorker<SodiumInterface>()

@@ -38,8 +38,8 @@
 <script lang="ts">
 import Vue from 'vue'
 import { isAuthenticated$, logOut$ } from '@/store/root/modules/user'
-import { getSessionUsername } from '@/store/root/modules/session'
-import { applySelector } from '@/store/state_rx'
+import { getSessionUsername } from '@/redux/modules/session/selectors'
+import { apply } from '@/redux/selectors'
 import { Undefinable } from '@/utilities'
 
 export default Vue.extend({
@@ -54,7 +54,7 @@ export default Vue.extend({
   subscriptions () {
     return {
       isAuthenticated: isAuthenticated$,
-      username: applySelector(getSessionUsername)
+      username: apply(getSessionUsername)
     }
   },
   computed: {

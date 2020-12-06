@@ -251,11 +251,3 @@ export const constructInitialFullState = (): FullState => ({
     editor: constructInitialEditorState()
   }
 })
-
-export type ReduxFullState = {
-  session: SessionState;
-}
-
-export const reduxConstructInitialFullState = (): ReduxFullState => ({
-  session: constructInitialSessionState()
-})
