@@ -3,7 +3,12 @@ import isEqual from 'lodash/isEqual'
 import { BehaviorSubject, Observable } from 'rxjs'
 import { distinctUntilChanged, map } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
-import { RootState, store } from './conjunction'
+import { RootState } from './conjunction'
+import { store } from './store'
+
+store.subscribe(() => {
+  state$.next(store.getState())
+})
 
 export const state$ = new BehaviorSubject<RootState>(store.getState())
 

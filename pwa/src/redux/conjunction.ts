@@ -13,11 +13,9 @@ const actions = {
 
 export type RootAction = ActionType<typeof actions>
 
-const reducer = combineReducers({
+export const reducer = combineReducers({
   authn: authnReducer,
   session: sessionReducer
 })
 
 export type RootState = StateType<typeof reducer>
-
-export const store = configureStore({ reducer })

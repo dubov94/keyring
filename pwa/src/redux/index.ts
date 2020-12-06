@@ -1,9 +1,7 @@
 import { StorageManager } from './storages'
-import { container } from 'tsyringe'
-import { store } from './conjunction'
+import { store } from './store'
 import { rehydrate } from './modules/session/actions'
-import { apply, state$ } from './selectors'
-import { REDUX_TOKEN } from './store_di'
+import { apply } from './selectors'
 
 const sessionStorageManager = new StorageManager(sessionStorage, [
   [2, (get, set, remove) => {
@@ -16,14 +14,6 @@ const sessionStorageManager = new StorageManager(sessionStorage, [
   }]
 ])
 sessionStorageManager.open()
-
-container.register(REDUX_TOKEN, {
-  useValue: store
-})
-
-store.subscribe(() => {
-  state$.next(store.getState())
-})
 
 store.dispatch(rehydrate({
   username: sessionStorageManager.getObject<string>('username')
