@@ -1,5 +1,4 @@
-import { withPayloadType } from '@/redux/actions';
-import { createAction } from "@reduxjs/toolkit";
+import { createAction } from 'typesafe-actions'
 
-export const setUsername = createAction('session/setUsername', withPayloadType<string | null>())
-export const rehydrate = createAction('session/rehydrate', withPayloadType<{ username: string | null }>())
+export const setUsername = createAction('session/setUsername')<string | null>()
+export const rehydrate = createAction('session/rehydrate')<{ username: string | null }>()

@@ -64,13 +64,11 @@ export type AuthenticationViaDepotProgress = FlowProgress<
 >
 
 export interface RootState {
-  registrationProgress: RegistrationProgress;
   authenticationViaApi: AuthenticationViaApiProgress;
   authenticationViaDepot: AuthenticationViaDepotProgress;
 }
 
 export const constructInitialRootState = (): RootState => ({
-  registrationProgress: indicator(FlowProgressBasicState.IDLE, undefined),
   authenticationViaApi: indicator(FlowProgressBasicState.IDLE, undefined),
   authenticationViaDepot: indicator(FlowProgressBasicState.IDLE, undefined)
 })

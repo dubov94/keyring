@@ -1,13 +1,14 @@
 import { createReducer } from '@reduxjs/toolkit'
+import { isActionOf } from 'typesafe-actions'
 import { rehydrate, setUsername } from './actions'
 
 export default createReducer<{ username: string | null }>(
   { username: null },
   (builder) => builder
-    .addCase(setUsername, (state, action) => {
+    .addMatcher(isActionOf(setUsername), (state, action) => {
       state.username = action.payload
     })
-    .addCase(rehydrate, (state, action) => {
+    .addMatcher(isActionOf(rehydrate), (state, action) => {
       state.username = action.payload.username
     })
 )

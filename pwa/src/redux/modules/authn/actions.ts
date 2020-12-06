@@ -1,7 +1,16 @@
-import { withPayloadType } from '@/redux/actions';
-import { AuthenticationViaApiProgress, AuthenticationViaDepotProgress, RegistrationProgress } from '@/store/state';
-import { createAction } from '@reduxjs/toolkit';
+import { AuthenticationViaApiProgress, AuthenticationViaDepotProgress, RegistrationProgress } from '@/store/state'
+import { createAction } from 'typesafe-actions'
 
-export const setRegistrationProgress = createAction('authn/setRegistrationProgress', withPayloadType<RegistrationProgress>())
-export const setAuthenticationViaApiProgress = createAction('authn/setAuthenticationViaApiProgress', withPayloadType<AuthenticationViaApiProgress>())
-export const setAuthenticationViaDepotProgress = createAction('authn/setAuthenticationViaDepotProgress', withPayloadType<AuthenticationViaDepotProgress>())
+export const setRegistrationProgress = createAction('authn/setRegistrationProgress')<RegistrationProgress>()
+export const setAuthenticationViaApiProgress = createAction('authn/setAuthenticationViaApiProgress')<AuthenticationViaApiProgress>()
+export const setAuthenticationViaDepotProgress = createAction('authn/setAuthenticationViaDepotProgress')<AuthenticationViaDepotProgress>()
+
+export const register = {
+  act: createAction('authn/register/act')<{
+    username: string;
+    password: string;
+    mail: string;
+  }>(),
+  reset: createAction('authn/register/reset')()
+}
+

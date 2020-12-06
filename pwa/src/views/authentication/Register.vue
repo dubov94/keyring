@@ -52,12 +52,14 @@
 import Vue, { VueConstructor } from 'vue'
 import { email, required, sameAs } from 'vuelidate/lib/validators'
 import Page from '@/components/Page.vue'
-import { register$, registrationProgress$ } from '@/store/root'
 import { RegistrationProgress, RegistrationProgressState } from '@/store/state'
 import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
-import { act, reset } from '@/store/resettable_action'
 import { ServiceRegisterResponseError } from '@/api/definitions'
 import { Undefinable } from '@/utilities'
+import { apply } from '@/redux/selectors'
+import { getRegistrationProgress } from '@/redux/modules/authn/selectors'
+import { register } from '@/redux/modules/authn/actions'
+import { getRedux } from '@/redux/store_di'
 
 const STATE_TO_MESSAGE = new Map<FlowProgressBasicState | RegistrationProgressState, string>([
   [RegistrationProgressState.GENERATING_PARAMETRIZATION, 'Generating salt'],
@@ -91,7 +93,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   subscriptions () {
     return {
-      registrationProgress: registrationProgress$
+      registrationProgress: apply(getRegistrationProgress)
     }
   },
   validations: {
@@ -157,7 +159,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         this.$v.$touch()
         if (!this.$v.$invalid) {
           this.username.frozen = true
-          register$.next(act({
+          getRedux().dispatch(register.act({
             username: this.username.value,
             password: this.password,
             mail: this.mail
@@ -167,7 +169,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   beforeDestroy () {
-    register$.next(reset())
+    getRedux().dispatch(register.reset())
   }
 })
 </script>

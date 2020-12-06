@@ -1,8 +1,6 @@
 import { createMutation, createGetter } from '../state_rx'
 import {
   RootState,
-  RegistrationProgress,
-  RegistrationProgressState,
   AuthenticationViaApiProgress,
   AuthenticationViaApiProgressState,
   AuthenticationViaDepotProgress,
@@ -18,8 +16,6 @@ import { indicator, FlowProgressBasicState, exception, failure, success, stringi
 import { container } from 'tsyringe'
 import { SodiumClient } from '@/sodium_client'
 import {
-  ServiceRegisterResponse,
-  ServiceRegisterResponseError,
   ServiceGetSaltResponse,
   ServiceGetSaltResponseError,
   ServiceLogInResponse,
@@ -42,84 +38,16 @@ import { Router } from '@/router'
 import { getRedux } from '@/redux/store_di'
 import { setUsername } from '@/redux/modules/session/actions'
 
-export const registrationProgress$ = createGetter<RegistrationProgress>((state) => state.registrationProgress)
 export const authenticationViaApiProgress$ = createGetter<AuthenticationViaApiProgress>((state) => state.authenticationViaApi)
 export const authenticationViaDepotProgress$ = createGetter<AuthenticationViaDepotProgress>((state) => state.authenticationViaDepot)
 
 enum MutationType {
-  SET_REGISTRATION_PROGRESS = 'setRegistrationProgress',
   SET_AUTHENTICATION_VIA_API_PROGRESS = 'setAuthenticationViaApiProgress',
   SET_AUTHENTICATION_VIA_DEPOT_PROGRESS = 'setAuthenticationViaDepotProgress',
 }
 
-const setRegistrationProgress$ = createMutation<RegistrationProgress>(null, MutationType.SET_REGISTRATION_PROGRESS)
 const setAuthenticationViaApiProgress$ = createMutation<AuthenticationViaApiProgress>(null, MutationType.SET_AUTHENTICATION_VIA_API_PROGRESS)
 const setAuthenticationViaDepotProgress$ = createMutation<AuthenticationViaDepotProgress>(null, MutationType.SET_AUTHENTICATION_VIA_DEPOT_PROGRESS)
-
-export interface RegisterPayload {
-  username: string;
-  password: string;
-  mail: string;
-}
-export const register$ = new Subject<ResettableAction<RegisterPayload>>()
-register$.pipe(switchMap((action) => {
-  switch (action.type) {
-    case ResettableActionType.ACT:
-      depotBit$.next(false)
-      return of(action).pipe(
-        tap(() => {
-          setRegistrationProgress$.next(indicator(RegistrationProgressState.GENERATING_PARAMETRIZATION, undefined))
-        }),
-        switchMap((action) => from(container.resolve(SodiumClient).generateArgon2Parametrization()).pipe(
-          map((parametrization) => ({ action, parametrization }))
-        )),
-        tap(() => {
-          setRegistrationProgress$.next(indicator(RegistrationProgressState.COMPUTING_MASTER_KEY_DERIVATIVES, undefined))
-        }),
-        switchMap((context) => from(container.resolve(SodiumClient).computeAuthDigestAndEncryptionKey(
-          context.parametrization, context.action.password)).pipe(
-          map(({ authDigest, encryptionKey }) => ({ ...context, authDigest, encryptionKey }))
-        )),
-        tap(() => {
-          setRegistrationProgress$.next(indicator(RegistrationProgressState.MAKING_REQUEST, undefined))
-        }),
-        switchMap((context) => from(getAuthenticationApi().register({
-          username: context.action.username,
-          salt: context.parametrization,
-          digest: context.authDigest,
-          mail: context.action.mail
-        })).pipe(
-          map((response: ServiceRegisterResponse) => ({ ...context, response }))
-        )),
-        tap((context) => {
-          switch (context.response.error) {
-            case ServiceRegisterResponseError.NONE:
-              setRegistrationProgress$.next(success(undefined))
-              setIsAuthenticated$.next(true)
-              getRedux().dispatch(setUsername(context.action.username))
-              setParametrization$.next(context.parametrization)
-              setEncryptionKey$.next(context.encryptionKey)
-              setSessionKey$.next(context.response.sessionKey!)
-              setUserKeys$.next([])
-              setRequiresMailVerification$.next(true)
-              Router.push('/mail-verification')
-              break
-            default:
-              setRegistrationProgress$.next(failure(context.response.error!))
-              break
-          }
-        }),
-        catchError((error) => of(error).pipe(tap((error) => {
-          setRegistrationProgress$.next(exception(stringify(error)))
-          showToast$.next({ message: stringify(error) })
-        })))
-      )
-    case ResettableActionType.RESET:
-      return of(action).pipe(
-        tap(() => { setRegistrationProgress$.next(indicator(FlowProgressBasicState.IDLE, undefined)) })
-      )
-  }
-})).subscribe()
 
 export interface LogInViaApiPayload {
   username: string;
@@ -298,9 +226,6 @@ logInViaDepot$.pipe(switchMap((action) => {
 })).subscribe()
 
 export const Mutations: MutationTree<RootState> = {
-  [MutationType.SET_REGISTRATION_PROGRESS] (state, value) {
-    state.registrationProgress = value
-  },
   [MutationType.SET_AUTHENTICATION_VIA_API_PROGRESS] (state, value) {
     state.authenticationViaApi = value
   },

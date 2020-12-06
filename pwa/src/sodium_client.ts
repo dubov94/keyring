@@ -1,4 +1,4 @@
-import { inject, injectable } from 'tsyringe'
+import { container, inject, injectable } from 'tsyringe'
 import { SODIUM_INTERFACE_TOKEN, SodiumInterface } from './sodium_interface'
 import { Password } from '@/store/state'
 
@@ -88,3 +88,5 @@ export class SodiumClient {
     }
   }
 }
+
+export const getSodiumClient = () => container.resolve(SodiumClient)
