@@ -13,4 +13,3 @@ export const register = {
   }>(),
   reset: createAction('authn/register/reset')()
 }
-

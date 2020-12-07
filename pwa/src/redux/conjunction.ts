@@ -1,11 +1,9 @@
-import { combineReducers } from '@reduxjs/toolkit';
-import { ActionType, StateType } from 'typesafe-actions';
-
+import { combineReducers } from '@reduxjs/toolkit'
+import { ActionType, StateType } from 'typesafe-actions'
 import * as sessionActions from './modules/session/actions'
 import sessionReducer from './modules/session/reducer'
 import * as authnActions from './modules/authn/actions'
 import authnReducer from './modules/authn/reducer'
-import { Epic } from 'redux-observable';
 
 const actions = {
   authn: authnActions,
@@ -20,5 +18,3 @@ export const reducer = combineReducers({
 })
 
 export type RootState = StateType<typeof reducer>
-
-export type Effect = Epic<RootAction, RootAction, RootState>

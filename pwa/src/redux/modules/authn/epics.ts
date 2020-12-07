@@ -1,4 +1,4 @@
-import { Effect } from '@/redux/conjunction'
+import { RootAction, RootState } from '@/redux/conjunction'
 import { exception, failure, FlowProgressBasicState, indicator, stringify, success } from '@/store/flow'
 import { depotBit$ } from '@/store/root/modules/depot'
 import { RegistrationProgressState } from '@/store/state'
@@ -17,8 +17,9 @@ import { setUsername } from '../session/actions'
 import { showToast$ } from '@/store/root/modules/interface/toast'
 import { getSodiumClient } from '@/sodium_client'
 import { getAuthenticationApi } from '@/api/api_di'
+import { Epic } from 'redux-observable'
 
-export const registerEpic: Effect = (action$) => action$.pipe(
+export const registerEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf([register.act, register.reset])),
   switchMap((action) => {
     if (isActionOf(register.act, action)) {
