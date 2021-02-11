@@ -36,38 +36,34 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { isAuthenticated$, logOut$ } from '@/store/root/modules/user'
-import { getSessionUsername } from '@/redux/modules/session/selectors'
-import { apply } from '@/redux/selectors'
-import { Undefinable } from '@/utilities'
+import Vue, { VueConstructor } from 'vue'
+import { sessionUsername } from '@/redux/modules/session/selectors'
+import { isAuthenticated } from '@/redux/modules/user/account/selectors'
+import { logOut } from '@/redux/modules/user/account/actions'
 
-export default Vue.extend({
+interface Mixins {
+  value: boolean;
+}
+
+export default (Vue as VueConstructor<Vue & Mixins>).extend({
   props: ['value', 'hasMenu', 'extended'],
-  data () {
-    return {
-      ...{
-        isAuthenticated: undefined as Undefinable<boolean>
-      }
-    }
-  },
-  subscriptions () {
-    return {
-      isAuthenticated: isAuthenticated$,
-      username: apply(getSessionUsername)
-    }
-  },
   computed: {
+    isAuthenticated () {
+      return isAuthenticated(this.$data.$state)
+    },
+    username () {
+      return sessionUsername(this.$data.$state)
+    },
     homeTarget (): string {
       return this.isAuthenticated ? '/dashboard' : '/'
     }
   },
   methods: {
-    toggle (): void {
+    toggle () {
       this.$emit('input', !this.value)
     },
-    logOut (): void {
-      logOut$.next()
+    logOut () {
+      this.dispatch(logOut())
     }
   }
 })

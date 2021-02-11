@@ -1,6 +1,7 @@
 import { container, inject, injectable } from 'tsyringe'
 import { SODIUM_INTERFACE_TOKEN, SodiumInterface } from './sodium_interface'
-import { Password } from '@/store/state'
+import { Password } from '@/redux/entities'
+import { DeepReadonly } from 'ts-essentials'
 
 const ARGON2_DEFAULT_M = 64 * 1024 * 1024
 const ARGON2_DEFAULT_T = 1
@@ -72,7 +73,7 @@ export class SodiumClient {
       await this.sodiumInterface.fromBase64(encryptionKey), nonce, base64Cipher)
   }
 
-  async encryptPassword (encryptionKey: string, { value, tags }: Password): Promise<Password> {
+  async encryptPassword (encryptionKey: string, { value, tags }: DeepReadonly<Password>): Promise<Password> {
     return {
       value: await this.encryptMessage(encryptionKey, value),
       tags: await Promise.all(tags.map(
@@ -80,7 +81,7 @@ export class SodiumClient {
     }
   }
 
-  async decryptPassword (encryptionKey: string, { value, tags }: Password): Promise<Password> {
+  async decryptPassword (encryptionKey: string, { value, tags }: DeepReadonly<Password>): Promise<Password> {
     return {
       value: await this.decryptMessage(encryptionKey, value),
       tags: await Promise.all(tags.map(

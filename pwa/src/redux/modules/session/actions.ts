@@ -1,4 +1,6 @@
+import { DeepReadonly } from 'ts-essentials'
 import { createAction } from 'typesafe-actions'
 
-export const setUsername = createAction('session/setUsername')<string | null>()
-export const rehydrate = createAction('session/rehydrate')<{ username: string | null }>()
+export const rehydrateSession = createAction('session/rehydrate')<DeepReadonly<
+  { username: string | null }
+>>()

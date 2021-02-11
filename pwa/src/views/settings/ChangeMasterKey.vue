@@ -18,13 +18,13 @@
           :dirty="$v.repeat.$dirty" :errors="repeatErrors"
           @touch="$v.repeat.$touch()" @reset="$v.repeat.$reset()"></form-text-field>
         <div class="mx-3">
-          <v-btn block :loading="hasProgressMessage"
+          <v-btn block :loading="hasIndicatorMessage"
             color="primary" @click="submit" :disabled="!canAccessApi">
             <span>Submit</span>
             <template v-slot:loader>
               <v-progress-circular indeterminate :size="23" :width="2">
               </v-progress-circular>
-              <span class="ml-3">{{ progressMessage }}</span>
+              <span class="ml-3">{{ indicatorMessage }}</span>
             </template>
           </v-btn>
         </div>
@@ -36,61 +36,72 @@
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
 import { required, sameAs } from 'vuelidate/lib/validators'
-import { canAccessApi$ } from '@/store/root/modules/user'
-import { changeMasterKeyProgress$, changeMasterKey$ } from '@/store/root/modules/user/modules/settings'
-import { Undefinable } from '@/utilities'
-import { ChangeMasterKeyProgress, ChangeMasterKeyProgressState } from '@/store/state'
-import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
 import { ServiceChangeMasterKeyResponseError } from '@/api/definitions'
-import { act, reset } from '@/store/resettable_action'
+import { function as fn, option, map, eq } from 'fp-ts'
+import { canAccessApi, masterKeyChange, MasterKeyChange } from '@/redux/modules/user/account/selectors'
+import { MasterKeyChangeFlowIndicator, changeMasterKey, masterKeyChangeReset, masterKeyChangeSignal } from '@/redux/modules/user/account/actions'
+import { filter, takeUntil } from 'rxjs/operators'
+import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
+import { error } from '@/redux/remote_data'
+import { DeepReadonly } from 'ts-essentials'
+import { showToast } from '@/redux/modules/ui/toast/actions'
 
-const STATE_TO_MESSAGE = new Map<FlowProgressBasicState | ChangeMasterKeyProgressState, string>([
-  [ChangeMasterKeyProgressState.REENCRYPTING, 'Re-encrypting'],
-  [ChangeMasterKeyProgressState.MAKING_REQUEST, 'Making request']
+const INDICATOR_TO_MESSAGE = new Map<MasterKeyChangeFlowIndicator, string>([
+  [MasterKeyChangeFlowIndicator.REENCRYPTING, 'Re-encrypting'],
+  [MasterKeyChangeFlowIndicator.MAKING_REQUEST, 'Making request']
 ])
 
 interface Mixins {
   frozen: boolean;
+  masterKeyChange: DeepReadonly<MasterKeyChange>;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   data () {
     return {
-      ...{
-        current: '',
-        renewal: '',
-        repeat: '',
-        frozen: false
-      },
-      ...{
-        canAccessApi: undefined as Undefinable<boolean>,
-        changeMasterKeyProgress: undefined as Undefinable<ChangeMasterKeyProgress>
-      }
-    }
-  },
-  subscriptions () {
-    return {
-      canAccessApi: canAccessApi$,
-      changeMasterKeyProgress: changeMasterKeyProgress$
+      current: '',
+      renewal: '',
+      repeat: '',
+      frozen: false
     }
   },
   validations: {
     current: {
       valid () {
-        if (this.changeMasterKeyProgress?.state === FlowProgressBasicState.ERROR) {
-          if (this.changeMasterKeyProgress?.error.type === FlowProgressErrorType.FAILURE) {
-            if (this.changeMasterKeyProgress?.error.error === ServiceChangeMasterKeyResponseError.INVALIDCURRENTDIGEST) {
-              return !this.frozen
-            }
-          }
-        }
-        return true
+        return fn.pipe(
+          error(this.masterKeyChange),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceChangeMasterKeyResponseError.INVALIDCURRENTDIGEST),
+          option.map(() => !this.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
       }
     },
     renewal: { required },
     repeat: { sameAs: sameAs('renewal') }
   },
+  created () {
+    this.$data.$actions.pipe(
+      filter(isActionSuccess(masterKeyChangeSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.current = ''
+      this.renewal = ''
+      this.repeat = ''
+      this.frozen = false
+      this.$v.$reset()
+      this.dispatch(masterKeyChangeReset())
+      this.dispatch(showToast({ message: this.$t('DONE') as string }))
+      ;(document.activeElement as HTMLInputElement).blur()
+    })
+  },
   computed: {
+    canAccessApi (): boolean {
+      return canAccessApi(this.$data.$state)
+    },
+    masterKeyChange (): DeepReadonly<MasterKeyChange> {
+      return masterKeyChange(this.$data.$state)
+    },
     currentErrors (): { [key: string]: boolean } {
       return {
         [this.$t('INVALID_CURRENT_PASSWORD') as string]: !this.$v.current.valid
@@ -106,32 +117,36 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         [this.$t('PASSWORDS_DO_NOT_MATCH') as string]: !this.$v.repeat.sameAs
       }
     },
-    progressMessage (): string | null {
-      return STATE_TO_MESSAGE.get(this.changeMasterKeyProgress?.state || FlowProgressBasicState.IDLE) || null
+    indicatorMessage (): string | null {
+      return fn.pipe(
+        this.masterKeyChange.indicator,
+        option.chain((indicator) => map.lookup(eq.eqStrict)(indicator, INDICATOR_TO_MESSAGE)),
+        option.getOrElse<string | null>(() => null)
+      )
     },
-    hasProgressMessage (): boolean {
-      return this.progressMessage !== null
+    hasIndicatorMessage (): boolean {
+      return this.indicatorMessage !== null
     }
   },
   methods: {
-    setCurrent (value: string): void {
+    setCurrent (value: string) {
       this.current = value
       this.frozen = false
     },
-    setRenewal (value: string): void {
+    setRenewal (value: string) {
       this.renewal = value
       this.frozen = false
     },
-    setRepeat (value: string): void {
+    setRepeat (value: string) {
       this.repeat = value
       this.frozen = false
     },
-    submit (): void {
-      if (this.canAccessApi && !this.hasProgressMessage) {
+    submit () {
+      if (this.canAccessApi && !this.hasIndicatorMessage) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
           this.frozen = true
-          changeMasterKey$.next(act({
+          this.dispatch(changeMasterKey({
             current: this.current,
             renewal: this.renewal
           }))
@@ -139,21 +154,8 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       }
     }
   },
-  watch: {
-    changeMasterKeyProgress (newValue) {
-      if (newValue?.state === FlowProgressBasicState.SUCCESS) {
-        this.current = ''
-        this.renewal = ''
-        this.repeat = ''
-        this.frozen = false
-        this.$v.$reset()
-        changeMasterKey$.next(reset())
-        ;(document.activeElement as HTMLInputElement).blur()
-      }
-    }
-  },
   beforeDestroy () {
-    changeMasterKey$.next(reset())
+    this.dispatch(masterKeyChangeReset())
   }
 })
 </script>

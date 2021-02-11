@@ -46,7 +46,7 @@ export default Vue.extend({
     }
   },
   methods: {
-    menuSwitch (value: boolean): void {
+    menuSwitch (value: boolean) {
       this.showMenu = value
     }
   }

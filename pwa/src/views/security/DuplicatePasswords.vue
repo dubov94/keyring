@@ -28,11 +28,12 @@
 <script lang="ts">
 import Vue from 'vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
-import { userKeys$ } from '@/store/root/modules/user'
-import { duplicateGroups$ } from '@/store/root/modules/user/modules/security'
-import { Undefinable } from '@/utilities'
-import { DuplicateGroupsProgress, Key, DuplicateGroupsProgressState } from '@/store/state'
-import { data, isError } from '@/store/flow'
+import { DuplicateGroups, duplicateGroups } from '@/redux/modules/user/security/selectors'
+import { hasIndicator, data } from '@/redux/remote_data'
+import { option, function as fn, array } from 'fp-ts'
+import { Key } from '@/redux/entities'
+import { userKeys } from '@/redux/modules/user/keys/selectors'
+import { DeepReadonly, Writable } from 'ts-essentials'
 
 export default Vue.extend({
   components: {
@@ -40,43 +41,35 @@ export default Vue.extend({
   },
   data () {
     return {
-      ...{
-        groupNumber: 1
-      },
-      ...{
-        userKeys: undefined as Undefinable<Array<Key>>,
-        duplicateGroups: undefined as Undefinable<DuplicateGroupsProgress>
-      }
-    }
-  },
-  subscriptions () {
-    return {
-      userKeys: userKeys$,
-      duplicateGroups: duplicateGroups$
+      groupNumber: 1
     }
   },
   computed: {
+    duplicateGroups (): DeepReadonly<DuplicateGroups> {
+      return duplicateGroups(this.$data.$state)
+    },
+    userKeys (): DeepReadonly<Key[]> {
+      return userKeys(this.$data.$state)
+    },
     inProgress (): boolean {
-      return this.duplicateGroups?.state === DuplicateGroupsProgressState.WORKING
+      return hasIndicator(this.duplicateGroups)
     },
     groupCount (): number {
-      if (this.userKeys && this.duplicateGroups && !isError(this.duplicateGroups)) {
-        return data(this.duplicateGroups, []).length
-      }
-      return -1
+      return fn.pipe(
+        data(this.duplicateGroups),
+        option.map((value) => value.length),
+        option.getOrElse(() => -1)
+      )
     },
-    groupCards (): Undefinable<Array<Key>> {
-      if (this.groupCount > 0) {
-        const list = []
-        for (const identifier of data(this.duplicateGroups!, [])[this.groupNumber - 1]) {
-          const maybeIndex = this.userKeys!.findIndex(key => key.identifier === identifier)
-          if (maybeIndex !== undefined && maybeIndex > -1) {
-            list.push(this.userKeys![maybeIndex])
-          }
-        }
-        return list
-      }
-      return undefined
+    groupCards (): DeepReadonly<Key[]> {
+      return fn.pipe(
+        data(this.duplicateGroups) as option.Option<Writable<Writable<string[]>[]>>,
+        option.chain(array.lookup(this.groupNumber - 1)),
+        option.map(array.filterMap<string, DeepReadonly<Key>>((identifier) => {
+          return array.findFirst<DeepReadonly<Key>>((key) => key.identifier === identifier)([...this.userKeys])
+        })),
+        option.getOrElse<DeepReadonly<Key[]>>(() => [])
+      )
     }
   },
   methods: {

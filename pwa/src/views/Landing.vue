@@ -49,7 +49,7 @@
 import Vue, { VueConstructor } from 'vue'
 import trianglify from 'trianglify'
 import Page from '@/components/Page.vue'
-import { isAuthenticated$ } from '@/store/root/modules/user'
+import { isAuthenticated } from '@/redux/modules/user/account/selectors'
 
 interface Mixins {
   resizeObserver: any;
@@ -59,12 +59,10 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
     page: Page
   },
-  subscriptions () {
-    return {
-      isAuthenticated: isAuthenticated$
-    }
-  },
   computed: {
+    isAuthenticated () {
+      return isAuthenticated(this.$data.$state)
+    },
     nameDynamicClasses (): { [key: string]: boolean } {
       return {
         'display-4': this.$vuetify.breakpoint.lgAndUp,
@@ -81,7 +79,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   methods: {
-    renderBackground (): void {
+    renderBackground () {
       const background = this.$refs.background as HTMLElement
       const pattern = trianglify({
         width: background.clientWidth,

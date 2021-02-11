@@ -1,6 +1,4 @@
-// eslint-disable @typescript-eslint/no-var-requires
-const StableStatus = require('./stable_status.json')
-// eslint-enable @typescript-eslint/no-var-requires
+const StableStatus = require('./stable_status.json') // eslint-disable-line @typescript-eslint/no-var-requires
 
 module.exports = {
   devServer: {

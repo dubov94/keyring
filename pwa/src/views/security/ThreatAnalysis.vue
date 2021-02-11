@@ -20,15 +20,15 @@
       </v-flex>
       <v-flex xs3 offset-xs1 class="text-xs-right">
         <v-btn color="primary" @click="toggle">
-          {{ isEnabled ? 'Disable' : 'Enable'}}
+          {{ isAnalysisOn ? 'Disable' : 'Enable'}}
         </v-btn>
       </v-flex>
     </v-layout>
-    <duplicate-passwords v-if="isEnabled" class="mt-4" @edit="editKey">
+    <duplicate-passwords v-if="isAnalysisOn" class="mt-4" @edit="editKey">
     </duplicate-passwords>
-    <compromised-passwords v-if="isEnabled" class="mt-4" @edit="editKey">
+    <compromised-passwords v-if="isAnalysisOn" class="mt-4" @edit="editKey">
     </compromised-passwords>
-    <editor></editor>
+    <editor v-if="showEditor" :params="editorParams" @close="closeEditor"></editor>
   </v-container>
 </template>
 
@@ -37,8 +37,9 @@ import Vue from 'vue'
 import CompromisedPasswords from './CompromisedPasswords.vue'
 import DuplicatePasswords from './DuplicatePasswords.vue'
 import Editor from '@/components/Editor.vue'
-import { openEditor$ } from '@/store/root/modules/interface/editor'
-import { securityOn$ } from '@/store/root/modules/user/modules/security'
+import { isAnalysisOn } from '@/redux/modules/user/security/selectors'
+import { enableAnalysis, disableAnalysis } from '@/redux/modules/user/security/actions'
+import { DeepReadonly } from 'ts-essentials'
 
 export default Vue.extend({
   components: {
@@ -48,16 +49,32 @@ export default Vue.extend({
   },
   data () {
     return {
-      isEnabled: securityOn$.getValue()
+      editorParams: {
+        identifier: null,
+        reveal: false
+      } as DeepReadonly<{
+        identifier: string | null;
+        reveal: boolean;
+      }>,
+      showEditor: false
+    }
+  },
+  computed: {
+    isAnalysisOn (): boolean {
+      return isAnalysisOn(this.$data.$state)
     }
   },
   methods: {
     toggle () {
-      this.isEnabled = !this.isEnabled
-      securityOn$.next(this.isEnabled)
+      this.dispatch(this.isAnalysisOn ? disableAnalysis() : enableAnalysis())
     },
-    editKey ({ identifier, reveal }: { identifier: string; reveal: boolean }) {
-      openEditor$.next({ identifier, reveal })
+    editKey (editorParams: DeepReadonly<{ identifier: string; reveal: boolean }>) {
+      this.editorParams = editorParams
+      this.showEditor = true
+    },
+    closeEditor () {
+      this.showEditor = false
+      this.editorParams = { identifier: null, reveal: false }
     }
   }
 })

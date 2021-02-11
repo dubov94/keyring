@@ -24,28 +24,41 @@
 <script lang="ts">
 import Vue from 'vue'
 import { UAParser } from 'ua-parser-js'
-import { Undefinable } from '@/utilities'
-import { RecentSessionsProgress, RecentSessionsProgressState } from '@/store/state'
-import { recentSessions$, fetchRecentSessions$ } from '@/store/root/modules/user/modules/security'
-import { data } from '@/store/flow'
-import { act, reset } from '@/store/resettable_action'
+import { recentSessions, RecentSessions } from '@/redux/modules/user/security/selectors'
+import { fetchRecentSessions, recentSessionsRetrievalReset } from '@/redux/modules/user/security/actions'
+import { hasIndicator, data } from '@/redux/remote_data'
+import { function as fn, option } from 'fp-ts'
+import { Session } from '@/redux/entities'
+import { DeepReadonly } from 'ts-essentials'
+
+interface Item {
+  moment: string;
+  location: string;
+  browser: { name?: string; version?: string };
+}
+
+const convertSessionToItem = ({ creationTimeInMillis, ipAddress, userAgent, geolocation }: DeepReadonly<Session>): Item => {
+  const moment = new Date(creationTimeInMillis).toLocaleString()
+  let area = null
+  if (geolocation.country) {
+    if (geolocation.city) {
+      area = `${geolocation.city}, ${geolocation.country}`
+    } else {
+      area = geolocation.country
+    }
+  }
+  const location = area === null ? ipAddress : `${ipAddress}, ${area}`
+  const browser = new UAParser(userAgent).getBrowser()
+  return { moment, location, browser }
+}
 
 export default Vue.extend({
-  data () {
-    return {
-      ...{
-        recentSessions: undefined as Undefinable<RecentSessionsProgress>
-      }
-    }
-  },
-  subscriptions () {
-    return {
-      recentSessions: recentSessions$
-    }
-  },
   computed: {
+    recentSessions (): DeepReadonly<RecentSessions> {
+      return recentSessions(this.$data.$state)
+    },
     isLoading (): boolean {
-      return this.recentSessions?.state === RecentSessionsProgressState.WORKING
+      return hasIndicator(this.recentSessions)
     },
     headers (): Array<{ text: string; value: string }> {
       return [
@@ -54,33 +67,19 @@ export default Vue.extend({
         { text: 'User agent', value: 'browser' }
       ]
     },
-    items (): Array<{ moment: string; location: string; browser: { name?: string; version?: string } }> {
-      if (this.recentSessions) {
-        return data(this.recentSessions, []).map(
-          ({ creationTimeInMillis, ipAddress, userAgent, geolocation }) => {
-            const moment = new Date(creationTimeInMillis).toLocaleString()
-            let area = null
-            if (geolocation.country) {
-              if (geolocation.city) {
-                area = `${geolocation.city}, ${geolocation.country}`
-              } else {
-                area = geolocation.country
-              }
-            }
-            const location = area === null ? ipAddress : `${ipAddress}, ${area}`
-            const browser = new UAParser(userAgent).getBrowser()
-            return { moment, location, browser }
-          }
-        )
-      }
-      return []
+    items (): Item[] {
+      return fn.pipe(
+        data(this.recentSessions),
+        option.map((sessions: DeepReadonly<Session[]>) => sessions.map(convertSessionToItem)),
+        option.getOrElse(() => [] as Item[])
+      )
     }
   },
   created () {
-    fetchRecentSessions$.next(act(undefined))
+    this.dispatch(fetchRecentSessions())
   },
   beforeDestroy () {
-    fetchRecentSessions$.next(reset())
+    this.dispatch(recentSessionsRetrievalReset())
   }
 })
 </script>

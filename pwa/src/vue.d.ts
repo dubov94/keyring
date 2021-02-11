@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { Subject } from 'rxjs'
+import { AnyAction } from '@reduxjs/toolkit'
 
 declare module '*.vue' {
   export default Vue
@@ -7,6 +7,6 @@ declare module '*.vue' {
 
 declare module 'vue/types/vue' {
   interface Vue {
-    beforeDestroy$: Subject<void>
+    dispatch (action: AnyAction): void;
   }
 }

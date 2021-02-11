@@ -24,44 +24,42 @@
 <script lang="ts">
 import Vue from 'vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
-import { userKeys$ } from '@/store/root/modules/user'
-import { exposedUserKeyIds$ } from '@/store/root/modules/user/modules/security'
-import { Undefinable } from '@/utilities'
-import { ExposedUserKeyIdsProgress, Key, ExposedUserKeyIdsProgressState } from '@/store/state'
-import { data, isError } from '@/store/flow'
+import { userKeys } from '@/redux/modules/user/keys/selectors'
+import { Key } from '@/redux/entities'
+import { function as fn, option, array } from 'fp-ts'
+import { ExposedUserKeyIds, exposedUserKeyIds } from '@/redux/modules/user/security/selectors'
+import { data, hasIndicator } from '@/redux/remote_data'
+import { DeepReadonly, Writable } from 'ts-essentials'
 
 export default Vue.extend({
   components: {
     passwordMasonry: PasswordMasonry
   },
-  data () {
-    return {
-      ...{
-        userKeys: undefined as Undefinable<Array<Key>>,
-        exposedKeyIds: undefined as Undefinable<ExposedUserKeyIdsProgress>
-      }
-    }
-  },
-  subscriptions () {
-    return {
-      userKeys: userKeys$,
-      exposedKeyIds: exposedUserKeyIds$
-    }
-  },
   computed: {
-    exposedKeys (): Undefinable<Array<Key>> {
-      if (this.userKeys && this.exposedKeyIds && !isError(this.exposedKeyIds)) {
-        return this.userKeys.filter(({ identifier }) =>
-          data(this.exposedKeyIds!, []).includes(identifier))
-      }
-      return undefined
+    userKeys (): DeepReadonly<Key[]> {
+      return userKeys(this.$data.$state)
+    },
+    exposedUserKeyIds (): DeepReadonly<ExposedUserKeyIds> {
+      return exposedUserKeyIds(this.$data.$state)
+    },
+    exposedKeys (): DeepReadonly<Key[]> {
+      return fn.pipe(
+        data(this.exposedUserKeyIds) as option.Option<Writable<string[]>>,
+        option.map(array.filterMap<string, DeepReadonly<Key>>((identifier) => {
+          return array.findFirst<DeepReadonly<Key>>((key) => key.identifier === identifier)([...this.userKeys])
+        })),
+        option.getOrElse<DeepReadonly<Key[]>>(() => [])
+      )
     },
     keyCount (): number {
-      const count = this.exposedKeys?.length
-      return count === undefined ? -1 : count
+      return fn.pipe(
+        data(this.exposedUserKeyIds),
+        option.map((value) => value.length),
+        option.getOrElse(() => -1)
+      )
     },
     inProgress (): boolean {
-      return this.exposedKeyIds?.state === ExposedUserKeyIdsProgressState.WORKING
+      return hasIndicator(this.exposedUserKeyIds)
     }
   },
   methods: {

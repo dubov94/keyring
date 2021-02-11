@@ -28,12 +28,12 @@
               </v-card-text>
               <v-card-actions>
                 <v-btn block color="primary" class="mx-4" @click="submit"
-                  :loading="hasProgressMessage">
+                  :loading="hasIndicatorMessage">
                   <span>Register</span>
                   <template v-slot:loader>
                     <v-progress-circular indeterminate :size="23" :width="2">
                     </v-progress-circular>
-                    <span class="ml-3">{{ progressMessage }}</span>
+                    <span class="ml-3">{{ indicatorMessage }}</span>
                   </template>
                 </v-btn>
               </v-card-actions>
@@ -52,23 +52,24 @@
 import Vue, { VueConstructor } from 'vue'
 import { email, required, sameAs } from 'vuelidate/lib/validators'
 import Page from '@/components/Page.vue'
-import { RegistrationProgress, RegistrationProgressState } from '@/store/state'
-import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
 import { ServiceRegisterResponseError } from '@/api/definitions'
-import { Undefinable } from '@/utilities'
-import { apply } from '@/redux/selectors'
-import { getRegistrationProgress } from '@/redux/modules/authn/selectors'
-import { register } from '@/redux/modules/authn/actions'
-import { getRedux } from '@/redux/store_di'
+import { register, RegistrationFlowIndicator, registrationReset, registrationSignal } from '@/redux/modules/authn/actions'
+import { registration, Registration } from '@/redux/modules/authn/selectors'
+import { DeepReadonly } from 'ts-essentials'
+import { StandardErrorKind, isActionSuccess } from '@/redux/flow_signal'
+import { takeUntil, filter } from 'rxjs/operators'
+import { option, function as fn, map, eq } from 'fp-ts'
+import { error } from '@/redux/remote_data'
 
-const STATE_TO_MESSAGE = new Map<FlowProgressBasicState | RegistrationProgressState, string>([
-  [RegistrationProgressState.GENERATING_PARAMETRIZATION, 'Generating salt'],
-  [RegistrationProgressState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
-  [RegistrationProgressState.MAKING_REQUEST, 'Making request']
+const INDICATOR_TO_MESSAGE = new Map<RegistrationFlowIndicator, string>([
+  [RegistrationFlowIndicator.GENERATING_PARAMETRIZATION, 'Generating salt'],
+  [RegistrationFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
+  [RegistrationFlowIndicator.MAKING_REQUEST, 'Making request']
 ])
 
 interface Mixins {
   username: { frozen: boolean };
+  registration: DeepReadonly<Registration>;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
@@ -77,37 +78,34 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   data () {
     return {
-      ...{
-        username: {
-          value: '',
-          frozen: false
-        },
-        password: '',
-        repeat: '',
-        mail: ''
+      username: {
+        value: '',
+        frozen: false
       },
-      ...{
-        registrationProgress: undefined as Undefinable<RegistrationProgress>
-      }
+      password: '',
+      repeat: '',
+      mail: ''
     }
   },
-  subscriptions () {
-    return {
-      registrationProgress: apply(getRegistrationProgress)
-    }
+  created () {
+    this.$data.$actions.pipe(
+      filter(isActionSuccess(registrationSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.$router.push('/mail-verification')
+    })
   },
   validations: {
     username: {
       required,
       isAvailable () {
-        if (this.registrationProgress?.state === FlowProgressBasicState.ERROR) {
-          if (this.registrationProgress?.error.type === FlowProgressErrorType.FAILURE) {
-            if (this.registrationProgress?.error.error === ServiceRegisterResponseError.NAMETAKEN) {
-              return !this.username.frozen
-            }
-          }
-        }
-        return true
+        return fn.pipe(
+          error(this.registration),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceRegisterResponseError.NAMETAKEN),
+          option.map(() => !this.username.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
       }
     },
     password: { required },
@@ -115,6 +113,9 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     mail: { email, required }
   },
   computed: {
+    registration (): DeepReadonly<Registration> {
+      return registration(this.$data.$state)
+    },
     usernameErrors (): { [key: string]: boolean } {
       return {
         [this.$t('USERNAME_CANNOT_BE_EMPTY') as string]: !this.$v.username.required,
@@ -137,29 +138,28 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         [this.$t('EMAIL_ADDRESS_IS_INVALID') as string]: !this.$v.mail.email
       }
     },
-    progressMessage (): string | null {
-      if (this.registrationProgress) {
-        if (STATE_TO_MESSAGE.has(this.registrationProgress.state)) {
-          return STATE_TO_MESSAGE.get(this.registrationProgress.state)!
-        }
-      }
-      return null
+    indicatorMessage (): string | null {
+      return fn.pipe(
+        this.registration.indicator,
+        option.chain((indicator) => map.lookup(eq.eqStrict)(indicator, INDICATOR_TO_MESSAGE)),
+        option.getOrElse<string | null>(() => null)
+      )
     },
-    hasProgressMessage (): boolean {
-      return this.progressMessage !== null
+    hasIndicatorMessage (): boolean {
+      return this.indicatorMessage !== null
     }
   },
   methods: {
-    setUsername (value: string): void {
+    setUsername (value: string) {
       this.username.value = value
       this.username.frozen = false
     },
-    submit (): void {
-      if (!this.hasProgressMessage) {
+    submit () {
+      if (!this.hasIndicatorMessage) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
           this.username.frozen = true
-          getRedux().dispatch(register.act({
+          this.dispatch(register({
             username: this.username.value,
             password: this.password,
             mail: this.mail
@@ -169,7 +169,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   beforeDestroy () {
-    getRedux().dispatch(register.reset())
+    this.dispatch(registrationReset())
   }
 })
 </script>

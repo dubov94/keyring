@@ -1,10 +1,10 @@
 declare module 'trianglify' {
   interface Options {
-    width?: Number;
-    height?: Number;
+    width?: number;
+    height?: number;
     xColors?: string | Array<string>;
     yColors?: string | Array<string>;
-    seed?: string
+    seed?: string;
   }
 
   interface Pattern {

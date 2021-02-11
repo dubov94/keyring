@@ -19,72 +19,66 @@
 
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
-import { act, reset } from '@/store/resettable_action'
 import { ServiceDeleteAccountResponseError } from '@/api/definitions'
-import { deleteAccount$, deleteAccountProgress$ } from '@/store/root/modules/user/modules/settings'
-import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
-import { canAccessApi$ } from '@/store/root/modules/user'
-import { Undefinable } from '@/utilities'
-import { DeleteAccountProgress, DeleteAccountProgressState } from '@/store/state'
+import { function as fn, option } from 'fp-ts'
+import { StandardErrorKind } from '@/redux/flow_signal'
+import { canAccessApi, accountDeletion, AccountDeletion } from '@/redux/modules/user/account/selectors'
+import { deleteAccount, accountDeletionReset } from '@/redux/modules/user/account/actions'
+import { hasIndicator, error } from '@/redux/remote_data'
+import { DeepReadonly } from 'ts-essentials'
 
 interface Mixins {
   frozen: boolean;
+  accountDeletion: DeepReadonly<AccountDeletion>;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   validations: {
     password: {
       valid () {
-        if (this.deleteAccountProgress?.state === FlowProgressBasicState.ERROR) {
-          if (this.deleteAccountProgress?.error.type === FlowProgressErrorType.FAILURE) {
-            if (this.deleteAccountProgress?.error.error === ServiceDeleteAccountResponseError.INVALIDDIGEST) {
-              return !this.frozen
-            }
-          }
-        }
-        return true
+        return fn.pipe(
+          error(this.accountDeletion),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceDeleteAccountResponseError.INVALIDDIGEST),
+          option.map(() => !this.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
       }
     }
   },
   data () {
     return {
-      ...{
-        password: '',
-        frozen: false
-      },
-      ...{
-        canAccessApi: undefined as Undefinable<boolean>,
-        deleteAccountProgress: undefined as Undefinable<DeleteAccountProgress>
-      }
-    }
-  },
-  subscriptions () {
-    return {
-      canAccessApi: canAccessApi$,
-      deleteAccountProgress: deleteAccountProgress$
+      password: '',
+      frozen: false
     }
   },
   computed: {
-    inProgress (): boolean {
-      return Object.keys(DeleteAccountProgressState).includes(this.deleteAccountProgress?.state || FlowProgressBasicState.IDLE)
+    canAccessApi (): boolean {
+      return canAccessApi(this.$data.$state)
     },
-    passwordErrors () {
+    accountDeletion (): DeepReadonly<AccountDeletion> {
+      return accountDeletion(this.$data.$state)
+    },
+    inProgress (): boolean {
+      return hasIndicator(this.accountDeletion)
+    },
+    passwordErrors (): { [key: string]: boolean } {
       return {
         [this.$t('INVALID_PASSWORD') as string]: !this.$v.password.valid
       }
     }
   },
   methods: {
-    setPassword (value: string): void {
+    setPassword (value: string) {
       this.password = value
       this.frozen = false
     },
-    submit (): void {
+    submit () {
       if (this.canAccessApi && !this.inProgress) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
           this.frozen = true
-          deleteAccount$.next(act({
+          this.dispatch(deleteAccount({
             password: this.password
           }))
         }
@@ -92,7 +86,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   beforeDestroy () {
-    deleteAccount$.next(reset())
+    this.dispatch(accountDeletionReset())
   }
 })
 </script>

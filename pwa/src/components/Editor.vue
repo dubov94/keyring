@@ -9,27 +9,27 @@
     border: none;
   }
 
-  .chip >>> .chip__close {
+  .chip >>> .badge__close {
     margin-left: 0;
   }
 
-  .tag__handle {
+  .badge__handle {
     cursor: move;
   }
 
-  .tag__content {
+  .badge__content {
     position: relative;
     margin-right: 2px;
   }
 
-  .tag__input {
+  .badge__input {
     position: absolute;
     width: 100%;
     padding-left: 4px;
     color: transparent;
   }
 
-  .tag__label {
+  .badge__label {
     padding: 0 4px;
   }
 
@@ -39,12 +39,12 @@
   }
 
   .key >>> input,
-  .tag__input {
+  .badge__input {
     caret-color: black !important;
   }
 
   /* Matches `.chip`. */
-  .new-tag-button {
+  .new-badge-button {
     border: none;
     height: 34px;
     margin: 4px;
@@ -53,7 +53,7 @@
 </style>
 
 <template>
-  <v-dialog :value="isVisible" persistent :max-width="maxWidth">
+  <v-dialog :value="true" persistent :max-width="maxWidth">
     <v-card>
       <v-card-actions>
         <v-spacer></v-spacer>
@@ -68,24 +68,24 @@
       </v-card-actions>
       <v-card-text class="pt-0">
         <v-text-field :type="reveal ? 'text' : 'password'"
-          solo class="key" v-model="secret"
+          solo class="key" v-model="draft.secret"
           :append-icon="reveal ? 'visibility_off' : 'visibility'"
           :append-icon-cb="() => reveal = !reveal">
         </v-text-field>
-        <draggable v-model="chips" :options="draggableOptions"
+        <draggable v-model="draft.chips" :options="draggableOptions"
           :move="move" class="mt-3">
           <v-chip disabled outline class="elevation-3" color="black"
-            :close="chips.length > 1 || index > 0"
-            v-for="(value, index) in chips" :key="index"
-            @input="removeTag(index)">
-            <v-icon small class="tag__handle">drag_indicator</v-icon>
-            <div class="tag__content">
-              <input type="text" :value="value" class="tag__input" ref="tags"
-                @input.stop="setTag(index, $event.target.value)">
-              <span class="tag__label">{{ value }}</span>
+            :close="draft.chips.length > 1 || index > 0"
+            v-for="(value, index) in draft.chips" :key="index"
+            @input="removeChip(index)">
+            <v-icon small class="badge__handle">drag_indicator</v-icon>
+            <div class="badge__content">
+              <input type="text" :value="value" class="badge__input" ref="chips"
+                @input.stop="setChip(index, $event.target.value)">
+              <span class="badge__label">{{ value }}</span>
             </div>
           </v-chip>
-          <v-btn @click="addTag" outline round class="new-tag-button elevation-3">
+          <v-btn @click="addChip" outline round class="new-badge-button elevation-3">
             <v-icon left small>fa-plus</v-icon>Label
           </v-btn>
         </draggable>
@@ -95,10 +95,10 @@
         <v-progress-circular indeterminate color="green"
           v-if="inProgress"></v-progress-circular>
         <v-spacer></v-spacer>
-        <v-btn flat v-if="identifier !== null" color="error" @click="maybeRemove">
+        <v-btn flat v-if="identifier !== null" color="error" @click="requestRemoval">
           Remove
         </v-btn>
-        <v-btn flat color="primary" @click="maybeDiscard">
+        <v-btn flat color="primary" @click="requestDiscard">
           Cancel
         </v-btn>
         <v-btn flat color="primary" @click="save">
@@ -106,9 +106,9 @@
         </v-btn>
       </v-card-actions>
     </v-card>
-    <yes-no-dialog v-model="removeConfirmation" @affirm="doRemove"
+    <yes-no-dialog v-model="removalConfirmation" @affirm="performRemoval"
       message="Are you sure?"></yes-no-dialog>
-    <yes-no-dialog v-model="discardConfirmation" @affirm="doDiscard"
+    <yes-no-dialog v-model="discardConfirmation" @affirm="performDiscard"
       message="Discard changes?"></yes-no-dialog>
   </v-dialog>
 </template>
@@ -117,201 +117,202 @@
 import Vue from 'vue'
 import Draggable from 'vuedraggable'
 import YesNoDialog from './YesNoDialog.vue'
-import { concat, interval, Subject } from 'rxjs'
-import { switchMap, take, takeUntil, takeWhile, tap } from 'rxjs/operators'
-import { XL_MINIMAL_WIDTH } from './constants'
-import { generatePassword, Undefinable } from '@/utilities'
-import { editorState$, closeEditor$ } from '@/store/root/modules/interface/editor'
-import cloneDeep from 'lodash/cloneDeep'
+import { concat, interval, Subject, merge } from 'rxjs'
+import { switchMap, take, takeUntil, takeWhile, tap, filter } from 'rxjs/operators'
+import { XL_MINIMAL_WIDTH } from './dimensions'
+import { generateInclusiveCombination, createCharacterRange } from '@/combinatorics'
 import isEqual from 'lodash/isEqual'
-import { showToast$ } from '@/store/root/modules/interface/toast'
-import { userKeys$, userKeysUpdate$, createUserKey$, updateUserKey$, deleteUserKey$ } from '@/store/root/modules/user'
-import { Key, EditorState } from '@/store/state'
+import { Key } from '@/redux/entities'
+import { option, function as fn, array } from 'fp-ts'
+import { userKeys, inProgress } from '@/redux/modules/user/keys/selectors'
+import { showToast } from '@/redux/modules/ui/toast/actions'
+import { create, delete_, update, creationSignal, updationSignal, deletionSignal } from '@/redux/modules/user/keys/actions'
+import cloneDeep from 'lodash/cloneDeep'
+import { DeepReadonly } from 'ts-essentials'
+import { isActionSuccess3 } from '@/redux/flow_signal'
+import { logOut } from '@/redux/modules/user/account/actions'
+import { isActionOf } from 'typesafe-actions'
 
 const PASSWORD_SUGGESTION_LENGTH = 12
 const TYPEWRITER_DELAY_IN_MILLIS = 50
 
-interface PasswordAttributes {
-  identifier: string | null;
+const generateSuggestion = (length: number): string => generateInclusiveCombination(
+  [
+    '@#$_&-+()/' + '*"\':;!?',
+    createCharacterRange('0', '9'),
+    createCharacterRange('A', 'Z'),
+    createCharacterRange('a', 'z')
+  ],
+  length
+)
+
+interface Draft {
   secret: string;
-  chips: Array<string>;
+  chips: string[];
 }
 
-const getPasswordAttributes = (identifier: string | null): PasswordAttributes => {
-  if (identifier === null) {
-    return {
-      identifier: null,
-      secret: '',
-      chips: ['']
-    }
-  } else {
-    const key = userKeys$.getValue().find((item) => item.identifier === identifier)!
-    return {
-      identifier,
-      secret: key.value,
-      chips: cloneDeep(key.tags)
-    }
-  }
-}
-
-interface ComponentState extends PasswordAttributes {
-  discardConfirmation: boolean;
-  removeConfirmation: boolean;
-  reveal: boolean;
-}
-
-const constructInitialState = (identifier: string | null): ComponentState => ({
-  discardConfirmation: false,
-  removeConfirmation: false,
-  reveal: editorState$.getValue().reveal,
-  ...getPasswordAttributes(identifier)
+const emptyDraft = (): Draft => ({
+  secret: '',
+  chips: ['']
 })
 
+const draftByIdentifier = (keys: DeepReadonly<Key[]>, identifier: string | null): Draft => {
+  return fn.pipe(
+    option.fromNullable(identifier),
+    option.chain((identifier) => array.findFirst<DeepReadonly<Key>>(
+      (key) => key.identifier === identifier)([...keys])),
+    option.map((key) => ({
+      secret: key.value,
+      chips: [...key.tags]
+    })),
+    option.getOrElse(emptyDraft)
+  )
+}
+
 export default Vue.extend({
+  props: ['params'],
   components: {
     draggable: Draggable,
     yesNoDialog: YesNoDialog
   },
   data () {
+    const identifier: string | null = this.params.identifier
     return {
-      ...{
-        draggableOptions: {
-          handle: '.tag__handle',
-          animation: 150
-        },
-        maxWidth: XL_MINIMAL_WIDTH * (3 / 12),
-        generatorSubject: new Subject<void>()
-      },
-      ...constructInitialState(null),
-      ...{
-        userKeys: undefined as Undefinable<Array<Key>>,
-        editorState: undefined as Undefinable<EditorState>
-      }
+      generatorSubject: new Subject<void>(),
+      discardConfirmation: false,
+      removalConfirmation: false,
+      identifier,
+      draft: emptyDraft(),
+      reveal: this.params.reveal
     }
   },
   created () {
+    this.draft = this.initialDraft()
     this.generatorSubject.pipe(
       switchMap(() => {
-        const suggestion = generatePassword(PASSWORD_SUGGESTION_LENGTH)
+        const suggestion = generateSuggestion(PASSWORD_SUGGESTION_LENGTH)
         return concat(
           interval(TYPEWRITER_DELAY_IN_MILLIS).pipe(
-            takeWhile(() => this.secret.length > 0),
+            takeWhile(() => this.draft.secret.length > 0),
             tap(() => {
-              this.secret = this.secret.slice(0, -1)
+              this.draft.secret = this.draft.secret.slice(0, -1)
             })
           ),
           interval(TYPEWRITER_DELAY_IN_MILLIS).pipe(
             take(suggestion.length),
             tap((index) => {
-              this.secret = suggestion.slice(0, index + 1)
+              this.draft.secret = suggestion.slice(0, index + 1)
             })
           )
         )
       }),
-      takeUntil(this.beforeDestroy$)
+      takeUntil(this.$data.$destruction)
     ).subscribe()
+    this.$data.$actions.pipe(
+      filter(isActionSuccess3([creationSignal, updationSignal, deletionSignal])),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.$emit('close')
+    })
+    const unloadHandlerRemoval = merge(
+      this.$data.$destruction,
+      this.$data.$actions.pipe(filter(isActionOf(logOut)))
+    ).subscribe(() => {
+      window.removeEventListener('beforeunload', this.onBeforeUnload)
+      unloadHandlerRemoval.unsubscribe()
+    })
   },
   mounted () {
+    if (this.identifier === null) {
+      this.focusChip(0)
+    }
     window.addEventListener('beforeunload', this.onBeforeUnload)
   },
-  beforeDestroy () {
-    window.removeEventListener('beforeunload', this.onBeforeUnload)
-    if (this.isVisible) {
-      closeEditor$.next()
-    }
-  },
-  subscriptions () {
-    return {
-      userKeys: userKeys$,
-      inProgress: userKeysUpdate$,
-      editorState: editorState$
-    }
-  },
   computed: {
-    isVisible (): boolean {
-      return this.editorState?.show || false
+    draggableOptions (): { handle: string; animation: number } {
+      return {
+        handle: '.badge__handle',
+        animation: 150
+      }
+    },
+    maxWidth (): number {
+      return XL_MINIMAL_WIDTH * (3 / 12)
+    },
+    inProgress (): boolean {
+      return inProgress(this.$data.$state)
     }
   },
   methods: {
+    initialDraft () {
+      return draftByIdentifier(userKeys(this.$data.$state), this.identifier)
+    },
     hasChanges (): boolean {
-      const attributes = getPasswordAttributes(this.identifier)
-      return !(this.secret === attributes.secret && isEqual(this.chips, attributes.chips))
+      return !isEqual(this.draft, this.initialDraft())
     },
-    doDiscard (): void {
+    performDiscard () {
       this.discardConfirmation = false
-      closeEditor$.next()
+      this.$emit('close')
     },
-    maybeDiscard (): void {
+    requestDiscard () {
       if (this.hasChanges()) {
         this.discardConfirmation = true
       } else {
-        closeEditor$.next()
+        this.$emit('close')
       }
     },
     onBeforeUnload (event: BeforeUnloadEvent): boolean | null {
-      if (this.isVisible && this.hasChanges()) {
+      if (this.hasChanges()) {
         event.returnValue = true
         return true
       } else {
         return null
       }
     },
-    suggest (): void {
+    suggest () {
       this.generatorSubject.next()
     },
     async copySecret (): Promise<void> {
-      await navigator.clipboard.writeText(this.secret)
-      showToast$.next({ message: 'Done. Remember to save!' })
+      await navigator.clipboard.writeText(this.draft.secret)
+      this.dispatch(showToast({ message: 'Done. Remember to save!' }))
     },
     move ({ relatedContext }: { relatedContext: { element?: HTMLElement } }): boolean {
       return relatedContext.element !== undefined
     },
-    setTag (index: number, value: string): void {
-      this.$set(this.chips, index, value)
+    setChip (index: number, value: string) {
+      this.$set(this.draft.chips, index, value)
     },
-    removeTag (index: number): void {
-      this.chips.splice(index, 1)
+    removeChip (index: number) {
+      this.draft.chips.splice(index, 1)
     },
-    async addTag (): Promise<void> {
-      this.chips.push('')
+    async addChip (): Promise<void> {
+      this.draft.chips.push('')
       await this.$nextTick()
-      this.focusTag(-1)
+      this.focusChip(-1)
     },
-    save (): void {
+    save () {
       if (this.identifier === null) {
-        createUserKey$.next({
-          value: this.secret,
-          tags: cloneDeep(this.chips)
-        })
+        this.dispatch(create(cloneDeep({
+          value: this.draft.secret,
+          tags: this.draft.chips
+        })))
       } else {
-        updateUserKey$.next({
+        this.dispatch(update(cloneDeep({
           identifier: this.identifier!,
-          value: this.secret,
-          tags: cloneDeep(this.chips)
-        })
+          value: this.draft.secret,
+          tags: this.draft.chips
+        })))
       }
     },
-    doRemove (): void {
-      this.removeConfirmation = false
-      deleteUserKey$.next(this.identifier!)
+    performRemoval () {
+      this.removalConfirmation = false
+      this.dispatch(delete_(this.identifier!))
     },
-    maybeRemove (): void {
-      this.removeConfirmation = true
+    requestRemoval () {
+      this.removalConfirmation = true
     },
-    focusTag (pointer: number): void {
-      const index = (pointer + this.chips.length) % this.chips.length
-      ;(this.$refs.tags as HTMLInputElement[])[index].focus()
-    }
-  },
-  watch: {
-    async isVisible (value: boolean): Promise<void> {
-      if (value === true) {
-        Object.assign(this.$data, constructInitialState(this.editorState?.identifier || null))
-        if (this.identifier === null) {
-          await this.$nextTick()
-          this.focusTag(0)
-        }
-      }
+    focusChip (pointer: number) {
+      const index = (pointer + this.draft.chips.length) % this.draft.chips.length
+      ;(this.$refs.chips as HTMLInputElement[])[index].focus()
     }
   }
 })

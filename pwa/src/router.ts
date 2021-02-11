@@ -9,16 +9,16 @@ import Settings from '@/views/settings/Index.vue'
 import ThreatAnalysis from '@/views/security/ThreatAnalysis.vue'
 import Vue from 'vue'
 import VueRouter, { NavigationGuard } from 'vue-router'
-import { getStore } from '@/store/store_di'
-import { FullState } from './store/state'
+import { store } from './redux'
+import { isAuthenticated, requiresMailVerification } from './redux/modules/user/account/selectors'
 
 Vue.use(VueRouter)
 
 const authenticationGuard: NavigationGuard = (_to, _from, next) => {
-  const fullState = getStore().state as FullState
-  if (!fullState.user.isAuthenticated) {
+  const state = store.getState()
+  if (!isAuthenticated(state)) {
     next('/log-in')
-  } else if (fullState.user.requiresMailVerification) {
+  } else if (requiresMailVerification(state)) {
     next('/mail-verification')
   } else {
     next()
@@ -26,8 +26,7 @@ const authenticationGuard: NavigationGuard = (_to, _from, next) => {
 }
 
 const noActiveUserGuard: NavigationGuard = (_to, _from, next) => {
-  const fullState = getStore().state as FullState
-  if (fullState.user.isAuthenticated) {
+  if (isAuthenticated(store.getState())) {
     next('/dashboard')
   } else {
     next()
@@ -56,10 +55,10 @@ export const Router = new VueRouter({
       path: '/mail-verification',
       component: MailVerification,
       beforeEnter: (_to, _from, next) => {
-        const fullState = getStore().state as FullState
-        if (!fullState.user.isAuthenticated) {
+        const state = store.getState()
+        if (!isAuthenticated(state)) {
           next('/log-in')
-        } else if (!fullState.user.requiresMailVerification) {
+        } else if (!requiresMailVerification(state)) {
           next('/dashboard')
         } else {
           next()
@@ -69,7 +68,8 @@ export const Router = new VueRouter({
       path: '/dashboard',
       component: Dashboard,
       beforeEnter: authenticationGuard
-    }, {
+    },
+    {
       path: '/security',
       component: Security,
       redirect: '/security/threat-analysis',
@@ -87,7 +87,8 @@ export const Router = new VueRouter({
       path: '/settings',
       component: Settings,
       beforeEnter: authenticationGuard
-    }, {
+    },
+    {
       path: '*',
       redirect: () => '/'
     }

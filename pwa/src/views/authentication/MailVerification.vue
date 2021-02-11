@@ -48,15 +48,18 @@
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
 import Page from '@/components/Page.vue'
-import { releaseMailToken$, releaseMailTokenProgress$ } from '@/store/root/modules/user/modules/settings'
-import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
 import { ServiceReleaseMailTokenResponseError } from '@/api/definitions'
-import { act, reset } from '@/store/resettable_action'
-import { ReleaseMailTokenProgress, ReleaseMailTokenProgressState } from '@/store/state'
-import { Undefinable } from '@/utilities'
+import { DeepReadonly } from 'ts-essentials'
+import { MailTokenRelease, mailTokenRelease } from '@/redux/modules/user/account/selectors'
+import { StandardErrorKind, isActionSuccess } from '@/redux/flow_signal'
+import { releaseMailToken, mailTokenReleaseReset, mailTokenReleaseSignal } from '@/redux/modules/user/account/actions'
+import { takeUntil, filter } from 'rxjs/operators'
+import { function as fn, option } from 'fp-ts'
+import { error } from '@/redux/remote_data'
 
 interface Mixins {
   code: { frozen: boolean };
+  mailTokenRelease: DeepReadonly<MailTokenRelease>;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
@@ -65,48 +68,48 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   data () {
     return {
-      ...{
-        code: {
-          value: '',
-          frozen: false
-        }
-      },
-      ...{
-        releaseMailTokenProgress: undefined as Undefinable<ReleaseMailTokenProgress>
+      code: {
+        value: '',
+        frozen: false
       }
     }
   },
-  subscriptions () {
-    return {
-      releaseMailTokenProgress: releaseMailTokenProgress$
-    }
+  created () {
+    this.$data.$actions.pipe(
+      filter(isActionSuccess(mailTokenReleaseSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.$router.push('/dashboard')
+    })
   },
   validations: {
     code: {
       valid () {
-        if (this.releaseMailTokenProgress?.state === FlowProgressBasicState.ERROR) {
-          if (this.releaseMailTokenProgress?.error.type === FlowProgressErrorType.FAILURE) {
-            if (this.releaseMailTokenProgress?.error.error === ServiceReleaseMailTokenResponseError.INVALIDCODE) {
-              return !this.code.frozen
-            }
-          }
-        }
-        return true
+        return fn.pipe(
+          error(this.mailTokenRelease),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceReleaseMailTokenResponseError.INVALIDCODE),
+          option.map(() => !this.code.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
       }
     }
   },
   computed: {
+    mailTokenRelease (): DeepReadonly<MailTokenRelease> {
+      return mailTokenRelease(this.$data.$state)
+    },
     codeErrors (): { [key: string]: boolean } {
       return {
         [this.$t('INVALID_CODE') as string]: !this.$v.code.valid
       }
     },
     inProgress (): boolean {
-      return Object.keys(ReleaseMailTokenProgressState).includes(this.releaseMailTokenProgress?.state || FlowProgressBasicState.IDLE)
+      return option.isSome(this.mailTokenRelease.indicator)
     }
   },
   methods: {
-    setCode (value: string): void {
+    setCode (value: string) {
       this.code.value = value
       this.code.frozen = false
     },
@@ -115,9 +118,8 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         this.$v.$touch()
         if (!this.$v.$invalid) {
           this.code.frozen = true
-          releaseMailToken$.next(act({
-            code: this.code.value,
-            redirect: true
+          this.dispatch(releaseMailToken({
+            code: this.code.value
           }))
         }
       }
@@ -128,7 +130,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     ;(this.$refs.code as HTMLInputElement).focus()
   },
   beforeDestroy () {
-    releaseMailToken$.next(reset())
+    this.dispatch(mailTokenReleaseReset())
   }
 })
 </script>

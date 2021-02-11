@@ -18,17 +18,17 @@
                     @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
                     :autofocus="!usernameIsEmpty"></form-text-field>
                   <v-switch hide-details color="primary" label="Remember me"
-                    :input-value="depotBit" @change="setPersist"></v-switch>
+                    :input-value="persist" @change="setPersist"></v-switch>
                 </v-form>
               </v-card-text>
               <v-card-actions>
                 <v-btn block color="primary" class="mx-4"
-                  @click="submit" :loading="hasProgressMessage">
+                  @click="submit" :loading="hasIndicatorMessage">
                   <span>Log in</span>
                   <template v-slot:loader>
                     <v-progress-circular indeterminate :size="23" :width="2">
                     </v-progress-circular>
-                    <span class="ml-3">{{ progressMessage }}</span>
+                    <span class="ml-3">{{ indicatorMessage }}</span>
                   </template>
                 </v-btn>
               </v-card-actions>
@@ -47,34 +47,46 @@
 import Vue, { VueConstructor } from 'vue'
 import { required } from 'vuelidate/lib/validators'
 import Page from '@/components/Page.vue'
-import { getSessionUsername } from '@/redux/modules/session/selectors'
-import { depotUsername$, depotBit$ } from '@/store/root/modules/depot'
 import { ServiceLogInResponseError, ServiceGetSaltResponseError } from '@/api/definitions'
-import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
-import { authenticationViaApiProgress$, authenticationViaDepotProgress$, logInViaApi$, logInViaDepot$ } from '@/store/root'
+import { sessionUsername } from '@/redux/modules/session/selectors'
 import {
-  AuthenticationViaDepotProgressError,
-  AuthenticationViaApiProgress,
-  AuthenticationViaApiProgressState,
-  AuthenticationViaDepotProgress,
-  AuthenticationViaDepotProgressState
-} from '@/store/state'
-import { act, reset } from '@/store/resettable_action'
-import { Undefinable } from '@/utilities'
-import { showToast$ } from '@/store/root/modules/interface/toast'
-import { state$ } from '@/redux/selectors'
+  AuthnViaApiFlowIndicator,
+  logInViaApi,
+  authnViaApiReset,
+  authnViaApiSignal,
+  AuthnViaDepotFlowIndicator,
+  logInViaDepot,
+  authnViaDepotReset,
+  authnViaDepotSignal,
+  initiateBackgroundAuthn,
+  AuthnViaDepotFlowError
+} from '@/redux/modules/authn/actions'
+import { authnViaApi, AuthnViaApi, authnViaDepot, AuthnViaDepot } from '@/redux/modules/authn/selectors'
+import { isFailureOf, isActionSuccess, isSignalFailure } from '@/redux/flow_signal'
+import { DeepReadonly } from 'ts-essentials'
+import { showToast } from '@/redux/modules/ui/toast/actions'
+import { takeUntil, filter, map as rxMap } from 'rxjs/operators'
+import { Observable } from 'rxjs'
+import { function as fn, option, map, eq, array } from 'fp-ts'
+import { error } from '@/redux/remote_data'
+import { activateDepot, clearDepot } from '@/redux/modules/depot/actions'
+import { depotUsername } from '@/redux/modules/depot/selectors'
+import { isActionOf } from 'typesafe-actions'
+import { RootAction } from '@/redux/root_action'
 
-const STATE_TO_MESSAGE = new Map<FlowProgressBasicState | AuthenticationViaApiProgressState | AuthenticationViaDepotProgressState, string>([
-  [AuthenticationViaApiProgressState.RETRIEVING_PARAMETRIZATION, 'Getting salt'],
-  [AuthenticationViaApiProgressState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
-  [AuthenticationViaApiProgressState.MAKING_REQUEST, 'Making request'],
-  [AuthenticationViaApiProgressState.DECRYPTING_DATA, 'Decrypting data'],
-  [AuthenticationViaDepotProgressState.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
-  [AuthenticationViaDepotProgressState.DECRYPTING_DATA, 'Decrypting data']
+const INDICATOR_TO_MESSAGE = new Map<AuthnViaApiFlowIndicator | AuthnViaDepotFlowIndicator, string>([
+  [AuthnViaApiFlowIndicator.RETRIEVING_PARAMETRIZATION, 'Getting salt'],
+  [AuthnViaApiFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
+  [AuthnViaApiFlowIndicator.MAKING_REQUEST, 'Making request'],
+  [AuthnViaApiFlowIndicator.DECRYPTING_DATA, 'Decrypting data'],
+  [AuthnViaDepotFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
+  [AuthnViaDepotFlowIndicator.DECRYPTING_DATA, 'Decrypting data']
 ])
 
 interface Mixins {
   frozen: boolean;
+  authnViaApi: DeepReadonly<AuthnViaApi>;
+  authnViaDepot: DeepReadonly<AuthnViaDepot>;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
@@ -83,25 +95,50 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   data () {
     return {
-      ...{
-        username: depotUsername$.getValue() || getSessionUsername(state$.getValue()) || '',
-        password: '',
-        frozen: false
-      },
-      ...{
-        depotUsername: undefined as Undefinable<string>,
-        authenticationViaApiProgress: undefined as Undefinable<AuthenticationViaApiProgress>,
-        authenticationViaDepotProgress: undefined as Undefinable<AuthenticationViaDepotProgress>
-      }
+      username: '',
+      password: '',
+      frozen: false,
+      persist: false
     }
   },
-  subscriptions () {
-    return {
-      depotBit: depotBit$,
-      depotUsername: depotUsername$,
-      authenticationViaApiProgress: authenticationViaApiProgress$,
-      authenticationViaDepotProgress: authenticationViaDepotProgress$
-    }
+  created () {
+    const usernameFromDepot = depotUsername(this.$data.$state)
+    this.username = sessionUsername(this.$data.$state) || usernameFromDepot || ''
+    this.persist = usernameFromDepot !== null
+    this.actions().pipe(
+      filter(isActionSuccess(authnViaApiSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe((action) => {
+      if (this.persist) {
+        this.dispatch(activateDepot({
+          username: action.payload.data.username,
+          password: action.payload.data.password
+        }))
+      }
+      this.$router.push('/dashboard')
+    })
+    this.actions().pipe(
+      filter(isActionSuccess(authnViaDepotSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe((action) => {
+      this.dispatch(initiateBackgroundAuthn({
+        username: action.payload.data.username,
+        password: action.payload.data.password
+      }))
+      this.$router.push('/dashboard')
+    })
+    this.actions().pipe(
+      filter(isActionOf(authnViaDepotSignal)),
+      rxMap((action) => action.payload),
+      filter(isSignalFailure),
+      rxMap((signal) => signal.error),
+      filter(isFailureOf([AuthnViaDepotFlowError.INVALID_CREDENTIALS])),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.dispatch(showToast({
+        message: 'Changed the password remotely? Toggle \'Remember me\' twice.'
+      }))
+    })
   },
   validations: {
     username: {
@@ -110,27 +147,38 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     password: {},
     forCredentials: {
       valid () {
-        if (this.authenticationViaApiProgress?.state === FlowProgressBasicState.ERROR) {
-          if (this.authenticationViaApiProgress?.error.type === FlowProgressErrorType.FAILURE) {
-            if (this.authenticationViaApiProgress?.error.error === ServiceLogInResponseError.INVALIDCREDENTIALS ||
-              this.authenticationViaApiProgress?.error.error === ServiceGetSaltResponseError.NOTFOUND) {
-              return !this.frozen
-            }
-          }
-        }
-        if (this.authenticationViaDepotProgress?.state === FlowProgressBasicState.ERROR) {
-          if (this.authenticationViaDepotProgress?.error.type === FlowProgressErrorType.FAILURE) {
-            if (this.authenticationViaDepotProgress?.error.error === AuthenticationViaDepotProgressError.INVALID_CREDENTIALS) {
-              return !this.frozen
-            }
-          }
-        }
-        return true
+        return fn.pipe(
+          [
+            fn.pipe(
+              error(this.authnViaApi),
+              option.filter(isFailureOf([
+                ServiceLogInResponseError.INVALIDCREDENTIALS,
+                ServiceGetSaltResponseError.NOTFOUND
+              ]))
+            ),
+            fn.pipe(
+              error(this.authnViaDepot),
+              option.filter(isFailureOf([AuthnViaDepotFlowError.INVALID_CREDENTIALS]))
+            )
+          ],
+          array.findFirst<option.Option<unknown>>(option.isSome),
+          option.map(() => !this.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
       }
     },
     credentialsGroup: ['username', 'password']
   },
   computed: {
+    authnViaApi (): DeepReadonly<AuthnViaApi> {
+      return authnViaApi(this.$data.$state)
+    },
+    authnViaDepot (): DeepReadonly<AuthnViaDepot> {
+      return authnViaDepot(this.$data.$state)
+    },
+    depotUsername (): string | null {
+      return depotUsername(this.$data.$state)
+    },
     usernameIsEmpty (): boolean {
       return this.username === ''
     },
@@ -148,44 +196,52 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         [this.$t('INVALID_USERNAME_OR_PASSWORD') as string]: !this.$v.forCredentials.valid
       }
     },
-    progressMessage (): string | null {
-      return STATE_TO_MESSAGE.get(this.authenticationViaApiProgress?.state || FlowProgressBasicState.IDLE) ||
-        STATE_TO_MESSAGE.get(this.authenticationViaDepotProgress?.state || FlowProgressBasicState.IDLE) || null
+    indicatorMessage (): string | null {
+      return fn.pipe(
+        [this.authnViaApi.indicator, this.authnViaDepot.indicator],
+        array.findFirst<option.Option<AuthnViaApiFlowIndicator | AuthnViaDepotFlowIndicator>>(option.isSome),
+        option.chain((indicator) => map.lookup(eq.eqStrict)(indicator, INDICATOR_TO_MESSAGE)),
+        option.getOrElse<string | null>(() => null)
+      )
     },
-    hasProgressMessage (): boolean {
-      return this.progressMessage !== null
+    hasIndicatorMessage (): boolean {
+      return this.indicatorMessage !== null
     }
   },
   methods: {
-    setUsername (value: string): void {
+    actions (): Observable<RootAction> {
+      return this.$data.$actions
+    },
+    setUsername (value: string) {
       this.username = value
       this.frozen = false
     },
-    setPassword (value: string): void {
+    setPassword (value: string) {
       this.password = value
       this.frozen = false
     },
-    setPersist (value: boolean): void {
-      depotBit$.next(value)
-      showToast$.next(value ? {
-        message: 'Okay, we will store your data encrypted on this device. Try it offline!'
-      } : {
-        message: 'Alright, we wiped out all saved data on this device.'
-      })
+    setPersist (value: boolean) {
+      if (value) {
+        this.persist = true
+        this.dispatch(showToast({ message: 'Okay, we will store your data encrypted on this device. Try it offline!' }))
+      } else {
+        this.dispatch(clearDepot())
+        this.dispatch(showToast({ message: 'Alright, we wiped out all saved data on this device.' }))
+        this.persist = false
+      }
     },
     submit () {
-      if (!this.hasProgressMessage) {
+      if (!this.hasIndicatorMessage) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
           this.frozen = true
-          if (this.depotUsername === null) {
-            logInViaApi$.next(act({
+          if (this.usernameMatchesDepot) {
+            this.dispatch(logInViaDepot({
               username: this.username,
-              password: this.password,
-              inBackground: false
+              password: this.password
             }))
           } else {
-            logInViaDepot$.next(act({
+            this.dispatch(logInViaApi({
               username: this.username,
               password: this.password
             }))
@@ -195,11 +251,8 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   beforeDestroy () {
-    logInViaApi$.next(reset())
-    logInViaDepot$.next(reset())
-    if (depotUsername$.getValue() === null && depotBit$.getValue()) {
-      depotBit$.next(false)
-    }
+    this.dispatch(authnViaApiReset())
+    this.dispatch(authnViaDepotReset())
   }
 })
 </script>

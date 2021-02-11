@@ -49,36 +49,30 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { showToast$ } from '@/store/root/modules/interface/toast'
-import { canAccessApi$ } from '@/store/root/modules/user'
-import { Undefinable } from '@/utilities'
+import { canAccessApi } from '@/redux/modules/user/account/selectors'
+import { showToast } from '@/redux/modules/ui/toast/actions'
 
 export default Vue.extend({
   props: ['identifier', 'value', 'tags'],
   data () {
     return {
-      ...{
-        reveal: false
-      },
-      ...{
-        canAccessApi: undefined as Undefinable<boolean>
-      }
+      reveal: false
     }
   },
-  subscriptions () {
-    return {
-      canAccessApi: canAccessApi$
+  computed: {
+    canAccessApi () {
+      return canAccessApi(this.$data.$state)
     }
   },
   methods: {
     async copyText (string: string): Promise<void> {
       await navigator.clipboard.writeText(string)
-      showToast$.next({ message: 'Done. Some clipboards retain history — be careful! 😱' })
+      this.dispatch(showToast({ message: 'Done. Some clipboards retain history — be careful! 😱' }))
     },
-    toggleReveal (): void {
+    toggleReveal () {
       this.reveal = !this.reveal
     },
-    edit (): void {
+    edit () {
       if (this.canAccessApi) {
         this.$emit('edit', { reveal: this.reveal })
         this.reveal = false

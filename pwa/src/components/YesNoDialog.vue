@@ -18,7 +18,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { XL_MINIMAL_WIDTH } from './constants'
+import { XL_MINIMAL_WIDTH } from './dimensions'
 
 export default Vue.extend({
   props: ['value', 'message'],

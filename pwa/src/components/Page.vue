@@ -37,7 +37,7 @@ export default Vue.extend({
     }
   },
   methods: {
-    menuSwitch (value: boolean): void {
+    menuSwitch (value: boolean) {
       this.$emit('menuSwitch', value)
     }
   }

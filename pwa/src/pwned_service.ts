@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { sha1 } from './utilities'
+import { sha1 } from './cryptography'
 
 const PREFIX_LENGTH = 5
 const cutHashToPrefix = (hash: string) => hash.slice(0, PREFIX_LENGTH)

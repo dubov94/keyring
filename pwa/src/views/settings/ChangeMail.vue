@@ -31,7 +31,7 @@
                 :dirty="$v.requestGroup.password.$dirty" :errors="passwordErrors"
                 @touch="$v.requestGroup.password.$touch()" @reset="$v.requestGroup.password.$reset()"></form-text-field>
               <div class="mx-3">
-                <v-btn block :loading="acquireInProgress"
+                <v-btn block :loading="acquisitionInProgress"
                   color="primary" @click="acquireToken" :disabled="!canAccessApi">
                   Next
                 </v-btn>
@@ -61,52 +61,43 @@
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
 import { email, required } from 'vuelidate/lib/validators'
-import { acquireMailTokenProgress$, releaseMailTokenProgress$, acquireMailToken$, releaseMailToken$ } from '@/store/root/modules/user/modules/settings'
-import { Undefinable } from '@/utilities'
-import { AcquireMailTokenProgress, AcquireMailTokenProgressState, ReleaseMailTokenProgress, ReleaseMailTokenProgressState } from '@/store/state'
-import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
 import { ServiceAcquireMailTokenResponseError, ServiceReleaseMailTokenResponseError } from '@/api/definitions'
-import { act, reset } from '@/store/resettable_action'
-import { canAccessApi$ } from '@/store/root/modules/user'
-
-const resetMailProgress = () => {
-  acquireMailToken$.next(reset())
-  releaseMailToken$.next(reset())
-}
+import { canAccessApi, mailTokenAcquisition, MailTokenAcquisition, mailTokenRelease, MailTokenRelease } from '@/redux/modules/user/account/selectors'
+import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
+import { function as fn, option } from 'fp-ts'
+import { filter, takeUntil } from 'rxjs/operators'
+import { hasIndicator, error, hasData } from '@/redux/remote_data'
+import {
+  acquireMailToken,
+  mailTokenAcquisitionReset,
+  releaseMailToken,
+  mailTokenReleaseReset,
+  mailTokenReleaseSignal
+} from '@/redux/modules/user/account/actions'
+import { DeepReadonly } from 'ts-essentials'
+import { showToast } from '@/redux/modules/ui/toast/actions'
 
 interface Mixins {
   requestGroup: { password: { frozen: boolean} };
   code: { frozen: boolean };
+  mailTokenAcquisition: DeepReadonly<MailTokenAcquisition>;
+  mailTokenRelease: DeepReadonly<MailTokenRelease>;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   data () {
     return {
-      ...{
-        requestGroup: {
-          mail: '',
-          password: {
-            value: '',
-            frozen: false
-          }
-        },
-        code: {
+      requestGroup: {
+        mail: '',
+        password: {
           value: '',
           frozen: false
         }
       },
-      ...{
-        canAccessApi: undefined as Undefinable<boolean>,
-        acquireMailTokenProgress: undefined as Undefinable<AcquireMailTokenProgress>,
-        releaseMailTokenProgress: undefined as Undefinable<ReleaseMailTokenProgress>
+      code: {
+        value: '',
+        frozen: false
       }
-    }
-  },
-  subscriptions () {
-    return {
-      canAccessApi: canAccessApi$,
-      acquireMailTokenProgress: acquireMailTokenProgress$,
-      releaseMailTokenProgress: releaseMailTokenProgress$
     }
   },
   validations: {
@@ -114,43 +105,69 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       mail: { email, required },
       password: {
         valid () {
-          if (this.acquireMailTokenProgress?.state === FlowProgressBasicState.ERROR) {
-            if (this.acquireMailTokenProgress?.error.type === FlowProgressErrorType.FAILURE) {
-              if (this.acquireMailTokenProgress?.error.error === ServiceAcquireMailTokenResponseError.INVALIDDIGEST) {
-                return !this.requestGroup.password.frozen
-              }
-            }
-          }
-          return true
+          return fn.pipe(
+            error(this.mailTokenAcquisition),
+            option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+              value.value === ServiceAcquireMailTokenResponseError.INVALIDDIGEST),
+            option.map(() => !this.requestGroup.password.frozen),
+            option.getOrElse<boolean>(() => true)
+          )
         }
       }
     },
     code: {
       valid () {
-        if (this.releaseMailTokenProgress?.state === FlowProgressBasicState.ERROR) {
-          if (this.releaseMailTokenProgress?.error.type === FlowProgressErrorType.FAILURE) {
-            if (this.releaseMailTokenProgress?.error.error === ServiceReleaseMailTokenResponseError.INVALIDCODE) {
-              return !this.code.frozen
-            }
-          }
-        }
-        return true
+        return fn.pipe(
+          error(this.mailTokenRelease),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceReleaseMailTokenResponseError.INVALIDCODE),
+          option.map(() => !this.code.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
       }
     }
   },
+  created () {
+    this.$data.$actions.pipe(
+      filter(isActionSuccess(mailTokenReleaseSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      // Acquisition.
+      this.requestGroup.mail = ''
+      this.requestGroup.password.value = ''
+      this.requestGroup.password.frozen = false
+      this.$v.requestGroup.$reset()
+      this.dispatch(mailTokenAcquisitionReset())
+      // Release.
+      this.code.value = ''
+      this.code.frozen = false
+      this.$v.code.$reset()
+      this.dispatch(mailTokenReleaseReset())
+      this.dispatch(showToast({ message: this.$t('DONE') as string }))
+    })
+  },
   computed: {
-    acquireInProgress (): boolean {
-      return Object.keys(AcquireMailTokenProgressState).includes(this.acquireMailTokenProgress?.state || FlowProgressBasicState.IDLE)
+    canAccessApi (): boolean {
+      return canAccessApi(this.$data.$state)
+    },
+    mailTokenAcquisition (): DeepReadonly<MailTokenAcquisition> {
+      return mailTokenAcquisition(this.$data.$state)
+    },
+    mailTokenRelease (): DeepReadonly<MailTokenRelease> {
+      return mailTokenRelease(this.$data.$state)
+    },
+    acquisitionInProgress (): boolean {
+      return hasIndicator(this.mailTokenAcquisition)
     },
     releaseInProgress (): boolean {
-      return Object.keys(ReleaseMailTokenProgressState).includes(this.releaseMailTokenProgress?.state || FlowProgressBasicState.IDLE)
+      return hasIndicator(this.mailTokenRelease)
     },
     stage (): number {
       let stage = 1
-      if (this.acquireMailTokenProgress?.state === FlowProgressBasicState.SUCCESS) {
+      if (hasData(this.mailTokenAcquisition)) {
         stage += 1
       }
-      if (this.releaseMailTokenProgress?.state === FlowProgressBasicState.SUCCESS) {
+      if (hasData(this.mailTokenRelease)) {
         stage += 1
       }
       return stage
@@ -173,58 +190,41 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   methods: {
-    setPassword (value: string): void {
+    setPassword (value: string) {
       this.requestGroup.password.value = value
       this.requestGroup.password.frozen = false
     },
-    setCode (value: string): void {
+    setCode (value: string) {
       this.code.value = value
       this.code.frozen = false
     },
-    acquireToken (): void {
-      if (this.canAccessApi && !this.acquireInProgress) {
+    acquireToken () {
+      if (this.canAccessApi && !this.acquisitionInProgress) {
         this.$v.requestGroup.$touch()
         if (!this.$v.requestGroup.$invalid) {
           this.requestGroup.password.frozen = true
-          acquireMailToken$.next(act({
+          this.dispatch(acquireMailToken({
             mail: this.requestGroup.mail,
             password: this.requestGroup.password.value
           }))
         }
       }
     },
-    releaseToken (): void {
+    releaseToken () {
       if (this.canAccessApi && !this.releaseInProgress) {
         this.$v.code.$touch()
         if (!this.$v.code.$invalid) {
           this.code.frozen = true
-          releaseMailToken$.next(act({
+          this.dispatch(releaseMailToken({
             code: this.code.value
           }))
         }
       }
     }
   },
-  watch: {
-    acquireMailTokenProgress (newValue) {
-      if (newValue?.state === FlowProgressBasicState.SUCCESS) {
-        this.requestGroup.mail = ''
-        this.requestGroup.password.value = ''
-        this.requestGroup.password.frozen = false
-        this.$v.requestGroup.$reset()
-      }
-    },
-    releaseMailTokenProgress (newValue) {
-      if (newValue?.state === FlowProgressBasicState.SUCCESS) {
-        this.code.value = ''
-        this.code.frozen = false
-        this.$v.code.$reset()
-        resetMailProgress()
-      }
-    }
-  },
   beforeDestroy () {
-    resetMailProgress()
+    this.dispatch(mailTokenAcquisitionReset())
+    this.dispatch(mailTokenReleaseReset())
   }
 })
 </script>

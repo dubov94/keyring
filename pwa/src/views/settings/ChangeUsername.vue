@@ -25,16 +25,19 @@
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
 import { required } from 'vuelidate/lib/validators'
-import { Undefinable } from '@/utilities'
-import { ChangeUsernameProgress, ChangeUsernameProgressState } from '@/store/state'
-import { canAccessApi$ } from '@/store/root/modules/user'
-import { changeUsername$, changeUsernameProgress$ } from '@/store/root/modules/user/modules/settings'
-import { FlowProgressBasicState, FlowProgressErrorType } from '@/store/flow'
 import { ServiceChangeUsernameResponseError } from '@/api/definitions'
-import { act, reset } from '@/store/resettable_action'
+import { function as fn, option } from 'fp-ts'
+import { StandardErrorKind, isActionSuccess } from '@/redux/flow_signal'
+import { UsernameChange, usernameChange, canAccessApi } from '@/redux/modules/user/account/selectors'
+import { usernameChangeReset, usernameChangeSignal, changeUsername } from '@/redux/modules/user/account/actions'
+import { filter, takeUntil } from 'rxjs/operators'
+import { hasIndicator, error } from '@/redux/remote_data'
+import { DeepReadonly } from 'ts-essentials'
+import { showToast } from '@/redux/modules/ui/toast/actions'
 
 interface Mixins {
   frozen: boolean;
+  usernameChange: DeepReadonly<UsernameChange>;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
@@ -42,51 +45,57 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     username: {
       required,
       isAvailable () {
-        if (this.changeUsernameProgress?.state === FlowProgressBasicState.ERROR) {
-          if (this.changeUsernameProgress?.error.type === FlowProgressErrorType.FAILURE) {
-            if (this.changeUsernameProgress?.error.error === ServiceChangeUsernameResponseError.NAMETAKEN) {
-              return !this.frozen
-            }
-          }
-        }
-        return true
+        return fn.pipe(
+          error(this.usernameChange),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceChangeUsernameResponseError.NAMETAKEN),
+          option.map(() => !this.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
       }
     },
     password: {
       valid () {
-        if (this.changeUsernameProgress?.state === FlowProgressBasicState.ERROR) {
-          if (this.changeUsernameProgress?.error.type === FlowProgressErrorType.FAILURE) {
-            if (this.changeUsernameProgress?.error.error === ServiceChangeUsernameResponseError.INVALIDDIGEST) {
-              return !this.frozen
-            }
-          }
-        }
-        return true
+        return fn.pipe(
+          error(this.usernameChange),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceChangeUsernameResponseError.INVALIDDIGEST),
+          option.map(() => !this.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
       }
     }
   },
   data () {
     return {
-      ...{
-        username: '',
-        password: '',
-        frozen: false
-      },
-      ...{
-        canAccessApi: undefined as Undefinable<boolean>,
-        changeUsernameProgress: undefined as Undefinable<ChangeUsernameProgress>
-      }
+      username: '',
+      password: '',
+      frozen: false
     }
   },
-  subscriptions () {
-    return {
-      canAccessApi: canAccessApi$,
-      changeUsernameProgress: changeUsernameProgress$
-    }
+  created () {
+    this.$data.$actions.pipe(
+      filter(isActionSuccess(usernameChangeSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.username = ''
+      this.password = ''
+      this.frozen = false
+      this.$v.$reset()
+      this.dispatch(usernameChangeReset())
+      this.dispatch(showToast({ message: this.$t('DONE') as string }))
+      ;(document.activeElement as HTMLInputElement).blur()
+    })
   },
   computed: {
+    canAccessApi (): boolean {
+      return canAccessApi(this.$data.$state)
+    },
+    usernameChange (): DeepReadonly<UsernameChange> {
+      return usernameChange(this.$data.$state)
+    },
     inProgress (): boolean {
-      return Object.keys(ChangeUsernameProgressState).includes(this.changeUsernameProgress?.state || FlowProgressBasicState.IDLE)
+      return hasIndicator(this.usernameChange)
     },
     usernameErrors (): { [key: string]: boolean } {
       return {
@@ -101,20 +110,20 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   methods: {
-    setUsername (value: string): void {
+    setUsername (value: string) {
       this.username = value
       this.frozen = false
     },
-    setPassword (value: string): void {
+    setPassword (value: string) {
       this.password = value
       this.frozen = false
     },
-    submit (): void {
+    submit () {
       if (this.canAccessApi && !this.inProgress) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
           this.frozen = true
-          changeUsername$.next(act({
+          this.dispatch(changeUsername({
             username: this.username,
             password: this.password
           }))
@@ -122,20 +131,8 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       }
     }
   },
-  watch: {
-    changeUsernameProgress (newValue) {
-      if (newValue?.state === FlowProgressBasicState.SUCCESS) {
-        this.username = ''
-        this.password = ''
-        this.frozen = false
-        this.$v.$reset()
-        changeUsername$.next(reset())
-        ;(document.activeElement as HTMLInputElement).blur()
-      }
-    }
-  },
   beforeDestroy () {
-    changeUsername$.next(reset())
+    this.dispatch(usernameChangeReset())
   }
 })
 </script>

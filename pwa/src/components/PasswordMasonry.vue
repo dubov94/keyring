@@ -25,7 +25,7 @@ export default Vue.extend({
   },
   props: ['userKeys'],
   methods: {
-    handleEditKey (identifier: string, { reveal }: { reveal: boolean }): void {
+    handleEditKey (identifier: string, { reveal }: { reveal: boolean }) {
       this.$emit('edit', { identifier, reveal })
     }
   }

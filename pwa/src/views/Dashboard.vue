@@ -34,7 +34,7 @@
           <v-pagination v-model="pageNumber" :length="pageCount"
             :total-visible="paginationVisibleCount" circle></v-pagination>
         </div>
-        <password-masonry :user-keys="visibleCards" @edit="handleEditKey">
+        <password-masonry :user-keys="visibleCards" @edit="openEditor">
         </password-masonry>
       </v-container>
       <div class="dial">
@@ -43,7 +43,7 @@
         </v-btn>
       </div>
     </v-content>
-    <editor></editor>
+    <editor v-if="showEditor" :params="editorParams" @close="closeEditor"></editor>
   </page>
 </template>
 
@@ -53,11 +53,13 @@ import Editor from '@/components/Editor.vue'
 import Page from '@/components/Page.vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
-import { takeUntil, tap } from 'rxjs/operators'
-import { canAccessApi$, userKeys$, createUserKeyHook$ } from '@/store/root/modules/user/index'
-import { openEditor$ } from '@/store/root/modules/interface/editor'
-import { Key } from '@/store/state'
-import { Undefinable } from '@/utilities'
+import { userKeys } from '@/redux/modules/user/keys/selectors'
+import { Key } from '@/redux/entities'
+import { DeepReadonly } from 'ts-essentials'
+import { takeUntil, filter } from 'rxjs/operators'
+import { isActionSuccess } from '@/redux/flow_signal'
+import { creationSignal } from '@/redux/modules/user/keys/actions'
+import { canAccessApi } from '@/redux/modules/user/account/selectors'
 
 const CARDS_PER_PAGE = 12
 
@@ -70,23 +72,26 @@ export default Vue.extend({
   },
   data () {
     return {
-      ...{
-        showMenu: false,
-        pageNumber: 1,
-        query: ''
-      },
-      ...{
-        userKeys: undefined as Undefinable<Array<Key>>
-      }
-    }
-  },
-  subscriptions () {
-    return {
-      canAccessApi: canAccessApi$,
-      userKeys: userKeys$
+      showMenu: false,
+      pageNumber: 1,
+      query: '',
+      showEditor: false,
+      editorParams: {
+        identifier: null,
+        reveal: false
+      } as DeepReadonly<{
+        identifier: string | null;
+        reveal: boolean;
+      }>
     }
   },
   computed: {
+    userKeys (): DeepReadonly<Key[]> {
+      return userKeys(this.$data.$state)
+    },
+    canAccessApi (): boolean {
+      return canAccessApi(this.$data.$state)
+    },
     pageCount (): number {
       return Math.max(Math.floor(
         (this.matchingCards.length + CARDS_PER_PAGE - 1) / CARDS_PER_PAGE), 1)
@@ -97,16 +102,15 @@ export default Vue.extend({
     normalizedQuery (): string {
       return this.query.trim().toLowerCase()
     },
-    matchingCards (): Array<Key> {
+    matchingCards (): DeepReadonly<Key[]> {
       const prefix = this.normalizedQuery
-      let list = this.userKeys || []
-      if (prefix !== '') {
-        list = list.filter(key =>
-          key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
+      if (prefix === '') {
+        return this.userKeys
       }
-      return list
+      return this.userKeys.filter(key =>
+        key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
     },
-    visibleCards (): Array<Key> {
+    visibleCards (): DeepReadonly<Key[]> {
       const startIndex = (this.pageNumber - 1) * CARDS_PER_PAGE
       return this.matchingCards.slice(startIndex, startIndex + CARDS_PER_PAGE)
     },
@@ -121,19 +125,24 @@ export default Vue.extend({
     }
   },
   methods: {
-    menuSwitch (value: boolean): void {
+    menuSwitch (value: boolean) {
       this.showMenu = value
     },
-    addKey (): void {
-      openEditor$.next({ identifier: null, reveal: false })
+    addKey () {
+      this.showEditor = true
     },
-    handleEditKey ({ identifier, reveal }: { identifier: string; reveal: boolean }): void {
-      openEditor$.next({ identifier, reveal })
+    openEditor (editorParams: DeepReadonly<{ identifier: string; reveal: boolean }>) {
+      this.editorParams = editorParams
+      this.showEditor = true
     },
-    clearQuery (): void {
+    closeEditor () {
+      this.showEditor = false
+      this.editorParams = { identifier: null, reveal: false }
+    },
+    clearQuery () {
       this.query = ''
     },
-    resetNavigation (): void {
+    resetNavigation () {
       this.pageNumber = 1
     }
   },
@@ -148,16 +157,16 @@ export default Vue.extend({
     }
   },
   created () {
-    createUserKeyHook$.pipe(
-      tap(() => {
-        this.clearQuery()
-        this.resetNavigation()
-      }),
-      takeUntil(this.beforeDestroy$)
-    ).subscribe()
+    this.$data.$actions.pipe(
+      filter(isActionSuccess(creationSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.clearQuery()
+      this.resetNavigation()
+    })
   },
   mounted () {
-    if ((this.userKeys?.length || 0) > 0) {
+    if (this.userKeys.length > 0) {
       (this.$refs.search as HTMLInputElement).focus()
     }
   }

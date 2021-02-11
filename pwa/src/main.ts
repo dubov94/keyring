@@ -7,8 +7,6 @@ import { Subject } from 'rxjs'
 
 import 'vuetify/dist/vuetify.min.css'
 import Vue from 'vue'
-import VueI18n from 'vue-i18n'
-import VueRx from 'vue-rx'
 import Vuelidate from 'vuelidate'
 import Vuetify from 'vuetify'
 import Application from './Application.vue'
@@ -17,14 +15,14 @@ import FormTextField from './components/FormTextField.vue'
 import { AdministrationApi, AuthenticationApi } from '@/api/definitions'
 import { fetchFromApi } from '@/api/fetch'
 import { ADMINISTRATION_API_TOKEN, AUTHENTICATION_API_TOKEN } from '@/api/api_di'
-import { LOCALE_MESSAGES } from '@/messages'
+import { getVueI18n } from '@/i18n'
 import { Router } from '@/router'
 import { PwnedService, PWNED_SERVICE_TOKEN, HaveIBeenPwnedService } from '@/pwned_service'
 import SodiumWorker from './sodium.worker.ts'
 import { SODIUM_INTERFACE_TOKEN, SodiumInterface } from '@/sodium_interface'
-import '@/store'
-import { getStore } from '@/store/store_di'
-import '@/redux'
+import { store, state$, action$ } from '@/redux'
+import { takeUntil } from 'rxjs/operators'
+import { AnyAction } from '@reduxjs/toolkit'
 
 container.register<SodiumInterface>(SODIUM_INTERFACE_TOKEN, {
   useValue: SodiumWorker<SodiumInterface>()
@@ -44,28 +42,8 @@ container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
 
 Vue.config.productionTip = false
 
-Vue.use(VueI18n)
-Vue.use(VueRx)
 Vue.use(Vuetify)
 Vue.use(Vuelidate)
-
-container.register(VueI18n, {
-  useValue: new VueI18n({
-    locale: 'en',
-    messages: LOCALE_MESSAGES
-  })
-})
-
-Vue.mixin({
-  data () {
-    return {
-      beforeDestroy$: new Subject<void>()
-    }
-  },
-  beforeDestroy () {
-    (this as Vue).beforeDestroy$.next()
-  }
-})
 
 Vue.directive('focus', {
   inserted (element) {
@@ -78,12 +56,43 @@ Vue.directive('visible', (element, binding) => {
 
 Vue.component('form-text-field', FormTextField)
 
+Vue.mixin({
+  data () {
+    return {
+      $destruction: new Subject<void>()
+    }
+  },
+  beforeDestroy () {
+    ;(<Vue> this).$data.$destruction.next()
+  }
+})
+
+Vue.mixin({
+  data () {
+    return {
+      $state: store.getState(),
+      $actions: action$
+    }
+  },
+  methods: {
+    dispatch (action: AnyAction) {
+      store.dispatch(action)
+    }
+  },
+  created () {
+    state$.pipe(
+      takeUntil((<Vue> this).$data.$destruction)
+    ).subscribe((value) => {
+      ;(<Vue> this).$data.$state = value
+    })
+  }
+})
+
 ;(async () => {
   await sodium.ready
   new Vue({
     render: h => h(Application),
     router: Router,
-    store: getStore(),
-    i18n: container.resolve(VueI18n)
+    i18n: getVueI18n()
   }).$mount('#application')
 })()
