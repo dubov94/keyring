@@ -22,7 +22,7 @@ export const LOCAL_STORAGE_ACCESSOR = initializeStorage(localStorage, [
         parametrization: string | null;
         authDigest: string | null;
         userKeys: string | null;
-      }
+      };
     }>(VUEX_KEY)
     if (vuex !== null) {
       accessor.set('depot.username', vuex.depot.username)
