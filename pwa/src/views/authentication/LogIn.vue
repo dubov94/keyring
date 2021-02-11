@@ -200,6 +200,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       return fn.pipe(
         [this.authnViaApi.indicator, this.authnViaDepot.indicator],
         array.findFirst<option.Option<AuthnViaApiFlowIndicator | AuthnViaDepotFlowIndicator>>(option.isSome),
+        option.flatten,
         option.chain((indicator) => map.lookup(eq.eqStrict)(indicator, INDICATOR_TO_MESSAGE)),
         option.getOrElse<string | null>(() => null)
       )
