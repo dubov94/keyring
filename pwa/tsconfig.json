@@ -18,7 +18,6 @@
       "libsodium-wrappers",
       "lodash",
       "mocha",
-      "vue-rx",
       "vuelidate",
       "vuetify",
       "webpack-env"
