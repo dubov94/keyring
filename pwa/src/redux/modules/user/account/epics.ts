@@ -14,7 +14,7 @@ import {
   changeMasterKey,
   changeUsername,
   deleteAccount,
-  ejectUser,
+  remoteCredentialsMismatchLocal,
   logOut,
   MailTokenAcquisitionFlowIndicator,
   mailTokenAcquisitionReset,
@@ -271,6 +271,6 @@ export const logOutOnDeletionSuccessEpic: Epic<RootAction, RootAction, RootState
 )
 
 export const logOutOnUserEjectionEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
-  filter(isActionOf(ejectUser)),
+  filter(isActionOf(remoteCredentialsMismatchLocal)),
   concatMap(() => of(logOut()))
 )

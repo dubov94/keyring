@@ -2,7 +2,7 @@ import { isActionSuccess } from '@/redux/flow_signal'
 import { createReducer } from '@reduxjs/toolkit'
 import { isActionOf } from 'typesafe-actions'
 import { authnViaDepotSignal, registrationSignal } from '../authn/actions'
-import { accountDeletionSignal, ejectUser, usernameChangeSignal } from '../user/account/actions'
+import { accountDeletionSignal, remoteCredentialsMismatchLocal, usernameChangeSignal } from '../user/account/actions'
 import { clearDepot, depotActivationData, newVault, rehydrateDepot } from './actions'
 import { monoid } from 'fp-ts'
 import { disjunction } from '@/redux/predicates'
@@ -60,7 +60,7 @@ export default createReducer<State>(
       monoid.fold(disjunction)([
         isActionSuccess(registrationSignal),
         isActionSuccess(accountDeletionSignal),
-        isActionOf(ejectUser)
+        isActionOf(remoteCredentialsMismatchLocal)
       ]),
       toInitialState
     )

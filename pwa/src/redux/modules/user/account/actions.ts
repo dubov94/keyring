@@ -83,4 +83,4 @@ export const accountDeletionSignal = createAction('user/account/accountDeletionS
 >>()
 export const accountDeletionReset = createAction('user/account/accountDeletionReset')()
 
-export const ejectUser = createAction('user/account/eject')()
+export const remoteCredentialsMismatchLocal = createAction('user/account/remoteCredentialsMismatchLocal')()

@@ -37,7 +37,7 @@ import { cancel, exception, failure, indicator, isSignalFailure, stringify, succ
 import { Key } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
-import { ejectUser } from '../user/account/actions'
+import { remoteCredentialsMismatchLocal } from '../user/account/actions'
 
 export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf([register, registrationReset])),
@@ -215,5 +215,5 @@ export const ejectWhenCredentialsDoNotMatchEpic: Epic<RootAction, RootAction, Ro
   map((action) => action.payload),
   filter(isSignalFailure),
   filter((signal) => signal.error.value === ServiceLogInResponseError.INVALIDCREDENTIALS),
-  concatMap(() => of(ejectUser()))
+  concatMap(() => of(remoteCredentialsMismatchLocal()))
 )
