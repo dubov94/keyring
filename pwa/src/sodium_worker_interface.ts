@@ -1,6 +1,6 @@
-export const SODIUM_INTERFACE_TOKEN = 'SodiumInterface'
+export const SODIUM_WORKER_INTERFACE_TOKEN = 'SodiumWorkerInterface'
 
-export interface SodiumInterface {
+export interface SodiumWorkerInterface {
   toBase64(unit8Array: Uint8Array): Promise<string>;
   fromBase64(base64String: string): Promise<Uint8Array>;
   generateSalt(): Promise<Uint8Array>;

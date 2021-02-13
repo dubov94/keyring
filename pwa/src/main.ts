@@ -19,13 +19,13 @@ import { getVueI18n } from '@/i18n'
 import { Router } from '@/router'
 import { PwnedService, PWNED_SERVICE_TOKEN, HaveIBeenPwnedService } from '@/pwned_service'
 import SodiumWorker from './sodium.worker.ts'
-import { SODIUM_INTERFACE_TOKEN, SodiumInterface } from '@/sodium_interface'
+import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from '@/sodium_worker_interface'
 import { store, state$, action$ } from '@/redux'
 import { takeUntil } from 'rxjs/operators'
 import { AnyAction } from '@reduxjs/toolkit'
 
-container.register<SodiumInterface>(SODIUM_INTERFACE_TOKEN, {
-  useValue: SodiumWorker<SodiumInterface>()
+container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
+  useValue: SodiumWorker<SodiumWorkerInterface>()
 })
 
 container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {

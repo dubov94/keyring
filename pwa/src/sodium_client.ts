@@ -1,5 +1,5 @@
 import { container, inject, injectable } from 'tsyringe'
-import { SODIUM_INTERFACE_TOKEN, SodiumInterface } from './sodium_interface'
+import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from './sodium_worker_interface'
 import { Password } from '@/redux/entities'
 import { DeepReadonly } from 'ts-essentials'
 
@@ -22,12 +22,12 @@ export interface MasterKeyDerivatives {
 
 @injectable()
 export class SodiumClient {
-  constructor (@inject(SODIUM_INTERFACE_TOKEN) private sodiumInterface: SodiumInterface) {}
+  constructor (@inject(SODIUM_WORKER_INTERFACE_TOKEN) private sodiumWorkerInterface: SodiumWorkerInterface) {}
 
   async generateArgon2Parametrization (): Promise<string> {
     return '$argon2id' +
       `$m=${ARGON2_DEFAULT_M},t=${ARGON2_DEFAULT_T},p=1` +
-      `$${await this.sodiumInterface.toBase64(await this.sodiumInterface.generateSalt())}`
+      `$${await this.sodiumWorkerInterface.toBase64(await this.sodiumWorkerInterface.generateSalt())}`
   }
 
   async computeArgon2HashForDigestAndKey (parametrization: string, password: string): Promise<Uint8Array> {
@@ -38,8 +38,8 @@ export class SodiumClient {
     const [, algorithm, mText, tText, pText, salt] = matches
     const [m, t, p] = [mText, tText, pText].map(Number)
     if (algorithm === 'argon2id' && p === 1) {
-      return this.sodiumInterface.computeHash(
-        t, m, await this.sodiumInterface.fromBase64(salt), password,
+      return this.sodiumWorkerInterface.computeHash(
+        t, m, await this.sodiumWorkerInterface.fromBase64(salt), password,
         AUTH_DIGEST_SIZE_IN_BYTES + ENCRYPTION_KEY_SIZE_IN_BYTES)
     } else {
       throw new Error('Unsupported hashing parameters: ' +
@@ -49,8 +49,8 @@ export class SodiumClient {
 
   async extractAuthDigestAndEncryptionKey (hash: Uint8Array): Promise<MasterKeyDerivatives> {
     return {
-      authDigest: await this.sodiumInterface.toBase64(hash.slice(0, AUTH_DIGEST_SIZE_IN_BYTES)),
-      encryptionKey: await this.sodiumInterface.toBase64(hash.slice(-ENCRYPTION_KEY_SIZE_IN_BYTES))
+      authDigest: await this.sodiumWorkerInterface.toBase64(hash.slice(0, AUTH_DIGEST_SIZE_IN_BYTES)),
+      encryptionKey: await this.sodiumWorkerInterface.toBase64(hash.slice(-ENCRYPTION_KEY_SIZE_IN_BYTES))
     }
   }
 
@@ -61,16 +61,16 @@ export class SodiumClient {
   }
 
   async encryptMessage (encryptionKey: string, message: string): Promise<string> {
-    const nonce = await this.sodiumInterface.generateNonce()
-    const base64Cipher = await this.sodiumInterface.encryptMessage(
-      await this.sodiumInterface.fromBase64(encryptionKey), nonce, message)
-    return this.sodiumInterface.joinNonceCipher(nonce, base64Cipher)
+    const nonce = await this.sodiumWorkerInterface.generateNonce()
+    const base64Cipher = await this.sodiumWorkerInterface.encryptMessage(
+      await this.sodiumWorkerInterface.fromBase64(encryptionKey), nonce, message)
+    return this.sodiumWorkerInterface.joinNonceCipher(nonce, base64Cipher)
   }
 
   async decryptMessage (encryptionKey: string, pack: string): Promise<string> {
-    const [nonce, base64Cipher] = await this.sodiumInterface.splitNonceCipher(pack)
-    return this.sodiumInterface.decryptMessage(
-      await this.sodiumInterface.fromBase64(encryptionKey), nonce, base64Cipher)
+    const [nonce, base64Cipher] = await this.sodiumWorkerInterface.splitNonceCipher(pack)
+    return this.sodiumWorkerInterface.decryptMessage(
+      await this.sodiumWorkerInterface.fromBase64(encryptionKey), nonce, base64Cipher)
   }
 
   async encryptPassword (encryptionKey: string, { value, tags }: DeepReadonly<Password>): Promise<Password> {
