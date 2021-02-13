@@ -1,29 +1,31 @@
 import { expect } from 'chai'
 import { createCharacterRange, generateInclusiveCombination, shuffle } from './combinatorics'
+import sum from 'lodash/sum'
+import isEqual from 'lodash/isEqual'
+import { chiSquaredDistributionTable, factorial, permutationsHeap } from 'simple-statistics'
 
-const SIMPLE_RNG = (lower: number, upper: number): number =>
+const TEST_RNG = (lower: number, upper: number): number =>
   lower + Math.floor(Math.random() * (upper - lower))
 
 describe('shuffle', () => {
   it('should have uniform distribution', () => {
-    const NUMBER_OF_PERMUTATIONS = 4 * 3 * 2
-    const NUMBER_OF_TRIALS = NUMBER_OF_PERMUTATIONS * 1000
-    const permutationToCount = new Map<string, number>()
+    const sequence = () => [1, 2, 3, 4]
+    const NUMBER_OF_GROUPS = factorial(4)
+    const TRIALS_PER_GROUP = 1000
+    const allPermutations = permutationsHeap(sequence())
+    const histogram = new Array(NUMBER_OF_GROUPS).fill(0)
 
-    for (let i = 0; i < NUMBER_OF_TRIALS; ++i) {
+    for (let i = 0; i < NUMBER_OF_GROUPS * TRIALS_PER_GROUP; ++i) {
       const sequence = [1, 2, 3, 4]
-      shuffle(sequence, SIMPLE_RNG)
-      const repr = JSON.stringify(sequence)
-      if (!permutationToCount.has(repr)) {
-        permutationToCount.set(repr, 0)
-      }
-      permutationToCount.set(repr, permutationToCount.get(repr)! + 1)
+      shuffle(sequence, TEST_RNG)
+      histogram[allPermutations.findIndex((permutation) => isEqual(permutation, sequence))] += 1
     }
 
-    expect(permutationToCount).to.have.lengthOf(NUMBER_OF_PERMUTATIONS)
-    permutationToCount.forEach((value) => {
-      expect(value).to.be.greaterThan(900)
-    })
+    const chiSquared = sum(Object.values(histogram).map((count): number => {
+      return Math.pow(count - TRIALS_PER_GROUP, 2) / TRIALS_PER_GROUP
+    }))
+    // DF = NUMBER_OF_GROUPS - 2 - 1
+    expect(chiSquared).to.be.at.most(chiSquaredDistributionTable[21][0.05])
   })
 })
 
@@ -37,7 +39,7 @@ describe('generateInclusiveCombination', () => {
     ]
 
     for (let i = 0; i < NUMBER_OF_TRIALS; ++i) {
-      const sequence = generateInclusiveCombination(RANGES, 8, SIMPLE_RNG)
+      const sequence = generateInclusiveCombination(RANGES, 8, TEST_RNG)
       expect(sequence).to.have.lengthOf(8)
       const bits = new Array(RANGES.length).fill(false)
       for (const c of sequence) {
@@ -59,7 +61,7 @@ describe('generateInclusiveCombination', () => {
   it('should construct a full set from single-unit ranges', () => {
     const RANGES = ['a', 'b', 'c']
 
-    const sequence = generateInclusiveCombination(RANGES, 3, SIMPLE_RNG)
+    const sequence = generateInclusiveCombination(RANGES, 3, TEST_RNG)
 
     expect(sequence).to.be.oneOf(['abc', 'acb', 'bac', 'bca', 'cab', 'cba'])
   })

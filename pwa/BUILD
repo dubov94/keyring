@@ -163,6 +163,7 @@ vue_cli_launcher_test(
         "@pwa_npm//@types/chai",
         "@pwa_npm//@types/mocha",
         "@pwa_npm//chai",
+        "@pwa_npm//simple-statistics",
     ] + SOURCES + DEPENDENCIES,
 )
 

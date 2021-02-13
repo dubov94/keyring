@@ -8401,6 +8401,11 @@ simple-get@^3.0.3:
     once "^1.3.1"
     simple-concat "^1.0.0"
 
+simple-statistics@^7.4.1:
+  version "7.4.1"
+  resolved "https://registry.yarnpkg.com/simple-statistics/-/simple-statistics-7.4.1.tgz#bc5fc1971fe319ee6209e42ab5a78da883f56738"
+  integrity sha512-OWOsEXPkuvWR7meRfl5vX4g0LO3zlL8oBeG/AyctL39UIueHprwzEQfbOQKwhyrltM/Ra9jea653Ap5KvQnKyQ==
+
 simple-swizzle@^0.2.2:
   version "0.2.2"
   resolved "https://registry.npm.taobao.org/simple-swizzle/download/simple-swizzle-0.2.2.tgz#a4da6b635ffcccca33f70d17cb92592de95e557a"
