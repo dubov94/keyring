@@ -88,7 +88,10 @@ state$.pipe(
 const SESSION_LIFETIME_IN_MILLIS = 5 * 60 * 1000
 
 fromEvent(document, 'visibilitychange').pipe(switchMap(() => {
-  return document.visibilityState === 'visible' ? EMPTY : timer(SESSION_LIFETIME_IN_MILLIS)
+  if (document.visibilityState !== 'visible') {
+    return timer(SESSION_LIFETIME_IN_MILLIS)
+  }
+  return EMPTY
 })).subscribe(() => {
   if (state$.getValue().user.account.isAuthenticated) {
     store.dispatch(logOut())
