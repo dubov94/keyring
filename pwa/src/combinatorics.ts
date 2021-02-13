@@ -1,6 +1,6 @@
 import { RNG, random } from './cryptography'
 
-export const shuffle = <T>(array: Array<T>, rng: RNG = random) => {
+export const shuffle = <T>(array: T[], rng: RNG = random) => {
   let limit = array.length
   while (limit > 0) {
     const index = rng(0, limit--);
@@ -19,8 +19,8 @@ export const createCharacterRange = (first: string, last: string): string => {
 }
 
 /** Given an array of ranges generates a sequence having at least one symbol from each of the ranges. */
-export const generateInclusiveCombination = (ranges: Array<string>, length: number, rng: RNG = random): string => {
-  const sequence: Array<string> = []
+export const generateInclusiveCombination = (ranges: string[], length: number, rng: RNG = random): string => {
+  const sequence: string[] = []
   let pool = ''
   for (const range of ranges) {
     sequence.push(range[rng(0, range.length)])

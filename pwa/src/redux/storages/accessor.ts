@@ -32,7 +32,7 @@ type StorageUpgrade = (storageAdapter: StorageAdapter) => void
 
 const STORAGE_VERSION_KEY = 'version'
 
-export const initializeStorage = (storage: Storage, upgrades: Array<[StorageVersion, StorageUpgrade]>): JsonAccessor => {
+export const initializeStorage = (storage: Storage, upgrades: [StorageVersion, StorageUpgrade][]): JsonAccessor => {
   if (storage.length > 0) {
     const storageVersion = Number(storage.getItem(STORAGE_VERSION_KEY))
     if (isNaN(storageVersion)) {

@@ -12,9 +12,9 @@ export interface PwnedService {
 }
 
 export class HaveIBeenPwnedService implements PwnedService {
-  private prefixToSuffixes: Map<string, Array<string>> = new Map()
+  private prefixToSuffixes: Map<string, string[]> = new Map()
 
-  async getSuffixesByPrefix (prefix: string): Promise<Array<string>> {
+  async getSuffixesByPrefix (prefix: string): Promise<string[]> {
     if (!this.prefixToSuffixes.has(prefix)) {
       const { data } = await axios.get<string>(`https://api.pwnedpasswords.com/range/${prefix}`)
       this.prefixToSuffixes.set(prefix, data.split('\n').map(string => string.split(':')[0]))

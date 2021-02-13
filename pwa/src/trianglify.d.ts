@@ -2,8 +2,8 @@ declare module 'trianglify' {
   interface Options {
     width?: number;
     height?: number;
-    xColors?: string | Array<string>;
-    yColors?: string | Array<string>;
+    xColors?: string | string[];
+    yColors?: string | string[];
     seed?: string;
   }
 

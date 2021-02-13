@@ -60,7 +60,7 @@ export default Vue.extend({
     isLoading (): boolean {
       return hasIndicator(this.recentSessions)
     },
-    headers (): Array<{ text: string; value: string }> {
+    headers (): { text: string; value: string }[] {
       return [
         { text: 'Timestamp', value: 'moment' },
         { text: 'IP address', value: 'location' },
