@@ -164,6 +164,7 @@ vue_cli_launcher_test(
         "@pwa_npm//@types/mocha",
         "@pwa_npm//chai",
         "@pwa_npm//simple-statistics",
+        "@pwa_npm//ts-mockito",
     ] + SOURCES + DEPENDENCIES,
 )
 

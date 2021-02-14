@@ -24,6 +24,7 @@
     "simple-statistics": "^7.4.1",
     "snakecase-keys": "^3.2.0",
     "trianglify": "^4.0.0",
+    "ts-mockito": "^2.6.1",
     "tsyringe": "^4.3.0",
     "typesafe-actions": "^5.1.0",
     "ua-parser-js": "^0.7.21",
