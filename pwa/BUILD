@@ -162,6 +162,7 @@ vue_cli_launcher_test(
         ":specs",
         "@pwa_npm//@types/chai",
         "@pwa_npm//@types/mocha",
+        "@pwa_npm//@vue/test-utils",
         "@pwa_npm//chai",
         "@pwa_npm//simple-statistics",
         "@pwa_npm//ts-mockito",
