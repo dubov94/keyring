@@ -1,58 +1,74 @@
 import { Key } from '@/redux/entities'
-import { reducer, RootState } from '@/redux/root_reducer'
 import { container } from 'tsyringe'
 import { emplace } from '../user/keys/actions'
 import { mock, instance, when } from 'ts-mockito'
 import { SodiumClient } from '@/sodium_client'
-import { ActionsObservable, StateObservable } from 'redux-observable'
-import { updateVaultEpic } from './epics'
-import { Subject } from 'rxjs'
-import { depotActivationData, newVault } from './actions'
+import { activateDepotEpic, updateVaultEpic } from './epics'
+import { activateDepot, depotActivationData, newVault } from './actions'
 import { RootAction } from '@/redux/root_action'
-import { function as fn, array } from 'fp-ts'
 import { expect } from 'chai'
+import { EpicTracker, setUpEpicChannels } from '@/redux/testing'
+import { createStore, Store } from '@reduxjs/toolkit'
+import { reducer, RootState } from '@/redux/root_reducer'
 
 describe('updateVaultEpic', () => {
-  it('emits a new vault', (done) => {
+  it('emits a new vault', async () => {
     const userKeys: Key[] = [{
       identifier: '0',
       value: 'value',
       tags: []
     }]
-    const actionSubject = new Subject<RootAction>()
-    const action$ = new ActionsObservable(actionSubject)
-    const stateSubject = new Subject<RootState>()
-    const state$ = new StateObservable(stateSubject, fn.pipe(
-      [
-        depotActivationData({
-          username: 'username',
-          salt: 'salt',
-          hash: 'hash',
-          vaultKey: 'vaultKey'
-        }),
-        emplace(userKeys)
-      ],
-      array.reduce<RootAction, RootState | undefined>(
-        undefined, (state, action) => reducer(state, action))
-    )!)
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(depotActivationData({
+      username: 'username',
+      salt: 'salt',
+      hash: 'hash',
+      vaultKey: 'vaultKey'
+    }))
+    store.dispatch(emplace(userKeys))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
+    when(mockSodiumClient.encryptMessage(
+      'vaultKey', JSON.stringify(userKeys))).thenResolve('vault')
     container.register<SodiumClient>(SodiumClient, {
       useValue: instance(mockSodiumClient)
     })
-    when(mockSodiumClient.encryptMessage(
-      'vaultKey', JSON.stringify(userKeys))).thenReturn(Promise.resolve('vault'))
 
-    const output: RootAction[] = []
-    updateVaultEpic(action$, state$, {}).subscribe({
-      next: (action) => output.push(action),
-      complete: () => {
-        expect(output).to.deep.equal([
-          newVault('vault')
-        ])
-        done()
-      }
-    })
+    const epicTracker = new EpicTracker(updateVaultEpic(action$, state$, {}))
     actionSubject.next(emplace(userKeys))
     actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(epicTracker.getActions()).to.deep.equal([newVault('vault')])
+  })
+})
+
+describe('activateDepotEpic', () => {
+  it('emits activation data', async () => {
+    const { action$, actionSubject, state$ } = setUpEpicChannels(createStore(reducer))
+    const mockSodiumClient = mock(SodiumClient)
+    when(mockSodiumClient.generateArgon2Parametrization()).thenResolve('parametrization')
+    when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
+      authDigest: 'authDigest',
+      encryptionKey: 'vaultKey'
+    })
+    container.register<SodiumClient>(SodiumClient, {
+      useValue: instance(mockSodiumClient)
+    })
+
+    const epicTracker = new EpicTracker(activateDepotEpic(action$, state$, {}))
+    actionSubject.next(activateDepot({
+      username: 'username',
+      password: 'password'
+    }))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(epicTracker.getActions()).to.deep.equal([depotActivationData({
+      username: 'username',
+      salt: 'parametrization',
+      hash: 'authDigest',
+      vaultKey: 'vaultKey'
+    })])
   })
 })
