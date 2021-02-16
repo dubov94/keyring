@@ -1,5 +1,8 @@
+import { success } from '@/redux/flow_signal'
 import { expect } from 'chai'
-import { rehydrateDepot } from './actions'
+import { authnViaDepotSignal } from '../authn/actions'
+import { usernameChangeSignal } from '../user/account/actions'
+import { clearDepot, newVault, rehydrateDepot } from './actions'
 import reducer from './reducer'
 
 describe('rehydrateDepot', () => {
@@ -15,5 +18,70 @@ describe('rehydrateDepot', () => {
     expect(state.salt).to.equal('salt')
     expect(state.hash).to.equal('hash')
     expect(state.vault).to.equal('vault')
+  })
+})
+
+describe('authnViaDepotSignal', () => {
+  it('sets the vault key', () => {
+    const state = reducer(undefined, authnViaDepotSignal(success({
+      username: 'username',
+      password: 'password',
+      userKeys: [],
+      vaultKey: 'vaultKey'
+    })))
+
+    expect(state.vaultKey).to.equal('vaultKey')
+  })
+})
+
+describe('newVault', () => {
+  it('sets the vault', () => {
+    const state = reducer(undefined, newVault('vault'))
+
+    expect(state.vault).to.equal('vault')
+  })
+})
+
+describe('usernameChangeSignal', () => {
+  it('changes the username when it matches', () => {
+    const state = reducer({
+      username: 'usernameA',
+      salt: null,
+      hash: null,
+      vault: null,
+      vaultKey: null
+    }, usernameChangeSignal(success({
+      before: 'usernameA',
+      update: 'usernameB'
+    })))
+
+    expect(state.username).to.equal('usernameB')
+  })
+
+  it('does not change the username when it does not match', () => {
+    const state = reducer(undefined, usernameChangeSignal(success({
+      before: 'usernameA',
+      update: 'usernameB'
+    })))
+
+    expect(state.username).to.equal(null)
+  })
+})
+
+describe('clearDepot', () => {
+  it('clears the depot', () => {
+    const state = reducer({
+      username: 'username',
+      salt: 'salt',
+      hash: 'hash',
+      vault: 'vault',
+      vaultKey: 'vaultKey'
+    }, clearDepot())
+
+    expect(state.username).to.be.null
+    expect(state.salt).to.be.null
+    expect(state.hash).to.be.null
+    expect(state.vault).to.be.null
+    expect(state.vaultKey).to.be.null
   })
 })
