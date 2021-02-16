@@ -3,13 +3,15 @@ import { container } from 'tsyringe'
 import { emplace } from '../user/keys/actions'
 import { mock, instance, when } from 'ts-mockito'
 import { SodiumClient } from '@/sodium_client'
-import { activateDepotEpic, updateVaultEpic } from './epics'
+import { activateDepotEpic, changeMasterKeyEpic, updateVaultEpic } from './epics'
 import { activateDepot, depotActivationData, newVault } from './actions'
 import { RootAction } from '@/redux/root_action'
 import { expect } from 'chai'
 import { EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { reducer, RootState } from '@/redux/root_reducer'
+import { masterKeyChangeSignal } from '../user/account/actions'
+import { success } from '@/redux/flow_signal'
 
 describe('updateVaultEpic', () => {
   it('emits a new vault', async () => {
@@ -69,6 +71,34 @@ describe('activateDepotEpic', () => {
       salt: 'parametrization',
       hash: 'authDigest',
       vaultKey: 'vaultKey'
+    })])
+  })
+})
+
+describe('changeMasterKeyEpic', () => {
+  it('activates the depot', async () => {
+    const store = createStore(reducer)
+    store.dispatch(depotActivationData({
+      username: 'username',
+      salt: 'salt',
+      hash: 'hash',
+      vaultKey: 'vaultKey'
+    }))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(changeMasterKeyEpic(action$, state$, {}))
+    actionSubject.next(masterKeyChangeSignal(success({
+      newMasterKey: 'newMasterKey',
+      newParametrization: 'newParametrization',
+      newEncryptionKey: 'newEncryptionKey',
+      newSessionKey: 'newSessionKey'
+    })))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(epicTracker.getActions()).to.deep.equal([activateDepot({
+      username: 'username',
+      password: 'newMasterKey'
     })])
   })
 })
