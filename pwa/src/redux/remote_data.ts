@@ -56,8 +56,7 @@ export const withNoResult = <I, S, E>(remoteData: RemoteData<I, S, E>): RemoteDa
 })
 
 export const error = <I, S, E>(remoteData: RemoteData<DeepReadonly<I>, DeepReadonly<S>, DeepReadonly<E>>): option.Option<DeepReadonly<E>> => {
-  return option.isSome(remoteData.indicator) ? option.zero() : fn.pipe(remoteData.result, option.chain(these.getRight)
-  )
+  return option.isSome(remoteData.indicator) ? option.zero() : fn.pipe(remoteData.result, option.chain(these.getRight))
 }
 
 export const data = <I, S, E>(remoteData: RemoteData<DeepReadonly<I>, DeepReadonly<S>, DeepReadonly<E>>): option.Option<DeepReadonly<S>> => {
