@@ -6,7 +6,7 @@ import { container } from 'tsyringe'
 import { Subject } from 'rxjs'
 
 import 'vuetify/dist/vuetify.min.css'
-import Vue from 'vue'
+import Vue, { VueConstructor } from 'vue'
 import Vuelidate from 'vuelidate'
 import Vuetify from 'vuetify'
 import Application from './Application.vue'
@@ -23,6 +23,7 @@ import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from '@/sodium_w
 import { store, state$, action$ } from '@/redux'
 import { takeUntil } from 'rxjs/operators'
 import { AnyAction } from '@reduxjs/toolkit'
+import { VUE_CONSTRUCTOR_TOKEN } from './vue_di'
 
 container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
   useValue: SodiumWorker<SodiumWorkerInterface>()
@@ -41,6 +42,10 @@ container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
 })
 
 Vue.config.productionTip = false
+
+container.register<VueConstructor>(VUE_CONSTRUCTOR_TOKEN, {
+  useValue: Vue
+})
 
 Vue.use(Vuetify)
 Vue.use(Vuelidate)
