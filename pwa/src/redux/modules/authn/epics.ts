@@ -209,7 +209,7 @@ export const backgroundAuthnEpic: Epic<RootAction, RootAction, RootState> = (act
   switchMap((action) => apiAuthn(action.payload, backgroundAuthnSignal))
 )
 
-export const ejectWhenCredentialsDoNotMatchEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+export const remoteCredentialsMismatchLocalEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(backgroundAuthnSignal)),
   map((action) => action.payload),
   filter(isSignalFailure),
