@@ -32,7 +32,7 @@ describe('updateVaultEpic', () => {
     const mockSodiumClient = mock(SodiumClient)
     when(mockSodiumClient.encryptMessage(
       'vaultKey', JSON.stringify(userKeys))).thenResolve('vault')
-    container.register<SodiumClient>(SodiumClient, {
+    container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)
     })
 
@@ -54,7 +54,7 @@ describe('activateDepotEpic', () => {
       authDigest: 'authDigest',
       encryptionKey: 'vaultKey'
     })
-    container.register<SodiumClient>(SodiumClient, {
+    container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)
     })
 
