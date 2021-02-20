@@ -18,7 +18,6 @@ export interface RegistrationFlowResult {
   parametrization: string;
   encryptionKey: string;
   sessionKey: string;
-  userKeys: Key[];
 }
 export const register = createAction('authn/register')<DeepReadonly<{
   username: string;

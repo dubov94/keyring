@@ -64,8 +64,7 @@ export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action
                           username: action.payload.username,
                           parametrization,
                           encryptionKey,
-                          sessionKey: response.sessionKey!,
-                          userKeys: []
+                          sessionKey: response.sessionKey!
                         })))
                       default:
                         return of(registrationSignal(failure(response.error!)))
@@ -182,7 +181,7 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
                     switchMap((vault) => of(authnViaDepotSignal(success({
                       username: action.payload.username,
                       password: action.payload.password,
-                      userKeys: JSON.parse(vault) as Key[],
+                      userKeys: <Key[]>JSON.parse(vault),
                       vaultKey: encryptionKey
                     }))))
                   )
