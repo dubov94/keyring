@@ -1,4 +1,4 @@
-import { Store } from '@reduxjs/toolkit'
+import { AnyAction, Reducer, Store } from '@reduxjs/toolkit'
 import { ActionsObservable, StateObservable } from 'redux-observable'
 import { Observable, Subject } from 'rxjs'
 import { RootAction } from './root_action'
@@ -45,4 +45,8 @@ export class EpicTracker {
   getActions (): RootAction[] {
     return this.output
   }
+}
+
+export const reduce = <S, A extends AnyAction>(reducer: Reducer<S>, initialState: S | undefined, actions: A[]): S => {
+  return <S>actions.reduce<S | undefined>(reducer, initialState)
 }

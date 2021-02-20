@@ -11,6 +11,7 @@ import {
   authnViaApiSignal,
   AuthnViaDepotFlowError,
   AuthnViaDepotFlowIndicator,
+  authnViaDepotReset,
   authnViaDepotSignal,
   RegistrationFlowIndicator,
   registrationReset,
@@ -57,7 +58,7 @@ export default createReducer<{
         identity<StandardError<AuthnViaDepotFlowError>>()
       )(state.authnViaDepot, action.payload)
     })
-    .addMatcher(isActionOf(authnViaApiReset), (state) => {
+    .addMatcher(isActionOf(authnViaDepotReset), (state) => {
       state.authnViaDepot = withNoResult(state.authnViaDepot)
     })
 )
