@@ -31,7 +31,7 @@ describe('registration', () => {
   })
 })
 
-describe('authnViaApiSignal', () => {
+describe('authnViaApi', () => {
   const signalAction = authnViaApiSignal(success({
     username: 'username',
     password: 'password',
