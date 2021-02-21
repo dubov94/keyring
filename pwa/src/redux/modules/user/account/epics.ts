@@ -270,7 +270,7 @@ export const logOutOnDeletionSuccessEpic: Epic<RootAction, RootAction, RootState
   concatMap(() => of(logOut()))
 )
 
-export const logOutOnUserEjectionEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+export const logOutOnCredentialsMismatchEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(remoteCredentialsMismatchLocal)),
   concatMap(() => of(logOut()))
 )
