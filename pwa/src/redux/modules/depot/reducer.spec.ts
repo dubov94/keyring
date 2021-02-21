@@ -1,7 +1,11 @@
 import { success } from '@/redux/flow_signal'
 import { expect } from 'chai'
-import { authnViaDepotSignal } from '../authn/actions'
-import { usernameChangeSignal } from '../user/account/actions'
+import { authnViaDepotSignal, registrationSignal } from '../authn/actions'
+import {
+  accountDeletionSignal,
+  remoteCredentialsMismatchLocal,
+  usernameChangeSignal
+} from '../user/account/actions'
 import { clearDepot, newVault, rehydrateDepot } from './actions'
 import reducer from './reducer'
 
@@ -69,7 +73,7 @@ describe('usernameChangeSignal', () => {
 })
 
 describe('clearDepot', () => {
-  it('clears the depot', () => {
+  it('clears persisted data', () => {
     const state = reducer({
       username: 'username',
       salt: 'salt',
@@ -82,6 +86,33 @@ describe('clearDepot', () => {
     expect(state.salt).to.be.null
     expect(state.hash).to.be.null
     expect(state.vault).to.be.null
-    expect(state.vaultKey).to.be.null
+  })
+})
+
+describe('toInitialState', () => {
+  ;[
+    registrationSignal(success({
+      username: 'username',
+      parametrization: 'parametrization',
+      encryptionKey: 'encryptionKey',
+      sessionKey: 'sessionKey'
+    })),
+    accountDeletionSignal(success({})),
+    remoteCredentialsMismatchLocal()
+  ].forEach((trigger) => {
+    it(`clears persisted data on ${trigger.type}`, () => {
+      const state = reducer({
+        username: 'username',
+        salt: 'salt',
+        hash: 'hash',
+        vault: 'vault',
+        vaultKey: 'vaultKey'
+      }, trigger)
+
+      expect(state.username).to.be.null
+      expect(state.salt).to.be.null
+      expect(state.hash).to.be.null
+      expect(state.vault).to.be.null
+    })
   })
 })

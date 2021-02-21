@@ -1,6 +1,6 @@
 import { success } from '@/redux/flow_signal'
 import { expect } from 'chai'
-import { authnViaApiSignal, registrationSignal } from '../authn/actions'
+import { authnViaApiSignal, authnViaDepotSignal, registrationSignal } from '../authn/actions'
 import { logOut, usernameChangeSignal } from '../user/account/actions'
 import { rehydrateSession } from './actions'
 import reducer from './reducer'
@@ -20,8 +20,8 @@ describe('registrationSignal', () => {
 })
 
 describe('authnSignal', () => {
-  it('updates the username', () => {
-    const state = reducer(undefined, authnViaApiSignal(success({
+  ;[
+    authnViaApiSignal(success({
       username: 'username',
       password: 'password',
       parametrization: 'parametrization',
@@ -29,9 +29,19 @@ describe('authnSignal', () => {
       sessionKey: 'sessionKey',
       requiresMailVerification: false,
       userKeys: []
-    })))
+    })),
+    authnViaDepotSignal(success({
+      username: 'username',
+      password: 'password',
+      userKeys: [],
+      vaultKey: 'vaultKey'
+    }))
+  ].forEach((trigger) => {
+    it(`updates the username on ${trigger.type}`, () => {
+      const state = reducer(undefined, trigger)
 
-    expect(state.username).to.equal('username')
+      expect(state.username).to.equal('username')
+    })
   })
 })
 

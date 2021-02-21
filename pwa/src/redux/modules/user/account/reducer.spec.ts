@@ -2,7 +2,7 @@ import { success } from '@/redux/flow_signal'
 import { hasData } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
 import { expect } from 'chai'
-import { authnViaApiSignal, authnViaDepotSignal, registrationSignal } from '../../authn/actions'
+import { authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal, registrationSignal } from '../../authn/actions'
 import { accountDeletionReset, accountDeletionSignal, mailTokenAcquisitionReset, mailTokenAcquisitionSignal, mailTokenReleaseReset, mailTokenReleaseSignal, masterKeyChangeReset, masterKeyChangeSignal, usernameChangeReset, usernameChangeSignal } from './actions'
 import reducer from './reducer'
 
@@ -23,9 +23,9 @@ describe('registrationSignal', () => {
   })
 })
 
-describe('authnViaApiSignal', () => {
-  it('sets the account state', () => {
-    const state = reducer(undefined, authnViaApiSignal(success({
+describe('onlineAuthnSignal', () => {
+  ;[
+    authnViaApiSignal(success({
       username: 'username',
       password: 'password',
       parametrization: 'parametrization',
@@ -33,13 +33,26 @@ describe('authnViaApiSignal', () => {
       sessionKey: 'sessionKey',
       requiresMailVerification: false,
       userKeys: []
-    })))
+    })),
+    backgroundAuthnSignal(success({
+      username: 'username',
+      password: 'password',
+      parametrization: 'parametrization',
+      encryptionKey: 'encryptionKey',
+      sessionKey: 'sessionKey',
+      requiresMailVerification: false,
+      userKeys: []
+    }))
+  ].forEach((trigger) => {
+    it(`sets the account state on ${trigger.type}`, () => {
+      const state = reducer(undefined, trigger)
 
-    expect(state.isAuthenticated).to.be.true
-    expect(state.parametrization).to.equal('parametrization')
-    expect(state.encryptionKey).to.equal('encryptionKey')
-    expect(state.sessionKey).to.equal('sessionKey')
-    expect(state.requiresMailVerification).to.be.false
+      expect(state.isAuthenticated).to.be.true
+      expect(state.parametrization).to.equal('parametrization')
+      expect(state.encryptionKey).to.equal('encryptionKey')
+      expect(state.sessionKey).to.equal('sessionKey')
+      expect(state.requiresMailVerification).to.be.false
+    })
   })
 })
 

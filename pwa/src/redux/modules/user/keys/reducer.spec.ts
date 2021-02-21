@@ -4,27 +4,37 @@ import { expect } from 'chai'
 import {
   create,
   creationSignal,
+  delete_,
   deletionSignal,
   emplace,
+  update,
   updationSignal
 } from './actions'
 import reducer from './reducer'
 
 describe('semaphore', () => {
-  it('increases on CUD commands', () => {
-    const state = reducer(undefined, create({ value: 'value', tags: ['tag'] }))
+  ;[
+    create({ value: 'value', tags: ['tag'] }),
+    update({ identifier: 'identifier', value: 'value', tags: ['tag'] }),
+    delete_('identifier')
+  ].forEach((trigger) => {
+    it(`increases on ${trigger.type}`, () => {
+      const state = reducer(undefined, trigger)
 
-    expect(state.semaphore).to.equal(1)
+      expect(state.semaphore).to.equal(1)
+    })
   })
 
-  it('decreases on CUD finales', () => {
-    const state = reducer(undefined, creationSignal(success({
-      identifier: 'identifier',
-      value: 'value',
-      tags: ['tag']
-    })))
+  ;[
+    creationSignal(success({ identifier: 'identifier', value: 'value', tags: ['tag'] })),
+    updationSignal(success({ identifier: 'identifier', value: 'value', tags: ['tag'] })),
+    deletionSignal(success('identifier'))
+  ].forEach((trigger) => {
+    it(`decreases on ${trigger.type}`, () => {
+      const state = reducer(undefined, trigger)
 
-    expect(state.semaphore).to.equal(-1)
+      expect(state.semaphore).to.equal(-1)
+    })
   })
 })
 
