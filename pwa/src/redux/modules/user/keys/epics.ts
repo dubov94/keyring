@@ -102,7 +102,7 @@ export const deletionEpic: Epic<RootAction, RootAction, RootState> = (action$, s
 
 export const displayExceptionsEpic = createDisplayExceptionsEpic([creationSignal, updationSignal, deletionSignal])
 
-export const keysByAuthnViaApiEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+export const inheritKeysFromAuthnDataEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionSuccess3([authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal])),
   concatMap((action) => of(emplace(action.payload.data.userKeys)))
 )
