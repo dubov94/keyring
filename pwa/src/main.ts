@@ -24,6 +24,8 @@ import { store, state$, action$ } from '@/redux'
 import { takeUntil } from 'rxjs/operators'
 import { AnyAction } from '@reduxjs/toolkit'
 import { VUE_CONSTRUCTOR_TOKEN } from './vue_di'
+import { sha1 } from './cryptography'
+import axios from 'axios'
 
 container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
   useValue: SodiumWorker<SodiumWorkerInterface>()
@@ -38,7 +40,11 @@ container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
 })
 
 container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
-  useValue: new HaveIBeenPwnedService()
+  useValue: new HaveIBeenPwnedService(
+    sha1,
+    (prefix) => axios.get<string>(
+      `https://api.pwnedpasswords.com/range/${prefix}`).then(({ data }) => data)
+  )
 })
 
 Vue.config.productionTip = false

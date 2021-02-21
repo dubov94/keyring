@@ -1,29 +1,45 @@
-import axios from 'axios'
-import { sha1 } from './cryptography'
-
-const PREFIX_LENGTH = 5
-const cutHashToPrefix = (hash: string) => hash.slice(0, PREFIX_LENGTH)
-const cutHashToSuffix = (hash: string) => hash.slice(PREFIX_LENGTH)
-
 export const PWNED_SERVICE_TOKEN = 'PwnedService'
 
 export interface PwnedService {
   checkKey: (key: string) => Promise<boolean>;
 }
 
-export class HaveIBeenPwnedService implements PwnedService {
-  private prefixToSuffixes: Map<string, string[]> = new Map()
+type SHA1 = (message: string) => Promise<string>
+type RANGE_FETCHER = (prefix: string) => Promise<string>
 
-  async getSuffixesByPrefix (prefix: string): Promise<string[]> {
-    if (!this.prefixToSuffixes.has(prefix)) {
-      const { data } = await axios.get<string>(`https://api.pwnedpasswords.com/range/${prefix}`)
-      this.prefixToSuffixes.set(prefix, data.split('\n').map(string => string.split(':')[0]))
+export class HaveIBeenPwnedService implements PwnedService {
+  private PREFIX_LENGTH = 5
+  private dictionary: Map<string, Promise<string[]>>
+  private sha1: SHA1
+  private fetchRange: RANGE_FETCHER
+
+  constructor (sha1: SHA1, fetchRange: RANGE_FETCHER) {
+    this.dictionary = new Map()
+    this.sha1 = sha1
+    this.fetchRange = fetchRange
+  }
+
+  private parseRange (data: string): string[] {
+    return data.trim().split('\n').map((line) => line.split(':')[0])
+  }
+
+  private async getOrFetch (prefix: string): Promise<string[]> {
+    if (this.dictionary.has(prefix)) {
+      return this.dictionary.get(prefix)!
     }
-    return this.prefixToSuffixes.get(prefix) || []
+    const future = this.fetchRange(prefix).then((data) => this.parseRange(data))
+    this.dictionary.set(prefix, future)
+    future.catch((error) => {
+      this.dictionary.delete(prefix)
+      throw error
+    })
+    return future
   }
 
   async checkKey (key: string): Promise<boolean> {
-    const hash = await sha1(key)
-    return (await this.getSuffixesByPrefix(cutHashToPrefix(hash))).includes(cutHashToSuffix(hash))
+    const hash = await this.sha1(key)
+    const prefix = hash.slice(0, this.PREFIX_LENGTH)
+    const suffix = hash.slice(this.PREFIX_LENGTH)
+    return (await this.getOrFetch(prefix)).includes(suffix)
   }
 }
