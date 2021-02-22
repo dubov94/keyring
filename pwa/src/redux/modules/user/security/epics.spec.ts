@@ -33,7 +33,7 @@ import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
 import { showToast } from '../../ui/toast/actions'
 import { creationSignal, deletionSignal, emplace, updationSignal } from '../keys/actions'
 import { asapScheduler } from 'rxjs'
-import { HaveIBeenPwnedService, PwnedService, PWNED_SERVICE_TOKEN } from '@/pwned_service'
+import { PwnedService, PWNED_SERVICE_TOKEN } from '@/pwned_service'
 
 describe('fetchRecentSessionsEpic', () => {
   it('emits fetching sequence', async () => {
@@ -230,7 +230,7 @@ describe('exposedUserKeyIdsSearchEpic', () => {
       { identifier: '1', value: 'y', tags: [] }
     ]))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
-    const mockPwnedService = mock(HaveIBeenPwnedService)
+    const mockPwnedService = mock<PwnedService>()
     when(mockPwnedService.checkKey('x')).thenResolve(true)
     when(mockPwnedService.checkKey('y')).thenResolve(false)
     container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
@@ -251,7 +251,7 @@ describe('exposedUserKeyIdsSearchEpic', () => {
   it('reruns on creation', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
-    const mockPwnedService = mock(HaveIBeenPwnedService)
+    const mockPwnedService = mock<PwnedService>()
     when(mockPwnedService.checkKey('value')).thenResolve(true)
     container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
       useValue: instance(mockPwnedService)
@@ -291,7 +291,7 @@ describe('exposedUserKeyIdsSearchEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     store.dispatch(emplace([{ identifier: 'identifier', value: 'secure', tags: [] }]))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
-    const mockPwnedService = mock(HaveIBeenPwnedService)
+    const mockPwnedService = mock<PwnedService>()
     when(mockPwnedService.checkKey('secure')).thenResolve(false)
     when(mockPwnedService.checkKey('simple')).thenResolve(true)
     container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
@@ -332,7 +332,7 @@ describe('exposedUserKeyIdsSearchEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     store.dispatch(emplace([{ identifier: 'identifier', value: 'simple', tags: [] }]))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
-    const mockPwnedService = mock(HaveIBeenPwnedService)
+    const mockPwnedService = mock<PwnedService>()
     when(mockPwnedService.checkKey('simple')).thenResolve(true)
     container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
       useValue: instance(mockPwnedService)
