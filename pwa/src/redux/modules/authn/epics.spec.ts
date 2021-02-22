@@ -1,6 +1,6 @@
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { EpicTracker, setUpEpicChannels } from '@/redux/testing'
+import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import { SodiumClient } from '@/sodium_client'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { deepEqual, instance, mock, when } from 'ts-mockito'
@@ -83,7 +83,7 @@ describe('registrationEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       registrationSignal(indicator(RegistrationFlowIndicator.GENERATING_PARAMETRIZATION)),
       registrationSignal(indicator(RegistrationFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
       registrationSignal(indicator(RegistrationFlowIndicator.MAKING_REQUEST)),
@@ -105,7 +105,7 @@ describe('registrationEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       registrationSignal(cancel())
     ])
   })
@@ -121,7 +121,7 @@ describe('displayRegistrationExceptionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
     ])
   })
@@ -182,7 +182,7 @@ describe('logInViaApiEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       authnViaApiSignal(indicator(AuthnViaApiFlowIndicator.RETRIEVING_PARAMETRIZATION)),
       authnViaApiSignal(indicator(AuthnViaApiFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
       authnViaApiSignal(indicator(AuthnViaApiFlowIndicator.MAKING_REQUEST)),
@@ -242,7 +242,7 @@ describe('logInViaApiEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       authnViaApiSignal(indicator(AuthnViaApiFlowIndicator.RETRIEVING_PARAMETRIZATION)),
       authnViaApiSignal(indicator(AuthnViaApiFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
       authnViaApiSignal(indicator(AuthnViaApiFlowIndicator.MAKING_REQUEST)),
@@ -268,7 +268,7 @@ describe('logInViaApiEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       authnViaApiSignal(cancel())
     ])
   })
@@ -284,7 +284,7 @@ describe('displayAuthnViaApiExceptionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
     ])
   })
@@ -323,7 +323,7 @@ describe('logInViaDepotEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
       authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.DECRYPTING_DATA)),
       authnViaDepotSignal(success({
@@ -353,7 +353,7 @@ describe('logInViaDepotEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       authnViaDepotSignal(failure(AuthnViaDepotFlowError.INVALID_CREDENTIALS))
     ])
   })
@@ -384,7 +384,7 @@ describe('logInViaDepotEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
       authnViaDepotSignal(failure(AuthnViaDepotFlowError.INVALID_CREDENTIALS))
     ])
@@ -399,7 +399,7 @@ describe('logInViaDepotEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       authnViaDepotSignal(cancel())
     ])
   })
@@ -415,7 +415,7 @@ describe('displayAuthnViaDepotExceptionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
     ])
   })
@@ -431,7 +431,7 @@ describe('remoteCredentialsMismatchLocalEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       remoteCredentialsMismatchLocal()
     ])
   })

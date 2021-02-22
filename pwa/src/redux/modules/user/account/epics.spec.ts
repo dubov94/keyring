@@ -1,7 +1,7 @@
 import { cancel, exception, indicator, success } from '@/redux/flow_signal'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { EpicTracker, setUpEpicChannels } from '@/redux/testing'
+import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { expect } from 'chai'
 import { deepEqual, instance, mock, when } from 'ts-mockito'
@@ -90,7 +90,7 @@ describe('releaseMailTokenEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       mailTokenReleaseSignal(indicator(MailTokenReleaseFlowIndicator.WORKING)),
       mailTokenReleaseSignal(success({}))
     ])
@@ -105,7 +105,7 @@ describe('releaseMailTokenEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       mailTokenReleaseSignal(cancel())
     ])
   })
@@ -121,7 +121,7 @@ describe('displayMailTokenReleaseExceptionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
     ])
   })
@@ -164,7 +164,7 @@ describe('acquireMailTokenEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       mailTokenAcquisitionSignal(indicator(MailTokenAcquisitionFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
       mailTokenAcquisitionSignal(indicator(MailTokenAcquisitionFlowIndicator.MAKING_REQUEST)),
       mailTokenAcquisitionSignal(success('mail@example.com'))
@@ -180,7 +180,7 @@ describe('acquireMailTokenEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       mailTokenAcquisitionSignal(cancel())
     ])
   })
@@ -196,7 +196,7 @@ describe('displayMailTokenAcquisitionExceptionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
     ])
   })
@@ -239,7 +239,7 @@ describe('changeUsernameEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       usernameChangeSignal(indicator(UsernameChangeFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
       usernameChangeSignal(indicator(UsernameChangeFlowIndicator.MAKING_REQUEST)),
       usernameChangeSignal(success({
@@ -258,7 +258,7 @@ describe('changeUsernameEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       usernameChangeSignal(cancel())
     ])
   })
@@ -274,7 +274,7 @@ describe('displayUsernameChangeExceptionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
     ])
   })
@@ -316,7 +316,7 @@ describe('deleteAccountEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       accountDeletionSignal(indicator(AccountDeletionFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
       accountDeletionSignal(indicator(AccountDeletionFlowIndicator.MAKING_REQUEST)),
       accountDeletionSignal(success({}))
@@ -332,7 +332,7 @@ describe('deleteAccountEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       accountDeletionSignal(cancel())
     ])
   })
@@ -348,7 +348,7 @@ describe('displayAccountDeletionExceptionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
     ])
   })
@@ -364,7 +364,7 @@ describe('logOutOnDeletionSuccessEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([logOut()])
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([logOut()])
   })
 })
 
@@ -378,7 +378,7 @@ describe('logOutOnCredentialsMismatchEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([logOut()])
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([logOut()])
   })
 })
 
@@ -450,7 +450,7 @@ describe('changeMasterKeyEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING)),
       masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST)),
       masterKeyChangeSignal(success({
@@ -511,7 +511,7 @@ describe('changeMasterKeyEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING)),
       masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST)),
       masterKeyChangeSignal(success({
@@ -532,7 +532,7 @@ describe('changeMasterKeyEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       masterKeyChangeSignal(cancel())
     ])
   })
@@ -548,7 +548,7 @@ describe('displayMasterKeyChangeExceptionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
     ])
   })

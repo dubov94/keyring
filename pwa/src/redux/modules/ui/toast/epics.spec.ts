@@ -1,6 +1,6 @@
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { EpicTracker, setUpEpicChannels } from '@/redux/testing'
+import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { expect } from 'chai'
 import { instance, mock, verify, when } from 'ts-mockito'
@@ -29,7 +29,7 @@ describe('showToastEpic', () => {
     await epicTracker.waitForCompletion()
 
     verify(mockVueConstructor.nextTick()).once()
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       hideToast(),
       toastReadyToBeShown({
         message: 'message',

@@ -1,7 +1,7 @@
 import { exception, FlowError, indicator, StandardError, success } from '@/redux/flow_signal'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { EpicTracker, setUpEpicChannels } from '@/redux/testing'
+import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import { SodiumClient } from '@/sodium_client'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { expect } from 'chai'
@@ -87,7 +87,7 @@ describe('creationEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       creationSignal(indicator(OperationIndicator.WORKING)),
       creationSignal(success({
         identifier: 'identifier',
@@ -145,7 +145,7 @@ describe('updationEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       updationSignal(indicator(OperationIndicator.WORKING)),
       updationSignal(success({
         identifier: 'identifier',
@@ -180,7 +180,7 @@ describe('deletionEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       deletionSignal(indicator(OperationIndicator.WORKING)),
       deletionSignal(success('identifier'))
     ])
@@ -202,7 +202,7 @@ describe('displayExceptionsEpic', () => {
       actionSubject.complete()
       await epicTracker.waitForCompletion()
 
-      expect(epicTracker.getActions()).to.deep.equal([showToast({ message })])
+      expect(await drainEpicActions(epicTracker)).to.deep.equal([showToast({ message })])
     })
   })
 })
@@ -248,7 +248,7 @@ describe('inheritKeysFromAuthnDataEpic', () => {
       actionSubject.complete()
       await epicTracker.waitForCompletion()
 
-      expect(epicTracker.getActions()).to.deep.equal([
+      expect(await drainEpicActions(epicTracker)).to.deep.equal([
         emplace(userKeys)
       ])
     })

@@ -7,7 +7,7 @@ import { activateDepotEpic, changeMasterKeyEpic, updateVaultEpic } from './epics
 import { activateDepot, depotActivationData, newVault } from './actions'
 import { RootAction } from '@/redux/root_action'
 import { expect } from 'chai'
-import { EpicTracker, setUpEpicChannels } from '@/redux/testing'
+import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { masterKeyChangeSignal } from '../user/account/actions'
@@ -48,7 +48,7 @@ describe('updateVaultEpic', () => {
       actionSubject.complete()
       await epicTracker.waitForCompletion()
 
-      expect(epicTracker.getActions()).to.deep.equal([newVault('vault')])
+      expect(await drainEpicActions(epicTracker)).to.deep.equal([newVault('vault')])
     })
   })
 })
@@ -74,7 +74,7 @@ describe('activateDepotEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([depotActivationData({
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([depotActivationData({
       username: 'username',
       salt: 'parametrization',
       hash: 'authDigest',
@@ -104,7 +104,7 @@ describe('changeMasterKeyEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([activateDepot({
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([activateDepot({
       username: 'username',
       password: 'newMasterKey'
     })])

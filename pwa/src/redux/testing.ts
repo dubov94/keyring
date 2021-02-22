@@ -3,6 +3,7 @@ import { ActionsObservable, StateObservable } from 'redux-observable'
 import { Observable, Subject } from 'rxjs'
 import { RootAction } from './root_action'
 import { RootState } from './root_reducer'
+import last from 'lodash/last'
 
 export const setUpEpicChannels = (store: Store<RootState, RootAction>) => {
   const actionSubject = new Subject<RootAction>()
@@ -20,43 +21,68 @@ export const setUpEpicChannels = (store: Store<RootState, RootAction>) => {
   }
 }
 
-export class EpicTracker {
-  private output: RootAction[] = []
-  private completion: Promise<void>
+type Resolver<T> = (value: T | PromiseLike<T>) => void
 
-  constructor (epic: Observable<RootAction>, subscriber: null | ((action: RootAction) => void) = null) {
-    let resolvePromise: (value: void | PromiseLike<void>) => void
-    let rejectPromise: (reason: any) => void
-    this.completion = new Promise((resolve, reject) => {
-      resolvePromise = resolve
-      rejectPromise = reject
-    })
-    epic.subscribe({
-      next: (action) => {
-        if (subscriber !== null) {
-          subscriber(action)
-        }
-        this.output.push(action)
-      },
-      error: (err) => { rejectPromise(err) },
-      complete: () => { resolvePromise() }
-    })
-  }
+type Rejecter = (reason?: any) => void
 
-  waitForCompletion (): Promise<void> {
-    return this.completion
-  }
+interface Future<T> {
+  resolve: Resolver<T>;
+  reject: Rejecter;
+  future: Promise<T>;
+}
 
-  getActions (): RootAction[] {
-    return this.output
+const newFuture = <T>(): Future<T> => {
+  let resolvePromise: Resolver<T>
+  let rejectPromise: Rejecter
+  const future = new Promise<T>((resolve, reject) => {
+    resolvePromise = resolve
+    rejectPromise = reject
+  })
+  return {
+    resolve: resolvePromise!,
+    reject: rejectPromise!,
+    future
   }
 }
 
-export const epicReactionSequence = (reactions: ((action: RootAction) => void)[]) => {
-  let index = 0
-  return (action: RootAction) => {
-    reactions[index++](action)
+export class EpicTracker {
+  private emissions: Future<RootAction>[] = []
+  private index: number
+  private completion: Future<void>
+
+  constructor (epic: Observable<RootAction>) {
+    this.completion = newFuture()
+    this.emissions.push(newFuture())
+    this.index = 0
+    epic.subscribe({
+      next: (action) => {
+        last(this.emissions)!.resolve(action)
+        this.emissions.push(newFuture())
+      },
+      error: (err) => { this.completion.reject(err) },
+      complete: () => { this.completion.resolve() }
+    })
   }
+
+  getTailLength (): number {
+    return this.emissions.length - this.index - 1
+  }
+
+  nextEmission (): Promise<RootAction> {
+    return this.emissions[this.index++].future
+  }
+
+  waitForCompletion (): Promise<void> {
+    return this.completion.future
+  }
+}
+
+export const drainEpicActions = async (tracker: EpicTracker) => {
+  const actions = []
+  while (tracker.getTailLength() > 0) {
+    actions.push(await tracker.nextEmission())
+  }
+  return actions
 }
 
 export const reduce = <S, A extends AnyAction>(reducer: Reducer<S>, initialState: S | undefined, actions: A[]): S => {

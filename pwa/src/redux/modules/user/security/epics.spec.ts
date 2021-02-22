@@ -1,7 +1,7 @@
 import { cancel, exception, indicator, success } from '@/redux/flow_signal'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { EpicTracker, epicReactionSequence, setUpEpicChannels } from '@/redux/testing'
+import { EpicTracker, setUpEpicChannels, drainEpicActions } from '@/redux/testing'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { expect } from 'chai'
 import { deepEqual, instance, mock, when } from 'ts-mockito'
@@ -64,7 +64,7 @@ describe('fetchRecentSessionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       recentSessionsRetrievalSignal(indicator(RecentSessionsRetrievalFlowIndicator.WORKING)),
       recentSessionsRetrievalSignal(success([{
         creationTimeInMillis: 0,
@@ -86,7 +86,7 @@ describe('displayRecentSessionsRetrivalExceptionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
     ])
   })
@@ -107,7 +107,7 @@ describe('duplicateGroupsSearchEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       duplicateGroupsSearchSignal(success([['0', '1']]))
     ])
   })
@@ -116,31 +116,20 @@ describe('duplicateGroupsSearchEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     store.dispatch(emplace([{ identifier: '0', value: 'value', tags: [] }]))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const creationSuccess = creationSignal(success({
+      identifier: '1',
+      value: 'value',
+      tags: []
+    }))
 
-    const epicTracker = new EpicTracker(
-      duplicateGroupsSearchEpic(action$, state$, {}),
-      epicReactionSequence([
-        () => {
-          asapScheduler.schedule(() => {
-            const creationSuccess = creationSignal(success({
-              identifier: '1',
-              value: 'value',
-              tags: []
-            }))
-            store.dispatch(creationSuccess)
-            actionSubject.next(creationSuccess)
-          })
-        },
-        () => { actionSubject.complete() }
-      ])
-    )
+    const epicTracker = new EpicTracker(duplicateGroupsSearchEpic(action$, state$, {}))
     actionSubject.next(enableAnalysis())
-    await epicTracker.waitForCompletion()
-
-    expect(epicTracker.getActions()).to.deep.equal([
-      duplicateGroupsSearchSignal(success([])),
-      duplicateGroupsSearchSignal(success([['1', '0']]))
-    ])
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      duplicateGroupsSearchSignal(success([])))
+    store.dispatch(creationSuccess)
+    actionSubject.next(creationSuccess)
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      duplicateGroupsSearchSignal(success([['1', '0']])))
   })
 
   it('reruns on updation', async () => {
@@ -150,31 +139,20 @@ describe('duplicateGroupsSearchEpic', () => {
       { identifier: '1', value: 'random', tags: [] }
     ]))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const updationSuccess = updationSignal(success({
+      identifier: '1',
+      value: 'value',
+      tags: []
+    }))
 
-    const epicTracker = new EpicTracker(
-      duplicateGroupsSearchEpic(action$, state$, {}),
-      epicReactionSequence([
-        () => {
-          asapScheduler.schedule(() => {
-            const updationSuccess = updationSignal(success({
-              identifier: '1',
-              value: 'value',
-              tags: []
-            }))
-            store.dispatch(updationSuccess)
-            actionSubject.next(updationSuccess)
-          })
-        },
-        () => { actionSubject.complete() }
-      ])
-    )
+    const epicTracker = new EpicTracker(duplicateGroupsSearchEpic(action$, state$, {}))
     actionSubject.next(enableAnalysis())
-    await epicTracker.waitForCompletion()
-
-    expect(epicTracker.getActions()).to.deep.equal([
-      duplicateGroupsSearchSignal(success([])),
-      duplicateGroupsSearchSignal(success([['1', '0']]))
-    ])
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      duplicateGroupsSearchSignal(success([])))
+    store.dispatch(updationSuccess)
+    actionSubject.next(updationSuccess)
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      duplicateGroupsSearchSignal(success([['1', '0']])))
   })
 
   it('reruns on deletion', async () => {
@@ -184,27 +162,16 @@ describe('duplicateGroupsSearchEpic', () => {
       { identifier: '1', value: 'value', tags: ['b'] }
     ]))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const deletionSuccess = deletionSignal(success('1'))
 
-    const epicTracker = new EpicTracker(
-      duplicateGroupsSearchEpic(action$, state$, {}),
-      epicReactionSequence([
-        () => {
-          asapScheduler.schedule(() => {
-            const deletionSuccess = deletionSignal(success('1'))
-            store.dispatch(deletionSuccess)
-            actionSubject.next(deletionSuccess)
-          })
-        },
-        () => { actionSubject.complete() }
-      ])
-    )
+    const epicTracker = new EpicTracker(duplicateGroupsSearchEpic(action$, state$, {}))
     actionSubject.next(enableAnalysis())
-    await epicTracker.waitForCompletion()
-
-    expect(epicTracker.getActions()).to.deep.equal([
-      duplicateGroupsSearchSignal(success([['0', '1']])),
-      duplicateGroupsSearchSignal(success([]))
-    ])
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      duplicateGroupsSearchSignal(success([['0', '1']])))
+    store.dispatch(deletionSuccess)
+    actionSubject.next(deletionSuccess)
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      duplicateGroupsSearchSignal(success([])))
   })
 
   it('emits search cancellation', async () => {
@@ -216,7 +183,7 @@ describe('duplicateGroupsSearchEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       duplicateGroupsSearchSignal(cancel())
     ])
   })
@@ -242,7 +209,7 @@ describe('exposedUserKeyIdsSearchEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)),
       exposedUserKeyIdsSearchSignal(success(['0']))
     ])
@@ -256,35 +223,24 @@ describe('exposedUserKeyIdsSearchEpic', () => {
     container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
       useValue: instance(mockPwnedService)
     })
+    const creationSuccess = creationSignal(success({
+      identifier: 'identifier',
+      value: 'value',
+      tags: []
+    }))
 
-    const epicTracker = new EpicTracker(
-      exposedUserKeyIdsSearchEpic(action$, state$, {}),
-      epicReactionSequence([
-        () => {},
-        () => {
-          asapScheduler.schedule(() => {
-            const creationSuccess = creationSignal(success({
-              identifier: 'identifier',
-              value: 'value',
-              tags: []
-            }))
-            store.dispatch(creationSuccess)
-            actionSubject.next(creationSuccess)
-          })
-        },
-        () => {},
-        () => { actionSubject.complete() }
-      ])
-    )
+    const epicTracker = new EpicTracker(exposedUserKeyIdsSearchEpic(action$, state$, {}))
     actionSubject.next(enableAnalysis())
-    await epicTracker.waitForCompletion()
-
-    expect(epicTracker.getActions()).to.deep.equal([
-      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)),
-      exposedUserKeyIdsSearchSignal(success([])),
-      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)),
-      exposedUserKeyIdsSearchSignal(success(['identifier']))
-    ])
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)))
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(success([])))
+    store.dispatch(creationSuccess)
+    actionSubject.next(creationSuccess)
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)))
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(success(['identifier'])))
   })
 
   it('reruns on updation', async () => {
@@ -297,35 +253,24 @@ describe('exposedUserKeyIdsSearchEpic', () => {
     container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
       useValue: instance(mockPwnedService)
     })
+    const updationSuccess = updationSignal(success({
+      identifier: 'identifier',
+      value: 'simple',
+      tags: []
+    }))
 
-    const epicTracker = new EpicTracker(
-      exposedUserKeyIdsSearchEpic(action$, state$, {}),
-      epicReactionSequence([
-        () => {},
-        () => {
-          asapScheduler.schedule(() => {
-            const updationSuccess = updationSignal(success({
-              identifier: 'identifier',
-              value: 'simple',
-              tags: []
-            }))
-            store.dispatch(updationSuccess)
-            actionSubject.next(updationSuccess)
-          })
-        },
-        () => {},
-        () => { actionSubject.complete() }
-      ])
-    )
+    const epicTracker = new EpicTracker(exposedUserKeyIdsSearchEpic(action$, state$, {}))
     actionSubject.next(enableAnalysis())
-    await epicTracker.waitForCompletion()
-
-    expect(epicTracker.getActions()).to.deep.equal([
-      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)),
-      exposedUserKeyIdsSearchSignal(success([])),
-      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)),
-      exposedUserKeyIdsSearchSignal(success(['identifier']))
-    ])
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)))
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(success([])))
+    store.dispatch(updationSuccess)
+    actionSubject.next(updationSuccess)
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)))
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(success(['identifier'])))
   })
 
   it('reruns on deletion', async () => {
@@ -337,31 +282,20 @@ describe('exposedUserKeyIdsSearchEpic', () => {
     container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
       useValue: instance(mockPwnedService)
     })
+    const deletionSuccess = deletionSignal(success('identifier'))
 
-    const epicTracker = new EpicTracker(
-      exposedUserKeyIdsSearchEpic(action$, state$, {}),
-      epicReactionSequence([
-        () => {},
-        () => {
-          asapScheduler.schedule(() => {
-            const deletionSuccess = deletionSignal(success('identifier'))
-            store.dispatch(deletionSuccess)
-            actionSubject.next(deletionSuccess)
-          })
-        },
-        () => {},
-        () => { actionSubject.complete() }
-      ])
-    )
+    const epicTracker = new EpicTracker(exposedUserKeyIdsSearchEpic(action$, state$, {}))
     actionSubject.next(enableAnalysis())
-    await epicTracker.waitForCompletion()
-
-    expect(epicTracker.getActions()).to.deep.equal([
-      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)),
-      exposedUserKeyIdsSearchSignal(success(['identifier'])),
-      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)),
-      exposedUserKeyIdsSearchSignal(success([]))
-    ])
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)))
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(success(['identifier'])))
+    store.dispatch(deletionSuccess)
+    actionSubject.next(deletionSuccess)
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING)))
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      exposedUserKeyIdsSearchSignal(success([])))
   })
 
   it('emits search cancellation', async () => {
@@ -373,7 +307,7 @@ describe('exposedUserKeyIdsSearchEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       exposedUserKeyIdsSearchSignal(cancel())
     ])
   })
@@ -389,7 +323,7 @@ describe('displayExposedUserKeyIdsSearchExceptionsEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(epicTracker.getActions()).to.deep.equal([
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
     ])
   })
