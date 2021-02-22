@@ -14,13 +14,16 @@ import {
   OperationIndicator,
   update,
   updationSignal,
-  emplace
+  emplace,
+  userKeysUpdate
 } from './actions'
 import { ServiceCreateKeyResponse } from '@/api/definitions'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
 import { authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal } from '../../authn/actions'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
+import { disjunction } from '@/redux/predicates'
+import { monoid } from 'fp-ts'
 
 export const creationEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf(create)),
@@ -100,9 +103,15 @@ export const deletionEpic: Epic<RootAction, RootAction, RootState> = (action$, s
   ))
 )
 
-export const displayExceptionsEpic = createDisplayExceptionsEpic([creationSignal, updationSignal, deletionSignal])
+export const displayCudExceptionsEpic = createDisplayExceptionsEpic([creationSignal, updationSignal, deletionSignal])
 
 export const inheritKeysFromAuthnDataEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionSuccess3([authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal])),
   concatMap((action) => of(emplace(action.payload.data.userKeys)))
+)
+
+export const userKeysUpdateEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(monoid.fold(disjunction)([isActionOf(emplace), isActionSuccess3([creationSignal, updationSignal, deletionSignal])])),
+  withLatestFrom(state$),
+  concatMap(([, state]) => of(userKeysUpdate(state.user.keys.userKeys)))
 )

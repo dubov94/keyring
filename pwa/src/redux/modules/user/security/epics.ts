@@ -23,7 +23,7 @@ import {
   ServiceGetRecentSessionsResponse
 } from '@/api/definitions'
 import { Session, Key } from '@/redux/entities'
-import { creationSignal, deletionSignal, updationSignal } from '../keys/actions'
+import { userKeysUpdate } from '../keys/actions'
 import { PwnedService, PWNED_SERVICE_TOKEN } from '@/pwned_service'
 import { container } from 'tsyringe'
 import { function as fn, array, option } from 'fp-ts'
@@ -89,7 +89,7 @@ export const duplicateGroupsSearchEpic: Epic<RootAction, RootAction, RootState> 
       return concat(
         toSignal(getDuplicateGroups(state$.value.user.keys.userKeys)),
         action$.pipe(
-          filter(isActionSuccess3([creationSignal, updationSignal, deletionSignal])),
+          filter(isActionOf(userKeysUpdate)),
           withLatestFrom(state$),
           switchMap(([, state]) => toSignal(getDuplicateGroups(state.user.keys.userKeys)))
         )
@@ -124,7 +124,7 @@ export const exposedUserKeyIdsSearchEpic: Epic<RootAction, RootAction, RootState
       return concat(
         request(state$.value.user.keys.userKeys),
         action$.pipe(
-          filter(isActionSuccess3([creationSignal, updationSignal, deletionSignal])),
+          filter(isActionOf(userKeysUpdate)),
           withLatestFrom(state$),
           switchMap(([, state]) => request(state.user.keys.userKeys))
         )

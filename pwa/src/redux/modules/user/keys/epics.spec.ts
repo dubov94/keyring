@@ -21,14 +21,16 @@ import {
   emplace,
   OperationIndicator,
   update,
-  updationSignal
+  updationSignal,
+  userKeysUpdate
 } from './actions'
 import {
   creationEpic,
   deletionEpic,
-  displayExceptionsEpic,
+  displayCudExceptionsEpic,
   inheritKeysFromAuthnDataEpic,
-  updationEpic
+  updationEpic,
+  userKeysUpdateEpic
 } from './epics'
 import {
   AdministrationApi,
@@ -187,7 +189,7 @@ describe('deletionEpic', () => {
   })
 })
 
-describe('displayExceptionsEpic', () => {
+describe('displayCudExceptionsEpic', () => {
   ;(<[PayloadAction<any, FlowError<StandardError<unknown>>>, string][]>[
     [creationSignal(exception('creation')), 'creation'],
     [updationSignal(exception('updation')), 'updation'],
@@ -197,7 +199,7 @@ describe('displayExceptionsEpic', () => {
       const store: Store<RootState, RootAction> = createStore(reducer)
       const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-      const epicTracker = new EpicTracker(displayExceptionsEpic(action$, state$, {}))
+      const epicTracker = new EpicTracker(displayCudExceptionsEpic(action$, state$, {}))
       actionSubject.next(trigger)
       actionSubject.complete()
       await epicTracker.waitForCompletion()
@@ -251,6 +253,33 @@ describe('inheritKeysFromAuthnDataEpic', () => {
       expect(await drainEpicActions(epicTracker)).to.deep.equal([
         emplace(userKeys)
       ])
+    })
+  })
+})
+
+describe('userKeysUpdateEpic', () => {
+  ;[
+    emplace([{ identifier: '0', value: 'value', tags: [] }]),
+    creationSignal(success({ identifier: '0', value: 'value', tags: [] })),
+    updationSignal(success({ identifier: '0', value: 'value', tags: [] })),
+    deletionSignal(success('2'))
+  ].forEach((trigger) => {
+    it(`emits an update on ${trigger.type}`, async () => {
+      const userKeys: Key[] = [{
+        identifier: '0',
+        value: 'value',
+        tags: []
+      }]
+      const store: Store<RootState, RootAction> = createStore(reducer)
+      store.dispatch(emplace(userKeys))
+      const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+      const epicTracker = new EpicTracker(userKeysUpdateEpic(action$, state$, {}))
+      actionSubject.next(trigger)
+      actionSubject.complete()
+      await epicTracker.waitForCompletion()
+
+      expect(await drainEpicActions(epicTracker)).to.deep.equal([userKeysUpdate(userKeys)])
     })
   })
 })

@@ -1,6 +1,6 @@
 import { Key } from '@/redux/entities'
 import { container } from 'tsyringe'
-import { creationSignal, deletionSignal, emplace, updationSignal } from '../user/keys/actions'
+import { emplace, userKeysUpdate } from '../user/keys/actions'
 import { mock, instance, when } from 'ts-mockito'
 import { SodiumClient } from '@/sodium_client'
 import { activateDepotEpic, changeMasterKeyEpic, updateVaultEpic } from './epics'
@@ -16,10 +16,7 @@ import { success } from '@/redux/flow_signal'
 describe('updateVaultEpic', () => {
   ;[
     depotActivationData({ username: 'username', salt: 'salt', hash: 'hash', vaultKey: 'vaultKey' }),
-    emplace([{ identifier: '0', value: 'value', tags: [] }]),
-    creationSignal(success({ identifier: '0', value: 'value', tags: [] })),
-    updationSignal(success({ identifier: '0', value: 'value', tags: [] })),
-    deletionSignal(success('2'))
+    userKeysUpdate([{ identifier: '0', value: 'value', tags: [] }])
   ].forEach((trigger) => {
     it(`emits a new vault on ${trigger.type}`, async () => {
       const userKeys: Key[] = [{
@@ -44,7 +41,7 @@ describe('updateVaultEpic', () => {
       })
 
       const epicTracker = new EpicTracker(updateVaultEpic(action$, state$, {}))
-      actionSubject.next(emplace(userKeys))
+      actionSubject.next(trigger)
       actionSubject.complete()
       await epicTracker.waitForCompletion()
 
