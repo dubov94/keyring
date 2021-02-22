@@ -24,7 +24,7 @@ export class EpicTracker {
   private output: RootAction[] = []
   private completion: Promise<void>
 
-  constructor (epic: Observable<RootAction>) {
+  constructor (epic: Observable<RootAction>, subscriber: null | ((action: RootAction) => void) = null) {
     let resolvePromise: (value: void | PromiseLike<void>) => void
     let rejectPromise: (reason: any) => void
     this.completion = new Promise((resolve, reject) => {
@@ -32,7 +32,12 @@ export class EpicTracker {
       rejectPromise = reject
     })
     epic.subscribe({
-      next: (action) => { this.output.push(action) },
+      next: (action) => {
+        if (subscriber !== null) {
+          subscriber(action)
+        }
+        this.output.push(action)
+      },
       error: (err) => { rejectPromise(err) },
       complete: () => { resolvePromise() }
     })
@@ -44,6 +49,13 @@ export class EpicTracker {
 
   getActions (): RootAction[] {
     return this.output
+  }
+}
+
+export const epicReactionSequence = (reactions: ((action: RootAction) => void)[]) => {
+  let index = 0
+  return (action: RootAction) => {
+    reactions[index++](action)
   }
 }
 
