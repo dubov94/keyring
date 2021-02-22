@@ -1,6 +1,6 @@
 import { getAdministrationApi } from '@/api/api_di'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { cancel, exception, indicator, isActionSuccess3, stringify, success } from '@/redux/flow_signal'
+import { cancel, exception, indicator, stringify, success } from '@/redux/flow_signal'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
 import { Epic } from 'redux-observable'
