@@ -40,7 +40,8 @@ describe('ChangeMail', () => {
     const password = wrapper.find('[aria-label="Password"]')
     await password.setValue('password')
     await password.trigger('input')
-    await wrapper.findAll('button').at(0).trigger('click')
+    await wrapper.findAll('button').filter(
+      (button) => button.text() === 'Next').trigger('click')
     expect(await actionQueue.dequeue()).to.deep.equal(
       acquireMailToken({
         mail: 'mail@example.com',
@@ -52,7 +53,8 @@ describe('ChangeMail', () => {
     const code = wrapper.find('[aria-label="Code"]')
     await code.setValue('123456')
     await code.trigger('input')
-    await wrapper.findAll('button').at(1).trigger('click')
+    await wrapper.findAll('button').filter(
+      (button) => button.text() === 'Submit').trigger('click')
     expect(await actionQueue.dequeue()).to.deep.equal(
       releaseMailToken({ code: '123456' })
     )
