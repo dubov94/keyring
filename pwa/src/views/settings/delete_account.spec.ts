@@ -1,38 +1,38 @@
 import { mount } from '@vue/test-utils'
 import DeleteAccount from './DeleteAccount.vue'
-import { DeepReadonly } from 'ts-essentials'
-import { zero } from '@/redux/remote_data'
-import { AccountDeletion } from '@/redux/modules/user/account/selectors'
-import { defaultLocalVue, defaultMocks } from '@/components/testing'
+import { ActionQueue, setUpLocalVue, setUpStandardMocks } from '@/components/testing'
 import { deleteAccount } from '@/redux/modules/user/account/actions'
 import { expect } from 'chai'
 import { RootAction } from '@/redux/root_action'
+import { createStore, Store } from '@reduxjs/toolkit'
+import { reducer, RootState } from '@/redux/root_reducer'
+import { registrationSignal } from '@/redux/modules/authn/actions'
+import { success } from '@/redux/flow_signal'
 
 describe('DeleteAccount', () => {
-  it('dispatches `deleteAccount`', async () => {
-    const localVue = defaultLocalVue()
-    const actionSink: RootAction[] = []
-    const { $t, dispatch } = defaultMocks(actionSink)
+  it('dispatches account deletion sequence', async () => {
+    const localVue = setUpLocalVue()
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(registrationSignal(success({
+      username: 'username',
+      parametrization: 'parametrization',
+      encryptionKey: 'encryptionKey',
+      sessionKey: 'sessionKey'
+    })))
+    const actionQueue = new ActionQueue()
+    const { $t, dispatch } = setUpStandardMocks(actionQueue)
     const wrapper = mount(DeleteAccount, {
       localVue,
-      mocks: { $t, dispatch },
-      computed: {
-        canAccessApi (): boolean {
-          return true
-        },
-        accountDeletion (): DeepReadonly<AccountDeletion> {
-          return zero()
-        }
-      }
+      data: () => ({ $state: store.getState() }),
+      mocks: { $t, dispatch }
     })
 
     const password = wrapper.find('[aria-label="Password"]')
-    password.setValue('password')
+    await password.setValue('password')
     await password.trigger('input')
     await wrapper.find('button').trigger('click')
-
-    expect(actionSink).to.deep.equal([
+    expect(await actionQueue.dequeue()).to.deep.equal(
       deleteAccount({ password: 'password' })
-    ])
+    )
   })
 })

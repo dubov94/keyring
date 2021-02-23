@@ -4,6 +4,7 @@ import { Observable, Subject } from 'rxjs'
 import { RootAction } from './root_action'
 import { RootState } from './root_reducer'
 import last from 'lodash/last'
+import { Future, newFuture } from '@/future'
 
 export const setUpEpicChannels = (store: Store<RootState, RootAction>) => {
   const actionSubject = new Subject<RootAction>()
@@ -18,30 +19,6 @@ export const setUpEpicChannels = (store: Store<RootState, RootAction>) => {
     action$,
     stateSubject,
     state$
-  }
-}
-
-type Resolver<T> = (value: T | PromiseLike<T>) => void
-
-type Rejecter = (reason?: any) => void
-
-interface Future<T> {
-  resolve: Resolver<T>;
-  reject: Rejecter;
-  future: Promise<T>;
-}
-
-const newFuture = <T>(): Future<T> => {
-  let resolvePromise: Resolver<T>
-  let rejectPromise: Rejecter
-  const future = new Promise<T>((resolve, reject) => {
-    resolvePromise = resolve
-    rejectPromise = reject
-  })
-  return {
-    resolve: resolvePromise!,
-    reject: rejectPromise!,
-    future
   }
 }
 
@@ -69,11 +46,11 @@ export class EpicTracker {
   }
 
   nextEmission (): Promise<RootAction> {
-    return this.emissions[this.index++].future
+    return this.emissions[this.index++].promise
   }
 
   waitForCompletion (): Promise<void> {
-    return this.completion.future
+    return this.completion.promise
   }
 }
 
