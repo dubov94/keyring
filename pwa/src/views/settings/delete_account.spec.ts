@@ -1,7 +1,7 @@
-import { mount } from '@vue/test-utils'
+import { mount, Wrapper } from '@vue/test-utils'
 import DeleteAccount from './DeleteAccount.vue'
 import { ActionQueue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin } from '@/components/testing'
-import { deleteAccount } from '@/redux/modules/user/account/actions'
+import { accountDeletionReset, deleteAccount } from '@/redux/modules/user/account/actions'
 import { expect } from 'chai'
 import { RootAction } from '@/redux/root_action'
 import { createStore, Store } from '@reduxjs/toolkit'
@@ -11,24 +11,30 @@ import { success } from '@/redux/flow_signal'
 import { function as fn } from 'fp-ts'
 
 describe('DeleteAccount', () => {
-  it('dispatches account deletion sequence', async () => {
+  let wrapper: Wrapper<Vue>
+  let store: Store<RootState, RootAction>
+  let actionQueue: ActionQueue
+
+  beforeEach(() => {
     const localVue = setUpLocalVue()
-    const store: Store<RootState, RootAction> = createStore(reducer)
+    store = createStore(reducer)
     store.dispatch(registrationSignal(success({
       username: 'username',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey'
     })))
-    const actionQueue = new ActionQueue()
-    const wrapper = mount(DeleteAccount, {
+    actionQueue = new ActionQueue()
+    wrapper = mount(DeleteAccount, {
       localVue,
       mixins: [
         setUpTranslationMixin(fn.identity),
         setUpStateMixin(store, actionQueue)
       ]
     })
+  })
 
+  it('dispatches account deletion sequence', async () => {
     const password = wrapper.find('[aria-label="Password"]')
     await password.setValue('password')
     await password.trigger('input')
@@ -36,5 +42,10 @@ describe('DeleteAccount', () => {
     expect(await actionQueue.dequeue()).to.deep.equal(
       deleteAccount({ password: 'password' })
     )
+  })
+
+  it('dispatches account deletion reset', async () => {
+    wrapper.destroy()
+    expect(await actionQueue.dequeue()).to.deep.equal(accountDeletionReset())
   })
 })
