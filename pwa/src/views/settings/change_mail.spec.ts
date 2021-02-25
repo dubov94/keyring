@@ -1,4 +1,4 @@
-import { ActionQueue, setUpLocalVue, setUpStandardMocks, setUpStateMixin } from '@/components/testing'
+import { ActionQueue, setUpLocalVue, setUpTranslationMixin, setUpStateMixin } from '@/components/testing'
 import { success } from '@/redux/flow_signal'
 import { registrationSignal } from '@/redux/modules/authn/actions'
 import { acquireMailToken, mailTokenAcquisitionSignal, releaseMailToken } from '@/redux/modules/user/account/actions'
@@ -8,6 +8,7 @@ import { createStore, Store } from '@reduxjs/toolkit'
 import { mount } from '@vue/test-utils'
 import { expect } from 'chai'
 import { EMPTY } from 'rxjs'
+import { function as fn } from 'fp-ts'
 import ChangeMail from './ChangeMail.vue'
 
 describe('ChangeMail', () => {
@@ -21,7 +22,6 @@ describe('ChangeMail', () => {
       sessionKey: 'sessionKey'
     })))
     const actionQueue = new ActionQueue()
-    const { $t, dispatch } = setUpStandardMocks(actionQueue)
     const wrapper = mount(ChangeMail, {
       localVue,
       data () {
@@ -30,8 +30,10 @@ describe('ChangeMail', () => {
           $destruction: EMPTY
         }
       },
-      mocks: { $t, dispatch },
-      mixins: [setUpStateMixin(store)]
+      mixins: [
+        setUpTranslationMixin(fn.identity),
+        setUpStateMixin(store, actionQueue)
+      ]
     })
 
     const newMail = wrapper.find('[aria-label="New e-mail"]')

@@ -36,15 +36,18 @@ export class ActionQueue {
   }
 }
 
-export const setUpStandardMocks = (actionQueue: ActionQueue) => {
-  const $t = (key: string) => key
-  const dispatch = (action: RootAction) => {
-    actionQueue.enqueue(action)
+export const setUpTranslationMixin = (mapper: (key: string) => string): ComponentOptions<Vue> => ({
+  methods: {
+    $t (key: string): string {
+      return mapper(key)
+    }
   }
-  return { $t, dispatch }
-}
+})
 
-export const setUpStateMixin = (store: Store<RootState, RootAction>): ComponentOptions<Vue> => ({
+export const setUpStateMixin = (
+  store: Store<RootState, RootAction>,
+  actionQueue: ActionQueue
+): ComponentOptions<Vue> => ({
   data () {
     return {
       $state: store.getState()
@@ -54,5 +57,10 @@ export const setUpStateMixin = (store: Store<RootState, RootAction>): ComponentO
     store.subscribe(() => {
       ;(<Vue> this).$data.$state = store.getState()
     })
+  },
+  methods: {
+    dispatch (action: RootAction) {
+      actionQueue.enqueue(action)
+    }
   }
 })
