@@ -1,6 +1,6 @@
 import { mount, Wrapper } from '@vue/test-utils'
 import DeleteAccount from './DeleteAccount.vue'
-import { ActionQueue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin } from '@/components/testing'
+import { ActionQueue, drainActionQueue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin } from '@/components/testing'
 import { accountDeletionReset, deleteAccount } from '@/redux/modules/user/account/actions'
 import { expect } from 'chai'
 import { RootAction } from '@/redux/root_action'
@@ -39,14 +39,16 @@ describe('DeleteAccount', () => {
     await password.setValue('password')
     await wrapper.find('button').trigger('click')
 
-    expect(await actionQueue.dequeue()).to.deep.equal(
+    expect(await drainActionQueue(actionQueue)).to.deep.equal([
       deleteAccount({ password: 'password' })
-    )
+    ])
   })
 
   it('dispatches account deletion reset', async () => {
     wrapper.destroy()
 
-    expect(await actionQueue.dequeue()).to.deep.equal(accountDeletionReset())
+    expect(await drainActionQueue(actionQueue)).to.deep.equal([
+      accountDeletionReset()
+    ])
   })
 })

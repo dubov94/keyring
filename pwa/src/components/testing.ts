@@ -34,6 +34,18 @@ export class ActionQueue {
   dequeue (): Promise<RootAction> {
     return this.queue[this.index++].promise
   }
+
+  getTailLength (): number {
+    return this.queue.length - this.index - 1
+  }
+}
+
+export const drainActionQueue = async (actionQueue: ActionQueue) => {
+  const actions = []
+  while (actionQueue.getTailLength() > 0) {
+    actions.push(await actionQueue.dequeue())
+  }
+  return actions
 }
 
 export const setUpTranslationMixin = (mapper: (key: string) => string): ComponentOptions<Vue> => ({
