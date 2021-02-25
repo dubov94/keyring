@@ -34,7 +34,7 @@ describe('DeleteAccount', () => {
     })
   })
 
-  it('dispatches account deletion sequence', async () => {
+  it('dispatches account deletion action', async () => {
     const password = wrapper.find('[aria-label="Password"]')
     await password.setValue('password')
     await wrapper.find('button').trigger('click')
