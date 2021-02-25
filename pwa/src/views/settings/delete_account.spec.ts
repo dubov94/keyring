@@ -37,7 +37,6 @@ describe('DeleteAccount', () => {
   it('dispatches account deletion sequence', async () => {
     const password = wrapper.find('[aria-label="Password"]')
     await password.setValue('password')
-    await password.trigger('input')
     await wrapper.find('button').trigger('click')
     expect(await actionQueue.dequeue()).to.deep.equal(
       deleteAccount({ password: 'password' })
