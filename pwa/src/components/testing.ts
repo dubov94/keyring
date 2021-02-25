@@ -1,5 +1,5 @@
 import Vue, { ComponentOptions, VueConstructor } from 'vue'
-import { createLocalVue } from '@vue/test-utils'
+import { createLocalVue, Wrapper } from '@vue/test-utils'
 import Vuetify from 'vuetify'
 import Vuelidate from 'vuelidate'
 import { RootAction } from '@/redux/root_action'
@@ -76,3 +76,7 @@ export const setUpStateMixin = (
     }
   }
 })
+
+export const getValue = (wrapper: Wrapper<Vue>) => {
+  return (<HTMLInputElement>wrapper.element).value
+}
