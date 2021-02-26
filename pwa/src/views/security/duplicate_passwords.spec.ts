@@ -8,7 +8,6 @@ import { createStore, Store } from '@reduxjs/toolkit'
 import { shallowMount, Wrapper } from '@vue/test-utils'
 import DuplicatePasswords from './DuplicatePasswords.vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
-import Vuetify from 'vuetify'
 import { expect } from 'chai'
 
 describe('DuplicatePasswords', () => {
