@@ -56,6 +56,7 @@ describe('ChangeMail', () => {
     await getNewMailInput().setValue('mail@example.com')
     await getPasswordInput().setValue('password')
     await getNextButton().trigger('click')
+
     expect(await drainActionQueue(actionQueue)).to.deep.equal([
       acquireMailToken({
         mail: 'mail@example.com',
@@ -69,6 +70,7 @@ describe('ChangeMail', () => {
     await wrapper.vm.$nextTick()
     await getCodeInput().setValue('123456')
     await getSubmitButton().trigger('click')
+
     expect(await drainActionQueue(actionQueue)).to.deep.equal([
       releaseMailToken({ code: '123456' })
     ])
