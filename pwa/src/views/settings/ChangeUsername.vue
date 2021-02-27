@@ -84,7 +84,10 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.$v.$reset()
       this.dispatch(usernameChangeReset())
       this.dispatch(showToast({ message: this.$t('DONE') as string }))
-      ;(document.activeElement as HTMLInputElement).blur()
+
+      if (document.activeElement !== null) {
+        ;(document.activeElement as HTMLInputElement).blur()
+      }
     })
   },
   computed: {
