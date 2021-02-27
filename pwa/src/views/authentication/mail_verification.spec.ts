@@ -18,7 +18,7 @@ describe('MailVerification', () => {
   let $actions: Subject<RootAction>
   let router: VueRouter
 
-  beforeEach(() => {
+  beforeEach(async () => {
     const localVue = setUpLocalVue()
     localVue.use(VueRouter)
     store = createStore(reducer)
@@ -42,6 +42,8 @@ describe('MailVerification', () => {
         setUpStateMixin(store, actionQueue)
       ]
     })
+    // To wait for `mounted`.
+    await wrapper.vm.$nextTick()
   })
 
   const getVerificationCodeInput = () => wrapper.find('[aria-label="Verification code"]')
