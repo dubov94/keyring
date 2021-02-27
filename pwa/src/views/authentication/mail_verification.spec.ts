@@ -7,7 +7,7 @@ import { EMPTY, Subject } from 'rxjs'
 import VueRouter from 'vue-router'
 import MailVerification from './MailVerification.vue'
 import { function as fn } from 'fp-ts'
-import { expect, util } from 'chai'
+import { expect } from 'chai'
 import { mailTokenReleaseReset, mailTokenReleaseSignal, releaseMailToken } from '@/redux/modules/user/account/actions'
 import { success } from '@/redux/flow_signal'
 
