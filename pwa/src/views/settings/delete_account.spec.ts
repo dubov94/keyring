@@ -34,10 +34,12 @@ describe('DeleteAccount', () => {
     })
   })
 
+  const getPasswordInput = () => wrapper.find('[aria-label="Password"]')
+  const getSubmitButton = () => wrapper.find('button')
+
   it('dispatches account deletion action', async () => {
-    const password = wrapper.find('[aria-label="Password"]')
-    await password.setValue('password')
-    await wrapper.find('button').trigger('click')
+    await getPasswordInput().setValue('password')
+    await getSubmitButton().trigger('click')
 
     expect(await drainActionQueue(actionQueue)).to.deep.equal([
       deleteAccount({ password: 'password' })
