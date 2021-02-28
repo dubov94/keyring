@@ -30,8 +30,7 @@ describe('LogIn', () => {
     wrapper = mount(LogIn, {
       localVue,
       stubs: {
-        page: true,
-        'v-switch': true
+        page: true
       },
       router,
       data () {
@@ -49,7 +48,7 @@ describe('LogIn', () => {
 
   const getUsernameInput = () => wrapper.find('[aria-label="Username"]')
   const getPasswordInput = () => wrapper.find('[aria-label="Password"]')
-  const getPersistanceSwitch = () => wrapper.findComponent({ name: 'v-switch' })
+  const getPersistanceSwitch = () => wrapper.find('.switch > label')
   const getRegisterButton = () => wrapper.find('button')
 
   it('dispatches remote authentication action', async () => {
@@ -102,7 +101,7 @@ describe('LogIn', () => {
   })
 
   it('redirects and initiates depot authn on remote authn completion', async () => {
-    await getPersistanceSwitch().vm.$emit('change', true)
+    await getPersistanceSwitch().trigger('click')
     $actions.next(authnViaApiSignal(success({
       username: 'username',
       password: 'password',
