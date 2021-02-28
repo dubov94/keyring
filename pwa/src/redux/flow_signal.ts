@@ -62,11 +62,11 @@ export const failure = <E>(value: E): FlowError<StandardError<E>> => ({
   }
 })
 
-export const stringify = (object: any): string => {
-  if (object instanceof Response) {
-    return object.statusText
+export const errorToMessage = (error: any): string => {
+  if (error instanceof Response) {
+    return error.statusText
   }
-  return object.toString()
+  return error.toString()
 }
 
 export const exception = <E>(message: string): FlowError<StandardError<E>> => ({

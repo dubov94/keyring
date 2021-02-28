@@ -1,6 +1,6 @@
 import { getAdministrationApi } from '@/api/api_di'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { exception, indicator, isActionSuccess3, stringify, success } from '@/redux/flow_signal'
+import { exception, indicator, isActionSuccess3, errorToMessage, success } from '@/redux/flow_signal'
 import { getSodiumClient } from '@/sodium_client'
 import { Epic } from 'redux-observable'
 import { concat, from, of } from 'rxjs'
@@ -48,7 +48,7 @@ export const creationEpic: Epic<RootAction, RootAction, RootState> = (action$, s
       ))
     )
   ).pipe(
-    catchError((error) => of(creationSignal(exception(stringify(error)))))
+    catchError((error) => of(creationSignal(exception(errorToMessage(error)))))
   ))
 )
 
@@ -78,7 +78,7 @@ export const updationEpic: Epic<RootAction, RootAction, RootState> = (action$, s
       ))
     )
   ).pipe(
-    catchError((error) => of(updationSignal(exception(stringify(error)))))
+    catchError((error) => of(updationSignal(exception(errorToMessage(error)))))
   ))
 )
 
@@ -99,7 +99,7 @@ export const deletionEpic: Epic<RootAction, RootAction, RootState> = (action$, s
       })
     )
   ).pipe(
-    catchError((error) => of(deletionSignal(exception(stringify(error)))))
+    catchError((error) => of(deletionSignal(exception(errorToMessage(error)))))
   ))
 )
 

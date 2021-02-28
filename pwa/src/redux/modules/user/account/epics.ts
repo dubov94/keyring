@@ -1,5 +1,5 @@
 import { getAdministrationApi } from '@/api/api_di'
-import { cancel, exception, failure, indicator, isActionSuccess, stringify, success } from '@/redux/flow_signal'
+import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success } from '@/redux/flow_signal'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
 import { Epic } from 'redux-observable'
@@ -79,7 +79,7 @@ export const releaseMailTokenEpic: Epic<RootAction, RootAction, RootState> = (ac
           }
         }))
       ).pipe(
-        catchError((error) => of(mailTokenReleaseSignal(exception(stringify(error)))))
+        catchError((error) => of(mailTokenReleaseSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(mailTokenReleaseReset, action)) {
       return of(mailTokenReleaseSignal(cancel()))
@@ -118,7 +118,7 @@ export const acquireMailTokenEpic: Epic<RootAction, RootAction, RootState> = (ac
           ))
         )
       ).pipe(
-        catchError((error) => of(mailTokenAcquisitionSignal(exception(stringify(error)))))
+        catchError((error) => of(mailTokenAcquisitionSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(mailTokenAcquisitionReset, action)) {
       return of(mailTokenAcquisitionSignal(cancel()))
@@ -176,7 +176,7 @@ export const changeMasterKeyEpic: Epic<RootAction, RootAction, RootState> = (act
           ))
         )
       ).pipe(
-        catchError((error) => of(masterKeyChangeSignal(exception(stringify(error)))))
+        catchError((error) => of(masterKeyChangeSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(masterKeyChangeReset, action)) {
       return of(masterKeyChangeSignal(cancel()))
@@ -218,7 +218,7 @@ export const changeUsernameEpic: Epic<RootAction, RootAction, RootState> = (acti
           ))
         )
       ).pipe(
-        catchError((error) => of(usernameChangeSignal(exception(stringify(error)))))
+        catchError((error) => of(usernameChangeSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(usernameChangeReset, action)) {
       return of(usernameChangeSignal(cancel()))

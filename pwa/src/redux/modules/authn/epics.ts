@@ -33,7 +33,7 @@ import {
 import { getSodiumClient } from '@/sodium_client'
 import { getAuthenticationApi } from '@/api/api_di'
 import { Epic } from 'redux-observable'
-import { cancel, exception, failure, indicator, isSignalFailure, stringify, success } from '@/redux/flow_signal'
+import { cancel, exception, failure, indicator, isSignalFailure, errorToMessage, success } from '@/redux/flow_signal'
 import { Key } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
@@ -76,7 +76,7 @@ export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action
           ))
         )
       ).pipe(
-        catchError((error) => of(registrationSignal(exception(stringify(error)))))
+        catchError((error) => of(registrationSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(registrationReset, action)) {
       return of(registrationSignal(cancel()))
@@ -146,7 +146,7 @@ const apiAuthn = <T extends TypeConstant>(
       })
     )
   ).pipe(
-    catchError((error) => of(signalCreator(exception(stringify(error)))))
+    catchError((error) => of(signalCreator(exception(errorToMessage(error)))))
   )
 }
 

@@ -1,6 +1,6 @@
 import { getAdministrationApi } from '@/api/api_di'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { cancel, exception, indicator, stringify, success } from '@/redux/flow_signal'
+import { cancel, exception, indicator, errorToMessage, success } from '@/redux/flow_signal'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
 import { Epic } from 'redux-observable'
@@ -53,7 +53,7 @@ export const fetchRecentSessionsEpic: Epic<RootAction, RootAction, RootState> = 
           recentSessionsRetrievalSignal(success(response.sessions!.map(convertMessageToSession)))
         )))
       ).pipe(
-        catchError((error) => of(recentSessionsRetrievalSignal(exception(stringify(error)))))
+        catchError((error) => of(recentSessionsRetrievalSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(recentSessionsRetrievalReset, action)) {
       return of(recentSessionsRetrievalSignal(cancel()))
@@ -129,7 +129,7 @@ export const exposedUserKeyIdsSearchEpic: Epic<RootAction, RootAction, RootState
           switchMap(([, state]) => request(state.user.keys.userKeys))
         )
       ).pipe(
-        catchError((error) => of(exposedUserKeyIdsSearchSignal(exception(stringify(error)))))
+        catchError((error) => of(exposedUserKeyIdsSearchSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(disableAnalysis, action)) {
       return of(exposedUserKeyIdsSearchSignal(cancel()))
