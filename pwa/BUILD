@@ -54,11 +54,6 @@ status_vars_template(
     output = "public/metadata.json",
 )
 
-py_binary(
-    name = "service_worker_renderer",
-    srcs = ["service_worker_renderer.py"],
-)
-
 status_vars_template(
     name = "service_worker",
     template = "service_worker.tmpl.js",
