@@ -27,6 +27,8 @@ services:
     secrets:
       - geoipupdate_account_id
       - geoipupdate_license_key
+    volumes:
+      - '/root/geo_ip:/usr/share/GeoIP'
   postgres:
     image: 'postgres:10'
     environment:
