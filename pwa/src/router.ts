@@ -67,6 +67,7 @@ export const Router = new VueRouter({
     }, {
       path: '/dashboard',
       component: Dashboard,
+      props: { cardsPerPage: 12 },
       beforeEnter: authenticationGuard
     },
     {

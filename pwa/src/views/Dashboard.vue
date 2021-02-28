@@ -61,9 +61,8 @@ import { isActionSuccess } from '@/redux/flow_signal'
 import { creationSignal } from '@/redux/modules/user/keys/actions'
 import { canAccessApi } from '@/redux/modules/user/account/selectors'
 
-const CARDS_PER_PAGE = 12
-
 export default Vue.extend({
+  props: ['cardsPerPage'],
   components: {
     editor: Editor,
     page: Page,
@@ -94,7 +93,7 @@ export default Vue.extend({
     },
     pageCount (): number {
       return Math.max(Math.floor(
-        (this.matchingCards.length + CARDS_PER_PAGE - 1) / CARDS_PER_PAGE), 1)
+        (this.matchingCards.length + this.cardsPerPage - 1) / this.cardsPerPage), 1)
     },
     paginationVisibleCount (): number {
       return this.$vuetify.breakpoint.smAndUp ? 7 : 5
@@ -111,8 +110,8 @@ export default Vue.extend({
         key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
     },
     visibleCards (): DeepReadonly<Key[]> {
-      const startIndex = (this.pageNumber - 1) * CARDS_PER_PAGE
-      return this.matchingCards.slice(startIndex, startIndex + CARDS_PER_PAGE)
+      const startIndex = (this.pageNumber - 1) * this.cardsPerPage
+      return this.matchingCards.slice(startIndex, startIndex + this.cardsPerPage)
     },
     cardsCount (): number {
       return this.matchingCards.length
@@ -167,7 +166,7 @@ export default Vue.extend({
   },
   mounted () {
     if (this.userKeys.length > 0) {
-      (this.$refs.search as HTMLInputElement).focus()
+      ;(this.$refs.search as HTMLInputElement).focus()
     }
   }
 })
