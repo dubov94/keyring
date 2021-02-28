@@ -24,7 +24,7 @@ describe('MailVerification', () => {
     store = createStore(reducer)
     actionQueue = new ActionQueue()
     $actions = new Subject()
-    router = new VueRouter()
+    router = new VueRouter({ mode: 'abstract' })
     wrapper = mount(MailVerification, {
       localVue,
       stubs: {
