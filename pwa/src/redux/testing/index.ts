@@ -1,8 +1,8 @@
 import { AnyAction, Reducer, Store } from '@reduxjs/toolkit'
 import { ActionsObservable, StateObservable } from 'redux-observable'
 import { Observable, Subject } from 'rxjs'
-import { RootAction } from './root_action'
-import { RootState } from './root_reducer'
+import { RootState } from '@/redux/root_reducer'
+import { RootAction } from '@/redux/root_action'
 import last from 'lodash/last'
 import { Future, newFuture } from '@/future'
 

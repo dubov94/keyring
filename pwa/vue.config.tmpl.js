@@ -1,5 +1,3 @@
-const StableStatus = require('./stable_status.json') // eslint-disable-line @typescript-eslint/no-var-requires
-
 module.exports = {
   devServer: {
     proxy: {
@@ -31,7 +29,7 @@ module.exports = {
         const constructTemplateParameters = args[0].templateParameters
         args[0].templateParameters = (compilation, assets, pluginOptions) => {
           const parameters = constructTemplateParameters(compilation, assets, pluginOptions)
-          parameters.APP_VERSION = StableStatus.STABLE_GIT_REVISION
+          parameters.APP_VERSION = '$STABLE_GIT_REVISION'
           return parameters
         }
         return args

@@ -2,23 +2,16 @@ load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher", "vue_cli_launcher_test")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
+# `filegroup_copy` targets below ensure that all files end up under `bazel-out`.
 load("//bazel:files.bzl", "filegroup_copy")
+load("//bazel/workspace:substitution.bzl", "status_vars_template")
 
 package(default_visibility = ["//:__pkg__"])
-
-# `filegroup_copy` targets below ensure that all files end up
-# under `bazel-out`, which is where `stable_status` output
-# resides. This way we can reference `stable_status.json` from
-# `vue.config.js` directly.
-copy_file(
-    name = "stable_status",
-    src = "//bazel/workspace:stable_status",
-    out = "stable_status.json",
-)
 
 SPEC_PATTERNS = [
     "src/**/*.spec.js",
     "src/**/*.spec.ts",
+    "src/**/testing/**/*",
 ]
 
 filegroup_copy(
@@ -39,6 +32,12 @@ filegroup_copy(
     srcs = glob(["public/**"]),
 )
 
+status_vars_template(
+    name = "vue_config",
+    template = "vue.config.tmpl.js",
+    output = "vue.config.js",
+)
+
 filegroup_copy(
     name = "configs",
     srcs = [
@@ -46,21 +45,13 @@ filegroup_copy(
         ".eslintrc.js",
         "babel.config.js",
         "tsconfig.json",
-        "vue.config.js",
     ],
 )
 
-py_binary(
-    name = "metadata_producer",
-    srcs = ["metadata_producer.py"],
-)
-
-genrule(
+status_vars_template(
     name = "metadata_json",
-    srcs = ["//pwa:stable_status"],
-    outs = ["public/metadata.json"],
-    cmd = "$(execpath :metadata_producer) $(execpath //pwa:stable_status) > $@",
-    tools = [":metadata_producer"],
+    template = "metadata.tmpl.json",
+    output = "public/metadata.json",
 )
 
 py_binary(
@@ -68,15 +59,10 @@ py_binary(
     srcs = ["service_worker_renderer.py"],
 )
 
-genrule(
+status_vars_template(
     name = "service_worker",
-    srcs = [
-        "service_worker.template",
-        ":stable_status",
-    ],
-    outs = ["service-worker.js"],
-    cmd = "$(execpath :service_worker_renderer) $(execpath service_worker.template) $(execpath :stable_status) > $@",
-    tools = [":service_worker_renderer"],
+    template = "service_worker.tmpl.js",
+    output = "service-worker.js",
 )
 
 filegroup_copy(
@@ -91,7 +77,7 @@ SOURCES = [
     ":metadata_json",
     ":service_worker",
     ":src",
-    ":stable_status",
+    ":vue_config",
     "//pwa/src/api/definitions:swagger_api",
 ]
 

@@ -1,6 +1,6 @@
 importScripts('https://unpkg.com/dexie@3.0.2/dist/dexie.min.js');
 
-const APP_VERSION = '$APP_VERSION';
+const APP_VERSION = '$STABLE_GIT_REVISION';
 
 const SwEvent = {
   INSTALL: 'install',
