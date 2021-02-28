@@ -1,7 +1,7 @@
 package com.floreina.keyring.geolocation;
 
 import com.floreina.keyring.Environment;
-import com.floreina.keyring.Geolocation;
+import com.floreina.keyring.proto.service.Geolocation;
 import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonObjectParser;

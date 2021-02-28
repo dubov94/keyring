@@ -1,13 +1,13 @@
 package com.floreina.keyring.storage;
 
-import com.floreina.keyring.IdentifiedKey;
-import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.Annotations.EntityController;
 import com.floreina.keyring.aspects.Annotations.LocalTransaction;
 import com.floreina.keyring.entities.Key;
 import com.floreina.keyring.entities.Key_;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.entities.Utilities;
+import com.floreina.keyring.proto.service.IdentifiedKey;
+import com.floreina.keyring.proto.service.Password;
 
 import javax.persistence.EntityManager;
 import java.util.List;

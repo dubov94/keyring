@@ -1,6 +1,6 @@
 package com.floreina.keyring.entities;
 
-import com.floreina.keyring.Password;
+import com.floreina.keyring.proto.service.Password;
 
 import static java.util.stream.Collectors.toList;
 

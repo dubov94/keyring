@@ -1,9 +1,9 @@
 package com.floreina.keyring.storage;
 
-import com.floreina.keyring.IdentifiedKey;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
+import com.floreina.keyring.proto.service.IdentifiedKey;
 
 import java.util.List;
 import java.util.Optional;

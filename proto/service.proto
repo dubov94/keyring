@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package service;
+package proto.service;
 
 import "google/api/annotations.proto";
 
 option java_multiple_files = true;
-option java_package = "com.floreina.keyring";
+option java_package = "com.floreina.keyring.proto.service";
 
 message RegisterRequest {
     string username = 1;

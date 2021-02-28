@@ -1,6 +1,6 @@
 package com.floreina.keyring.geolocation;
 
-import com.floreina.keyring.Geolocation;
+import com.floreina.keyring.proto.service.Geolocation;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;

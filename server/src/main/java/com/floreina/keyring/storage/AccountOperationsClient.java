@@ -1,11 +1,11 @@
 package com.floreina.keyring.storage;
 
 import com.floreina.keyring.Chronometry;
-import com.floreina.keyring.IdentifiedKey;
-import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.Annotations.EntityController;
 import com.floreina.keyring.aspects.Annotations.LocalTransaction;
 import com.floreina.keyring.entities.*;
+import com.floreina.keyring.proto.service.IdentifiedKey;
+import com.floreina.keyring.proto.service.Password;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;

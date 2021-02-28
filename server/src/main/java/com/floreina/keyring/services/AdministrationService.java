@@ -1,6 +1,7 @@
 package com.floreina.keyring.services;
 
-import com.floreina.keyring.*;
+import com.floreina.keyring.Cryptography;
+import com.floreina.keyring.Post;
 import com.floreina.keyring.aspects.Annotations.ValidateUser;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
@@ -9,6 +10,7 @@ import com.floreina.keyring.geolocation.GeolocationServiceInterface;
 import com.floreina.keyring.interceptors.SessionInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
 import com.floreina.keyring.keyvalue.UserProjection;
+import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;

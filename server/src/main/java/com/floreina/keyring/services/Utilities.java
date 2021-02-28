@@ -1,11 +1,11 @@
 package com.floreina.keyring.services;
 
 import com.floreina.keyring.Cryptography;
-import com.floreina.keyring.IdentifiedKey;
-import com.floreina.keyring.Password;
 import com.floreina.keyring.entities.Key;
 import com.floreina.keyring.entities.Tag;
 import com.floreina.keyring.entities.User;
+import com.floreina.keyring.proto.service.IdentifiedKey;
+import com.floreina.keyring.proto.service.Password;
 
 import java.util.Objects;
 
