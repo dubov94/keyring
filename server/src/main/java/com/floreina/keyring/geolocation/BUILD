@@ -5,7 +5,10 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
         "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
-    deps = ["//proto:service_java_grpc"],
+    deps = [
+        "//proto:geo_ip_java_grpc",
+        "//proto:service_java_grpc",
+    ],
 )
 
 java_library(
@@ -16,8 +19,8 @@ java_library(
     ],
     deps = [
         ":geolocation_service_interface",
+        "//proto:geo_ip_java_grpc",
         "//proto:service_java_grpc",
-        "@maven//:com_google_http_client_google_http_client",
     ],
 )
 
@@ -34,10 +37,9 @@ java_library(
         ":geolocation_service_client",
         ":geolocation_service_interface",
         "//server/src/main/java/com/floreina/keyring:environment",
+        "//proto:geo_ip_java_grpc",
         "//proto:service_java_grpc",
         "@maven//:com_google_dagger_dagger",
-        "@maven//:com_google_http_client_google_http_client",
-        "@maven//:com_google_http_client_google_http_client_gson",
         "@maven//:javax_inject_javax_inject",
     ],
 )

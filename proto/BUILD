@@ -30,3 +30,8 @@ go_grpc_library(
     importpath = "github.com/dubov94/keyring/proto/geo_ip_go_grpc",
     deps = [":geo_ip_proto"],
 )
+
+java_grpc_library(
+    name = "geo_ip_java_grpc",
+    deps = [":geo_ip_proto"],
+)

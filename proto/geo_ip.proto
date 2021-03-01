@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package proto.geo_ip;
 
+option java_multiple_files = true;
+option java_package = "com.floreina.keyring.proto.geoip";
+
 message GetIpInfoRequest {
   string ip_address = 1;
 }

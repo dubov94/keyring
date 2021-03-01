@@ -2,10 +2,9 @@ package com.floreina.keyring.geolocation;
 
 import com.floreina.keyring.Environment;
 import com.floreina.keyring.proto.service.Geolocation;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonObjectParser;
-import com.google.api.client.json.gson.GsonFactory;
+import com.floreina.keyring.proto.geoip.GeoIpServiceGrpc;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import dagger.Module;
 import dagger.Provides;
 
@@ -17,13 +16,10 @@ public class GeolocationModule {
   @Singleton
   static GeolocationServiceInterface provideGeolocationServiceInterface(Environment environment) {
     if (environment.isProduction()) {
-      GsonFactory gsonFactory = new GsonFactory();
-      HttpRequestFactory httpRequestFactory =
-          new NetHttpTransport()
-              .createRequestFactory(
-                  httpRequest -> httpRequest.setParser(new JsonObjectParser(gsonFactory)));
-      return new GeolocationServiceClient(
-          httpRequestFactory, environment.getGeolocationAddress());
+      ManagedChannel channel = ManagedChannelBuilder.forTarget(
+          environment.getGeolocationAddress()).usePlaintext().build();
+      GeoIpServiceGrpc.GeoIpServiceBlockingStub stub = GeoIpServiceGrpc.newBlockingStub(channel);
+      return new GeolocationServiceClient(stub);
     } else {
       return ip -> Geolocation.getDefaultInstance();
     }

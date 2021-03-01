@@ -110,8 +110,6 @@ maven_install(
         "com.google.dagger:dagger:2.14.1",
         "com.google.dagger:dagger-compiler:2.14.1",
         "com.google.guava:guava:24.0-jre",
-        "com.google.http-client:google-http-client:1.31.0",
-        "com.google.http-client:google-http-client-gson:1.31.0",
         "io.grpc:grpc-netty-shaded:1.28.0",
         "io.grpc:grpc-protobuf:1.28.0",
         "io.grpc:grpc-stub:1.28.0",
