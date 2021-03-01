@@ -1,13 +1,13 @@
 package com.floreina.keyring.storage;
 
 import com.floreina.keyring.Chronometry;
-import com.floreina.keyring.IdentifiedKey;
-import com.floreina.keyring.Password;
 import com.floreina.keyring.aspects.StorageManagerAspect;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.entities.Utilities;
+import com.floreina.keyring.proto.service.IdentifiedKey;
+import com.floreina.keyring.proto.service.Password;
 import com.google.common.collect.ImmutableList;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;

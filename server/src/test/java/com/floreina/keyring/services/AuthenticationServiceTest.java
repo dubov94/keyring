@@ -1,9 +1,11 @@
 package com.floreina.keyring.services;
 
-import com.floreina.keyring.*;
+import com.floreina.keyring.Cryptography;
+import com.floreina.keyring.Post;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
+import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;
