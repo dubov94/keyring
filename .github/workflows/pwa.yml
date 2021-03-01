@@ -15,4 +15,4 @@ jobs:
         with:
           path: '~/.cache/bazel'
           key: bazel
-      - run: bazel test $(bazel query 'tests(//pwa/...)')
+      - run: bazel run $(bazel query 'tests(//pwa/...)')
