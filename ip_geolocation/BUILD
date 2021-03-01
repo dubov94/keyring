@@ -4,6 +4,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 go_binary(
     name = "main",
     srcs = ["main.go"],
+    pure = "on",
     deps = [
         "@com_github_golang_glog//:go_default_library",
         "@com_github_oschwald_maxminddb_golang//:go_default_library",
