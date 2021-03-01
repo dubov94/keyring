@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"strconv"
 	"path"
 	"time"
 
@@ -100,7 +99,7 @@ func main() {
 	})
 
 	group.Go(func() error {
-		ln, err := net.Listen("tcp", strconv.Itoa(*port))
+		ln, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 		if err != nil {
 			return fmt.Errorf("Unable to listen: %v", err)
 		}
