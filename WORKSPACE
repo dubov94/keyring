@@ -101,6 +101,7 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/3.2.zip"],
 )
 
+load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
@@ -146,6 +147,7 @@ maven_install(
     repositories = [
         "https://jcenter.bintray.com/",
     ],
+    override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
 )
 
 # language_specific_dependencies.external_go_dependencies
