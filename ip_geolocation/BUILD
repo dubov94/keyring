@@ -16,8 +16,7 @@ go_binary(
 container_image(
     name = "ip_geolocation",
     base = "@io_docker_index_maxmindinc_geoipupdate//image",
-    cmd = ["./entrypoint.sh"],
-    entrypoint = None,
+    entrypoint = ["./entrypoint.sh"],
     directory = "/root",
     env = {
         "GEOIPUPDATE_EDITION_IDS": "GeoLite2-City GeoLite2-Country",
