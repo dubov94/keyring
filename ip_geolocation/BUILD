@@ -1,36 +1,30 @@
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
-load("@io_bazel_rules_docker//docker/util:run.bzl", "container_run_and_commit")
-load("@ip_geolocation_pip//:requirements.bzl", "requirement")
-load("@subpar//:subpar.bzl", "par_binary")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 
-par_binary(
+go_binary(
     name = "main",
-    srcs = ["main.py"],
+    srcs = ["main.go"],
     deps = [
-        requirement("bottle"),
-        requirement("maxminddb"),
+        "@com_github_golang_glog//:go_default_library",
+        "@com_github_oschwald_maxminddb_golang//:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
+        "@org_golang_x_sync//errgroup:go_default_library",
+        "//proto:geo_ip_go_grpc",
     ],
-)
-
-container_run_and_commit(
-    name = "geoipupdate_with_python",
-    commands = ["apk add --no-cache python3 bash"],
-    docker_run_flags = ["--entrypoint=\"\""],
-    image = "@io_docker_index_maxmindinc_geoipupdate//image",
 )
 
 container_image(
     name = "ip_geolocation",
-    base = ":geoipupdate_with_python",
+    base = "@io_docker_index_maxmindinc_geoipupdate//image",
     cmd = ["./entrypoint.sh"],
-    directory = "/root",
     entrypoint = None,
+    directory = "/root",
     env = {
         "GEOIPUPDATE_EDITION_IDS": "GeoLite2-City GeoLite2-Country",
     },
     files = [
         "entrypoint.sh",
-        ":main.par",
+        ":main",
     ],
     ports = ["5003"],
     workdir = "/root",

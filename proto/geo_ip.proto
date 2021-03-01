@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package proto.geo_ip;
+
+message GetIpInfoRequest {
+  string ip_address = 1;
+}
+
+message Names {
+  string en = 1;
+}
+
+message Country {
+  Names names = 1;
+}
+
+message City {
+  Names names = 1;
+}
+
+message GetIpInfoResponse {
+  Country country = 1;
+  City city = 2;
+}
+
+service GeoIpService {
+  rpc GetIpInfo (GetIpInfoRequest) returns (GetIpInfoResponse);
+}
