@@ -1,11 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-echo 'Converting secrets into environment variables...'
-for path in /run/secrets/*
-do
-  echo "$path"
-  export `basename ${path^^}`="`cat $path`"
-done
+export GEOIPUPDATE_ACCOUNT_ID="`cat /run/secrets/geoipupdate_account_id`"
+export GEOIPUPDATE_LICENSE_KEY="`cat /run/secrets/geoipupdate_license_key`"
 
-echo 'Running the service...'
 ./main
