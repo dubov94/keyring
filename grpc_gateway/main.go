@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 
-	gw "github.com/dubov94/keyring/grpc-gateway/service_gateway_library"
+	gw "github.com/dubov94/keyring/grpc_gateway/service_gateway_library"
 )
 
 var (

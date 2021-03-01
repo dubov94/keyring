@@ -6,7 +6,7 @@ package(default_visibility = ["//:__pkg__"])
 
 gateway_grpc_library(
     name = "service_gateway_library",
-    importpath = "github.com/dubov94/keyring/grpc-gateway/service_gateway_library",
+    importpath = "github.com/dubov94/keyring/grpc_gateway/service_gateway_library",
     deps = ["//proto:service_proto"],
 )
 
