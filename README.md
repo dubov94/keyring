@@ -8,21 +8,20 @@
 
 ## Instructions
 
-Install Python (with PIP), Java 11, [Bazel](https://bazel.build) and Docker on
-a Linux distribution.
-
 ### Development
+
+Install Python (with PIP), Java 11 and [Bazel](https://bazel.build) on a Linux
+distribution.
 
 Set up [Redis](https://redis.io/) and [PostgreSQL](https://www.postgresql.org/)
 with `postgres:postgres` as an authentication pair. Create database `keyring`.
 
-Run `bazel run //:all_services` to spin up all components.
+Run `bazel run //:backends` to spin up backends and `bazel run //pwa:serve` to
+serve frontend.
 
 ### Production
 
-Run `make` to build all images locally.
-
 Initialize a cluster by executing `docker swarm init`. Set up all the secrets
-mentioned in `docker-compose.yml` via `docker secret create`. Create
-directories at `/root/postgres` and `/root/redis`. Finally, deploy the stack (
-`docker stack deploy --compose-file=docker-compose.yml keyring`).
+mentioned in `docker-compose.yml` via `docker secret create`. Create volume
+directories at `/root/postgres`, `/root/redis` and `/root/geo_ip`. Finally,
+deploy the stack (`docker stack deploy --compose-file=docker-compose.yml keyring`).
