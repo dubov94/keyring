@@ -1,0 +1,21 @@
+name: Server
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  pwa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mishas/setup-bazelisk-action@v1
+      - run: bazelisk test $(bazel query 'tests(//server/...)')
+      - run: bazelisk run //server 
+      - uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - run: docker image tag bazel/server:server docker.io/dubov94/keyring-server
+      - run: docker push docker.io/dubov94/keyring-server
