@@ -200,13 +200,17 @@ rules_proto_grpc_closure_repos()
 
 http_archive(
     name = "build_bazel_rules_nodejs",
-    sha256 = "f9e7b9f42ae202cc2d2ce6d698ccb49a9f7f7ea572a78fd451696d03ef2ee116",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.6.0/rules_nodejs-1.6.0.tar.gz"],
+    sha256 = "fcc6dccb39ca88d481224536eb8f9fa754619676c6163f87aa6af94059b02b12",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.2.0/rules_nodejs-3.2.0.tar.gz"],
 )
 
 load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories")
 
-node_repositories(package_json = ["//pwa:package.json"])
+node_repositories(
+    package_json = ["//pwa:package.json"],
+    node_version = "14.15.4",
+    yarn_version = "1.22.4",
+)
 
 load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
