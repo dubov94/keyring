@@ -2,6 +2,7 @@
 
 [![PWA](https://github.com/dubov94/keyring/actions/workflows/pwa.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/pwa.yml)
 [![Server](https://github.com/dubov94/keyring/actions/workflows/server.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/server.yml)
+[![HTTP-to-GRPC](https://github.com/dubov94/keyring/actions/workflows/grpc_gateway.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/grpc_gateway.yml)
 
 ## Instructions
 
