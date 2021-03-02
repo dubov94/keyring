@@ -1,16 +1,20 @@
 # keyring
 
+[![PWA](https://github.com/dubov94/keyring/actions/workflows/pwa.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/pwa.yml)
+
+## Instructions
+
 Install Python (with PIP), Java 11, [Bazel](https://bazel.build) and Docker on
 a Linux distribution.
 
-## Development
+### Development
 
 Set up [Redis](https://redis.io/) and [PostgreSQL](https://www.postgresql.org/)
 with `postgres:postgres` as an authentication pair. Create database `keyring`.
 
 Run `bazel run //:all_services` to spin up all components.
 
-## Production
+### Production
 
 Run `make` to build all images locally.
 
