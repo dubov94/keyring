@@ -1,0 +1,20 @@
+name: GeoIP
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  pwa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mishas/setup-bazelisk-action@v1
+      - run: bazelisk run //ip_geolocation
+      - uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - run: docker image tag bazel/ip_geolocation:ip_geolocation docker.io/dubov94/keyring-ip-geolocation
+      - run: docker push docker.io/dubov94/keyring-ip-geolocation
