@@ -1,10 +1,6 @@
 # keyring
 
-[![PWA](https://github.com/dubov94/keyring/actions/workflows/pwa.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/pwa.yml)
-[![Server](https://github.com/dubov94/keyring/actions/workflows/server.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/server.yml)
-[![HTTP-to-GRPC](https://github.com/dubov94/keyring/actions/workflows/grpc_gateway.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/grpc_gateway.yml)
-[![Caddy](https://github.com/dubov94/keyring/actions/workflows/reverse_proxy.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/reverse_proxy.yml)
-[![GeoIP](https://github.com/dubov94/keyring/actions/workflows/ip_geolocation.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/ip_geolocation.yml)
+[![Release](https://github.com/dubov94/keyring/actions/workflows/release.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/release.yml)
 
 ## Instructions
 
