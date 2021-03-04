@@ -64,9 +64,9 @@ export const failure = <E>(value: E): FlowError<StandardError<E>> => ({
 
 export const errorToMessage = (error: any): string => {
   if (error instanceof Response) {
-    return error.statusText
+    return `http.cat/${error.status}`
   }
-  return error.toString()
+  return `${error}`
 }
 
 export const exception = <E>(message: string): FlowError<StandardError<E>> => ({
