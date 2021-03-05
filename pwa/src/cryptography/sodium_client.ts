@@ -47,8 +47,7 @@ const parseArgon2Parametrization = (parametrization: string): Argon2Parametrizat
     '^',
     SEPARATOR,
     `(?<type>${TYPE})`,
-    SEPARATOR,
-    `(?:v=(?<version>${N}))?`,
+    `(?:${SEPARATOR}v=(?<version>${N}))?`,
     SEPARATOR,
     [
       `m=(?<memoryInBytes>${N})`,

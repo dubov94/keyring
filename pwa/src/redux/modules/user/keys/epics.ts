@@ -1,7 +1,7 @@
 import { getAdministrationApi } from '@/api/api_di'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { exception, indicator, isActionSuccess3, errorToMessage, success } from '@/redux/flow_signal'
-import { getSodiumClient } from '@/sodium_client'
+import { getSodiumClient } from '@/cryptography/sodium_client'
 import { Epic } from 'redux-observable'
 import { concat, from, of } from 'rxjs'
 import { catchError, concatMap, filter, mergeMap, switchMap, withLatestFrom } from 'rxjs/operators'

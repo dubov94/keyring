@@ -32,7 +32,7 @@ import { container } from 'tsyringe'
 import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
 import { showToast } from '../../ui/toast/actions'
 import { creationSignal, emplace, userKeysUpdate } from '../keys/actions'
-import { PwnedService, PWNED_SERVICE_TOKEN } from '@/pwned_service'
+import { PwnedService, PWNED_SERVICE_TOKEN } from '@/cryptography/pwned_service'
 import { Key } from '@/redux/entities'
 
 describe('fetchRecentSessionsEpic', () => {

@@ -2,7 +2,7 @@ import { exception, FlowError, indicator, StandardError, success } from '@/redux
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { SodiumClient } from '@/sodium_client'
+import { SodiumClient } from '@/cryptography/sodium_client'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { expect } from 'chai'
 import { deepEqual, instance, mock, objectContaining, when } from 'ts-mockito'

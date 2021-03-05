@@ -24,7 +24,7 @@ import {
 } from '@/api/definitions'
 import { Session, Key } from '@/redux/entities'
 import { userKeysUpdate } from '../keys/actions'
-import { PwnedService, PWNED_SERVICE_TOKEN } from '@/pwned_service'
+import { PwnedService, PWNED_SERVICE_TOKEN } from '@/cryptography/pwned_service'
 import { container } from 'tsyringe'
 import { function as fn, array, option } from 'fp-ts'
 import { DeepReadonly } from 'ts-essentials'

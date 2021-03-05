@@ -61,7 +61,7 @@ import { container } from 'tsyringe'
 import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
 import { registrationSignal } from '../../authn/actions'
 import { showToast } from '../../ui/toast/actions'
-import { SodiumClient } from '@/sodium_client'
+import { SodiumClient } from '@/cryptography/sodium_client'
 import { emplace } from '../keys/actions'
 
 describe('releaseMailTokenEpic', () => {

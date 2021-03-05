@@ -8,7 +8,7 @@ import { monoid } from 'fp-ts'
 import { disjunction } from '@/redux/predicates'
 import { isActionSuccess } from '@/redux/flow_signal'
 import { EMPTY, from, of } from 'rxjs'
-import { getSodiumClient } from '@/sodium_client'
+import { getSodiumClient } from '@/cryptography/sodium_client'
 import { activateDepot, depotActivationData, newVault } from './actions'
 import { masterKeyChangeSignal } from '../user/account/actions'
 

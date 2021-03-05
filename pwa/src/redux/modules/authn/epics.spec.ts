@@ -1,7 +1,7 @@
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { SodiumClient } from '@/sodium_client'
+import { SodiumClient } from '@/cryptography/sodium_client'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { deepEqual, instance, mock, when } from 'ts-mockito'
 import { container } from 'tsyringe'

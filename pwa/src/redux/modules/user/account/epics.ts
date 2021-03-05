@@ -43,7 +43,7 @@ import {
   ServiceDeleteAccountResponseError
 } from '@/api/definitions'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { getSodiumClient } from '@/sodium_client'
+import { getSodiumClient } from '@/cryptography/sodium_client'
 import { Password } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 

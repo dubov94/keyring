@@ -30,7 +30,7 @@ import {
   ServiceLogInResponseError,
   ServiceIdentifiedKey
 } from '@/api/definitions'
-import { getSodiumClient } from '@/sodium_client'
+import { getSodiumClient } from '@/cryptography/sodium_client'
 import { getAuthenticationApi } from '@/api/api_di'
 import { Epic } from 'redux-observable'
 import { cancel, exception, failure, indicator, isSignalFailure, errorToMessage, success } from '@/redux/flow_signal'

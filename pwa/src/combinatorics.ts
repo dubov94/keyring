@@ -1,4 +1,4 @@
-import { RNG, random } from './cryptography'
+import { RNG, random } from './cryptography/random'
 
 export const shuffle = <T>(array: T[], rng: RNG = random) => {
   let limit = array.length
