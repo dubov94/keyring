@@ -2,7 +2,7 @@ import { container, inject, injectable } from 'tsyringe'
 import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from './sodium_worker_interface'
 import { Password } from '@/redux/entities'
 import { DeepReadonly } from 'ts-essentials'
-import { parseArgon2Parametrization, serializeArgon2Parametrization } from './argon2'
+import { parseArgon2Parametrization, recommendedArgon2Settings, serializeArgon2Parametrization } from './argon2'
 
 const AUTH_DIGEST_SIZE_IN_BYTES = 32
 const ENCRYPTION_KEY_SIZE_IN_BYTES = 32
@@ -22,30 +22,28 @@ export class SodiumClient {
     // https://github.com/golang/crypto/blob/5ea612d1eb830b38bc4e914e37f55311eb58adce/argon2/argon2.go
     return serializeArgon2Parametrization({
       separator: '$',
-      type: 'argon2id',
-      version: 19,
-      memoryInBytes: 64 * 1024 * 1024,
-      iterations: 1,
-      threads: 1,
+      settings: recommendedArgon2Settings(),
       salt
     })
   }
 
-  async _computeArgon2HashForDigestAndKey (parametrization: string, password: string): Promise<Uint8Array> {
+  private async computeArgon2HashForDigestAndKey (parametrization: string, password: string): Promise<Uint8Array> {
     const struct = parseArgon2Parametrization(parametrization)
-    if (struct.type !== 'argon2id' || struct.version !== 19 || struct.threads !== 1) {
+    if (struct.settings.type !== 'argon2id' ||
+        struct.settings.version !== 'latest' ||
+        struct.settings.threads !== 1) {
       throw new Error(`Unsupported Argon2 parametrization: ${JSON.stringify(struct)}`)
     }
     return this.sodiumWorkerInterface.computeHash(
-      struct.iterations,
-      struct.memoryInBytes,
+      struct.settings.iterations,
+      struct.settings.memoryInBytes,
       await this.sodiumWorkerInterface.fromBase64(struct.salt),
       password,
       AUTH_DIGEST_SIZE_IN_BYTES + ENCRYPTION_KEY_SIZE_IN_BYTES
     )
   }
 
-  async _extractAuthDigestAndEncryptionKey (hash: Uint8Array): Promise<MasterKeyDerivatives> {
+  private async extractAuthDigestAndEncryptionKey (hash: Uint8Array): Promise<MasterKeyDerivatives> {
     return {
       authDigest: await this.sodiumWorkerInterface.toBase64(hash.slice(0, AUTH_DIGEST_SIZE_IN_BYTES)),
       encryptionKey: await this.sodiumWorkerInterface.toBase64(hash.slice(-ENCRYPTION_KEY_SIZE_IN_BYTES))
@@ -53,8 +51,8 @@ export class SodiumClient {
   }
 
   async computeAuthDigestAndEncryptionKey (parametrization: string, password: string): Promise<MasterKeyDerivatives> {
-    const hash = await this._computeArgon2HashForDigestAndKey(parametrization, password)
-    return this._extractAuthDigestAndEncryptionKey(hash)
+    const hash = await this.computeArgon2HashForDigestAndKey(parametrization, password)
+    return this.extractAuthDigestAndEncryptionKey(hash)
   }
 
   async encryptMessage (encryptionKey: string, message: string): Promise<string> {

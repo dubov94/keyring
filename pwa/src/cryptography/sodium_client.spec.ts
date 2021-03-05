@@ -1,8 +1,10 @@
-import { expect } from 'chai'
+import { assert, expect } from 'chai'
 import 'reflect-metadata'
 import { container } from 'tsyringe'
 import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from './sodium_worker_interface'
 import { SodiumClient } from './sodium_client'
+import { recommendedArgon2Settings } from './argon2'
+import pad from 'lodash/pad'
 
 const toUtf8 = (uint8Array: Uint8Array) => new TextDecoder().decode(uint8Array)
 const fromUtf8 = (utf8String: string) => new TextEncoder().encode(utf8String)
@@ -16,13 +18,12 @@ describe('SodiumClient', () => {
         generateSalt: () => Promise.resolve(fromUtf8('_saltsaltsaltsaltsalt_')),
         generateNonce: () => Promise.resolve(fromUtf8('nonce')),
         computeHash: (iterations, memoryInBytes, salt, password, hashLength) => {
-          return Promise.resolve(fromUtf8(JSON.stringify({
-            iterations,
-            memoryInBytes,
-            salt: toUtf8(salt),
-            password,
-            hashLength
-          })))
+          const struct = recommendedArgon2Settings()
+          expect(struct.iterations).to.equal(iterations)
+          expect(struct.memoryInBytes).to.equal(memoryInBytes)
+          const hash = JSON.stringify([toUtf8(salt), password])
+          assert.isAtMost(hash.length, hashLength)
+          return Promise.resolve(fromUtf8(pad(hash, hashLength)))
         },
         encryptMessage: (encryptionKey, nonce, message) => {
           return Promise.resolve(JSON.stringify({
@@ -54,12 +55,13 @@ describe('SodiumClient', () => {
   it('generates a hash with given parameters', async () => {
     const sodiumClient = container.resolve(SodiumClient)
 
-    const json = JSON.parse(toUtf8(
-      await sodiumClient._computeArgon2HashForDigestAndKey(
-        await sodiumClient.generateNewParametrization(), 'pass')))
+    const derivatives =
+      await sodiumClient.computeAuthDigestAndEncryptionKey(
+        await sodiumClient.generateNewParametrization(), 'pass')
 
-    expect(json.salt).to.equal('_saltsaltsaltsaltsalt_')
-    expect(json.password).to.equal('pass')
+    const [salt, password] = JSON.parse(derivatives.authDigest + derivatives.encryptionKey)
+    expect(salt).to.equal('_saltsaltsaltsaltsalt_')
+    expect(password).to.equal('pass')
   })
 
   it('can encrypt and decrypt passwords', async () => {
