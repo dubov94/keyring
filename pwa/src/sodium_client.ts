@@ -18,6 +18,16 @@ export interface MasterKeyDerivatives {
   encryptionKey: string;
 }
 
+// https://tools.ietf.org/html/draft-irtf-cfrg-argon2-12#section-4
+// https://github.com/golang/crypto/blob/5ea612d1eb830b38bc4e914e37f55311eb58adce/argon2/argon2.go
+interface Argon2Parametrization {
+  type: 'argon2i' | 'argon2d' | 'argon2id';
+  memoryInBytes: number;
+  iterations: number;
+  threads: number;
+  salt: string;
+}
+
 @injectable()
 export class SodiumClient {
   constructor (@inject(SODIUM_WORKER_INTERFACE_TOKEN) private sodiumWorkerInterface: SodiumWorkerInterface) {}
