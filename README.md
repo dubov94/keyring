@@ -1,8 +1,7 @@
 # keyring
 
 [![Release](https://github.com/dubov94/keyring/actions/workflows/release.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/release.yml)
-<!-- https://github.com/XAMPPRocky/tokei#supported-languages -->
-![Lines of code](https://img.shields.io/tokei/lines/github/dubov94/keyring)
+![Lines of code](https://img.shields.io/tokei/lines/github/dubov94/keyring)<!-- https://github.com/XAMPPRocky/tokei#supported-languages -->
 
 ## Instructions
 
