@@ -1,7 +1,6 @@
 import './register_service_worker'
 // https://github.com/microsoft/tsyringe#installation
 import 'reflect-metadata'
-import sodium from 'libsodium-wrappers'
 import { container } from 'tsyringe'
 import { Subject } from 'rxjs'
 
@@ -99,11 +98,8 @@ Vue.mixin({
   }
 })
 
-;(async () => {
-  await sodium.ready
-  new Vue({
-    render: h => h(Application),
-    router: Router,
-    i18n: getVueI18n()
-  }).$mount('#application')
-})()
+new Vue({
+  render: h => h(Application),
+  router: Router,
+  i18n: getVueI18n()
+}).$mount('#application')
