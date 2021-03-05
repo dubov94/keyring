@@ -2,6 +2,7 @@ import { container, inject, injectable } from 'tsyringe'
 import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from './sodium_worker_interface'
 import { Password } from '@/redux/entities'
 import { DeepReadonly } from 'ts-essentials'
+import { parseArgon2Parametrization, serializeArgon2Parametrization } from './argon2'
 
 const AUTH_DIGEST_SIZE_IN_BYTES = 32
 const ENCRYPTION_KEY_SIZE_IN_BYTES = 32
@@ -9,65 +10,6 @@ const ENCRYPTION_KEY_SIZE_IN_BYTES = 32
 export interface MasterKeyDerivatives {
   authDigest: string;
   encryptionKey: string;
-}
-
-interface Argon2Parametrization {
-  separator: '$';
-  type: 'argon2i' | 'argon2d' | 'argon2id';
-  version: number;
-  memoryInBytes: number;
-  iterations: number;
-  threads: number;
-  salt: string;
-}
-
-// TODO: Re-enable version population once the grace period is over.
-const serializeArgon2Parametrization = (struct: Argon2Parametrization): string => {
-  // https://github.com/jedisct1/libsodium/blob/57d950a54e6f7743084092ba5d31b8fa0641eab2/src/libsodium/crypto_pwhash/argon2/argon2-encoding.c
-  return [
-    struct.separator,
-    struct.type,
-    struct.separator,
-    [
-      `m=${struct.memoryInBytes}`,
-      `t=${struct.iterations}`,
-      `p=${struct.threads}`
-    ].join(','),
-    struct.separator,
-    struct.salt
-  ].join('')
-}
-
-const parseArgon2Parametrization = (parametrization: string): Argon2Parametrization => {
-  const SEPARATOR = '\\$'
-  const TYPE = 'argon2(?:i|d|id)'
-  const N = '[1-9][0-9]*'
-  const BASE64 = '[A-Za-z0-9-_=]+'
-  const regExp = new RegExp([
-    '^',
-    SEPARATOR,
-    `(?<type>${TYPE})`,
-    `(?:${SEPARATOR}v=(?<version>${N}))?`,
-    SEPARATOR,
-    [
-      `m=(?<memoryInBytes>${N})`,
-      `t=(?<iterations>${N})`,
-      `p=(?<threads>${N})`
-    ].join(','),
-    SEPARATOR,
-    `(?<salt>${BASE64})`,
-    '$'
-  ].join(''))
-  const groups = regExp.exec(parametrization)!.groups!
-  return <Argon2Parametrization>{
-    separator: '$',
-    type: groups.type,
-    version: Number(groups.version || '19'),
-    memoryInBytes: Number(groups.memoryInBytes),
-    iterations: Number(groups.iterations),
-    threads: Number(groups.threads),
-    salt: groups.salt
-  }
 }
 
 @injectable()
