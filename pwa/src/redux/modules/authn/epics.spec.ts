@@ -52,7 +52,7 @@ describe('registrationEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
-    when(mockSodiumClient.generateArgon2Parametrization()).thenResolve('parametrization')
+    when(mockSodiumClient.generateNewParametrization()).thenResolve('parametrization')
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
       authDigest: 'authDigest',
       encryptionKey: 'encryptionKey'

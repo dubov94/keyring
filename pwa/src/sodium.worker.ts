@@ -1,11 +1,16 @@
 import sodium from 'libsodium-wrappers'
 
 export const fromBase64 = (base64String: string): Uint8Array => {
-  return sodium.from_base64(base64String)
+  return sodium.from_base64(base64String, sodium.base64_variants.URLSAFE_NO_PADDING)
 }
 
 export const toBase64 = (uint8Array: Uint8Array): string => {
-  return sodium.to_base64(uint8Array)
+  return sodium.to_base64(uint8Array, sodium.base64_variants.URLSAFE_NO_PADDING)
+}
+
+const base64Length = (bytesLength: number): number => {
+  const bitsCount = bytesLength * 8
+  return Math.ceil(bitsCount / 6)
 }
 
 export const generateSalt = (): Uint8Array => {
@@ -21,18 +26,18 @@ export const generateNonce = (): Uint8Array => {
 }
 
 export const encryptMessage = (encryptionKey: Uint8Array, nonce: Uint8Array, message: string): string => {
-  return sodium.crypto_secretbox_easy(message, nonce, encryptionKey, 'base64')
+  return toBase64(sodium.crypto_secretbox_easy(message, nonce, encryptionKey))
 }
 
 export const decryptMessage = (encryptionKey: Uint8Array, nonce: Uint8Array, base64Cipher: string): string => {
-  return sodium.crypto_secretbox_open_easy(sodium.from_base64(base64Cipher), nonce, encryptionKey, 'text')
+  return sodium.crypto_secretbox_open_easy(fromBase64(base64Cipher), nonce, encryptionKey, 'text')
 }
 
 export const joinNonceCipher = (nonce: Uint8Array, base64Cipher: string): string => {
-  return `${sodium.to_base64(nonce)}${base64Cipher}`
+  return `${toBase64(nonce)}${base64Cipher}`
 }
 
 export const splitNonceCipher = (pack: string): [Uint8Array, string] => {
-  const nonceBase64Length = sodium.crypto_secretbox_NONCEBYTES * 8 / 6
-  return [sodium.from_base64(pack.slice(0, nonceBase64Length)), pack.slice(nonceBase64Length)]
+  const nonceBase64Length = base64Length(sodium.crypto_secretbox_NONCEBYTES)
+  return [fromBase64(pack.slice(0, nonceBase64Length)), pack.slice(nonceBase64Length)]
 }

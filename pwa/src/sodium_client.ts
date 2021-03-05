@@ -10,9 +10,7 @@ const AUTH_DIGEST_SIZE_IN_BYTES = 32
 const ENCRYPTION_KEY_SIZE_IN_BYTES = 32
 
 const PARAMETRIZATION_REGULAR_EXPRESSION = new RegExp(
-  '^\\$(argon2(?:i|d|id))' +
-  '\\$m=([1-9][0-9]*),t=([1-9][0-9]*),p=([1-9][0-9]*)' +
-  '\\$([A-Za-z0-9-_]{22})$'
+  '^\\$(argon2(?:i|d|id))\\$m=([1-9][0-9]*),t=([1-9][0-9]*),p=([1-9][0-9]*)\\$([A-Za-z0-9-_]{22})$'
 )
 
 export interface MasterKeyDerivatives {
@@ -24,13 +22,13 @@ export interface MasterKeyDerivatives {
 export class SodiumClient {
   constructor (@inject(SODIUM_WORKER_INTERFACE_TOKEN) private sodiumWorkerInterface: SodiumWorkerInterface) {}
 
-  async generateArgon2Parametrization (): Promise<string> {
-    return '$argon2id' +
-      `$m=${ARGON2_DEFAULT_M},t=${ARGON2_DEFAULT_T},p=1` +
-      `$${await this.sodiumWorkerInterface.toBase64(await this.sodiumWorkerInterface.generateSalt())}`
+  async generateNewParametrization (): Promise<string> {
+    const salt = await this.sodiumWorkerInterface.toBase64(await this.sodiumWorkerInterface.generateSalt())
+    // https://github.com/jedisct1/libsodium/blob/57d950a54e6f7743084092ba5d31b8fa0641eab2/src/libsodium/crypto_pwhash/argon2/argon2-encoding.c
+    return `$argon2id$m=${ARGON2_DEFAULT_M},t=${ARGON2_DEFAULT_T},p=1$${salt}`
   }
 
-  async computeArgon2HashForDigestAndKey (parametrization: string, password: string): Promise<Uint8Array> {
+  async _computeArgon2HashForDigestAndKey (parametrization: string, password: string): Promise<Uint8Array> {
     const matches = PARAMETRIZATION_REGULAR_EXPRESSION.exec(parametrization)
     if (matches === null) {
       throw new Error(`Malformed parametrization: '${parametrization}'`)
@@ -47,7 +45,7 @@ export class SodiumClient {
     }
   }
 
-  async extractAuthDigestAndEncryptionKey (hash: Uint8Array): Promise<MasterKeyDerivatives> {
+  async _extractAuthDigestAndEncryptionKey (hash: Uint8Array): Promise<MasterKeyDerivatives> {
     return {
       authDigest: await this.sodiumWorkerInterface.toBase64(hash.slice(0, AUTH_DIGEST_SIZE_IN_BYTES)),
       encryptionKey: await this.sodiumWorkerInterface.toBase64(hash.slice(-ENCRYPTION_KEY_SIZE_IN_BYTES))
@@ -55,9 +53,8 @@ export class SodiumClient {
   }
 
   async computeAuthDigestAndEncryptionKey (parametrization: string, password: string): Promise<MasterKeyDerivatives> {
-    const hash = await this.computeArgon2HashForDigestAndKey(
-      parametrization, password)
-    return this.extractAuthDigestAndEncryptionKey(hash)
+    const hash = await this._computeArgon2HashForDigestAndKey(parametrization, password)
+    return this._extractAuthDigestAndEncryptionKey(hash)
   }
 
   async encryptMessage (encryptionKey: string, message: string): Promise<string> {

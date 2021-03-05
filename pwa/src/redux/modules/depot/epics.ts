@@ -27,7 +27,7 @@ export const updateVaultEpic: Epic<RootAction, RootAction, RootState> = (action$
 
 export const activateDepotEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(activateDepot)),
-  switchMap((action) => from(getSodiumClient().generateArgon2Parametrization()).pipe(switchMap((parametrization) => {
+  switchMap((action) => from(getSodiumClient().generateNewParametrization()).pipe(switchMap((parametrization) => {
     return from(getSodiumClient().computeAuthDigestAndEncryptionKey(parametrization, action.payload.password)).pipe(
       switchMap(({ authDigest, encryptionKey }) => of(depotActivationData({
         username: action.payload.username,

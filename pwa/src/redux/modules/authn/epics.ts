@@ -45,7 +45,7 @@ export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action
     if (isActionOf(register, action)) {
       return concat(
         of(registrationSignal(indicator(RegistrationFlowIndicator.GENERATING_PARAMETRIZATION))),
-        from(getSodiumClient().generateArgon2Parametrization()).pipe(
+        from(getSodiumClient().generateNewParametrization()).pipe(
           switchMap((parametrization) => concat(
             of(registrationSignal(indicator(RegistrationFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES))),
             from(getSodiumClient().computeAuthDigestAndEncryptionKey(parametrization, action.payload.password)).pipe(

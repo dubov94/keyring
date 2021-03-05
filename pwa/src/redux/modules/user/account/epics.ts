@@ -137,7 +137,7 @@ export const changeMasterKeyEpic: Epic<RootAction, RootAction, RootState> = (act
       return concat(
         of(masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING))),
         from(getSodiumClient().computeAuthDigestAndEncryptionKey(state.user.account.parametrization!, action.payload.current)).pipe(
-          switchMap(({ authDigest }) => from(getSodiumClient().generateArgon2Parametrization()).pipe(
+          switchMap(({ authDigest }) => from(getSodiumClient().generateNewParametrization()).pipe(
             switchMap((newParametrization) => from(getSodiumClient().computeAuthDigestAndEncryptionKey(newParametrization, action.payload.renewal)).pipe(
               switchMap((newDerivatives) => forkJoin(state.user.keys.userKeys.map(async ({ identifier, value, tags }) => ({
                 identifier,

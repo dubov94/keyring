@@ -54,7 +54,7 @@ describe('activateDepotEpic', () => {
   it('emits activation data', async () => {
     const { action$, actionSubject, state$ } = setUpEpicChannels(createStore(reducer))
     const mockSodiumClient = mock(SodiumClient)
-    when(mockSodiumClient.generateArgon2Parametrization()).thenResolve('parametrization')
+    when(mockSodiumClient.generateNewParametrization()).thenResolve('parametrization')
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
       authDigest: 'authDigest',
       encryptionKey: 'vaultKey'

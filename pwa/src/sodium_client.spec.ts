@@ -55,8 +55,8 @@ describe('SodiumClient', () => {
     const sodiumClient = container.resolve(SodiumClient)
 
     const json = JSON.parse(toUtf8(
-      await sodiumClient.computeArgon2HashForDigestAndKey(
-        await sodiumClient.generateArgon2Parametrization(), 'pass')))
+      await sodiumClient._computeArgon2HashForDigestAndKey(
+        await sodiumClient.generateNewParametrization(), 'pass')))
 
     expect(json.salt).to.equal('_saltsaltsaltsaltsalt_')
     expect(json.password).to.equal('pass')

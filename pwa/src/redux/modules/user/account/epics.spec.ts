@@ -402,7 +402,7 @@ describe('changeMasterKeyEpic', () => {
       authDigest: 'authDigest',
       encryptionKey: 'encryptionKey'
     })
-    when(mockSodiumClient.generateArgon2Parametrization()).thenResolve('newParametrization')
+    when(mockSodiumClient.generateNewParametrization()).thenResolve('newParametrization')
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('newParametrization', 'passwordB')).thenResolve({
       authDigest: 'newAuthDigest',
       encryptionKey: 'newEncryptionKey'
@@ -476,7 +476,7 @@ describe('changeMasterKeyEpic', () => {
       authDigest: 'authDigest',
       encryptionKey: 'encryptionKey'
     })
-    when(mockSodiumClient.generateArgon2Parametrization()).thenResolve('newParametrization')
+    when(mockSodiumClient.generateNewParametrization()).thenResolve('newParametrization')
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('newParametrization', 'passwordB')).thenResolve({
       authDigest: 'newAuthDigest',
       encryptionKey: 'newEncryptionKey'
