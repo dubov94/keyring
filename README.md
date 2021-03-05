@@ -7,14 +7,15 @@
 
 ### Development
 
-Install Python (with PIP), Java 11 and [Bazel](https://bazel.build) on a Linux
-distribution.
+Install Python (with PIP), Java 11 and
+[Bazelisk](https://docs.bazel.build/versions/master/install-bazelisk.html) on a
+Linux distribution.
 
 Set up [Redis](https://redis.io/) and [PostgreSQL](https://www.postgresql.org/)
 with `postgres:postgres` as an authentication pair. Create database `keyring`.
 
-Run `bazel run //:backends` to spin up backends and `bazel run //pwa:serve` to
-serve frontend.
+Run `bazelisk run //:backends` to spin up backends and `bazelisk run //pwa:serve`
+to serve frontend.
 
 ### Production
 
