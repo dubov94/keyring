@@ -3,7 +3,7 @@ services:
   reverse-proxy:
     image: dubov94/keyring-reverse-proxy
     volumes:
-      - '$HOME/.caddy:/root/.caddy'
+      - '/root/caddy:/root/.caddy'
     # https://github.com/moby/moby/issues/25526
     ports:
       - mode: host

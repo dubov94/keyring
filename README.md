@@ -21,5 +21,6 @@ to serve frontend.
 
 Initialize a cluster by executing `docker swarm init`. Set up all the secrets
 mentioned in `docker-compose.yml` via `docker secret create`. Create volume
-directories at `/root/postgres`, `/root/redis` and `/root/geo_ip`. Finally,
-deploy the stack (`docker stack deploy --compose-file=docker-compose.yml keyring`).
+directories at `/root/caddy`, `/root/postgres`, `/root/redis` and `/root/geo_ip`.
+Finally, deploy the stack
+(`docker stack deploy --compose-file=docker-compose.yml keyring`).
