@@ -83,6 +83,8 @@ export const parseArgon2Parametrization = (parametrization: string): Argon2Param
   }
 }
 
+// https://tools.ietf.org/html/draft-irtf-cfrg-argon2-12#section-4
+// https://github.com/golang/crypto/blob/5ea612d1eb830b38bc4e914e37f55311eb58adce/argon2/argon2.go
 export const recommendedArgon2Settings = (): Argon2Settings => ({
   type: 'argon2id',
   version: 'latest',

@@ -18,8 +18,6 @@ export class SodiumClient {
 
   async generateNewParametrization (): Promise<string> {
     const salt = await this.sodiumWorkerInterface.toBase64(await this.sodiumWorkerInterface.generateSalt())
-    // https://tools.ietf.org/html/draft-irtf-cfrg-argon2-12#section-4
-    // https://github.com/golang/crypto/blob/5ea612d1eb830b38bc4e914e37f55311eb58adce/argon2/argon2.go
     return serializeArgon2Parametrization({
       separator: '$',
       settings: recommendedArgon2Settings(),
