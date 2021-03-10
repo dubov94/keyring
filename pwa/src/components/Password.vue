@@ -7,13 +7,17 @@
   .chip >>> .chip__content {
     cursor: pointer;
   }
+
+  .key {
+    font-family: 'Roboto Mono', monospace;
+  }
 </style>
 
 <template>
   <v-card>
     <v-card-title>
       <v-text-field :type="reveal ? 'text' : 'password'" solo flat readonly
-        :value="value"></v-text-field>
+        class="key" :value="value"></v-text-field>
       <v-btn icon @click="copyText(value)">
         <v-icon small>fa-copy</v-icon>
       </v-btn>

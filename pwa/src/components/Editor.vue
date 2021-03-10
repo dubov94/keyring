@@ -36,6 +36,7 @@
   .key {
     border-radius: 28px;
     margin: 0 4px;
+    font-family: 'Roboto Mono', monospace;
   }
 
   .key >>> input,
