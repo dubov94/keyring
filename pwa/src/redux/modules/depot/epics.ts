@@ -6,11 +6,11 @@ import { isActionOf } from 'typesafe-actions'
 import { userKeysUpdate } from '../user/keys/actions'
 import { monoid } from 'fp-ts'
 import { disjunction } from '@/redux/predicates'
-import { isActionSuccess } from '@/redux/flow_signal'
+import { isActionSuccess2 } from '@/redux/flow_signal'
 import { EMPTY, from, of } from 'rxjs'
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { activateDepot, depotActivationData, newVault } from './actions'
-import { masterKeyChangeSignal } from '../user/account/actions'
+import { masterKeyChangeSignal, rehashSignal } from '../user/account/actions'
 
 export const updateVaultEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(monoid.fold(disjunction)([isActionOf(depotActivationData), isActionOf(userKeysUpdate)])),
@@ -39,8 +39,8 @@ export const activateDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
   })))
 )
 
-export const changeMasterKeyEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
-  filter(isActionSuccess(masterKeyChangeSignal)),
+export const masterKeyUpdateEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionSuccess2([masterKeyChangeSignal, rehashSignal])),
   withLatestFrom(state$),
   switchMap(([action, state]) => state.depot.username === null ? EMPTY : of(activateDepot({
     username: state.depot.username,

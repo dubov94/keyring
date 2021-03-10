@@ -49,9 +49,8 @@ export interface MasterKeyChangeData {
   newEncryptionKey: string;
   newSessionKey: string;
 }
-export const masterKeyChangeSignal = createAction('user/account/masterKeyChangeSignal')<DeepReadonly<
-  FlowSignal<MasterKeyChangeFlowIndicator, MasterKeyChangeData, StandardError<ServiceChangeMasterKeyResponseError>>
->>()
+export type MasterKeyChangeSignal = FlowSignal<MasterKeyChangeFlowIndicator, MasterKeyChangeData, StandardError<ServiceChangeMasterKeyResponseError>>
+export const masterKeyChangeSignal = createAction('user/account/masterKeyChangeSignal')<DeepReadonly<MasterKeyChangeSignal>>()
 export const masterKeyChangeReset = createAction('user/account/masterKeyChangeReset')()
 
 export enum UsernameChangeFlowIndicator {
@@ -84,3 +83,5 @@ export const accountDeletionSignal = createAction('user/account/accountDeletionS
 export const accountDeletionReset = createAction('user/account/accountDeletionReset')()
 
 export const remoteCredentialsMismatchLocal = createAction('user/account/remoteCredentialsMismatchLocal')()
+
+export const rehashSignal = createAction('user/account/rehashSignal')<DeepReadonly<MasterKeyChangeSignal>>()

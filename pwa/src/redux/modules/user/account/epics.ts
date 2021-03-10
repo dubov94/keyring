@@ -1,11 +1,11 @@
 import { getAdministrationApi } from '@/api/api_di'
-import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success } from '@/redux/flow_signal'
+import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success, isActionSuccess2 } from '@/redux/flow_signal'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
 import { Epic } from 'redux-observable'
-import { asapScheduler, concat, EMPTY, forkJoin, from, of } from 'rxjs'
+import { asapScheduler, concat, EMPTY, forkJoin, from, Observable, of } from 'rxjs'
 import { filter, withLatestFrom, switchMap, catchError, defaultIfEmpty, concatMap } from 'rxjs/operators'
-import { isActionOf } from 'typesafe-actions'
+import { isActionOf, PayloadAction, TypeConstant } from 'typesafe-actions'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,
@@ -28,7 +28,9 @@ import {
   releaseMailToken,
   UsernameChangeFlowIndicator,
   usernameChangeReset,
-  usernameChangeSignal
+  usernameChangeSignal,
+  MasterKeyChangeSignal,
+  rehashSignal
 } from './actions'
 import {
   ServiceReleaseMailTokenResponse,
@@ -46,6 +48,8 @@ import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { Password } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
+import { DeepReadonly } from 'ts-essentials'
+import { authnViaApiSignal, backgroundAuthnSignal } from '../../authn/actions'
 
 export const logOutEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(logOut)),
@@ -129,55 +133,63 @@ export const acquireMailTokenEpic: Epic<RootAction, RootAction, RootState> = (ac
 
 export const displayMailTokenAcquisitionExceptionsEpic = createDisplayExceptionsEpic(mailTokenAcquisitionSignal)
 
+const masterKeyChange = <T extends TypeConstant>(
+  { current, renewal }: { current: string; renewal: string },
+  state: RootState,
+  signalCreator: (payload: DeepReadonly<MasterKeyChangeSignal>) => PayloadAction<T, DeepReadonly<MasterKeyChangeSignal>> & RootAction
+): Observable<RootAction> => {
+  return concat(
+    of(signalCreator(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING))),
+    from(getSodiumClient().computeAuthDigestAndEncryptionKey(state.user.account.parametrization!, current)).pipe(
+      switchMap(({ authDigest }) => from(getSodiumClient().generateNewParametrization()).pipe(
+        switchMap((newParametrization) => from(getSodiumClient().computeAuthDigestAndEncryptionKey(newParametrization, renewal)).pipe(
+          switchMap((newDerivatives) => forkJoin(state.user.keys.userKeys.map(async ({ identifier, value, tags }) => ({
+            identifier,
+            password: await getSodiumClient().encryptPassword(newDerivatives.encryptionKey, { value, tags })
+          }))).pipe(
+            defaultIfEmpty(<{ identifier: string; password: Password }[]>[]),
+            switchMap((keys) => concat(
+              of(signalCreator(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST))),
+              from(getAdministrationApi().changeMasterKey({
+                currentDigest: authDigest,
+                renewal: {
+                  salt: newParametrization,
+                  digest: newDerivatives.authDigest,
+                  keys
+                }
+              }, {
+                headers: {
+                  [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
+                }
+              })).pipe(switchMap((response: ServiceChangeMasterKeyResponse) => {
+                switch (response.error) {
+                  case ServiceChangeMasterKeyResponseError.NONE:
+                    return of(signalCreator(success({
+                      newMasterKey: renewal,
+                      newParametrization,
+                      newEncryptionKey: newDerivatives.encryptionKey,
+                      newSessionKey: response.sessionKey!
+                    })))
+                  default:
+                    return of(signalCreator(failure(response.error!)))
+                }
+              }))
+            ))
+          ))
+        ))
+      ))
+    )
+  ).pipe(
+    catchError((error) => of(signalCreator(exception(errorToMessage(error)))))
+  )
+}
+
 export const changeMasterKeyEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf([changeMasterKey, masterKeyChangeReset])),
   withLatestFrom(state$),
   switchMap(([action, state]) => {
     if (isActionOf(changeMasterKey, action)) {
-      return concat(
-        of(masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING))),
-        from(getSodiumClient().computeAuthDigestAndEncryptionKey(state.user.account.parametrization!, action.payload.current)).pipe(
-          switchMap(({ authDigest }) => from(getSodiumClient().generateNewParametrization()).pipe(
-            switchMap((newParametrization) => from(getSodiumClient().computeAuthDigestAndEncryptionKey(newParametrization, action.payload.renewal)).pipe(
-              switchMap((newDerivatives) => forkJoin(state.user.keys.userKeys.map(async ({ identifier, value, tags }) => ({
-                identifier,
-                password: await getSodiumClient().encryptPassword(newDerivatives.encryptionKey, { value, tags })
-              }))).pipe(
-                defaultIfEmpty(<{ identifier: string; password: Password }[]>[]),
-                switchMap((keys) => concat(
-                  of(masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST))),
-                  from(getAdministrationApi().changeMasterKey({
-                    currentDigest: authDigest,
-                    renewal: {
-                      salt: newParametrization,
-                      digest: newDerivatives.authDigest,
-                      keys
-                    }
-                  }, {
-                    headers: {
-                      [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
-                    }
-                  })).pipe(switchMap((response: ServiceChangeMasterKeyResponse) => {
-                    switch (response.error) {
-                      case ServiceChangeMasterKeyResponseError.NONE:
-                        return of(masterKeyChangeSignal(success({
-                          newMasterKey: action.payload.renewal,
-                          newParametrization,
-                          newEncryptionKey: newDerivatives.encryptionKey,
-                          newSessionKey: response.sessionKey!
-                        })))
-                      default:
-                        return of(masterKeyChangeSignal(failure(response.error!)))
-                    }
-                  }))
-                ))
-              ))
-            ))
-          ))
-        )
-      ).pipe(
-        catchError((error) => of(masterKeyChangeSignal(exception(errorToMessage(error)))))
-      )
+      return masterKeyChange(action.payload, state, masterKeyChangeSignal)
     } else if (isActionOf(masterKeyChangeReset, action)) {
       return of(masterKeyChangeSignal(cancel()))
     }
@@ -273,4 +285,16 @@ export const logOutOnDeletionSuccessEpic: Epic<RootAction, RootAction, RootState
 export const logOutOnCredentialsMismatchEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(remoteCredentialsMismatchLocal)),
   concatMap(() => of(logOut()))
+)
+
+export const rehashEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal])),
+  withLatestFrom(state$),
+  switchMap(([action, state]) => {
+    const { parametrization, password } = action.payload.data
+    if (!getSodiumClient().isParametrizationUpToDate(parametrization)) {
+      return masterKeyChange({ current: password, renewal: password }, state, rehashSignal)
+    }
+    return EMPTY
+  })
 )

@@ -23,6 +23,7 @@ import {
   MasterKeyChangeFlowIndicator,
   masterKeyChangeReset,
   masterKeyChangeSignal,
+  rehashSignal,
   releaseMailToken,
   remoteCredentialsMismatchLocal,
   UsernameChangeFlowIndicator,
@@ -41,7 +42,8 @@ import {
   logOutOnCredentialsMismatchEpic,
   releaseMailTokenEpic,
   changeMasterKeyEpic,
-  displayMasterKeyChangeExceptionsEpic
+  displayMasterKeyChangeExceptionsEpic,
+  rehashEpic
 } from './epics'
 import {
   AdministrationApi,
@@ -59,7 +61,7 @@ import {
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { container } from 'tsyringe'
 import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
-import { registrationSignal } from '../../authn/actions'
+import { authnViaApiSignal, registrationSignal } from '../../authn/actions'
 import { showToast } from '../../ui/toast/actions'
 import { SodiumClient } from '@/cryptography/sodium_client'
 import { emplace } from '../keys/actions'
@@ -550,6 +552,75 @@ describe('displayMasterKeyChangeExceptionsEpic', () => {
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
+    ])
+  })
+})
+
+describe('rehashEpic', () => {
+  it('emits rehash sequence', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(registrationSignal(success({
+      username: 'username',
+      parametrization: 'parametrization',
+      encryptionKey: 'encryptionKey',
+      sessionKey: 'sessionKey'
+    })))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockSodiumClient = mock(SodiumClient)
+    when(mockSodiumClient.isParametrizationUpToDate('parametrization')).thenReturn(false)
+    when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
+      authDigest: 'authDigest',
+      encryptionKey: 'encryptionKey'
+    })
+    when(mockSodiumClient.generateNewParametrization()).thenResolve('newParametrization')
+    when(mockSodiumClient.computeAuthDigestAndEncryptionKey('newParametrization', 'password')).thenResolve({
+      authDigest: 'newAuthDigest',
+      encryptionKey: 'newEncryptionKey'
+    })
+    container.register(SodiumClient, {
+      useValue: instance(mockSodiumClient)
+    })
+    const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
+    when(mockAdministrationApi.changeMasterKey(
+      deepEqual({
+        currentDigest: 'authDigest',
+        renewal: {
+          salt: 'newParametrization',
+          digest: 'newAuthDigest',
+          keys: []
+        }
+      }),
+      deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
+    )).thenResolve(<ServiceChangeMasterKeyResponse>{
+      error: ServiceChangeMasterKeyResponseError.NONE,
+      sessionKey: 'newSessionKey'
+    })
+    container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
+      useValue: instance(mockAdministrationApi)
+    })
+
+    const epicTracker = new EpicTracker(rehashEpic(action$, state$, {}))
+    actionSubject.next(authnViaApiSignal(success({
+      username: 'username',
+      password: 'password',
+      parametrization: 'parametrization',
+      encryptionKey: 'encryptionKey',
+      sessionKey: 'sessionKey',
+      requiresMailVerification: false,
+      userKeys: []
+    })))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      rehashSignal(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING)),
+      rehashSignal(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST)),
+      rehashSignal(success({
+        newMasterKey: 'password',
+        newParametrization: 'newParametrization',
+        newEncryptionKey: 'newEncryptionKey',
+        newSessionKey: 'newSessionKey'
+      }))
     ])
   })
 })

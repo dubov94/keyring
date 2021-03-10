@@ -3,6 +3,7 @@ import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from './sodium_w
 import { Password } from '@/redux/entities'
 import { DeepReadonly } from 'ts-essentials'
 import { parseArgon2Parametrization, recommendedArgon2Settings, serializeArgon2Parametrization } from './argon2'
+import isEqual from 'lodash/isEqual'
 
 const AUTH_DIGEST_SIZE_IN_BYTES = 32
 const ENCRYPTION_KEY_SIZE_IN_BYTES = 32
@@ -23,6 +24,11 @@ export class SodiumClient {
       settings: recommendedArgon2Settings(),
       salt
     })
+  }
+
+  isParametrizationUpToDate (parametrization: string): boolean {
+    const struct = parseArgon2Parametrization(parametrization)
+    return isEqual(struct.settings, recommendedArgon2Settings())
   }
 
   private async computeArgon2HashForDigestAndKey (parametrization: string, password: string): Promise<Uint8Array> {
