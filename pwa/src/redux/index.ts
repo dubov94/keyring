@@ -89,6 +89,7 @@ const SESSION_LIFETIME_IN_MILLIS = 5 * 60 * 1000
 
 fromEvent(document, 'visibilitychange').pipe(switchMap(() => {
   if (document.visibilityState !== 'visible') {
+    // https://stackoverflow.com/q/6346849
     return timer(SESSION_LIFETIME_IN_MILLIS)
   }
   return EMPTY
