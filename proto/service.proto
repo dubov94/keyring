@@ -50,13 +50,7 @@ message LogInResponse {
     }
 
     message Payload {
-        reserved 2, 3;
-
-        enum Requirement {
-            NONE = 0;
-            MAIL = 1;
-        }
-        repeated Requirement requirements = 5 [deprecated = true];
+        reserved 2, 3, 5;
 
         message KeySet {
             repeated IdentifiedKey items = 1;
