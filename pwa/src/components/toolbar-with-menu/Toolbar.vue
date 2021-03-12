@@ -8,6 +8,10 @@
     <slot>
       <v-spacer></v-spacer>
     </slot>
+    <v-btn icon href="https://github.com/dubov94/keyring" target="_blank"
+      rel="noopener noreferrer">
+      <v-icon>help_outline</v-icon>
+    </v-btn>
     <v-btn v-if="!isAuthenticated" icon to="/log-in">
       <v-icon>login</v-icon>
     </v-btn>
