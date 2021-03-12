@@ -18,7 +18,7 @@ export const releaseMailToken = createAction('user/account/releaseMailToken')<De
   code: string;
 }>>()
 export const mailTokenReleaseSignal = createAction('user/account/mailTokenReleaseSignal')<DeepReadonly<
-  FlowSignal<MailTokenReleaseFlowIndicator, {}, StandardError<ServiceReleaseMailTokenResponseError>>
+  FlowSignal<MailTokenReleaseFlowIndicator, string, StandardError<ServiceReleaseMailTokenResponseError>>
 >>()
 export const mailTokenReleaseReset = createAction('user/account/mailTokenReleaseReset')()
 

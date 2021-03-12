@@ -39,6 +39,7 @@ describe('authnViaApi', () => {
     encryptionKey: 'encryptionKey',
     sessionKey: 'sessionKey',
     requiresMailVerification: false,
+    mail: 'mail@example.com',
     userKeys: []
   }))
 

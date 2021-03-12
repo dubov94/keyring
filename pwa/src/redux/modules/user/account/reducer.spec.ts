@@ -32,6 +32,7 @@ describe('onlineAuthnSignal', () => {
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
       requiresMailVerification: false,
+      mail: 'mail@example.com',
       userKeys: []
     })),
     backgroundAuthnSignal(success({
@@ -41,6 +42,7 @@ describe('onlineAuthnSignal', () => {
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
       requiresMailVerification: false,
+      mail: 'mail@example.com',
       userKeys: []
     }))
   ].forEach((trigger) => {
@@ -52,6 +54,7 @@ describe('onlineAuthnSignal', () => {
       expect(state.encryptionKey).to.equal('encryptionKey')
       expect(state.sessionKey).to.equal('sessionKey')
       expect(state.requiresMailVerification).to.be.false
+      expect(state.mail).to.equal('mail@example.com')
     })
   })
 })
@@ -71,7 +74,7 @@ describe('authnViaDepotSignal', () => {
 })
 
 describe('mailTokenRelease', () => {
-  const signalAction = mailTokenReleaseSignal(success({}))
+  const signalAction = mailTokenReleaseSignal(success('mail@example.com'))
 
   describe('mailTokenReleaseSignal', () => {
     it('updates the result', () => {
@@ -84,6 +87,12 @@ describe('mailTokenRelease', () => {
       const state = reducer(undefined, signalAction)
 
       expect(state.requiresMailVerification).to.be.false
+    })
+
+    it('sets `mail` to the new mail', () => {
+      const state = reducer(undefined, signalAction)
+
+      expect(state.mail).to.equal('mail@example.com')
     })
   })
 

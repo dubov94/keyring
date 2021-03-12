@@ -93,9 +93,9 @@ describe('ChangeMail', () => {
     await wrapper.vm.$nextTick()
     await getCodeInput().setValue('123456')
     await getSubmitButton().trigger('click')
-    store.dispatch(mailTokenReleaseSignal(success({})))
+    store.dispatch(mailTokenReleaseSignal(success('mail@example.com')))
     await wrapper.vm.$nextTick()
-    $actions.next(mailTokenReleaseSignal(success({})))
+    $actions.next(mailTokenReleaseSignal(success('mail@example.com')))
     await wrapper.vm.$nextTick()
 
     expect(getValue(getNewMailInput())).to.be.empty

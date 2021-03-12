@@ -87,8 +87,10 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
               .setError(ReleaseMailTokenResponse.Error.INVALID_CODE)
               .build());
     } else {
-      accountOperationsInterface.releaseMailToken(maybeMailToken.get().getIdentifier());
-      response.onNext(ReleaseMailTokenResponse.getDefaultInstance());
+      MailToken mailToken = maybeMailToken.get();
+      accountOperationsInterface.releaseMailToken(mailToken.getIdentifier());
+      response.onNext(
+          ReleaseMailTokenResponse.newBuilder().setMail(mailToken.getMail()).build());
     }
     response.onCompleted();
   }

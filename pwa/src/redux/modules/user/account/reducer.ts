@@ -35,7 +35,8 @@ export default createReducer<{
   encryptionKey: string | null;
   sessionKey: string | null;
   requiresMailVerification: boolean;
-  mailTokenRelease: RemoteData<MailTokenReleaseFlowIndicator, {}, StandardError<ServiceReleaseMailTokenResponseError>>;
+  mail: string | null;
+  mailTokenRelease: RemoteData<MailTokenReleaseFlowIndicator, string, StandardError<ServiceReleaseMailTokenResponseError>>;
   mailTokenAcquisition: RemoteData<MailTokenAcquisitionFlowIndicator, string, StandardError<ServiceAcquireMailTokenResponseError>>;
   masterKeyChange: RemoteData<MasterKeyChangeFlowIndicator, {}, StandardError<ServiceChangeMasterKeyResponseError>>;
   usernameChange: RemoteData<UsernameChangeFlowIndicator, {}, StandardError<ServiceChangeUsernameResponseError>>;
@@ -47,6 +48,7 @@ export default createReducer<{
     encryptionKey: null,
     sessionKey: null,
     requiresMailVerification: true,
+    mail: null,
     mailTokenRelease: zero(),
     mailTokenAcquisition: zero(),
     masterKeyChange: zero(),
@@ -69,6 +71,7 @@ export default createReducer<{
       state.encryptionKey = flowSuccess.encryptionKey
       state.sessionKey = flowSuccess.sessionKey
       state.requiresMailVerification = flowSuccess.requiresMailVerification
+      state.mail = flowSuccess.mail
     })
     .addMatcher(isActionSuccess(authnViaDepotSignal), (state) => {
       state.isAuthenticated = true
@@ -77,12 +80,13 @@ export default createReducer<{
     .addMatcher(isActionOf(mailTokenReleaseSignal), (state, action) => {
       state.mailTokenRelease = reducer(
         identity<MailTokenReleaseFlowIndicator>(),
-        () => ({}),
+        identity<string>(),
         identity<StandardError<ServiceReleaseMailTokenResponseError>>()
       )(state.mailTokenRelease, action.payload)
     })
-    .addMatcher(isActionSuccess(mailTokenReleaseSignal), (state) => {
+    .addMatcher(isActionSuccess(mailTokenReleaseSignal), (state, action) => {
       state.requiresMailVerification = false
+      state.mail = action.payload.data
     })
     .addMatcher(isActionOf(mailTokenReleaseReset), (state) => {
       state.mailTokenRelease = withNoResult(state.mailTokenRelease)

@@ -42,6 +42,7 @@ export interface AuthnViaApiFlowResult {
   encryptionKey: string;
   sessionKey: string;
   requiresMailVerification: boolean;
+  mail: string | null;
   userKeys: Key[];
 }
 export const logInViaApi = createAction('authn/logInViaApi')<DeepReadonly<{

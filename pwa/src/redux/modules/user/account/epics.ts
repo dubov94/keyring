@@ -77,7 +77,7 @@ export const releaseMailTokenEpic: Epic<RootAction, RootAction, RootState> = (ac
         })).pipe(switchMap((response: ServiceReleaseMailTokenResponse) => {
           switch (response.error) {
             case ServiceReleaseMailTokenResponseError.NONE:
-              return of(mailTokenReleaseSignal(success({})))
+              return of(mailTokenReleaseSignal(success(response.mail!)))
             default:
               return of(mailTokenReleaseSignal(failure(response.error!)))
           }

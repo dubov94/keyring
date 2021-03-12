@@ -128,6 +128,7 @@ const apiAuthn = <T extends TypeConstant>(
                                 encryptionKey,
                                 sessionKey: logInResponse.payload!.sessionKey!,
                                 requiresMailVerification: logInResponse.payload!.requiresMailVerification!,
+                                mail: logInResponse.payload!.mail! || null,
                                 userKeys
                               }))))
                             )

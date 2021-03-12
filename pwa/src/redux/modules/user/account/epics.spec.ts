@@ -81,7 +81,8 @@ describe('releaseMailTokenEpic', () => {
       deepEqual({ code: 'code' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceReleaseMailTokenResponse>{
-      error: ServiceReleaseMailTokenResponseError.NONE
+      error: ServiceReleaseMailTokenResponseError.NONE,
+      mail: 'mail@example.com'
     })
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
       useValue: instance(mockAdministrationApi)
@@ -94,7 +95,7 @@ describe('releaseMailTokenEpic', () => {
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       mailTokenReleaseSignal(indicator(MailTokenReleaseFlowIndicator.WORKING)),
-      mailTokenReleaseSignal(success({}))
+      mailTokenReleaseSignal(success('mail@example.com'))
     ])
   })
 
@@ -607,6 +608,7 @@ describe('rehashEpic', () => {
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
       requiresMailVerification: false,
+      mail: 'mail@example.com',
       userKeys: []
     })))
     actionSubject.complete()

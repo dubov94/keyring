@@ -223,6 +223,7 @@ describe('inheritKeysFromAuthnDataEpic', () => {
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
       requiresMailVerification: false,
+      mail: 'mail@example.com',
       userKeys
     })),
     authnViaDepotSignal(success({
@@ -238,6 +239,7 @@ describe('inheritKeysFromAuthnDataEpic', () => {
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
       requiresMailVerification: false,
+      mail: 'mail@example.com',
       userKeys
     }))
   ].forEach((trigger) => {

@@ -67,7 +67,7 @@ describe('MailVerification', () => {
   })
 
   it('redirects on completion', async () => {
-    $actions.next(mailTokenReleaseSignal(success({})))
+    $actions.next(mailTokenReleaseSignal(success('mail@example.com')))
     await wrapper.vm.$nextTick()
 
     expect(router.currentRoute.path).to.equal('/dashboard')

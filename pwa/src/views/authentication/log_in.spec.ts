@@ -109,6 +109,7 @@ describe('LogIn', () => {
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
       requiresMailVerification: false,
+      mail: 'mail@example.com',
       userKeys: []
     })))
     await wrapper.vm.$nextTick()

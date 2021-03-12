@@ -144,6 +144,7 @@ describe('logInViaApiEpic', () => {
       payload: {
         sessionKey: 'sessionKey',
         requiresMailVerification: false,
+        mail: 'mail@example.com',
         keySet: {
           items: [{
             identifier: 'identifier',
@@ -194,6 +195,7 @@ describe('logInViaApiEpic', () => {
         encryptionKey: 'encryptionKey',
         sessionKey: 'sessionKey',
         requiresMailVerification: false,
+        mail: 'mail@example.com',
         userKeys: [{
           identifier: 'identifier',
           value: 'value',
@@ -219,6 +221,7 @@ describe('logInViaApiEpic', () => {
       payload: {
         sessionKey: 'sessionKey',
         requiresMailVerification: false,
+        mail: 'mail@example.com',
         keySet: { items: [] }
       }
     })
@@ -254,6 +257,7 @@ describe('logInViaApiEpic', () => {
         encryptionKey: 'encryptionKey',
         sessionKey: 'sessionKey',
         requiresMailVerification: false,
+        mail: 'mail@example.com',
         userKeys: []
       }))
     ])

@@ -84,16 +84,18 @@ class AdministrationServiceTest {
   }
 
   @Test
-  void releaseMailToken_codeExists_repliesWithDefault() {
+  void releaseMailToken_codeExists_repliesWithMail() {
     long userIdentifier = user.getIdentifier();
     when(mockAccountOperationsInterface.getMailToken(userIdentifier, "0"))
-        .thenReturn(Optional.of(new MailToken().setIdentifier(1)));
+        .thenReturn(Optional.of(
+            new MailToken().setIdentifier(1).setMail("mail@example.com")));
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder().setCode("0").build(), mockStreamObserver);
 
     verify(mockAccountOperationsInterface).releaseMailToken(1);
-    verify(mockStreamObserver).onNext(ReleaseMailTokenResponse.getDefaultInstance());
+    verify(mockStreamObserver).onNext(
+        ReleaseMailTokenResponse.newBuilder().setMail("mail@example.com").build());
     verify(mockStreamObserver).onCompleted();
   }
 

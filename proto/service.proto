@@ -58,6 +58,7 @@ message LogInResponse {
 
         string session_key = 1;
         bool requires_mail_verification = 6;
+        string mail = 7;
         KeySet key_set = 4;
     }
 
@@ -108,6 +109,7 @@ message ReleaseMailTokenResponse {
     }
 
     Error error = 1;
+    string mail = 2;
 }
 
 message KeepAliveRequest {
