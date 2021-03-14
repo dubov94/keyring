@@ -1,3 +1,4 @@
+import { Score } from '@/cryptography/strength_test_service'
 import { Session } from '@/redux/entities'
 import { FlowSignal, StandardError } from '@/redux/flow_signal'
 import { DeepReadonly } from 'ts-essentials'
@@ -24,4 +25,12 @@ export enum ExposedUserKeyIdsSearchFlowIndicator {
 }
 export const exposedUserKeyIdsSearchSignal = createAction('user/security/exposedUserKeyIdsSearchSignal')<DeepReadonly<
   FlowSignal<ExposedUserKeyIdsSearchFlowIndicator, string[], StandardError<void>>
+>>()
+
+export interface ScoredKey {
+  identifier: string;
+  score: Score;
+}
+export const vulnerableKeysSearchSignal = createAction('user/security/vulnerableKeysSearchSignal')<DeepReadonly<
+  FlowSignal<void, ScoredKey[], void>
 >>()

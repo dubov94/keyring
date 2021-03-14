@@ -16,7 +16,9 @@ import {
   fetchRecentSessions,
   RecentSessionsRetrievalFlowIndicator,
   recentSessionsRetrievalReset,
-  recentSessionsRetrievalSignal
+  recentSessionsRetrievalSignal,
+  ScoredKey,
+  vulnerableKeysSearchSignal
 } from './actions'
 import {
   GetRecentSessionsResponseSession,
@@ -29,6 +31,7 @@ import { container } from 'tsyringe'
 import { function as fn, array, option } from 'fp-ts'
 import { DeepReadonly } from 'ts-essentials'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
+import { Color, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
 
 const convertMessageToSession = (message: GetRecentSessionsResponseSession): Session => ({
   // `int64`.
@@ -139,3 +142,35 @@ export const exposedUserKeyIdsSearchEpic: Epic<RootAction, RootAction, RootState
 )
 
 export const displayExposedUserKeyIdsSearchExceptionsEpic = createDisplayExceptionsEpic(exposedUserKeyIdsSearchSignal)
+
+const getVulnerableKeys = (userKeys: Key[]): Observable<ScoredKey[]> => {
+  const strengthTestService = container.resolve<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN)
+  return of(fn.pipe(
+    userKeys,
+    array.map((item: Key) => <ScoredKey>({
+      identifier: item.identifier,
+      score: strengthTestService.score(item.value, item.tags)
+    })),
+    array.filter((value) => value.score.color !== Color.GREEN)
+  ))
+}
+
+export const vulnerableKeysSearchEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionOf([enableAnalysis, disableAnalysis])),
+  switchMap((action) => {
+    if (isActionOf(enableAnalysis, action)) {
+      const toSignal = (data: Observable<DeepReadonly<ScoredKey[]>>) => data.pipe(map(fn.flow(success, vulnerableKeysSearchSignal)))
+      return concat(
+        toSignal(getVulnerableKeys(state$.value.user.keys.userKeys)),
+        action$.pipe(
+          filter(isActionOf(userKeysUpdate)),
+          withLatestFrom(state$),
+          switchMap(([, state]) => toSignal(getVulnerableKeys(state.user.keys.userKeys)))
+        )
+      )
+    } else if (isActionOf(disableAnalysis, action)) {
+      return of(vulnerableKeysSearchSignal(cancel()))
+    }
+    return EMPTY
+  })
+)

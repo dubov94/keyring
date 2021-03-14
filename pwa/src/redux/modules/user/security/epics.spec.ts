@@ -14,14 +14,16 @@ import {
   exposedUserKeyIdsSearchSignal,
   fetchRecentSessions,
   RecentSessionsRetrievalFlowIndicator,
-  recentSessionsRetrievalSignal
+  recentSessionsRetrievalSignal,
+  vulnerableKeysSearchSignal
 } from './actions'
 import {
   displayExposedUserKeyIdsSearchExceptionsEpic,
   displayRecentSessionsRetrivalExceptionsEpic,
   duplicateGroupsSearchEpic,
   exposedUserKeyIdsSearchEpic,
-  fetchRecentSessionsEpic
+  fetchRecentSessionsEpic,
+  vulnerableKeysSearchEpic
 } from './epics'
 import {
   AdministrationApi,
@@ -34,6 +36,7 @@ import { showToast } from '../../ui/toast/actions'
 import { creationSignal, emplace, userKeysUpdate } from '../keys/actions'
 import { PwnedService, PWNED_SERVICE_TOKEN } from '@/cryptography/pwned_service'
 import { Key } from '@/redux/entities'
+import { Color, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
 
 describe('fetchRecentSessionsEpic', () => {
   it('emits fetching sequence', async () => {
@@ -223,6 +226,85 @@ describe('displayExposedUserKeyIdsSearchExceptionsEpic', () => {
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
+    ])
+  })
+})
+
+describe('vulnerableKeysSearchEpic', () => {
+  it('finds weaknesses in the initial state', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(emplace([
+      { identifier: '0', value: 'abc', tags: ['abc'] },
+      { identifier: '1', value: 'secure', tags: [] }
+    ]))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockStrengthTestService = mock<StrengthTestService>()
+    when(mockStrengthTestService.score('abc', deepEqual(['abc']))).thenReturn({
+      value: 0,
+      color: Color.RED
+    })
+    when(mockStrengthTestService.score('secure', deepEqual([]))).thenReturn({
+      value: 1,
+      color: Color.GREEN
+    })
+    container.register<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN, {
+      useValue: instance(mockStrengthTestService)
+    })
+
+    const epicTracker = new EpicTracker(vulnerableKeysSearchEpic(action$, state$, {}))
+    actionSubject.next(enableAnalysis())
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      vulnerableKeysSearchSignal(success([{
+        identifier: '0',
+        score: {
+          value: 0,
+          color: Color.RED
+        }
+      }]))
+    ])
+  })
+
+  it('reruns on user keys update', async () => {
+    const userKeys = [{ identifier: 'identifier', value: 'value', tags: [] }]
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockStrengthTestService = mock<StrengthTestService>()
+    when(mockStrengthTestService.score('value', deepEqual([]))).thenReturn({
+      value: 0,
+      color: Color.RED
+    })
+    container.register<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN, {
+      useValue: instance(mockStrengthTestService)
+    })
+
+    const epicTracker = new EpicTracker(vulnerableKeysSearchEpic(action$, state$, {}))
+    actionSubject.next(enableAnalysis())
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      vulnerableKeysSearchSignal(success([])))
+    store.dispatch(creationSignal(success(userKeys[0])))
+    actionSubject.next(userKeysUpdate(userKeys))
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      vulnerableKeysSearchSignal(success([{
+        identifier: 'identifier',
+        score: { value: 0, color: Color.RED }
+      }]))
+    )
+  })
+
+  it('emits search cancellation', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(vulnerableKeysSearchEpic(action$, state$, {}))
+    actionSubject.next(disableAnalysis())
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      vulnerableKeysSearchSignal(cancel())
     ])
   })
 })

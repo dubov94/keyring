@@ -1,3 +1,4 @@
+import { Color } from '@/cryptography/strength_test_service'
 import { success } from '@/redux/flow_signal'
 import { hasData } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
@@ -8,7 +9,8 @@ import {
   enableAnalysis,
   exposedUserKeyIdsSearchSignal,
   recentSessionsRetrievalReset,
-  recentSessionsRetrievalSignal
+  recentSessionsRetrievalSignal,
+  vulnerableKeysSearchSignal
 } from './actions'
 import reducer from './reducer'
 
@@ -72,6 +74,18 @@ describe('disableAnalysis', () => {
 
     expect(hasData(state.exposedUserKeyIds)).to.be.false
   })
+
+  it('clears `vulnerableKeys`', () => {
+    const state = reduce(reducer, undefined, [
+      vulnerableKeysSearchSignal(success([{
+        identifier: '0',
+        score: { value: 0, color: Color.RED }
+      }])),
+      disableAnalysis()
+    ])
+
+    expect(hasData(state.vulnerableKeys)).to.be.false
+  })
 })
 
 describe('duplicateGroupsSearchSignal', () => {
@@ -87,5 +101,16 @@ describe('exposedUserKeyIdsSearchSignal', () => {
     const state = reducer(undefined, exposedUserKeyIdsSearchSignal(success(['0'])))
 
     expect(hasData(state.exposedUserKeyIds)).to.be.true
+  })
+})
+
+describe('vulnerableKeysSearchSignal', () => {
+  it('updates the result', () => {
+    const state = reducer(undefined, vulnerableKeysSearchSignal(success([{
+      identifier: '0',
+      score: { value: 0, color: Color.RED }
+    }])))
+
+    expect(hasData(state.vulnerableKeys)).to.be.true
   })
 })

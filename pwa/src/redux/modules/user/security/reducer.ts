@@ -9,7 +9,9 @@ import {
   exposedUserKeyIdsSearchSignal,
   RecentSessionsRetrievalFlowIndicator,
   recentSessionsRetrievalReset,
-  recentSessionsRetrievalSignal
+  recentSessionsRetrievalSignal,
+  ScoredKey,
+  vulnerableKeysSearchSignal
 } from './actions'
 import { Session } from '@/redux/entities'
 import { StandardError } from '@/redux/flow_signal'
@@ -21,12 +23,14 @@ export default createReducer<{
   isAnalysisOn: boolean;
   duplicateGroups: RemoteData<void, string[][], void>;
   exposedUserKeyIds: RemoteData<ExposedUserKeyIdsSearchFlowIndicator, string[], StandardError<void>>;
+  vulnerableKeys: RemoteData<void, ScoredKey[], void>;
 }>(
   {
     recentSessions: zero(),
     isAnalysisOn: false,
     duplicateGroups: zero(),
-    exposedUserKeyIds: zero()
+    exposedUserKeyIds: zero(),
+    vulnerableKeys: zero()
   },
   (builder) => builder
     .addMatcher(isActionOf(recentSessionsRetrievalSignal), (state, action) => {
@@ -64,5 +68,15 @@ export default createReducer<{
     })
     .addMatcher(isActionOf(disableAnalysis), (state) => {
       state.exposedUserKeyIds = withNoResult(state.exposedUserKeyIds)
+    })
+    .addMatcher(isActionOf(vulnerableKeysSearchSignal), (state, action) => {
+      state.vulnerableKeys = castDraft(reducer(
+        identity<void>(),
+        identity<DeepReadonly<ScoredKey[]>>(),
+        identity<void>()
+      )(state.vulnerableKeys, action.payload))
+    })
+    .addMatcher(isActionOf(disableAnalysis), (state) => {
+      state.vulnerableKeys = withNoResult(state.vulnerableKeys)
     })
 )
