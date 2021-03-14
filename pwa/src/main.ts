@@ -25,6 +25,7 @@ import { AnyAction } from '@reduxjs/toolkit'
 import { VUE_CONSTRUCTOR_TOKEN } from './vue_di'
 import { sha1 } from './cryptography/sha1'
 import axios from 'axios'
+import { StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN, ZxcvbnService } from './cryptography/strength_test_service'
 
 container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
   useValue: SodiumWorker<SodiumWorkerInterface>()
@@ -44,6 +45,10 @@ container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
     (prefix) => axios.get<string>(
       `https://api.pwnedpasswords.com/range/${prefix}`).then(({ data }) => data)
   )
+})
+
+container.register<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN, {
+  useValue: new ZxcvbnService()
 })
 
 Vue.config.productionTip = false

@@ -34,8 +34,6 @@
   }
 
   .key {
-    border-radius: 28px;
-    margin: 0 4px;
     font-family: 'Roboto Mono', monospace;
   }
 
@@ -47,7 +45,7 @@
   /* Matches `.chip`. */
   .new-badge-button {
     border: none;
-    height: 34px;
+    height: 32px;
     margin: 4px;
     min-width: 0;
   }
@@ -73,8 +71,8 @@
           :append-icon="reveal ? 'visibility_off' : 'visibility'"
           :append-icon-cb="() => reveal = !reveal">
         </v-text-field>
-        <draggable v-model="draft.chips" :options="draggableOptions"
-          :move="move" class="mt-3">
+        <strength-score :value="strengthScore"></strength-score>
+        <draggable v-model="draft.chips" :options="draggableOptions" :move="move">
           <v-chip disabled outline class="elevation-3" color="black"
             :close="draft.chips.length > 1 || index > 0"
             v-for="(value, index) in draft.chips" :key="index"
@@ -133,6 +131,9 @@ import { DeepReadonly } from 'ts-essentials'
 import { isActionSuccess3 } from '@/redux/flow_signal'
 import { logOut } from '@/redux/modules/user/account/actions'
 import { isActionOf } from 'typesafe-actions'
+import { container } from 'tsyringe'
+import StrengthScore from './StrengthScore.vue'
+import { Score, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
 
 const PASSWORD_SUGGESTION_LENGTH = 12
 const TYPEWRITER_DELAY_IN_MILLIS = 50
@@ -174,6 +175,7 @@ export default Vue.extend({
   props: ['params'],
   components: {
     draggable: Draggable,
+    strengthScore: StrengthScore,
     yesNoDialog: YesNoDialog
   },
   data () {
@@ -241,6 +243,10 @@ export default Vue.extend({
     },
     inProgress (): boolean {
       return inProgress(this.$data.$state)
+    },
+    strengthScore (): Score {
+      const service = container.resolve<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN)
+      return service.score(this.draft.secret, this.draft.chips)
     }
   },
   methods: {

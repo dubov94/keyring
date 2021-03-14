@@ -1,3 +1,5 @@
+// For `tsyringe`.
+import 'reflect-metadata'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { createStore, Store } from '@reduxjs/toolkit'
@@ -8,6 +10,8 @@ import Editor from './Editor.vue'
 import { expect } from 'chai'
 import { create, delete_, emplace, update } from '@/redux/modules/user/keys/actions'
 import YesNoDialog from './YesNoDialog.vue'
+import { container } from 'tsyringe'
+import { Color, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
 
 describe('Editor', () => {
   let store: Store<RootState, RootAction>
@@ -15,6 +19,13 @@ describe('Editor', () => {
   let $actions: Subject<RootAction>
 
   beforeEach(() => {
+    container.register<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN, {
+      useValue: {
+        score () {
+          return { value: 0, color: Color.GREEN }
+        }
+      }
+    })
     store = createStore(reducer)
     actionQueue = new ActionQueue()
     $actions = new Subject()
