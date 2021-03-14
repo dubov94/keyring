@@ -93,6 +93,7 @@ DEPENDENCIES = [
     "@pwa_npm//@types/ua-parser-js",
     "@pwa_npm//@types/vuedraggable",
     "@pwa_npm//@types/vuelidate",
+    "@pwa_npm//@types/zxcvbn",
     "@pwa_npm//@reduxjs/toolkit",
     "@pwa_npm//@vue/cli-plugin-babel",
     "@pwa_npm//@vue/cli-plugin-eslint",
@@ -130,6 +131,7 @@ DEPENDENCIES = [
     "@pwa_npm//vuelidate",
     "@pwa_npm//vuetify",
     "@pwa_npm//workerize-loader",
+    "@pwa_npm//zxcvbn",
 ]
 
 vue_cli_launcher_test(
