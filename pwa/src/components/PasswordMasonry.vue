@@ -8,22 +8,32 @@
   <v-layout row wrap align-center>
     <v-flex v-for="item in userKeys" :key="item.identifier"
       class="masonry__brick" sm12 md6 lg4>
-      <password :identifier="item.identifier" :value="item.value"
-        :tags="item.tags" @edit="handleEditKey(item.identifier, $event)">
+      <password :identifier="item.identifier" :value="item.value" :tags="item.tags"
+        :score="item.score" @edit="handleEditKey(item.identifier, $event)">
       </password>
     </v-flex>
   </v-layout>
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
+import Vue, { PropType } from 'vue'
 import Password from './Password.vue'
+import { Key } from '@/redux/entities'
+import { Score } from '@/cryptography/strength_test_service'
+
+export interface ScoredKey extends Key {
+  score?: Score;
+}
 
 export default Vue.extend({
   components: {
     password: Password
   },
-  props: ['userKeys'],
+  props: {
+    userKeys: {
+      type: Array as PropType<ScoredKey[]>
+    }
+  },
   methods: {
     handleEditKey (identifier: string, { reveal }: { reveal: boolean }) {
       this.$emit('edit', { identifier, reveal })

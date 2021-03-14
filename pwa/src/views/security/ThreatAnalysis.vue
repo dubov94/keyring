@@ -28,6 +28,8 @@
     </duplicate-passwords>
     <compromised-passwords v-if="isAnalysisOn" class="mt-4" @edit="editKey">
     </compromised-passwords>
+    <vulnerable-passwords v-if="isAnalysisOn" class="mt-4" @edit="editKey">
+    </vulnerable-passwords>
     <editor v-if="showEditor" :params="editorParams" @close="closeEditor"></editor>
   </v-container>
 </template>
@@ -36,6 +38,7 @@
 import Vue from 'vue'
 import CompromisedPasswords from './CompromisedPasswords.vue'
 import DuplicatePasswords from './DuplicatePasswords.vue'
+import VulnerablePasswords from './VulnerablePasswords.vue'
 import Editor from '@/components/Editor.vue'
 import { isAnalysisOn } from '@/redux/modules/user/security/selectors'
 import { enableAnalysis, disableAnalysis } from '@/redux/modules/user/security/actions'
@@ -45,7 +48,8 @@ export default Vue.extend({
   components: {
     compromisedPasswords: CompromisedPasswords,
     duplicatePasswords: DuplicatePasswords,
-    editor: Editor
+    editor: Editor,
+    vulnerablePasswords: VulnerablePasswords
   },
   data () {
     return {

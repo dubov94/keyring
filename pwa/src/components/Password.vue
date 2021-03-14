@@ -39,15 +39,14 @@
         </v-list>
       </v-menu>
     </v-card-title>
-    <template v-if="tags.length > 0">
-      <v-divider></v-divider>
-      <v-card-text>
-        <v-chip disabled v-for="(label, index) in tags" :key="index"
-          color="white" class="elevation-3" @click="copyText(label)">
-          {{ label }}
-        </v-chip>
-      </v-card-text>
-    </template>
+    <strength-score v-if="showScore" :value="score"></strength-score>
+    <v-divider v-if="showTags && !showScore"></v-divider>
+    <v-card-text v-if="showTags">
+      <v-chip disabled v-for="(label, index) in tags" :key="index"
+        color="white" class="elevation-3" @click="copyText(label)">
+        {{ label }}
+      </v-chip>
+    </v-card-text>
   </v-card>
 </template>
 
@@ -55,17 +54,27 @@
 import Vue from 'vue'
 import { canAccessApi } from '@/redux/modules/user/account/selectors'
 import { showToast } from '@/redux/modules/ui/toast/actions'
+import StrengthScore from './StrengthScore.vue'
 
 export default Vue.extend({
-  props: ['identifier', 'value', 'tags'],
+  props: ['identifier', 'value', 'tags', 'score'],
+  components: {
+    strengthScore: StrengthScore
+  },
   data () {
     return {
       reveal: false
     }
   },
   computed: {
-    canAccessApi () {
+    canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
+    },
+    showTags (): boolean {
+      return this.tags.length > 0
+    },
+    showScore (): boolean {
+      return this.score !== undefined
     }
   },
   methods: {
