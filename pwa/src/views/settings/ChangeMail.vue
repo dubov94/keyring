@@ -14,6 +14,14 @@
       <v-toolbar-title>Change e-mail</v-toolbar-title>
     </v-toolbar>
     <v-card-text class="card-text">
+      <template v-if="showAccountMail">
+        <div class="py-3 text-xs-center">{{ accountMail }}</div>
+        <v-divider></v-divider>
+      </template>
+      <template v-if="showAcquisitionMail">
+        <div class="py-3 text-xs-center text--secondary">{{ acquisitionMail }}</div>
+        <v-divider></v-divider>
+      </template>
       <v-stepper :value="stage">
         <v-stepper-header>
           <v-stepper-step :complete="stage > 1" step="1">Request</v-stepper-step>
@@ -62,11 +70,18 @@
 import Vue, { VueConstructor } from 'vue'
 import { email, required } from 'vuelidate/lib/validators'
 import { ServiceAcquireMailTokenResponseError, ServiceReleaseMailTokenResponseError } from '@/api/definitions'
-import { canAccessApi, mailTokenAcquisition, MailTokenAcquisition, mailTokenRelease, MailTokenRelease } from '@/redux/modules/user/account/selectors'
+import {
+  canAccessApi,
+  mailTokenAcquisition,
+  MailTokenAcquisition,
+  mailTokenRelease,
+  MailTokenRelease,
+  accountMail
+} from '@/redux/modules/user/account/selectors'
 import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
 import { function as fn, option } from 'fp-ts'
 import { filter, takeUntil } from 'rxjs/operators'
-import { hasIndicator, error, hasData } from '@/redux/remote_data'
+import { hasIndicator, error, hasData, data } from '@/redux/remote_data'
 import {
   acquireMailToken,
   mailTokenAcquisitionReset,
@@ -150,8 +165,23 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
     },
+    accountMail (): string | null {
+      return accountMail(this.$data.$state)
+    },
+    showAccountMail (): boolean {
+      return this.stage === 1 && this.accountMail !== null
+    },
     mailTokenAcquisition (): DeepReadonly<MailTokenAcquisition> {
       return mailTokenAcquisition(this.$data.$state)
+    },
+    acquisitionMail (): string | null {
+      return fn.pipe(
+        data(this.mailTokenAcquisition),
+        option.getOrElse<string | null>(() => null)
+      )
+    },
+    showAcquisitionMail (): boolean {
+      return this.stage === 2 && this.acquisitionMail !== null
     },
     mailTokenRelease (): DeepReadonly<MailTokenRelease> {
       return mailTokenRelease(this.$data.$state)

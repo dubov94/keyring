@@ -17,9 +17,10 @@ import {
   ServiceDeleteAccountResponseError
 } from '@/api/definitions'
 
-export const isAuthenticated = (state: RootState): DeepReadonly<boolean> => state.user.account.isAuthenticated
-export const canAccessApi = (state: RootState): DeepReadonly<boolean> => state.user.account.sessionKey !== null
-export const requiresMailVerification = (state: RootState): DeepReadonly<boolean> => state.user.account.requiresMailVerification
+export const isAuthenticated = (state: RootState): boolean => state.user.account.isAuthenticated
+export const canAccessApi = (state: RootState): boolean => state.user.account.sessionKey !== null
+export const requiresMailVerification = (state: RootState): boolean => state.user.account.requiresMailVerification
+export const accountMail = (state: RootState): string | null => state.user.account.mail
 
 export type MailTokenAcquisition = RemoteData<MailTokenAcquisitionFlowIndicator, string, StandardError<ServiceAcquireMailTokenResponseError>>
 export const mailTokenAcquisition = (state: RootState): DeepReadonly<MailTokenAcquisition> => state.user.account.mailTokenAcquisition
