@@ -33,6 +33,10 @@
     padding: 0 4px;
   }
 
+  .key-with-score {
+    margin: 0 4px;
+  }
+
   .key {
     font-family: 'Roboto Mono', monospace;
   }
@@ -66,13 +70,16 @@
         <v-spacer></v-spacer>
       </v-card-actions>
       <v-card-text class="pt-0">
-        <v-text-field :type="reveal ? 'text' : 'password'"
-          solo class="key" v-model="draft.secret"
-          :append-icon="reveal ? 'visibility_off' : 'visibility'"
-          :append-icon-cb="() => reveal = !reveal">
-        </v-text-field>
-        <strength-score :value="strengthScore"></strength-score>
-        <draggable v-model="draft.chips" :options="draggableOptions" :move="move">
+        <div class="key-with-score">
+          <v-text-field :type="reveal ? 'text' : 'password'"
+            solo class="key" v-model="draft.secret"
+            :append-icon="reveal ? 'visibility_off' : 'visibility'"
+            :append-icon-cb="() => reveal = !reveal">
+          </v-text-field>
+          <strength-score class="mt-2" :value="strengthScore"></strength-score>
+        </div>
+        <draggable class="mt-3" v-model="draft.chips"
+          :options="draggableOptions" :move="move">
           <v-chip disabled outline class="elevation-3" color="black"
             :close="draft.chips.length > 1 || index > 0"
             v-for="(value, index) in draft.chips" :key="index"
