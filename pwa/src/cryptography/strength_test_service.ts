@@ -3,9 +3,9 @@ import zxcvbn from 'zxcvbn'
 export const STRENGTH_TEST_SERVICE_TOKEN = 'StrengthTestService'
 
 export enum Color {
-  RED,
-  YELLOW,
-  GREEN
+  RED = 'RED',
+  YELLOW = 'YELLOW',
+  GREEN = 'GREEN'
 }
 
 export interface Score {
