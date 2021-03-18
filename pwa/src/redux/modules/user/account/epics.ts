@@ -30,7 +30,7 @@ import {
   usernameChangeReset,
   usernameChangeSignal,
   MasterKeyChangeSignal,
-  rehashSignal
+  remoteRehashSignal
 } from './actions'
 import {
   ServiceReleaseMailTokenResponse,
@@ -287,13 +287,13 @@ export const logOutOnCredentialsMismatchEpic: Epic<RootAction, RootAction, RootS
   concatMap(() => of(logOut()))
 )
 
-export const rehashEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+export const remoteRehashEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal])),
   withLatestFrom(state$),
   switchMap(([action, state]) => {
     const { parametrization, password } = action.payload.data
     if (!getSodiumClient().isParametrizationUpToDate(parametrization)) {
-      return masterKeyChange({ current: password, renewal: password }, state, rehashSignal)
+      return masterKeyChange({ current: password, renewal: password }, state, remoteRehashSignal)
     }
     return EMPTY
   })

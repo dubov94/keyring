@@ -84,4 +84,4 @@ export const accountDeletionReset = createAction('user/account/accountDeletionRe
 
 export const remoteCredentialsMismatchLocal = createAction('user/account/remoteCredentialsMismatchLocal')()
 
-export const rehashSignal = createAction('user/account/rehashSignal')<DeepReadonly<MasterKeyChangeSignal>>()
+export const remoteRehashSignal = createAction('user/account/remoteRehashSignal')<DeepReadonly<MasterKeyChangeSignal>>()

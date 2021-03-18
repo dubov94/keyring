@@ -10,7 +10,7 @@ import { expect } from 'chai'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { MasterKeyChangeData, masterKeyChangeSignal, rehashSignal } from '../user/account/actions'
+import { MasterKeyChangeData, masterKeyChangeSignal } from '../user/account/actions'
 import { success } from '@/redux/flow_signal'
 
 describe('updateVaultEpic', () => {
@@ -88,29 +88,24 @@ describe('masterKeyUpdateEpic', () => {
     newSessionKey: 'newSessionKey'
   }
 
-  ;[
-    masterKeyChangeSignal(success(masterKeyChangeData)),
-    rehashSignal(success(masterKeyChangeData))
-  ].forEach((trigger) => {
-    it(`activates the depot on ${trigger.type}`, async () => {
-      const store = createStore(reducer)
-      store.dispatch(depotActivationData({
-        username: 'username',
-        salt: 'salt',
-        hash: 'hash',
-        vaultKey: 'vaultKey'
-      }))
-      const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+  it('activates the depot', async () => {
+    const store = createStore(reducer)
+    store.dispatch(depotActivationData({
+      username: 'username',
+      salt: 'salt',
+      hash: 'hash',
+      vaultKey: 'vaultKey'
+    }))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-      const epicTracker = new EpicTracker(masterKeyUpdateEpic(action$, state$, {}))
-      actionSubject.next(trigger)
-      actionSubject.complete()
-      await epicTracker.waitForCompletion()
+    const epicTracker = new EpicTracker(masterKeyUpdateEpic(action$, state$, {}))
+    actionSubject.next(masterKeyChangeSignal(success(masterKeyChangeData)))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
 
-      expect(await drainEpicActions(epicTracker)).to.deep.equal([activateDepot({
-        username: 'username',
-        password: 'masterKey'
-      })])
-    })
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([activateDepot({
+      username: 'username',
+      password: 'masterKey'
+    })])
   })
 })

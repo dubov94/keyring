@@ -23,7 +23,7 @@ import {
   MasterKeyChangeFlowIndicator,
   masterKeyChangeReset,
   masterKeyChangeSignal,
-  rehashSignal,
+  remoteRehashSignal,
   releaseMailToken,
   remoteCredentialsMismatchLocal,
   UsernameChangeFlowIndicator,
@@ -43,7 +43,7 @@ import {
   releaseMailTokenEpic,
   changeMasterKeyEpic,
   displayMasterKeyChangeExceptionsEpic,
-  rehashEpic
+  remoteRehashEpic
 } from './epics'
 import {
   AdministrationApi,
@@ -557,7 +557,7 @@ describe('displayMasterKeyChangeExceptionsEpic', () => {
   })
 })
 
-describe('rehashEpic', () => {
+describe('remoteRehashEpic', () => {
   it('emits rehash sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     store.dispatch(registrationSignal(success({
@@ -600,7 +600,7 @@ describe('rehashEpic', () => {
       useValue: instance(mockAdministrationApi)
     })
 
-    const epicTracker = new EpicTracker(rehashEpic(action$, state$, {}))
+    const epicTracker = new EpicTracker(remoteRehashEpic(action$, state$, {}))
     actionSubject.next(authnViaApiSignal(success({
       username: 'username',
       password: 'password',
@@ -615,9 +615,9 @@ describe('rehashEpic', () => {
     await epicTracker.waitForCompletion()
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      rehashSignal(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING)),
-      rehashSignal(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST)),
-      rehashSignal(success({
+      remoteRehashSignal(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING)),
+      remoteRehashSignal(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST)),
+      remoteRehashSignal(success({
         newMasterKey: 'password',
         newParametrization: 'newParametrization',
         newEncryptionKey: 'newEncryptionKey',

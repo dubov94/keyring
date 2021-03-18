@@ -3,7 +3,20 @@ import { hasData } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
 import { expect } from 'chai'
 import { authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal, registrationSignal } from '../../authn/actions'
-import { accountDeletionReset, accountDeletionSignal, mailTokenAcquisitionReset, mailTokenAcquisitionSignal, mailTokenReleaseReset, mailTokenReleaseSignal, MasterKeyChangeData, masterKeyChangeReset, masterKeyChangeSignal, rehashSignal, usernameChangeReset, usernameChangeSignal } from './actions'
+import {
+  accountDeletionReset,
+  accountDeletionSignal,
+  mailTokenAcquisitionReset,
+  mailTokenAcquisitionSignal,
+  mailTokenReleaseReset,
+  mailTokenReleaseSignal,
+  MasterKeyChangeData,
+  masterKeyChangeReset,
+  masterKeyChangeSignal,
+  remoteRehashSignal,
+  usernameChangeReset,
+  usernameChangeSignal
+} from './actions'
 import reducer from './reducer'
 
 describe('registrationSignal', () => {
@@ -143,7 +156,7 @@ describe('masterKeyUpdate', () => {
 
   ;[
     masterKeyChangeSignal(success(masterKeyChangeData)),
-    rehashSignal(success(masterKeyChangeData))
+    remoteRehashSignal(success(masterKeyChangeData))
   ].forEach((trigger) => {
     it(`sets credentials on ${trigger.type}`, () => {
       const state = reducer(undefined, trigger)

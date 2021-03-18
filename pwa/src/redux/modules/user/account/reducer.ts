@@ -16,7 +16,7 @@ import {
   MasterKeyChangeFlowIndicator,
   masterKeyChangeReset,
   masterKeyChangeSignal,
-  rehashSignal,
+  remoteRehashSignal,
   UsernameChangeFlowIndicator,
   usernameChangeReset,
   usernameChangeSignal
@@ -108,7 +108,7 @@ export default createReducer<{
         identity<StandardError<ServiceChangeMasterKeyResponseError>>()
       )(state.masterKeyChange, action.payload)
     })
-    .addMatcher(isActionSuccess2([masterKeyChangeSignal, rehashSignal]), (state, action) => {
+    .addMatcher(isActionSuccess2([masterKeyChangeSignal, remoteRehashSignal]), (state, action) => {
       state.parametrization = action.payload.data.newParametrization
       state.encryptionKey = action.payload.data.newEncryptionKey
       state.sessionKey = action.payload.data.newSessionKey
