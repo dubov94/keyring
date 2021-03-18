@@ -3,8 +3,8 @@ import { container } from 'tsyringe'
 import { emplace, userKeysUpdate } from '../user/keys/actions'
 import { mock, instance, when } from 'ts-mockito'
 import { SodiumClient } from '@/cryptography/sodium_client'
-import { activateDepotEpic, masterKeyUpdateEpic, updateVaultEpic } from './epics'
-import { activateDepot, depotActivationData, newVault } from './actions'
+import { activateDepotEpic, localRehashEpic, masterKeyUpdateEpic, updateVaultEpic } from './epics'
+import { activateDepot, depotActivationData, newVault, rehydrateDepot } from './actions'
 import { RootAction } from '@/redux/root_action'
 import { expect } from 'chai'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
@@ -12,6 +12,7 @@ import { createStore, Store } from '@reduxjs/toolkit'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { MasterKeyChangeData, masterKeyChangeSignal } from '../user/account/actions'
 import { success } from '@/redux/flow_signal'
+import { authnViaDepotSignal } from '../authn/actions'
 
 describe('updateVaultEpic', () => {
   ;[
@@ -107,5 +108,40 @@ describe('masterKeyUpdateEpic', () => {
       username: 'username',
       password: 'masterKey'
     })])
+  })
+})
+
+describe('localRehashEpic', () => {
+  it('activates the depot', async () => {
+    const store = createStore(reducer)
+    store.dispatch(rehydrateDepot({
+      username: 'username',
+      salt: 'salt',
+      hash: 'hash',
+      vault: 'vault'
+    }))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockSodiumClient = mock(SodiumClient)
+    when(mockSodiumClient.isParametrizationUpToDate('salt')).thenReturn(false)
+    container.register(SodiumClient, {
+      useValue: instance(mockSodiumClient)
+    })
+
+    const epicTracker = new EpicTracker(localRehashEpic(action$, state$, {}))
+    actionSubject.next(authnViaDepotSignal(success({
+      username: 'username',
+      password: 'password',
+      userKeys: [],
+      vaultKey: 'vaultKey'
+    })))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      activateDepot({
+        username: 'username',
+        password: 'password'
+      })
+    ])
   })
 })

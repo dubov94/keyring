@@ -11,6 +11,7 @@ import { EMPTY, from, of } from 'rxjs'
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { activateDepot, depotActivationData, newVault } from './actions'
 import { masterKeyChangeSignal } from '../user/account/actions'
+import { authnViaDepotSignal } from '../authn/actions'
 
 export const updateVaultEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(monoid.fold(disjunction)([isActionOf(depotActivationData), isActionOf(userKeysUpdate)])),
@@ -46,4 +47,17 @@ export const masterKeyUpdateEpic: Epic<RootAction, RootAction, RootState> = (act
     username: state.depot.username,
     password: action.payload.data.newMasterKey
   })))
+)
+
+export const localRehashEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionSuccess(authnViaDepotSignal)),
+  withLatestFrom(state$),
+  switchMap(([action, state]) => {
+    const { salt } = state.depot
+    if (salt !== null && !getSodiumClient().isParametrizationUpToDate(salt)) {
+      const { username, password } = action.payload.data
+      return of(activateDepot({ username, password }))
+    }
+    return EMPTY
+  })
 )
