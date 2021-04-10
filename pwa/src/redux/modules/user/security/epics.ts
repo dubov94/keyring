@@ -67,9 +67,11 @@ export const fetchRecentSessionsEpic: Epic<RootAction, RootAction, RootState> = 
 
 export const displayRecentSessionsRetrivalExceptionsEpic = createDisplayExceptionsEpic(recentSessionsRetrievalSignal)
 
+const omitEmptyKeys = (userKeys: Key[]) => userKeys.filter(({ value }) => value !== '')
+
 const getDuplicateGroups = (userKeys: Key[]): Observable<string[][]> => {
   const passwordToIds = new Map<string, string[]>()
-  userKeys.forEach(({ identifier, value }) => {
+  omitEmptyKeys(userKeys).forEach(({ identifier, value }) => {
     if (!passwordToIds.has(value)) {
       passwordToIds.set(value, [])
     }
@@ -106,7 +108,7 @@ export const duplicateGroupsSearchEpic: Epic<RootAction, RootAction, RootState> 
 
 const getExposedUserKeyIds = (userKeys: Key[]): Observable<string[]> => {
   const pwnedService = container.resolve<PwnedService>(PWNED_SERVICE_TOKEN)
-  return forkJoin(userKeys.map(async ({ identifier, value }) => ({
+  return forkJoin(omitEmptyKeys(userKeys).map(async ({ identifier, value }) => ({
     identifier,
     pwned: await pwnedService.checkKey(value)
   }))).pipe(
@@ -146,7 +148,7 @@ export const displayExposedUserKeyIdsSearchExceptionsEpic = createDisplayExcepti
 const getVulnerableKeys = (userKeys: Key[]): Observable<ScoredKey[]> => {
   const strengthTestService = container.resolve<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN)
   return of(fn.pipe(
-    userKeys,
+    omitEmptyKeys(userKeys),
     array.map((item: Key) => <ScoredKey>({
       identifier: item.identifier,
       score: strengthTestService.score(item.value, item.tags)
