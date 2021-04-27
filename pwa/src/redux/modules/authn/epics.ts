@@ -111,7 +111,7 @@ const apiAuthn = <T extends TypeConstant>(
                         case ServiceLogInResponseError.NONE:
                           return concat(
                             of(signalCreator(indicator(AuthnViaApiFlowIndicator.DECRYPTING_DATA))),
-                            forkJoin(logInResponse.payload!.keySet!.items!.map(
+                            forkJoin(logInResponse.userData!.userKeys!.map(
                               async (item: ServiceIdentifiedKey): Promise<Key> => ({
                                 identifier: item.identifier!,
                                 ...(await getSodiumClient().decryptPassword(encryptionKey, {
@@ -126,9 +126,9 @@ const apiAuthn = <T extends TypeConstant>(
                                 password,
                                 parametrization: getSaltResponse.salt!,
                                 encryptionKey,
-                                sessionKey: logInResponse.payload!.sessionKey!,
-                                requiresMailVerification: logInResponse.payload!.requiresMailVerification!,
-                                mail: logInResponse.payload!.mail! || null,
+                                sessionKey: logInResponse.userData!.sessionKey!,
+                                requiresMailVerification: logInResponse.userData!.requiresMailVerification!,
+                                mail: logInResponse.userData!.mail! || null,
                                 userKeys
                               }))))
                             )

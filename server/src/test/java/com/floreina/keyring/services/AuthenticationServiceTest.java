@@ -1,5 +1,9 @@
 package com.floreina.keyring.services;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.floreina.keyring.Cryptography;
 import com.floreina.keyring.Post;
 import com.floreina.keyring.entities.User;
@@ -9,17 +13,12 @@ import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;
+import java.util.Optional;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-
-import java.util.Optional;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
@@ -198,6 +197,11 @@ class AuthenticationServiceTest {
                         .setSessionKey("identifier")
                         .setRequiresMailVerification(true)
                         .setKeySet(LogInResponse.Payload.KeySet.getDefaultInstance())
+                        .build())
+                .setUserData(
+                    UserData.newBuilder()
+                        .setSessionKey("identifier")
+                        .setRequiresMailVerification(true)
                         .build())
                 .build());
     verify(mockStreamObserver).onCompleted();

@@ -43,6 +43,18 @@ message LogInRequest {
     string digest = 2;
 }
 
+message UserData {
+    string session_key = 1;
+    repeated IdentifiedKey user_keys = 2;
+    bool requires_mail_verification = 3;
+    string mail = 4;
+}
+
+message OtpContext {
+    string authn_key = 1;
+    int32 attempts_left = 2;
+}
+
 message LogInResponse {
     enum Error {
         NONE = 0;
@@ -63,7 +75,27 @@ message LogInResponse {
     }
 
     Error error = 1;
-    Payload payload = 2;
+    Payload payload = 2 [deprecated = true];
+    UserData user_data = 3;
+    OtpContext otp_context = 4;
+}
+
+message ProvideOtpRequest {
+    string authn_key = 1;
+    string otp = 2;
+    bool yield_trusted_token = 3;
+}
+
+message ProvideOtpResponse {
+    enum Error {
+        NONE = 0;
+        INVALID_CODE = 1;
+    }
+
+    Error error = 1;
+    int32 attempts_left = 2;
+    string trusted_token = 3;
+    UserData user_data = 4;
 }
 
 service Authentication {
@@ -79,6 +111,12 @@ service Authentication {
     rpc LogIn (LogInRequest) returns (LogInResponse) {
         option (google.api.http) = {
             post: "/authentication/log-in"
+            body: "*"
+        };
+    }
+    rpc ProvideOtp (ProvideOtpRequest) returns (ProvideOtpResponse) {
+        option (google.api.http) = {
+            post: "/authentication/provide-otp"
             body: "*"
         };
     }

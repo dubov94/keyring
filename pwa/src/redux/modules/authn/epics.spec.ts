@@ -141,19 +141,17 @@ describe('logInViaApiEpic', () => {
       digest: 'authDigest'
     }))).thenResolve(<ServiceLogInResponse>{
       error: ServiceLogInResponseError.NONE,
-      payload: {
+      userData: {
         sessionKey: 'sessionKey',
         requiresMailVerification: false,
         mail: 'mail@example.com',
-        keySet: {
-          items: [{
-            identifier: 'identifier',
-            password: {
-              value: '$value',
-              tags: ['$tag']
-            }
-          }]
-        }
+        userKeys: [{
+          identifier: 'identifier',
+          password: {
+            value: '$value',
+            tags: ['$tag']
+          }
+        }]
       }
     })
     container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
@@ -218,11 +216,11 @@ describe('logInViaApiEpic', () => {
       digest: 'authDigest'
     }))).thenResolve(<ServiceLogInResponse>{
       error: ServiceLogInResponseError.NONE,
-      payload: {
+      userData: {
         sessionKey: 'sessionKey',
         requiresMailVerification: false,
         mail: 'mail@example.com',
-        keySet: { items: [] }
+        userKeys: []
       }
     })
     container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {

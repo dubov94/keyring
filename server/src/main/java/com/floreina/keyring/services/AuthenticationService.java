@@ -1,5 +1,7 @@
 package com.floreina.keyring.services;
 
+import static java.util.stream.Collectors.toList;
+
 import com.floreina.keyring.Cryptography;
 import com.floreina.keyring.Post;
 import com.floreina.keyring.entities.User;
@@ -10,12 +12,10 @@ import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import io.grpc.stub.StreamObserver;
-
-import javax.inject.Inject;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static java.util.stream.Collectors.toList;
+import javax.inject.Inject;
 
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
   private AccountOperationsInterface accountOperationsInterface;
@@ -97,24 +97,35 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
             requestMetadataInterceptorKeys.getIpAddress(),
             requestMetadataInterceptorKeys.getUserAgent());
         LogInResponse.Payload.Builder payloadBuilder = LogInResponse.Payload.newBuilder();
+        UserData.Builder userDataBuilder = UserData.newBuilder();
         payloadBuilder.setSessionKey(sessionKey);
+        userDataBuilder.setSessionKey(sessionKey);
         if (user.getMail() == null) {
           payloadBuilder.setRequiresMailVerification(true);
+          userDataBuilder.setRequiresMailVerification(true);
         } else {
           payloadBuilder.setMail(user.getMail());
+          userDataBuilder.setMail(user.getMail());
         }
+        List<IdentifiedKey> userKeys =
+            keyOperationsInterface.readKeys(user.getIdentifier()).stream()
+                .map(Utilities::entityToIdentifiedKey)
+                .collect(toList());
         payloadBuilder.setKeySet(
-            LogInResponse.Payload.KeySet.newBuilder()
-                .addAllItems(
-                    keyOperationsInterface
-                        .readKeys(user.getIdentifier())
-                        .stream()
-                        .map(Utilities::entityToIdentifiedKey)
-                        .collect(toList()))
+            LogInResponse.Payload.KeySet.newBuilder().addAllItems(userKeys).build());
+        userDataBuilder.addAllUserKeys(userKeys);
+        response.onNext(
+            LogInResponse.newBuilder()
+                .setPayload(payloadBuilder.build())
+                .setUserData(userDataBuilder.build())
                 .build());
-        response.onNext(LogInResponse.newBuilder().setPayload(payloadBuilder.build()).build());
       }
     }
     response.onCompleted();
+  }
+
+  @Override
+  public void provideOtp(ProvideOtpRequest request, StreamObserver<ProvideOtpResponse> response) {
+    throw new UnsupportedOperationException();
   }
 }
