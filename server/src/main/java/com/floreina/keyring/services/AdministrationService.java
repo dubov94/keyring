@@ -16,10 +16,12 @@ import com.floreina.keyring.keyvalue.UserProjection;
 import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
-import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
+import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
+import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 
 public class AdministrationService extends AdministrationGrpc.AdministrationImplBase {
@@ -262,11 +264,12 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void generateOtpParams(
       GenerateOtpParamsRequest request, StreamObserver<GenerateOtpParamsResponse> response) {
-    GoogleAuthenticatorKey key = googleAuthenticator.createCredentials();
+    GoogleAuthenticatorKey credentials = googleAuthenticator.createCredentials();
     response.onNext(
         GenerateOtpParamsResponse.newBuilder()
-            .setSharedSecret(key.getKey())
-            .addAllScratchCodes(key.getScratchCodes())
+            .setSharedSecret(credentials.getKey())
+            .setKeyUri(GoogleAuthenticatorQRGenerator.getOtpAuthURL("Key Ring", null, credentials))
+            .addAllScratchCodes(() -> Stream.generate(cryptography::generateUuid).limit(5).iterator())
             .build());
     response.onCompleted();
   }

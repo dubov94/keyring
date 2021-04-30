@@ -267,7 +267,8 @@ message GenerateOtpParamsRequest {}
 
 message GenerateOtpParamsResponse {
     string shared_secret = 1;
-    repeated int32 scratch_codes = 2;
+    repeated string scratch_codes = 2;
+    string key_uri = 3;
 }
 
 service Administration {
