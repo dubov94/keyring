@@ -3,7 +3,7 @@ package com.floreina.keyring.services;
 import static java.util.stream.Collectors.toList;
 
 import com.floreina.keyring.Cryptography;
-import com.floreina.keyring.Post;
+import com.floreina.keyring.MailClient;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
@@ -22,7 +22,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private KeyOperationsInterface keyOperationsInterface;
   private KeyValueClient keyValueClient;
   private Cryptography cryptography;
-  private Post post;
+  private MailClient mailClient;
   private RequestMetadataInterceptorKeys requestMetadataInterceptorKeys;
 
   @Inject
@@ -30,13 +30,13 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       AccountOperationsInterface accountOperationsInterface,
       KeyOperationsInterface keyOperationsInterface,
       Cryptography cryptography,
-      Post post,
+      MailClient mailClient,
       KeyValueClient keyValueClient,
       RequestMetadataInterceptorKeys requestMetadataInterceptorKeys) {
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
     this.cryptography = cryptography;
-    this.post = post;
+    this.mailClient = mailClient;
     this.keyValueClient = keyValueClient;
     this.requestMetadataInterceptorKeys = requestMetadataInterceptorKeys;
   }
@@ -59,7 +59,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
           sessionKey,
           requestMetadataInterceptorKeys.getIpAddress(),
           requestMetadataInterceptorKeys.getUserAgent());
-      post.sendCode(mail, code);
+      mailClient.sendMailVerificationCode(mail, code);
       response.onNext(RegisterResponse.newBuilder().setSessionKey(sessionKey).build());
     }
     response.onCompleted();

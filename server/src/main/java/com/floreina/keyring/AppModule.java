@@ -6,6 +6,7 @@ import com.floreina.keyring.interceptors.SessionInterceptorKeys;
 import com.floreina.keyring.interceptors.VersionInterceptor;
 import com.google.gson.Gson;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import dagger.Module;
 import dagger.Provides;
 
@@ -60,7 +61,7 @@ class AppModule {
 
   @Provides
   @Singleton
-  static GoogleAuthenticator provideGoogleAuthenticator() {
+  static IGoogleAuthenticator provideGoogleAuthenticator() {
     return new GoogleAuthenticator();
   }
 }

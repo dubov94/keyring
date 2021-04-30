@@ -35,16 +35,16 @@ java_library(
 )
 
 java_library(
-    name = "post",
-    srcs = ["Post.java"],
+    name = "mail_client",
+    srcs = ["MailClient.java"],
     visibility = [
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
         "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = [
         ":environment",
-        "//server/src/main/java/com/floreina/keyring/templates:code_body_renderer_factory",
-        "//server/src/main/java/com/floreina/keyring/templates:code_head_renderer_factory",
+        "//server/src/main/java/com/floreina/keyring/templates:mail_verification_code_body_renderer_factory",
+        "//server/src/main/java/com/floreina/keyring/templates:mail_verification_code_head_renderer_factory",
         "@maven//:javax_inject_javax_inject",
         "@maven//:net_sargue_mailgun",
     ],

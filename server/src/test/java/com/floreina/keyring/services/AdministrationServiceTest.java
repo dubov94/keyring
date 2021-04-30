@@ -1,7 +1,12 @@
 package com.floreina.keyring.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.floreina.keyring.Cryptography;
-import com.floreina.keyring.Post;
+import com.floreina.keyring.MailClient;
 import com.floreina.keyring.aspects.ValidateUserAspect;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
@@ -13,9 +18,14 @@ import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import com.google.common.collect.ImmutableList;
+import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.function.Function;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,16 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.function.Function;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AdministrationServiceTest {
@@ -43,7 +43,8 @@ class AdministrationServiceTest {
   @Mock private KeyValueClient mockKeyValueClient;
   @Mock private StreamObserver mockStreamObserver;
   @Mock private Cryptography mockCryptography;
-  @Mock private Post mockPost;
+  @Mock private MailClient mockMailClient;
+  @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
 
   private User user =
       new User().setIdentifier(0L).setState(User.State.ACTIVE).setSalt("salt").setHash("hash");
@@ -61,7 +62,8 @@ class AdministrationServiceTest {
             mockSessionInterceptorKeys,
             mockKeyValueClient,
             mockCryptography,
-            mockPost);
+            mockMailClient,
+            mockGoogleAuthenticator);
     long userIdentifier = user.getIdentifier();
     when(mockSessionInterceptorKeys.getUserIdentifier()).thenReturn(userIdentifier);
     when(mockAccountOperationsInterface.getUserByIdentifier(userIdentifier))
@@ -87,15 +89,14 @@ class AdministrationServiceTest {
   void releaseMailToken_codeExists_repliesWithMail() {
     long userIdentifier = user.getIdentifier();
     when(mockAccountOperationsInterface.getMailToken(userIdentifier, "0"))
-        .thenReturn(Optional.of(
-            new MailToken().setIdentifier(1).setMail("mail@example.com")));
+        .thenReturn(Optional.of(new MailToken().setIdentifier(1).setMail("mail@example.com")));
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder().setCode("0").build(), mockStreamObserver);
 
     verify(mockAccountOperationsInterface).releaseMailToken(1);
-    verify(mockStreamObserver).onNext(
-        ReleaseMailTokenResponse.newBuilder().setMail("mail@example.com").build());
+    verify(mockStreamObserver)
+        .onNext(ReleaseMailTokenResponse.newBuilder().setMail("mail@example.com").build());
     verify(mockStreamObserver).onCompleted();
   }
 
@@ -178,7 +179,7 @@ class AdministrationServiceTest {
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface).createMailToken(0L, "user@mail.com", "0");
-    verify(mockPost).sendCode("user@mail.com", "0");
+    verify(mockMailClient).sendMailVerificationCode("user@mail.com", "0");
     verify(mockStreamObserver).onNext(AcquireMailTokenResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
   }

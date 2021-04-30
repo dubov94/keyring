@@ -10,15 +10,15 @@ import javax.inject.Singleton;
 public class TemplatesModule {
   @Provides
   @Singleton
-  static CodeHeadRendererFactory provideCodeHeadRendererFactory() {
-    JtwigTemplate template = JtwigTemplate.classpathTemplate("/templates/code.head.twig");
-    return new CodeHeadRendererFactory(template);
+  static MailVerificationCodeHeadRendererFactory provideMailVerificationCodeHeadRendererFactory() {
+    JtwigTemplate template = JtwigTemplate.classpathTemplate("/templates/mail_verification_code.head.twig");
+    return new MailVerificationCodeHeadRendererFactory(template);
   }
 
   @Provides
   @Singleton
-  static CodeBodyRendererFactory provideCodeBodyRendererFactory() {
-    JtwigTemplate template = JtwigTemplate.classpathTemplate("/templates/code.body.twig");
-    return new CodeBodyRendererFactory(template);
+  static MailVerificationCodeBodyRendererFactory provideMailVerificationCodeBodyRendererFactory() {
+    JtwigTemplate template = JtwigTemplate.classpathTemplate("/templates/mail_verification_code.body.twig");
+    return new MailVerificationCodeBodyRendererFactory(template);
   }
 }

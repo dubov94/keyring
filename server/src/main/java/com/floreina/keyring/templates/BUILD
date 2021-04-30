@@ -4,8 +4,8 @@ java_library(
 )
 
 java_library(
-    name = "code_body_renderer_factory",
-    srcs = ["CodeBodyRendererFactory.java"],
+    name = "mail_verification_code_body_renderer_factory",
+    srcs = ["MailVerificationCodeBodyRendererFactory.java"],
     visibility = [
         "//server/src/main/java/com/floreina/keyring:__pkg__",
     ],
@@ -16,8 +16,8 @@ java_library(
 )
 
 java_library(
-    name = "code_head_renderer_factory",
-    srcs = ["CodeHeadRendererFactory.java"],
+    name = "mail_verification_code_head_renderer_factory",
+    srcs = ["MailVerificationCodeHeadRendererFactory.java"],
     visibility = [
         "//server/src/main/java/com/floreina/keyring:__pkg__",
     ],
@@ -37,8 +37,8 @@ java_library(
         "//server/src/main/java/com/floreina/keyring:__pkg__",
     ],
     deps = [
-        ":code_body_renderer_factory",
-        ":code_head_renderer_factory",
+        ":mail_verification_code_body_renderer_factory",
+        ":mail_verification_code_head_renderer_factory",
         "@maven//:com_google_dagger_dagger",
         "@maven//:javax_inject_javax_inject",
         "@maven//:org_jtwig_jtwig_core",

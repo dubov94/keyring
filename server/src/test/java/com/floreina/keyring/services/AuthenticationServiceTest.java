@@ -5,7 +5,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.floreina.keyring.Cryptography;
-import com.floreina.keyring.Post;
+import com.floreina.keyring.MailClient;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
@@ -25,7 +25,7 @@ class AuthenticationServiceTest {
   @Mock private AccountOperationsInterface mockAccountOperationsInterface;
   @Mock private KeyOperationsInterface mockKeyOperationsInterface;
   @Mock private Cryptography mockCryptography;
-  @Mock private Post mockPost;
+  @Mock private MailClient mockMailClient;
   @Mock private KeyValueClient mockKeyValueClient;
   @Mock private RequestMetadataInterceptorKeys mockRequestMetadataInterceptorKeys;
   @Mock private StreamObserver mockStreamObserver;
@@ -39,7 +39,7 @@ class AuthenticationServiceTest {
             mockAccountOperationsInterface,
             mockKeyOperationsInterface,
             mockCryptography,
-            mockPost,
+            mockMailClient,
             mockKeyValueClient,
             mockRequestMetadataInterceptorKeys);
   }
@@ -81,7 +81,7 @@ class AuthenticationServiceTest {
         .createUser("username", "salt", "hash", "mail@example.com", "0");
     verify(mockAccountOperationsInterface)
         .createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
-    verify(mockPost).sendCode("mail@example.com", "0");
+    verify(mockMailClient).sendMailVerificationCode("mail@example.com", "0");
     verify(mockStreamObserver)
         .onNext(RegisterResponse.newBuilder().setSessionKey("identifier").build());
     verify(mockStreamObserver).onCompleted();

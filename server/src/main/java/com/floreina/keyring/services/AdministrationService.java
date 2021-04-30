@@ -4,7 +4,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.*;
 
 import com.floreina.keyring.Cryptography;
-import com.floreina.keyring.Post;
+import com.floreina.keyring.MailClient;
 import com.floreina.keyring.aspects.Annotations.ValidateUser;
 import com.floreina.keyring.entities.MailToken;
 import com.floreina.keyring.entities.Session;
@@ -16,7 +16,7 @@ import com.floreina.keyring.keyvalue.UserProjection;
 import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
-import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
@@ -29,8 +29,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private SessionInterceptorKeys sessionInterceptorKeys;
   private KeyValueClient keyValueClient;
   private Cryptography cryptography;
-  private Post post;
-  private GoogleAuthenticator googleAuthenticator;
+  private MailClient mailClient;
+  private IGoogleAuthenticator googleAuthenticator;
 
   @Inject
   AdministrationService(
@@ -40,15 +40,15 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       SessionInterceptorKeys sessionInterceptorKeys,
       KeyValueClient keyValueClient,
       Cryptography cryptography,
-      Post post,
-      GoogleAuthenticator googleAuthenticator) {
+      MailClient mailClient,
+      IGoogleAuthenticator googleAuthenticator) {
     this.keyOperationsInterface = keyOperationsInterface;
     this.accountOperationsInterface = accountOperationsInterface;
     this.geolocationServiceInterface = geolocationServiceInterface;
     this.sessionInterceptorKeys = sessionInterceptorKeys;
     this.keyValueClient = keyValueClient;
     this.cryptography = cryptography;
-    this.post = post;
+    this.mailClient = mailClient;
     this.googleAuthenticator = googleAuthenticator;
   }
 
@@ -71,7 +71,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         String mail = request.getMail();
         String code = cryptography.generateSecurityCode();
         accountOperationsInterface.createMailToken(userIdentifier, mail, code);
-        post.sendCode(mail, code);
+        mailClient.sendMailVerificationCode(mail, code);
         response.onNext(AcquireMailTokenResponse.getDefaultInstance());
       }
     }
