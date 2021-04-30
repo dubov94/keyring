@@ -18,6 +18,7 @@ import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
 import com.google.common.collect.ImmutableList;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.Status;
 import io.grpc.StatusException;
@@ -25,6 +26,7 @@ import io.grpc.stub.StreamObserver;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
@@ -293,6 +295,27 @@ class AdministrationServiceTest {
                 .addAllSessions(
                     ImmutableList.of(
                         createResponseSession.apply(2000L), createResponseSession.apply(1000L)))
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void generateOtpParams_returnsParams() {
+    when(mockGoogleAuthenticator.createCredentials())
+        .thenReturn(new GoogleAuthenticatorKey.Builder("secret").build());
+    final AtomicInteger uuidCounter = new AtomicInteger(0);
+    when(mockCryptography.generateUuid())
+        .thenAnswer((invocation) -> String.valueOf(uuidCounter.incrementAndGet()));
+
+    administrationService.generateOtpParams(
+        GenerateOtpParamsRequest.getDefaultInstance(), mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            GenerateOtpParamsResponse.newBuilder()
+                .setSharedSecret("secret")
+                .setKeyUri("otpauth://totp/Key%20Ring?secret=secret&algorithm=SHA1&digits=6&period=30")
+                .addAllScratchCodes(ImmutableList.of("1", "2", "3", "4", "5"))
                 .build());
     verify(mockStreamObserver).onCompleted();
   }
