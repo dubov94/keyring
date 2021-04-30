@@ -5,6 +5,7 @@ import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
 import com.floreina.keyring.interceptors.SessionInterceptorKeys;
 import com.floreina.keyring.interceptors.VersionInterceptor;
 import com.google.gson.Gson;
+import com.warrenstrange.googleauth.GoogleAuthenticator;
 import dagger.Module;
 import dagger.Provides;
 
@@ -55,5 +56,11 @@ class AppModule {
   @Singleton
   static VersionInterceptor provideVersionInterceptor() {
     return new VersionInterceptor();
+  }
+
+  @Provides
+  @Singleton
+  static GoogleAuthenticator provideGoogleAuthenticator() {
+    return new GoogleAuthenticator();
   }
 }

@@ -263,6 +263,13 @@ message GetRecentSessionsResponse {
     repeated Session sessions = 1;
 }
 
+message GenerateOtpParamsRequest {}
+
+message GenerateOtpParamsResponse {
+    string shared_secret = 1;
+    repeated int32 scratch_codes = 2;
+}
+
 service Administration {
     rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse) {
         option (google.api.http) = {
@@ -323,5 +330,8 @@ service Administration {
     }
     rpc GetRecentSessions (GetRecentSessionsRequest) returns (GetRecentSessionsResponse) {
         option (google.api.http) = { get: "/administration/get-recent-sessions" };
+    }
+    rpc GenerateOtpParams (GenerateOtpParamsRequest) returns (GenerateOtpParamsResponse) {
+        option (google.api.http) = { get: "/administration/generate-otp-params" };
     }
 }

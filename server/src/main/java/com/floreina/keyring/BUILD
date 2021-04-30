@@ -82,6 +82,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/interceptors:version_interceptor",
         "@maven//:com_google_code_gson_gson",
         "@maven//:com_google_dagger_dagger",
+        "@maven//:com_warrenstrange_googleauth",
         "@maven//:javax_inject_javax_inject",
     ],
 )

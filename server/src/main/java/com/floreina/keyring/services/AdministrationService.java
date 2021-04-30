@@ -1,5 +1,8 @@
 package com.floreina.keyring.services;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.*;
+
 import com.floreina.keyring.Cryptography;
 import com.floreina.keyring.Post;
 import com.floreina.keyring.aspects.Annotations.ValidateUser;
@@ -13,13 +16,11 @@ import com.floreina.keyring.keyvalue.UserProjection;
 import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import io.grpc.stub.StreamObserver;
-
-import javax.inject.Inject;
 import java.util.*;
-
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.*;
+import javax.inject.Inject;
 
 public class AdministrationService extends AdministrationGrpc.AdministrationImplBase {
   private KeyOperationsInterface keyOperationsInterface;
@@ -29,6 +30,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private KeyValueClient keyValueClient;
   private Cryptography cryptography;
   private Post post;
+  private GoogleAuthenticator googleAuthenticator;
 
   @Inject
   AdministrationService(
@@ -38,7 +40,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       SessionInterceptorKeys sessionInterceptorKeys,
       KeyValueClient keyValueClient,
       Cryptography cryptography,
-      Post post) {
+      Post post,
+      GoogleAuthenticator googleAuthenticator) {
     this.keyOperationsInterface = keyOperationsInterface;
     this.accountOperationsInterface = accountOperationsInterface;
     this.geolocationServiceInterface = geolocationServiceInterface;
@@ -46,6 +49,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     this.keyValueClient = keyValueClient;
     this.cryptography = cryptography;
     this.post = post;
+    this.googleAuthenticator = googleAuthenticator;
   }
 
   @Override
@@ -89,8 +93,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     } else {
       MailToken mailToken = maybeMailToken.get();
       accountOperationsInterface.releaseMailToken(mailToken.getIdentifier());
-      response.onNext(
-          ReleaseMailTokenResponse.newBuilder().setMail(mailToken.getMail()).build());
+      response.onNext(ReleaseMailTokenResponse.newBuilder().setMail(mailToken.getMail()).build());
     }
     response.onCompleted();
   }
@@ -116,9 +119,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void readKeys(ReadKeysRequest request, StreamObserver<ReadKeysResponse> response) {
     List<IdentifiedKey> keys =
-        keyOperationsInterface
-            .readKeys(sessionInterceptorKeys.getUserIdentifier())
-            .stream()
+        keyOperationsInterface.readKeys(sessionInterceptorKeys.getUserIdentifier()).stream()
             .map(Utilities::entityToIdentifiedKey)
             .collect(toList());
     response.onNext(ReadKeysResponse.newBuilder().addAllKeys(keys).build());
@@ -218,9 +219,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
                 .build());
       } else {
         keyValueClient.dropSessions(
-            accountOperationsInterface
-                .readSessions(userIdentifier)
-                .stream()
+            accountOperationsInterface.readSessions(userIdentifier).stream()
                 .map(Session::getKey)
                 .collect(toList()));
         accountOperationsInterface.markAccountAsDeleted(userIdentifier);
@@ -236,9 +235,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       GetRecentSessionsRequest request, StreamObserver<GetRecentSessionsResponse> response) {
     long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
     List<Session> sessions =
-        accountOperationsInterface
-            .readSessions(userIdentifier)
-            .stream()
+        accountOperationsInterface.readSessions(userIdentifier).stream()
             .sorted(Comparator.comparing(Session::getTimestamp).reversed())
             .collect(toList());
     Set<String> ipAddressSet = sessions.stream().map(Session::getIpAddress).collect(toSet());
@@ -247,8 +244,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     response.onNext(
         GetRecentSessionsResponse.newBuilder()
             .addAllSessions(
-                sessions
-                    .stream()
+                sessions.stream()
                     .map(
                         session ->
                             GetRecentSessionsResponse.Session.newBuilder()
@@ -258,6 +254,19 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
                                 .setGeolocation(ipToGeolocation.get(session.getIpAddress()))
                                 .build())
                     .collect(toList()))
+            .build());
+    response.onCompleted();
+  }
+
+  @Override
+  @ValidateUser
+  public void generateOtpParams(
+      GenerateOtpParamsRequest request, StreamObserver<GenerateOtpParamsResponse> response) {
+    GoogleAuthenticatorKey key = googleAuthenticator.createCredentials();
+    response.onNext(
+        GenerateOtpParamsResponse.newBuilder()
+            .setSharedSecret(key.getKey())
+            .addAllScratchCodes(key.getScratchCodes())
             .build());
     response.onCompleted();
   }

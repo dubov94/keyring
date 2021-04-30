@@ -31,6 +31,7 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/storage:account_operations_interface",
         "//server/src/main/java/com/floreina/keyring/storage:key_operations_interface",
         "//proto:service_java_grpc",
+        "@maven//:com_warrenstrange_googleauth",
         "@maven//:javax_inject_javax_inject",
     ],
 )
