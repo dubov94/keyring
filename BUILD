@@ -32,16 +32,6 @@ command(
     data = ["//pwa:package_json"],
 )
 
-multirun(
-    name = "all_services",
-    commands = [
-        ":grpc_gateway",
-        ":server",
-        ":pwa",
-    ],
-    parallel = True,
-)
-
 container_image(
     name = "reverse_proxy",
     base = "@io_docker_index_abiosoft_caddy//image",
