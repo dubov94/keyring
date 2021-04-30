@@ -30,6 +30,7 @@ module.exports = {
         args[0].templateParameters = (compilation, assets, pluginOptions) => {
           const parameters = constructTemplateParameters(compilation, assets, pluginOptions)
           parameters.APP_VERSION = '$STABLE_GIT_REVISION'
+          parameters.MODE = process.env.NODE_ENV
           return parameters
         }
         return args
