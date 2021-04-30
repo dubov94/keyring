@@ -60,7 +60,7 @@ class KeyValueClientTest {
   @Test
   void createSession_getsUniqueIdentifier_putsSessionToUser() {
     String identifier = generateUniqueIdentifier();
-    when(mockCryptography.generateSessionKey()).thenReturn(identifier);
+    when(mockCryptography.generateUuid()).thenReturn(identifier);
 
     String reply = keyValueClient.createSession(new UserProjection().setIdentifier(0L));
 
@@ -72,7 +72,7 @@ class KeyValueClientTest {
   @Test
   void createSession_getsDuplicateIdentifier_throwsException() {
     String identifier = generateUniqueIdentifier();
-    when(mockCryptography.generateSessionKey()).thenReturn(identifier);
+    when(mockCryptography.generateUuid()).thenReturn(identifier);
     keyValueClient.createSession(new UserProjection().setIdentifier(0L));
 
     assertThrows(
@@ -92,7 +92,7 @@ class KeyValueClientTest {
       throws Exception {
     try (Jedis jedis = jedisPool.getResource()) {
       String identifier = generateUniqueIdentifier();
-      when(mockCryptography.generateSessionKey()).thenReturn(identifier);
+      when(mockCryptography.generateUuid()).thenReturn(identifier);
       keyValueClient.createSession(new UserProjection().setIdentifier(0L));
       Thread.sleep(10);
       long ttlBefore = jedis.pttl("session:" + identifier);

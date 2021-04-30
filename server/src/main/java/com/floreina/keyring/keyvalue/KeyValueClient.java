@@ -45,7 +45,7 @@ public class KeyValueClient {
   }
 
   public String createSession(UserProjection userProjection) {
-    String sessionIdentifier = cryptography.generateSessionKey();
+    String sessionIdentifier = cryptography.generateUuid();
     try (Jedis jedis = jedisPool.getResource()) {
       String status =
           jedis.set(

@@ -7,12 +7,12 @@ import java.security.SecureRandom;
 import java.util.UUID;
 
 public class Cryptography {
-  private int securityCodeLength;
+  private int uacsLength;
   private SecureRandom secureRandom;
 
-  Cryptography(SecureRandom secureRandom, int securityCodeLength) {
+  Cryptography(SecureRandom secureRandom, int uacsLength) {
     this.secureRandom = secureRandom;
-    this.securityCodeLength = securityCodeLength;
+    this.uacsLength = uacsLength;
   }
 
   private int pow(int base, int power) {
@@ -26,11 +26,11 @@ public class Cryptography {
     }
   }
 
-  public String generateSecurityCode() {
+  public String generateUacs() {
     StringBuilder stringBuilder = new StringBuilder();
-    int randomNumber = secureRandom.nextInt(pow(10, securityCodeLength));
+    int randomNumber = secureRandom.nextInt(pow(10, uacsLength));
     String codeSuffix = String.valueOf(randomNumber);
-    int skipsCount = securityCodeLength - codeSuffix.length();
+    int skipsCount = uacsLength - codeSuffix.length();
     for (int padding = 0; padding < skipsCount; ++padding) {
       stringBuilder.append('0');
     }
@@ -38,7 +38,7 @@ public class Cryptography {
     return stringBuilder.toString();
   }
 
-  public String generateSessionKey() {
+  public String generateUuid() {
     return UUID.randomUUID().toString();
   }
 

@@ -60,7 +60,7 @@ class AuthenticationServiceTest {
   void register_getsValidRequest_persistsAndSendsMail() {
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
     when(mockCryptography.computeHash("digest")).thenReturn("hash");
-    when(mockCryptography.generateSecurityCode()).thenReturn("0");
+    when(mockCryptography.generateUacs()).thenReturn("0");
     when(mockAccountOperationsInterface.createUser(
             "username", "salt", "hash", "mail@example.com", "0"))
         .thenReturn(new User().setIdentifier(0L));

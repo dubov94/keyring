@@ -172,7 +172,7 @@ class AdministrationServiceTest {
   @Test
   void acquireMailToken_digestsMatch_repliesWithDefault() {
     when(mockCryptography.computeHash("digest")).thenReturn("hash");
-    when(mockCryptography.generateSecurityCode()).thenReturn("0");
+    when(mockCryptography.generateUacs()).thenReturn("0");
 
     administrationService.acquireMailToken(
         AcquireMailTokenRequest.newBuilder().setDigest("digest").setMail("user@mail.com").build(),

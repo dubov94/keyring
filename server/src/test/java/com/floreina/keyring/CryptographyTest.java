@@ -23,19 +23,19 @@ class CryptographyTest {
   }
 
   @Test
-  void generateSecurityCode_getsShortNumber_prependsWithZeroes() {
+  void generateUacs_getsShortNumber_prependsWithZeroes() {
     when(mockSecureRandom.nextInt(100)).thenReturn(1);
 
-    String code = cryptography.generateSecurityCode();
+    String code = cryptography.generateUacs();
 
     assertEquals("01", code);
   }
 
   @Test
-  void generateSecurityCode_getsLongNumber_returnsIntactString() {
+  void generateUacs_getsLongNumber_returnsIntactString() {
     when(mockSecureRandom.nextInt(100)).thenReturn(99);
 
-    String code = cryptography.generateSecurityCode();
+    String code = cryptography.generateUacs();
 
     assertEquals("99", code);
   }

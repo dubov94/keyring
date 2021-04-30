@@ -51,7 +51,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       String salt = request.getSalt();
       String hash = cryptography.computeHash(request.getDigest());
       String mail = request.getMail();
-      String code = cryptography.generateSecurityCode();
+      String code = cryptography.generateUacs();
       User user = accountOperationsInterface.createUser(username, salt, hash, mail, code);
       String sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
       accountOperationsInterface.createSession(

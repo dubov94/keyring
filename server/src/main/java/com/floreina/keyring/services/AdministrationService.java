@@ -69,7 +69,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
                 .build());
       } else {
         String mail = request.getMail();
-        String code = cryptography.generateSecurityCode();
+        String code = cryptography.generateUacs();
         accountOperationsInterface.createMailToken(userIdentifier, mail, code);
         mailClient.sendMailVerificationCode(mail, code);
         response.onNext(AcquireMailTokenResponse.getDefaultInstance());
