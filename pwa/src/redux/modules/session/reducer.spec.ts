@@ -27,7 +27,7 @@ describe('authnSignal', () => {
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
-      requiresMailVerification: false,
+      mailVerificationRequired: false,
       mail: 'mail@example.com',
       userKeys: []
     })),

@@ -102,7 +102,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         userDataBuilder.setSessionKey(sessionKey);
         if (user.getMail() == null) {
           payloadBuilder.setRequiresMailVerification(true);
-          userDataBuilder.setRequiresMailVerification(true);
+          userDataBuilder.setMailVerificationRequired(true);
         } else {
           payloadBuilder.setMail(user.getMail());
           userDataBuilder.setMail(user.getMail());

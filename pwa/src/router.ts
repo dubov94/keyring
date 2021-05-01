@@ -10,7 +10,7 @@ import ThreatAnalysis from '@/views/security/ThreatAnalysis.vue'
 import Vue from 'vue'
 import VueRouter, { NavigationGuard } from 'vue-router'
 import { store } from './redux'
-import { isAuthenticated, requiresMailVerification } from './redux/modules/user/account/selectors'
+import { isAuthenticated, mailVerificationRequired } from './redux/modules/user/account/selectors'
 
 Vue.use(VueRouter)
 
@@ -18,7 +18,7 @@ const authenticationGuard: NavigationGuard = (_to, _from, next) => {
   const state = store.getState()
   if (!isAuthenticated(state)) {
     next('/log-in')
-  } else if (requiresMailVerification(state)) {
+  } else if (mailVerificationRequired(state)) {
     next('/mail-verification')
   } else {
     next()
@@ -58,7 +58,7 @@ export const Router = new VueRouter({
         const state = store.getState()
         if (!isAuthenticated(state)) {
           next('/log-in')
-        } else if (!requiresMailVerification(state)) {
+        } else if (!mailVerificationRequired(state)) {
           next('/dashboard')
         } else {
           next()

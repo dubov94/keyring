@@ -127,7 +127,7 @@ const apiAuthn = <T extends TypeConstant>(
                                 parametrization: getSaltResponse.salt!,
                                 encryptionKey,
                                 sessionKey: logInResponse.userData!.sessionKey!,
-                                requiresMailVerification: logInResponse.userData!.requiresMailVerification!,
+                                mailVerificationRequired: logInResponse.userData!.mailVerificationRequired!,
                                 mail: logInResponse.userData!.mail! || null,
                                 userKeys
                               }))))

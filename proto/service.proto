@@ -46,7 +46,7 @@ message LogInRequest {
 message UserData {
     string session_key = 1;
     repeated IdentifiedKey user_keys = 2;
-    bool requires_mail_verification = 3;
+    bool mail_verification_required = 3;
     string mail = 4;
 }
 

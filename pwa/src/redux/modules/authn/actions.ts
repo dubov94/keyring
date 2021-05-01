@@ -41,7 +41,7 @@ export interface AuthnViaApiFlowResult {
   parametrization: string;
   encryptionKey: string;
   sessionKey: string;
-  requiresMailVerification: boolean;
+  mailVerificationRequired: boolean;
   mail: string | null;
   userKeys: Key[];
 }

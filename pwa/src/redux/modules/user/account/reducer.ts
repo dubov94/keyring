@@ -34,7 +34,7 @@ export default createReducer<{
   parametrization: string | null;
   encryptionKey: string | null;
   sessionKey: string | null;
-  requiresMailVerification: boolean;
+  mailVerificationRequired: boolean;
   mail: string | null;
   mailTokenRelease: RemoteData<MailTokenReleaseFlowIndicator, string, StandardError<ServiceReleaseMailTokenResponseError>>;
   mailTokenAcquisition: RemoteData<MailTokenAcquisitionFlowIndicator, string, StandardError<ServiceAcquireMailTokenResponseError>>;
@@ -47,7 +47,7 @@ export default createReducer<{
     parametrization: null,
     encryptionKey: null,
     sessionKey: null,
-    requiresMailVerification: true,
+    mailVerificationRequired: true,
     mail: null,
     mailTokenRelease: zero(),
     mailTokenAcquisition: zero(),
@@ -62,7 +62,7 @@ export default createReducer<{
       state.parametrization = flowSuccess.parametrization
       state.encryptionKey = flowSuccess.encryptionKey
       state.sessionKey = flowSuccess.sessionKey
-      state.requiresMailVerification = true
+      state.mailVerificationRequired = true
     })
     .addMatcher(isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal]), (state, action) => {
       const flowSuccess = action.payload.data
@@ -70,12 +70,12 @@ export default createReducer<{
       state.parametrization = flowSuccess.parametrization
       state.encryptionKey = flowSuccess.encryptionKey
       state.sessionKey = flowSuccess.sessionKey
-      state.requiresMailVerification = flowSuccess.requiresMailVerification
+      state.mailVerificationRequired = flowSuccess.mailVerificationRequired
       state.mail = flowSuccess.mail
     })
     .addMatcher(isActionSuccess(authnViaDepotSignal), (state) => {
       state.isAuthenticated = true
-      state.requiresMailVerification = false
+      state.mailVerificationRequired = false
     })
     .addMatcher(isActionOf(mailTokenReleaseSignal), (state, action) => {
       state.mailTokenRelease = reducer(
@@ -85,7 +85,7 @@ export default createReducer<{
       )(state.mailTokenRelease, action.payload)
     })
     .addMatcher(isActionSuccess(mailTokenReleaseSignal), (state, action) => {
-      state.requiresMailVerification = false
+      state.mailVerificationRequired = false
       state.mail = action.payload.data
     })
     .addMatcher(isActionOf(mailTokenReleaseReset), (state) => {

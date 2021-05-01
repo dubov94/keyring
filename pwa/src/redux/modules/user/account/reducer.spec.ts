@@ -32,7 +32,7 @@ describe('registrationSignal', () => {
     expect(state.parametrization).to.equal('parametrization')
     expect(state.encryptionKey).to.equal('encryptionKey')
     expect(state.sessionKey).to.equal('sessionKey')
-    expect(state.requiresMailVerification).to.be.true
+    expect(state.mailVerificationRequired).to.be.true
   })
 })
 
@@ -44,7 +44,7 @@ describe('onlineAuthnSignal', () => {
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
-      requiresMailVerification: false,
+      mailVerificationRequired: false,
       mail: 'mail@example.com',
       userKeys: []
     })),
@@ -54,7 +54,7 @@ describe('onlineAuthnSignal', () => {
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
-      requiresMailVerification: false,
+      mailVerificationRequired: false,
       mail: 'mail@example.com',
       userKeys: []
     }))
@@ -66,7 +66,7 @@ describe('onlineAuthnSignal', () => {
       expect(state.parametrization).to.equal('parametrization')
       expect(state.encryptionKey).to.equal('encryptionKey')
       expect(state.sessionKey).to.equal('sessionKey')
-      expect(state.requiresMailVerification).to.be.false
+      expect(state.mailVerificationRequired).to.be.false
       expect(state.mail).to.equal('mail@example.com')
     })
   })
@@ -82,7 +82,7 @@ describe('authnViaDepotSignal', () => {
     })))
 
     expect(state.isAuthenticated).to.be.true
-    expect(state.requiresMailVerification).to.be.false
+    expect(state.mailVerificationRequired).to.be.false
   })
 })
 
@@ -96,10 +96,10 @@ describe('mailTokenRelease', () => {
       expect(hasData(state.mailTokenRelease)).to.be.true
     })
 
-    it('sets `requiresMailVerification` to false', () => {
+    it('sets `mailVerificationRequired` to false', () => {
       const state = reducer(undefined, signalAction)
 
-      expect(state.requiresMailVerification).to.be.false
+      expect(state.mailVerificationRequired).to.be.false
     })
 
     it('sets `mail` to the new mail', () => {

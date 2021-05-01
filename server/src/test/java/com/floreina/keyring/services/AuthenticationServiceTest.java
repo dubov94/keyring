@@ -201,7 +201,7 @@ class AuthenticationServiceTest {
                 .setUserData(
                     UserData.newBuilder()
                         .setSessionKey("identifier")
-                        .setRequiresMailVerification(true)
+                        .setMailVerificationRequired(true)
                         .build())
                 .build());
     verify(mockStreamObserver).onCompleted();

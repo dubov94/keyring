@@ -19,7 +19,7 @@ import {
 
 export const isAuthenticated = (state: RootState): boolean => state.user.account.isAuthenticated
 export const canAccessApi = (state: RootState): boolean => state.user.account.sessionKey !== null
-export const requiresMailVerification = (state: RootState): boolean => state.user.account.requiresMailVerification
+export const mailVerificationRequired = (state: RootState): boolean => state.user.account.mailVerificationRequired
 export const accountMail = (state: RootState): string | null => state.user.account.mail
 
 export type MailTokenAcquisition = RemoteData<MailTokenAcquisitionFlowIndicator, string, StandardError<ServiceAcquireMailTokenResponseError>>

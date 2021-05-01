@@ -143,7 +143,7 @@ describe('logInViaApiEpic', () => {
       error: ServiceLogInResponseError.NONE,
       userData: {
         sessionKey: 'sessionKey',
-        requiresMailVerification: false,
+        mailVerificationRequired: false,
         mail: 'mail@example.com',
         userKeys: [{
           identifier: 'identifier',
@@ -192,7 +192,7 @@ describe('logInViaApiEpic', () => {
         parametrization: 'parametrization',
         encryptionKey: 'encryptionKey',
         sessionKey: 'sessionKey',
-        requiresMailVerification: false,
+        mailVerificationRequired: false,
         mail: 'mail@example.com',
         userKeys: [{
           identifier: 'identifier',
@@ -218,7 +218,7 @@ describe('logInViaApiEpic', () => {
       error: ServiceLogInResponseError.NONE,
       userData: {
         sessionKey: 'sessionKey',
-        requiresMailVerification: false,
+        mailVerificationRequired: false,
         mail: 'mail@example.com',
         userKeys: []
       }
@@ -254,7 +254,7 @@ describe('logInViaApiEpic', () => {
         parametrization: 'parametrization',
         encryptionKey: 'encryptionKey',
         sessionKey: 'sessionKey',
-        requiresMailVerification: false,
+        mailVerificationRequired: false,
         mail: 'mail@example.com',
         userKeys: []
       }))
