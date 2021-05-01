@@ -85,3 +85,17 @@ export const accountDeletionReset = createAction('user/account/accountDeletionRe
 export const remoteCredentialsMismatchLocal = createAction('user/account/remoteCredentialsMismatchLocal')()
 
 export const remoteRehashSignal = createAction('user/account/remoteRehashSignal')<DeepReadonly<MasterKeyChangeSignal>>()
+
+export enum OtpParamsGenerationFlowIndicator {
+  MAKING_REQUEST = 'MAKING_REQUEST'
+}
+export interface OtpParams {
+  sharedSecret: string;
+  scratchCodes: string[];
+  keyUri: string;
+}
+export const generateOtpParams = createAction('user/account/generateOtpParams')()
+export const otpParamsGenerationSignal = createAction('user/account/otpParamsGenerationSignal')<DeepReadonly<
+  FlowSignal<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>
+>>()
+export const otpParamsGenerationReset = createAction('user/account/otpParamsGenerationReset')()

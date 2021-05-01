@@ -7,6 +7,8 @@ import {
   MailTokenAcquisitionFlowIndicator,
   MailTokenReleaseFlowIndicator,
   MasterKeyChangeFlowIndicator,
+  OtpParams,
+  OtpParamsGenerationFlowIndicator,
   UsernameChangeFlowIndicator
 } from './actions'
 import {
@@ -36,3 +38,8 @@ export const masterKeyChange = (state: RootState): DeepReadonly<MasterKeyChange>
 
 export type AccountDeletion = RemoteData<AccountDeletionFlowIndicator, {}, StandardError<ServiceDeleteAccountResponseError>>
 export const accountDeletion = (state: RootState): DeepReadonly<AccountDeletion> => state.user.account.accountDeletion
+
+export const isOtpEnabled = (state: RootState): boolean => state.user.account.isOtpEnabled
+
+export type OtpParamsGeneration = RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>
+export const otpParamsGeneration = (state: RootState): DeepReadonly<OtpParamsGeneration> => state.user.account.otpParamsGeneration

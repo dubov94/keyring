@@ -30,7 +30,11 @@ import {
   usernameChangeReset,
   usernameChangeSignal,
   MasterKeyChangeSignal,
-  remoteRehashSignal
+  remoteRehashSignal,
+  generateOtpParams,
+  otpParamsGenerationReset,
+  otpParamsGenerationSignal,
+  OtpParamsGenerationFlowIndicator
 } from './actions'
 import {
   ServiceReleaseMailTokenResponse,
@@ -42,7 +46,8 @@ import {
   ServiceChangeUsernameResponse,
   ServiceChangeUsernameResponseError,
   ServiceDeleteAccountResponse,
-  ServiceDeleteAccountResponseError
+  ServiceDeleteAccountResponseError,
+  ServiceGenerateOtpParamsResponse
 } from '@/api/definitions'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { getSodiumClient } from '@/cryptography/sodium_client'
@@ -298,3 +303,31 @@ export const remoteRehashEpic: Epic<RootAction, RootAction, RootState> = (action
     return EMPTY
   })
 )
+
+export const otpParamsGenerationEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionOf([generateOtpParams, otpParamsGenerationReset])),
+  withLatestFrom(state$),
+  switchMap(([action, state]) => {
+    if (isActionOf(generateOtpParams, action)) {
+      return concat(
+        of(otpParamsGenerationSignal(indicator(OtpParamsGenerationFlowIndicator.MAKING_REQUEST))),
+        from(getAdministrationApi().generateOtpParams({
+          headers: {
+            [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
+          }
+        })).pipe(switchMap((response: ServiceGenerateOtpParamsResponse) => of(otpParamsGenerationSignal(success({
+          sharedSecret: response.sharedSecret!,
+          scratchCodes: response.scratchCodes!,
+          keyUri: response.keyUri!
+        })))))
+      ).pipe(
+        catchError((error) => of(otpParamsGenerationSignal(exception(errorToMessage(error)))))
+      )
+    } else if (isActionOf(otpParamsGenerationReset, action)) {
+      return of(otpParamsGenerationSignal(cancel()))
+    }
+    return EMPTY
+  })
+)
+
+export const displayOtpParamsGenerationExceptionsEpic = createDisplayExceptionsEpic(otpParamsGenerationSignal)

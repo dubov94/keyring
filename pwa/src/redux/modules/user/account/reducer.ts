@@ -2,7 +2,12 @@ import { isActionSuccess, isActionSuccess2, StandardError } from '@/redux/flow_s
 import { identity, reducer, RemoteData, withNoResult, zero } from '@/redux/remote_data'
 import { createReducer } from '@reduxjs/toolkit'
 import { isActionOf } from 'typesafe-actions'
-import { authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal, registrationSignal } from '../../authn/actions'
+import {
+  authnViaApiSignal,
+  authnViaDepotSignal,
+  backgroundAuthnSignal,
+  registrationSignal
+} from '../../authn/actions'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,
@@ -16,10 +21,14 @@ import {
   MasterKeyChangeFlowIndicator,
   masterKeyChangeReset,
   masterKeyChangeSignal,
+  OtpParamsGenerationFlowIndicator,
+  OtpParams,
   remoteRehashSignal,
   UsernameChangeFlowIndicator,
   usernameChangeReset,
-  usernameChangeSignal
+  usernameChangeSignal,
+  otpParamsGenerationSignal,
+  otpParamsGenerationReset
 } from './actions'
 import {
   ServiceReleaseMailTokenResponseError,
@@ -28,6 +37,8 @@ import {
   ServiceChangeUsernameResponseError,
   ServiceDeleteAccountResponseError
 } from '@/api/definitions'
+import { DeepReadonly } from 'ts-essentials'
+import { castDraft } from 'immer'
 
 export default createReducer<{
   isAuthenticated: boolean;
@@ -41,6 +52,8 @@ export default createReducer<{
   masterKeyChange: RemoteData<MasterKeyChangeFlowIndicator, {}, StandardError<ServiceChangeMasterKeyResponseError>>;
   usernameChange: RemoteData<UsernameChangeFlowIndicator, {}, StandardError<ServiceChangeUsernameResponseError>>;
   accountDeletion: RemoteData<AccountDeletionFlowIndicator, {}, StandardError<ServiceDeleteAccountResponseError>>;
+  otpParamsGeneration: RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>;
+  isOtpEnabled: boolean;
 }>(
   {
     isAuthenticated: false,
@@ -53,7 +66,9 @@ export default createReducer<{
     mailTokenAcquisition: zero(),
     masterKeyChange: zero(),
     usernameChange: zero(),
-    accountDeletion: zero()
+    accountDeletion: zero(),
+    isOtpEnabled: false,
+    otpParamsGeneration: zero()
   },
   (builder) => builder
     .addMatcher(isActionSuccess(registrationSignal), (state, action) => {
@@ -135,5 +150,15 @@ export default createReducer<{
     })
     .addMatcher(isActionOf(accountDeletionReset), (state) => {
       state.accountDeletion = withNoResult(state.accountDeletion)
+    })
+    .addMatcher(isActionOf(otpParamsGenerationSignal), (state, action) => {
+      state.otpParamsGeneration = castDraft(reducer(
+        identity<OtpParamsGenerationFlowIndicator>(),
+        identity<DeepReadonly<OtpParams>>(),
+        identity<StandardError<{}>>()
+      )(state.otpParamsGeneration, action.payload))
+    })
+    .addMatcher(isActionOf(otpParamsGenerationReset), (state) => {
+      state.otpParamsGeneration = withNoResult(state.otpParamsGeneration)
     })
 )

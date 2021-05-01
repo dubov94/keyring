@@ -28,7 +28,10 @@ import {
   remoteCredentialsMismatchLocal,
   UsernameChangeFlowIndicator,
   usernameChangeReset,
-  usernameChangeSignal
+  usernameChangeSignal,
+  generateOtpParams,
+  otpParamsGenerationSignal,
+  OtpParamsGenerationFlowIndicator
 } from './actions'
 import {
   acquireMailTokenEpic,
@@ -43,7 +46,8 @@ import {
   releaseMailTokenEpic,
   changeMasterKeyEpic,
   displayMasterKeyChangeExceptionsEpic,
-  remoteRehashEpic
+  remoteRehashEpic,
+  otpParamsGenerationEpic
 } from './epics'
 import {
   AdministrationApi,
@@ -56,7 +60,8 @@ import {
   ServiceDeleteAccountResponse,
   ServiceDeleteAccountResponseError,
   ServiceChangeMasterKeyResponse,
-  ServiceChangeMasterKeyResponseError
+  ServiceChangeMasterKeyResponseError,
+  ServiceGenerateOtpParamsResponse
 } from '@/api/definitions'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { container } from 'tsyringe'
@@ -622,6 +627,44 @@ describe('remoteRehashEpic', () => {
         newParametrization: 'newParametrization',
         newEncryptionKey: 'newEncryptionKey',
         newSessionKey: 'newSessionKey'
+      }))
+    ])
+  })
+})
+
+describe('otpParamsGenerationEpic', () => {
+  it('emits generation sequence', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(registrationSignal(success({
+      username: 'username',
+      parametrization: 'parametrization',
+      encryptionKey: 'encryptionKey',
+      sessionKey: 'sessionKey'
+    })))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
+    when(mockAdministrationApi.generateOtpParams(deepEqual({
+      headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' }
+    }))).thenResolve(<ServiceGenerateOtpParamsResponse>{
+      sharedSecret: 'secret',
+      scratchCodes: ['a', 'b', 'c'],
+      keyUri: 'uri'
+    })
+    container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
+      useValue: instance(mockAdministrationApi)
+    })
+
+    const epicTracker = new EpicTracker(otpParamsGenerationEpic(action$, state$, {}))
+    actionSubject.next(generateOtpParams())
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      otpParamsGenerationSignal(indicator(OtpParamsGenerationFlowIndicator.MAKING_REQUEST)),
+      otpParamsGenerationSignal(success({
+        sharedSecret: 'secret',
+        scratchCodes: ['a', 'b', 'c'],
+        keyUri: 'uri'
       }))
     ])
   })

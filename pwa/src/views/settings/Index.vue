@@ -7,8 +7,8 @@
           <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
             <change-master-key></change-master-key>
           </v-flex>
-          <v-flex xs12 sm8 md6 lg4 xl3 pa-4 v-if="showToggleOtp">
-            <toggle-otp></toggle-otp>
+          <v-flex xs12 sm8 md6 lg4 xl3 pa-4 v-if="showOtpSwitch">
+            <otp-switch></otp-switch>
           </v-flex>
           <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
             <change-mail></change-mail>
@@ -31,8 +31,8 @@ import ChangeMail from './ChangeMail.vue'
 import ChangeMasterKey from './ChangeMasterKey.vue'
 import ChangeUsername from './ChangeUsername.vue'
 import DeleteAccount from './DeleteAccount.vue'
+import OtpSwitch from './OtpSwitch.vue'
 import Page from '@/components/Page.vue'
-import ToggleOtp from './ToggleOtp.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
 
 export default Vue.extend({
@@ -42,13 +42,13 @@ export default Vue.extend({
     changeUsername: ChangeUsername,
     deleteAccount: DeleteAccount,
     page: Page,
-    toggleOtp: ToggleOtp,
+    otpSwitch: OtpSwitch,
     userMenu: UserMenu
   },
   data () {
     return {
       showMenu: false,
-      showToggleOtp: window.globals.mode !== 'production'
+      showOtpSwitch: window.globals.mode !== 'production'
     }
   },
   methods: {

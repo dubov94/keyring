@@ -13,6 +13,8 @@ import {
   MasterKeyChangeData,
   masterKeyChangeReset,
   masterKeyChangeSignal,
+  otpParamsGenerationReset,
+  otpParamsGenerationSignal,
   remoteRehashSignal,
   usernameChangeReset,
   usernameChangeSignal
@@ -218,6 +220,30 @@ describe('accountDeletion', () => {
       const state = reduce(reducer, undefined, [signalAction, accountDeletionReset()])
 
       expect(hasData(state.accountDeletion)).to.be.false
+    })
+  })
+})
+
+describe('otpParamsGeneration', () => {
+  const signalAction = otpParamsGenerationSignal(success({
+    sharedSecret: 'secret',
+    scratchCodes: ['a', 'b', 'c'],
+    keyUri: 'uri'
+  }))
+
+  describe('otpParamsGenerationSignal', () => {
+    it('updates the result', () => {
+      const state = reducer(undefined, signalAction)
+
+      expect(hasData(state.otpParamsGeneration)).to.be.true
+    })
+  })
+
+  describe('otpParamsGenerationReset', () => {
+    it('clears the result', () => {
+      const state = reduce(reducer, undefined, [signalAction, otpParamsGenerationReset()])
+
+      expect(hasData(state.otpParamsGeneration)).to.be.false
     })
   })
 })
