@@ -1,6 +1,6 @@
 java_library(
-    name = "user_projection",
-    srcs = ["UserProjection.java"],
+    name = "user_pointer",
+    srcs = ["UserPointer.java"],
     visibility = [
         "//server/src/main/java/com/floreina/keyring/interceptors:__pkg__",
         "//server/src/main/java/com/floreina/keyring/services:__pkg__",
@@ -45,7 +45,7 @@ java_library(
     ],
     deps = [
         ":key_value_exception",
-        ":user_projection",
+        ":user_pointer",
         "//server/src/main/java/com/floreina/keyring:chronometry",
         "//server/src/main/java/com/floreina/keyring:cryptography",
         "@maven//:com_google_code_gson_gson",

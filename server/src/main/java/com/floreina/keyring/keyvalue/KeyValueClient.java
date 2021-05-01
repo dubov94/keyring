@@ -44,13 +44,13 @@ public class KeyValueClient {
     this.chronometry = chronometry;
   }
 
-  public String createSession(UserProjection userProjection) {
+  public String createSession(UserPointer userPointer) {
     String sessionIdentifier = cryptography.generateUuid();
     try (Jedis jedis = jedisPool.getResource()) {
       String status =
           jedis.set(
               convertSessionIdentifierToKey(sessionIdentifier),
-              gson.toJson(userProjection.setCreationTimeInMs(chronometry.currentTime())),
+              gson.toJson(userPointer.setCreationTimeInMs(chronometry.currentTime())),
               SET_PRESENCE_CONSTRAINT_TO_PARAMETER_VALUE.get(SetPresenceConstraint.MUST_ABSENT),
               SET_EXPIRATION_UNIT_TO_PARAMETER_VALUE.get(SetExpirationUnit.SECONDS),
               SESSION_LIFETIME_IN_SECONDS);
@@ -62,22 +62,22 @@ public class KeyValueClient {
     }
   }
 
-  public Optional<UserProjection> getSessionAndUpdateItsExpirationTime(String sessionIdentifier) {
+  public Optional<UserPointer> getSessionAndUpdateItsExpirationTime(String sessionIdentifier) {
     try (Jedis jedis = jedisPool.getResource()) {
       String key = convertSessionIdentifierToKey(sessionIdentifier);
       Transaction transaction = jedis.multi();
       transaction.expire(key, SESSION_LIFETIME_IN_SECONDS);
-      Response<String> userProjectionString = transaction.get(key);
+      Response<String> userPointerString = transaction.get(key);
       transaction.exec();
-      return Optional.ofNullable(userProjectionString.get())
-          .map(string -> gson.fromJson(string, UserProjection.class))
+      return Optional.ofNullable(userPointerString.get())
+          .map(string -> gson.fromJson(string, UserPointer.class))
           .map(
-              userProjection ->
+              userPointer ->
                   chronometry.isBefore(
-                          userProjection.getCreationTime(),
+                          userPointer.getCreationTime(),
                           chronometry.subtract(chronometry.currentTime(), 1, ChronoUnit.HOURS))
                       ? null
-                      : userProjection);
+                      : userPointer);
     }
   }
 

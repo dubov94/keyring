@@ -1,11 +1,11 @@
 package com.floreina.keyring.interceptors;
 
-import com.floreina.keyring.keyvalue.UserProjection;
+import com.floreina.keyring.keyvalue.UserPointer;
 import io.grpc.Context;
 import io.grpc.Metadata;
 
 public class SessionInterceptorKeys {
-  static final Context.Key<UserProjection> CONTEXT_USER_PROJECTION_KEY =
+  static final Context.Key<UserPointer> CONTEXT_USER_POINTER_KEY =
       Context.key("user-projection");
   static final Context.Key<String> CONTEXT_SESSION_TOKEN_KEY = Context.key("session-token");
   static final Metadata.Key<String> METADATA_SESSION_TOKEN_KEY =
@@ -16,6 +16,6 @@ public class SessionInterceptorKeys {
   }
 
   public long getUserIdentifier() {
-    return CONTEXT_USER_PROJECTION_KEY.get().getIdentifier();
+    return CONTEXT_USER_POINTER_KEY.get().getIdentifier();
   }
 }

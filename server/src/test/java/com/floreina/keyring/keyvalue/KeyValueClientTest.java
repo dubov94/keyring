@@ -62,7 +62,7 @@ class KeyValueClientTest {
     String identifier = generateUniqueIdentifier();
     when(mockCryptography.generateUuid()).thenReturn(identifier);
 
-    String reply = keyValueClient.createSession(new UserProjection().setIdentifier(0L));
+    String reply = keyValueClient.createSession(new UserPointer().setIdentifier(0L));
 
     assertEquals(identifier, reply);
     assertEquals(
@@ -73,11 +73,11 @@ class KeyValueClientTest {
   void createSession_getsDuplicateIdentifier_throwsException() {
     String identifier = generateUniqueIdentifier();
     when(mockCryptography.generateUuid()).thenReturn(identifier);
-    keyValueClient.createSession(new UserProjection().setIdentifier(0L));
+    keyValueClient.createSession(new UserPointer().setIdentifier(0L));
 
     assertThrows(
         KeyValueException.class,
-        () -> keyValueClient.createSession(new UserProjection().setIdentifier(1L)));
+        () -> keyValueClient.createSession(new UserPointer().setIdentifier(1L)));
   }
 
   @Test
@@ -93,11 +93,11 @@ class KeyValueClientTest {
     try (Jedis jedis = jedisPool.getResource()) {
       String identifier = generateUniqueIdentifier();
       when(mockCryptography.generateUuid()).thenReturn(identifier);
-      keyValueClient.createSession(new UserProjection().setIdentifier(0L));
+      keyValueClient.createSession(new UserPointer().setIdentifier(0L));
       Thread.sleep(10);
       long ttlBefore = jedis.pttl("session:" + identifier);
 
-      Optional<UserProjection> reply =
+      Optional<UserPointer> reply =
           keyValueClient.getSessionAndUpdateItsExpirationTime(identifier);
       long ttlAfter = jedis.pttl("session:" + identifier);
 

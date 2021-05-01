@@ -36,7 +36,7 @@ java_library(
         "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = [
-        "//server/src/main/java/com/floreina/keyring/keyvalue:user_projection",
+        "//server/src/main/java/com/floreina/keyring/keyvalue:user_pointer",
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_context",
     ],
@@ -51,7 +51,7 @@ java_library(
     deps = [
         ":session_interceptor_keys",
         "//server/src/main/java/com/floreina/keyring/keyvalue:key_value_client",
-        "//server/src/main/java/com/floreina/keyring/keyvalue:user_projection",
+        "//server/src/main/java/com/floreina/keyring/keyvalue:user_pointer",
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_context",
         "@maven//:javax_inject_javax_inject",

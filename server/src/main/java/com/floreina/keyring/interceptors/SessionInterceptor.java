@@ -1,7 +1,7 @@
 package com.floreina.keyring.interceptors;
 
 import com.floreina.keyring.keyvalue.KeyValueClient;
-import com.floreina.keyring.keyvalue.UserProjection;
+import com.floreina.keyring.keyvalue.UserPointer;
 import io.grpc.*;
 
 import javax.inject.Inject;
@@ -21,13 +21,13 @@ public class SessionInterceptor implements ServerInterceptor {
     Context context = Context.current();
     String sessionToken = metadata.get(SessionInterceptorKeys.METADATA_SESSION_TOKEN_KEY);
     if (sessionToken != null) {
-      Optional<UserProjection> maybeUserProjection =
+      Optional<UserPointer> maybeUserPointer =
           keyValueClient.getSessionAndUpdateItsExpirationTime(sessionToken);
-      if (maybeUserProjection.isPresent()) {
+      if (maybeUserPointer.isPresent()) {
         context = context.withValue(SessionInterceptorKeys.CONTEXT_SESSION_TOKEN_KEY, sessionToken);
         context =
             context.withValue(
-                SessionInterceptorKeys.CONTEXT_USER_PROJECTION_KEY, maybeUserProjection.get());
+                SessionInterceptorKeys.CONTEXT_USER_POINTER_KEY, maybeUserPointer.get());
         return Contexts.interceptCall(context, call, metadata, next);
       }
     }

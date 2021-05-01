@@ -12,7 +12,7 @@ import com.floreina.keyring.entities.User;
 import com.floreina.keyring.geolocation.GeolocationServiceInterface;
 import com.floreina.keyring.interceptors.SessionInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
-import com.floreina.keyring.keyvalue.UserProjection;
+import com.floreina.keyring.keyvalue.UserPointer;
 import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
@@ -169,7 +169,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
             renewal.getKeysList());
         List<Session> sessions = accountOperationsInterface.readSessions(identifier);
         keyValueClient.dropSessions(sessions.stream().map(Session::getKey).collect(toList()));
-        String sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
+        String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
         response.onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey(sessionKey).build());
       }
     }

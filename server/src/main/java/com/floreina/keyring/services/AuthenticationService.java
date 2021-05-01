@@ -7,7 +7,7 @@ import com.floreina.keyring.MailClient;
 import com.floreina.keyring.entities.User;
 import com.floreina.keyring.interceptors.RequestMetadataInterceptorKeys;
 import com.floreina.keyring.keyvalue.KeyValueClient;
-import com.floreina.keyring.keyvalue.UserProjection;
+import com.floreina.keyring.keyvalue.UserPointer;
 import com.floreina.keyring.proto.service.*;
 import com.floreina.keyring.storage.AccountOperationsInterface;
 import com.floreina.keyring.storage.KeyOperationsInterface;
@@ -53,7 +53,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       String mail = request.getMail();
       String code = cryptography.generateUacs();
       User user = accountOperationsInterface.createUser(username, salt, hash, mail, code);
-      String sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
+      String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
       accountOperationsInterface.createSession(
           user.getIdentifier(),
           sessionKey,
@@ -90,7 +90,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         response.onNext(
             LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
       } else {
-        String sessionKey = keyValueClient.createSession(UserProjection.fromUser(user));
+        String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
         accountOperationsInterface.createSession(
             user.getIdentifier(),
             sessionKey,
