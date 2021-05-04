@@ -269,7 +269,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         GenerateOtpParamsResponse.newBuilder()
             .setSharedSecret(credentials.getKey())
             .setKeyUri(GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(null, "Key Ring", credentials))
-            .addAllScratchCodes(() -> Stream.generate(cryptography::generateUuid).limit(5).iterator())
+            .addAllScratchCodes(() -> Stream.generate(cryptography::generateTts).limit(5).iterator())
             .build());
     response.onCompleted();
   }

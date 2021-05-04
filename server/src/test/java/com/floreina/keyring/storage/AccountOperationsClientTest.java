@@ -47,7 +47,7 @@ class AccountOperationsClientTest {
 
   @Test
   void createUser_getsUniqueUsername_postsUserAndMailToken() {
-    String username = createUniqueName();
+    String username = createUniqueUsername();
     long userIdentifier =
         accountOperationsClient
             .createUser(username, "salt", "hash", "mail@example.com", "0")
@@ -66,7 +66,7 @@ class AccountOperationsClientTest {
 
   @Test
   void createUser_getsExistingUsername_throwsException() {
-    String username = createUniqueName();
+    String username = createUniqueUsername();
     accountOperationsClient.createUser(username, "", "", "", "0");
 
     assertThrows(
@@ -81,7 +81,7 @@ class AccountOperationsClientTest {
 
   @Test
   void releaseMailToken_removesTokenSetsMailActivatesUser() {
-    String username = createUniqueName();
+    String username = createUniqueUsername();
     long userIdentifier =
         accountOperationsClient
             .createUser(username, "", "", "mail@domain.com", "0")
@@ -179,7 +179,7 @@ class AccountOperationsClientTest {
   @Test
   void changeUsername_getsExistingUsername_throwsException() {
     long userIdentifier = createActiveUser();
-    String username = createUniqueName();
+    String username = createUniqueUsername();
     accountOperationsClient.createUser(username, "", "", "", "");
 
     assertThrows(
@@ -212,7 +212,7 @@ class AccountOperationsClientTest {
   }
 
   private long createActiveUser() {
-    String username = createUniqueName();
+    String username = createUniqueUsername();
     long userIdentifier =
         accountOperationsClient.createUser(username, "", "", "", "").getIdentifier();
     MailToken mailToken = accountOperationsClient.getMailToken(userIdentifier, "").get();
@@ -220,7 +220,7 @@ class AccountOperationsClientTest {
     return userIdentifier;
   }
 
-  private String createUniqueName() {
+  private String createUniqueUsername() {
     return UUID.randomUUID().toString();
   }
 }

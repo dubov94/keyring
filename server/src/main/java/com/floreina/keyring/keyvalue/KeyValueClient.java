@@ -45,7 +45,7 @@ public class KeyValueClient {
   }
 
   public String createSession(UserPointer userPointer) {
-    String sessionIdentifier = cryptography.generateUuid();
+    String sessionIdentifier = cryptography.generateTts();
     try (Jedis jedis = jedisPool.getResource()) {
       String status =
           jedis.set(

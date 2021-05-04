@@ -2,9 +2,8 @@ package com.floreina.keyring;
 
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
-
+import com.google.common.io.BaseEncoding;
 import java.security.SecureRandom;
-import java.util.UUID;
 
 public class Cryptography {
   private int uacsLength;
@@ -38,8 +37,11 @@ public class Cryptography {
     return stringBuilder.toString();
   }
 
-  public String generateUuid() {
-    return UUID.randomUUID().toString();
+  public String generateTts() {
+    // https://owasp.org/www-community/vulnerabilities/Insufficient_Session-ID_Length
+    byte[] randomBytes = new byte[128 / 8];
+    secureRandom.nextBytes(randomBytes);
+    return BaseEncoding.base64().encode(randomBytes);
   }
 
   public String computeHash(String value) {

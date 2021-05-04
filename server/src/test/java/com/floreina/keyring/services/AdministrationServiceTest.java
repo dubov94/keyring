@@ -303,9 +303,9 @@ class AdministrationServiceTest {
   void generateOtpParams_returnsParams() {
     when(mockGoogleAuthenticator.createCredentials())
         .thenReturn(new GoogleAuthenticatorKey.Builder("secret").build());
-    final AtomicInteger uuidCounter = new AtomicInteger(0);
-    when(mockCryptography.generateUuid())
-        .thenAnswer((invocation) -> String.valueOf(uuidCounter.incrementAndGet()));
+    final AtomicInteger ttsCounter = new AtomicInteger(0);
+    when(mockCryptography.generateTts())
+        .thenAnswer((invocation) -> String.valueOf(ttsCounter.incrementAndGet()));
 
     administrationService.generateOtpParams(
         GenerateOtpParamsRequest.getDefaultInstance(), mockStreamObserver);

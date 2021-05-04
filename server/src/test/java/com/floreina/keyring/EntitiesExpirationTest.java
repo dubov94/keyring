@@ -44,7 +44,7 @@ class EntitiesExpirationTest {
 
   @Test
   void dropDeletedUsersAndTheirDependencies_activeUser_keepsEntities() {
-    User user = new User().setState(User.State.ACTIVE).setUsername(createUniqueName());
+    User user = new User().setState(User.State.ACTIVE).setUsername(createUniqueUsername());
     persistEntity(user);
     Tag tag = new Tag().setValue("tag");
     Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of(tag));
@@ -59,7 +59,7 @@ class EntitiesExpirationTest {
 
   @Test
   void dropDeletedUsersAndTheirDependencies_deletedUser_removesEntities() {
-    User user = new User().setState(User.State.DELETED).setUsername(createUniqueName());
+    User user = new User().setState(User.State.DELETED).setUsername(createUniqueUsername());
     persistEntity(user);
     Tag tag = new Tag().setValue("tag");
     Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of(tag));
@@ -74,7 +74,7 @@ class EntitiesExpirationTest {
 
   @Test
   void dropExpiredPendingUsers_getsOldActiveUser_keepsEntity() {
-    User user = new User().setState(User.State.ACTIVE).setUsername(createUniqueName());
+    User user = new User().setState(User.State.ACTIVE).setUsername(createUniqueUsername());
     persistEntity(user);
     when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
     when(mockChronometry.subtract(Instant.EPOCH, 15, ChronoUnit.MINUTES)).thenReturn(Instant.now());
@@ -86,7 +86,7 @@ class EntitiesExpirationTest {
 
   @Test
   void dropExpiredPendingUsers_getsOldPendingUser_removesEntity() {
-    User user = new User().setState(User.State.PENDING).setUsername(createUniqueName());
+    User user = new User().setState(User.State.PENDING).setUsername(createUniqueUsername());
     persistEntity(user);
     when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
     when(mockChronometry.subtract(Instant.EPOCH, 15, ChronoUnit.MINUTES)).thenReturn(Instant.now());
@@ -96,7 +96,7 @@ class EntitiesExpirationTest {
     assertFalse(isEntityInStorage(user));
   }
 
-  private String createUniqueName() {
+  private String createUniqueUsername() {
     return UUID.randomUUID().toString();
   }
 
