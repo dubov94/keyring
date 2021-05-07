@@ -1,3 +1,6 @@
+load("//bazel/java:junit5.bzl", "junit5_test")
+load("//server:aspectj.bzl", "woven_junit5_test")
+
 java_library(
     name = "chronometry",
     srcs = ["Chronometry.java"],
@@ -21,6 +24,17 @@ java_library(
         "//server/src/test/java/com/floreina/keyring/services:__pkg__",
     ],
     deps = ["@maven//:com_google_guava_guava"],
+)
+
+junit5_test(
+    name = "cryptography_test",
+    srcs = ["CryptographyTest.java"],
+    test_package = "com.floreina.keyring",
+    deps = [
+        "//server/src/main/java/com/floreina/keyring:cryptography",
+        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
+        "@maven//:org_mockito_mockito_core",
+    ],
 )
 
 java_library(
@@ -64,6 +78,29 @@ java_library(
         "//server/src/main/java/com/floreina/keyring/entities:user",
         "@maven//:javax_inject_javax_inject",
         "@maven//:javax_persistence_javax_persistence_api",
+    ],
+)
+
+woven_junit5_test(
+    name = "entities_expiration_test",
+    srcs = ["EntitiesExpirationTest.java"],
+    resources = ["//server/src/main/resources/META-INF:persistence.xml"],
+    test_package = "com.floreina.keyring",
+    runtime_deps = [
+        "@maven//:com_h2database_h2",
+        "@maven//:javax_xml_bind_jaxb_api",
+    ],
+    deps = [
+        "//server/src/main/java/com/floreina/keyring:chronometry",
+        "//server/src/main/java/com/floreina/keyring:entities_expiration",
+        "//server/src/main/java/com/floreina/keyring/aspects:storage_manager_aspect",
+        "//server/src/main/java/com/floreina/keyring/entities:key",
+        "//server/src/main/java/com/floreina/keyring/entities:user",
+        "@maven//:com_google_guava_guava",
+        "@maven//:javax_persistence_javax_persistence_api",
+        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
+        "@maven//:org_aspectj_aspectjrt",
+        "@maven//:org_mockito_mockito_core",
     ],
 )
 
