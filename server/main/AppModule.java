@@ -15,12 +15,12 @@ import java.security.SecureRandom;
 
 @Module
 class AppModule {
-  private static final int SECURITY_CODE_LENGTH = 6;
+  private static final int UACS_LENGTH = 6;
 
   @Provides
   @Singleton
   static Cryptography provideCryptography() {
-    return new Cryptography(new SecureRandom(), SECURITY_CODE_LENGTH);
+    return new Cryptography(new SecureRandom(), UACS_LENGTH);
   }
 
   @Provides
