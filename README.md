@@ -14,7 +14,7 @@ Linux distribution.
 Set up [Redis](https://redis.io/) and [PostgreSQL](https://www.postgresql.org/)
 with `postgres:postgres` as an authentication pair. Create database `keyring`.
 
-Run `bazelisk run //:backends` to spin up backends and `bazelisk run //pwa:serve`
+Run `bazelisk run //:backends` to spin up backends and `bazelisk run //:pwa`
 to serve frontend.
 
 ### Production
