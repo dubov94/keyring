@@ -7,8 +7,6 @@ load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("//bazel:files.bzl", "filegroup_copy")
 load("//bazel/workspace:substitution.bzl", "status_vars_template")
 
-package(default_visibility = ["//:__pkg__"])
-
 package_group(
     name = "internal",
     packages = ["//pwa/..."],
