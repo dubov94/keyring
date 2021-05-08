@@ -70,3 +70,17 @@ java_library(
         "//proto:service_java_grpc",
     ],
 )
+
+java_binary(
+    name = "ddl",
+    srcs = ["Ddl.java"],
+    main_class = "server.main.entities.Ddl",
+    resources = ["//server/java:hibernate.cfg.xml"],
+    deps = [
+        ":key",
+        ":mail_token",
+        ":session",
+        ":user",
+        "@maven//:org_hibernate_hibernate_core",
+    ],
+)

@@ -1,0 +1,5 @@
+<hibernate-configuration>
+    <session-factory>
+        <property name="dialect">org.hibernate.dialect.PostgreSQL95Dialect</property>
+    </session-factory>
+</hibernate-configuration>
