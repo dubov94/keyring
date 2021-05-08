@@ -12,13 +12,10 @@ package_group(
     packages = ["//pwa/..."],
 )
 
-exports_files(
-    [
-        "package.json",
-        "yarn.lock",
-    ],
-    visibility = ["//:root"],
-)
+exports_files([
+    "package.json",
+    "yarn.lock",
+])
 
 SPEC_PATTERNS = [
     "src/**/*.spec.js",

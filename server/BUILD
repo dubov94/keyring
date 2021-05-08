@@ -5,10 +5,7 @@ package_group(
     packages = ["//server/..."],
 )
 
-exports_files(
-    ["aspectj.bzl"],
-    visibility = [":internal"],
-)
+exports_files(["aspectj.bzl"])
 
 container_image(
     name = "server",
