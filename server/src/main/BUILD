@@ -13,9 +13,9 @@ woven_java_binary(
     ],
     main_class = "com.floreina.keyring.Launcher",
     resources = [
-        "//server/src/main/resources/META-INF:persistence.xml",
-        "//server/src/main/resources/templates:mail_verification_code.body.twig",
-        "//server/src/main/resources/templates:mail_verification_code.head.twig",
+        "//server/java/META-INF:persistence.xml",
+        "//server/java/templates:mail_verification_code.body.twig",
+        "//server/java/templates:mail_verification_code.head.twig",
     ],
     runtime_deps = [
         "//server/src/main/java/com/floreina/keyring:app_component",

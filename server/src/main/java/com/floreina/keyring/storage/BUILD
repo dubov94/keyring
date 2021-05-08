@@ -51,7 +51,7 @@ java_library(
 woven_junit5_test(
     name = "account_operations_client_test",
     srcs = ["AccountOperationsClientTest.java"],
-    resources = ["//server/src/main/resources/META-INF:persistence.xml"],
+    resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "com.floreina.keyring.storage",
     runtime_deps = [
         "@maven//:com_h2database_h2",
@@ -110,7 +110,7 @@ java_library(
 woven_junit5_test(
     name = "key_operations_client_test",
     srcs = ["KeyOperationsClientTest.java"],
-    resources = ["//server/src/main/resources/META-INF:persistence.xml"],
+    resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "com.floreina.keyring.storage",
     runtime_deps = [
         "@maven//:com_h2database_h2",

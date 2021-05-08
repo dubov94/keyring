@@ -84,7 +84,7 @@ java_library(
 woven_junit5_test(
     name = "entities_expiration_test",
     srcs = ["EntitiesExpirationTest.java"],
-    resources = ["//server/src/main/resources/META-INF:persistence.xml"],
+    resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "com.floreina.keyring",
     runtime_deps = [
         "@maven//:com_h2database_h2",

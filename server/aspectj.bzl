@@ -7,7 +7,7 @@ ASPECTJ_JVM_FLAGS = [
     # https://www.eclipse.org/aspectj/doc/released/README-194.html
     "--add-opens java.base/java.lang=ALL-UNNAMED",
 ]
-AOP_XML = "//server/src/main/resources/META-INF:aop.xml"
+AOP_XML = "//server/java/META-INF:aop.xml"
 ASPECTS = [
     "//server/src/main/java/com/floreina/keyring/aspects:validate_user_aspect",
     "//server/src/main/java/com/floreina/keyring/aspects:storage_manager_aspect",
