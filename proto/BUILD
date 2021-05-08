@@ -3,11 +3,7 @@ load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 load("@rules_proto_grpc//go:defs.bzl", "go_grpc_library")
 load("@rules_proto_grpc//java:defs.bzl", "java_grpc_library")
 
-package(default_visibility = [
-    "//grpc_gateway:__pkg__",
-    "//ip_geolocation:__pkg__",
-    "//server:sources",
-])
+package(default_visibility = ["//:project"])
 
 proto_library(
     name = "service_proto",

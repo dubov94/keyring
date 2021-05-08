@@ -1,6 +1,6 @@
 load("//bazel/swagger:typescript.bzl", "ts_swagger_api")
 
-package(default_visibility = ["//pwa:__pkg__"])
+package(default_visibility = ["//pwa:internal"])
 
 ts_swagger_api(
     name = "swagger_api",

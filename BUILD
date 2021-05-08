@@ -1,11 +1,21 @@
 load("@com_github_atlassian_bazel_tools//multirun:def.bzl", "command", "multirun")
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 
+package_group(
+    name = "project",
+    packages = ["//..."],
+)
+
+package_group(
+    name = "root",
+    packages = ["//"],
+)
+
 exports_files(["WORKSPACE"])
 
 command(
     name = "server",
-    command = "//server/src/main",
+    command = "//server/main",
 )
 
 command(

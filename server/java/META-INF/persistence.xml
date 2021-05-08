@@ -3,11 +3,11 @@
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
     <persistence-unit name="production">
-        <class>com.floreina.keyring.entities.Key</class>
-        <class>com.floreina.keyring.entities.MailToken</class>
-        <class>com.floreina.keyring.entities.Session</class>
-        <class>com.floreina.keyring.entities.Tag</class>
-        <class>com.floreina.keyring.entities.User</class>
+        <class>server.main.entities.Key</class>
+        <class>server.main.entities.MailToken</class>
+        <class>server.main.entities.Session</class>
+        <class>server.main.entities.Tag</class>
+        <class>server.main.entities.User</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://postgres/keyring"/>
@@ -22,11 +22,11 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="development">
-        <class>com.floreina.keyring.entities.Key</class>
-        <class>com.floreina.keyring.entities.MailToken</class>
-        <class>com.floreina.keyring.entities.Session</class>
-        <class>com.floreina.keyring.entities.Tag</class>
-        <class>com.floreina.keyring.entities.User</class>
+        <class>server.main.entities.Key</class>
+        <class>server.main.entities.MailToken</class>
+        <class>server.main.entities.Session</class>
+        <class>server.main.entities.Tag</class>
+        <class>server.main.entities.User</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/keyring"/>
@@ -39,11 +39,11 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="testing">
-        <class>com.floreina.keyring.entities.Key</class>
-        <class>com.floreina.keyring.entities.MailToken</class>
-        <class>com.floreina.keyring.entities.Session</class>
-        <class>com.floreina.keyring.entities.Tag</class>
-        <class>com.floreina.keyring.entities.User</class>
+        <class>server.main.entities.Key</class>
+        <class>server.main.entities.MailToken</class>
+        <class>server.main.entities.Session</class>
+        <class>server.main.entities.Tag</class>
+        <class>server.main.entities.User</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:keyring"/>

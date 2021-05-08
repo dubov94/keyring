@@ -2,8 +2,6 @@ load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 load("@rules_proto_grpc//github.com/grpc-ecosystem/grpc-gateway:defs.bzl", "gateway_grpc_library", "gateway_swagger_compile")
 
-package(default_visibility = ["//:__pkg__"])
-
 gateway_grpc_library(
     name = "service_gateway_library",
     importpath = "github.com/dubov94/keyring/grpc_gateway/service_gateway_library",
@@ -19,6 +17,7 @@ gateway_swagger_compile(
 go_binary(
     name = "main",
     srcs = ["main.go"],
+    visibility = ["//:root"],
     deps = [
         ":service_gateway_library",
         "@com_github_golang_glog//:go_default_library",

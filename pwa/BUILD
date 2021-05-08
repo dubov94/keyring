@@ -2,11 +2,25 @@ load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher", "vue_cli_launcher_test")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
+
 # `filegroup_copy` targets below ensure that all files end up under `bazel-out`.
 load("//bazel:files.bzl", "filegroup_copy")
 load("//bazel/workspace:substitution.bzl", "status_vars_template")
 
 package(default_visibility = ["//:__pkg__"])
+
+package_group(
+    name = "internal",
+    packages = ["//pwa/..."],
+)
+
+exports_files(
+    [
+        "package.json",
+        "yarn.lock",
+    ],
+    visibility = ["//:root"],
+)
 
 SPEC_PATTERNS = [
     "src/**/*.spec.js",
@@ -34,8 +48,8 @@ filegroup_copy(
 
 status_vars_template(
     name = "vue_config",
-    template = "vue.config.tmpl.js",
     output = "vue.config.js",
+    template = "vue.config.tmpl.js",
 )
 
 filegroup_copy(
@@ -50,19 +64,20 @@ filegroup_copy(
 
 status_vars_template(
     name = "metadata_json",
-    template = "metadata.tmpl.json",
     output = "public/metadata.json",
+    template = "metadata.tmpl.json",
 )
 
 status_vars_template(
     name = "service_worker",
-    template = "service_worker.tmpl.js",
     output = "service-worker.js",
+    template = "service_worker.tmpl.js",
 )
 
 filegroup_copy(
     name = "package_json",
     srcs = ["package.json"],
+    visibility = ["//:root"],
 )
 
 SOURCES = [
@@ -85,6 +100,7 @@ vue_cli_launcher(
         "--package-json-path=$(rootpath :package_json)",
     ],
     data = SOURCES,
+    visibility = ["//:root"],
 )
 
 DEPENDENCIES = [

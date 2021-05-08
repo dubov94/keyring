@@ -1,0 +1,101 @@
+load("//bazel/java:junit5.bzl", "junit5_test")
+load("//server:aspectj.bzl", "woven_junit5_test")
+
+java_library(
+    name = "utilities",
+    srcs = ["Utilities.java"],
+    deps = [
+        "//proto:service_java_grpc",
+        "//server/main:cryptography",
+        "//server/main/entities:key",
+        "//server/main/entities:user",
+    ],
+)
+
+java_library(
+    name = "administration_service",
+    srcs = ["AdministrationService.java"],
+    visibility = ["//server:internal"],
+    deps = [
+        ":utilities",
+        "//proto:service_java_grpc",
+        "//server/main:cryptography",
+        "//server/main:mail_client",
+        "//server/main/aspects:annotations",
+        "//server/main/entities:mail_token",
+        "//server/main/entities:session",
+        "//server/main/entities:user",
+        "//server/main/geolocation:geolocation_service_interface",
+        "//server/main/interceptors:session_interceptor_keys",
+        "//server/main/keyvalue:key_value_client",
+        "//server/main/keyvalue:user_pointer",
+        "//server/main/storage:account_operations_interface",
+        "//server/main/storage:key_operations_interface",
+        "@maven//:com_warrenstrange_googleauth",
+        "@maven//:javax_inject_javax_inject",
+    ],
+)
+
+woven_junit5_test(
+    name = "administration_service_test",
+    srcs = ["AdministrationServiceTest.java"],
+    test_package = "server.main.services",
+    deps = [
+        "//proto:service_java_grpc",
+        "//server/main:cryptography",
+        "//server/main:mail_client",
+        "//server/main/aspects:validate_user_aspect",
+        "//server/main/entities:mail_token",
+        "//server/main/entities:session",
+        "//server/main/entities:user",
+        "//server/main/geolocation:geolocation_service_interface",
+        "//server/main/interceptors:session_interceptor_keys",
+        "//server/main/keyvalue:key_value_client",
+        "//server/main/services:administration_service",
+        "//server/main/storage:account_operations_interface",
+        "//server/main/storage:key_operations_interface",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_warrenstrange_googleauth",
+        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
+        "@maven//:org_aspectj_aspectjrt",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+java_library(
+    name = "authentication_service",
+    srcs = ["AuthenticationService.java"],
+    visibility = ["//server:internal"],
+    deps = [
+        ":utilities",
+        "//proto:service_java_grpc",
+        "//server/main:cryptography",
+        "//server/main:mail_client",
+        "//server/main/entities:user",
+        "//server/main/interceptors:request_metadata_interceptor_keys",
+        "//server/main/keyvalue:key_value_client",
+        "//server/main/keyvalue:user_pointer",
+        "//server/main/storage:account_operations_interface",
+        "//server/main/storage:key_operations_interface",
+        "@maven//:javax_inject_javax_inject",
+    ],
+)
+
+junit5_test(
+    name = "authentication_service_test",
+    srcs = ["AuthenticationServiceTest.java"],
+    test_package = "server.main.services",
+    deps = [
+        "//proto:service_java_grpc",
+        "//server/main:cryptography",
+        "//server/main:mail_client",
+        "//server/main/entities:user",
+        "//server/main/interceptors:request_metadata_interceptor_keys",
+        "//server/main/keyvalue:key_value_client",
+        "//server/main/services:authentication_service",
+        "//server/main/storage:account_operations_interface",
+        "//server/main/storage:key_operations_interface",
+        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)

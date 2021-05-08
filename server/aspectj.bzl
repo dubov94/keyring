@@ -9,8 +9,8 @@ ASPECTJ_JVM_FLAGS = [
 ]
 AOP_XML = "//server/java/META-INF:aop.xml"
 ASPECTS = [
-    "//server/src/main/java/com/floreina/keyring/aspects:validate_user_aspect",
-    "//server/src/main/java/com/floreina/keyring/aspects:storage_manager_aspect",
+    "//server/main/aspects:validate_user_aspect",
+    "//server/main/aspects:storage_manager_aspect",
 ]
 
 def woven_java_binary(
@@ -19,7 +19,8 @@ def woven_java_binary(
         data = [],
         jvm_flags = [],
         resources = [],
-        runtime_deps = []):
+        runtime_deps = [],
+        visibility = None):
     all_data = data + [ASPECTJ_WEAVER]
     all_jvm_flags = jvm_flags + ASPECTJ_JVM_FLAGS
     native.java_binary(
@@ -29,12 +30,14 @@ def woven_java_binary(
         main_class = main_class,
         resources = resources + [AOP_XML],
         runtime_deps = runtime_deps + ASPECTS,
+        visibility = visibility,
     )
     java_package(
         name = "{}_package".format(name),
         deploy_jar = "{}_deploy.jar".format(name),
         data = all_data,
         jvm_flags = all_jvm_flags,
+        visibility = visibility,
     )
 
 def woven_junit5_test(

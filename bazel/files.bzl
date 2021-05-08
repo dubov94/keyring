@@ -30,9 +30,10 @@ _filegroup_copy = rule(
     },
 )
 
-def filegroup_copy(name, srcs):
+def filegroup_copy(name, srcs, visibility = None):
     _filegroup_copy(
         name = name,
         root = native.package_name(),
         srcs = srcs,
+        visibility = visibility,
     )

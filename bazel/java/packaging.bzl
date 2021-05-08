@@ -28,7 +28,7 @@ java_runner = rule(
     },
 )
 
-def java_package(name, deploy_jar, data, jvm_flags):
+def java_package(name, deploy_jar, data, jvm_flags, visibility = None):
     data_tar_name = "{}_data_tar".format(name)
     pkg_tar(
         name = data_tar_name,
@@ -49,4 +49,5 @@ def java_package(name, deploy_jar, data, jvm_flags):
             runner_name,
         ],
         deps = [data_tar_name],
+        visibility = visibility,
     )

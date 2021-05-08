@@ -1,13 +1,13 @@
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 
-exports_files(
-    ["aspectj.bzl"],
-    visibility = ["//server:__subpackages__"],
+package_group(
+    name = "internal",
+    packages = ["//server/..."],
 )
 
-package_group(
-    name = "sources",
-    packages = ["//server/src/..."],
+exports_files(
+    ["aspectj.bzl"],
+    visibility = [":internal"],
 )
 
 container_image(
@@ -17,6 +17,6 @@ container_image(
     directory = "/root",
     files = ["entrypoint.sh"],
     ports = ["5001"],
-    tars = ["//server/src/main:main_package"],
+    tars = ["//server/main:main_package"],
     workdir = "/root",
 )
