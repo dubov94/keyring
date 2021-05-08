@@ -157,7 +157,7 @@ woven_java_binary(
         "//server/java/templates:mail_verification_code.body.twig",
         "//server/java/templates:mail_verification_code.head.twig",
     ],
-    visibility = ["//:root"],
+    visibility = ["//:root", "//server:internal"],
     runtime_deps = [
         "//server/main:app_component",
         "//server/main:launcher",
