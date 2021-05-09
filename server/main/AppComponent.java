@@ -1,5 +1,7 @@
 package server.main;
 
+import dagger.BindsInstance;
+import dagger.Component;
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 import server.main.geolocation.GeolocationModule;
@@ -14,7 +16,7 @@ import server.main.storage.AccountOperationsInterface;
 import server.main.storage.StorageModule;
 import server.main.templates.TemplatesModule;
 
-@dagger.Component(
+@Component(
     modules = {
       AppModule.class,
       GeolocationModule.class,
@@ -40,9 +42,9 @@ interface AppComponent {
 
   VersionInterceptor versionInterceptor();
 
-  @dagger.Component.Builder
+  @Component.Builder
   interface Builder {
-    @dagger.BindsInstance
+    @BindsInstance
     Builder environment(Environment environment);
 
     AppComponent build();

@@ -1,5 +1,6 @@
 package server.janitor;
 
+import dagger.BindsInstance;
 import dagger.Component;
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
@@ -21,9 +22,9 @@ interface AppComponent {
 
   ExpiredSessionRecords expiredSessionRecords();
 
-  @dagger.Component.Builder
+  @Component.Builder
   interface Builder {
-    @dagger.BindsInstance
+    @BindsInstance
     Builder environment(Environment environment);
 
     AppComponent build();
