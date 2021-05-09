@@ -11,7 +11,6 @@ import net.sargue.mailgun.Mail;
 public class MailClient {
   private static final Logger logger = Logger.getLogger(MailClient.class.getName());
   private static final String DOMAIN = "pwd.floreina.me";
-  private static final String FROM_NAME = "Key Ring";
   private static final String FROM_EMAIL = "keyring@pwd.floreina.me";
   private Optional<Configuration> maybeConfiguration;
   private MailVerificationCodeHeadRendererFactory mailVerificationCodeHeadRendererFactory;
@@ -36,7 +35,7 @@ public class MailClient {
       String body = mailVerificationCodeBodyRendererFactory.newRenderer().setCode(code).render();
 
       Mail.using(maybeConfiguration.get())
-          .from(FROM_NAME, FROM_EMAIL)
+          .from(FROM_EMAIL)
           .to(address)
           .subject(head)
           .html(body)
