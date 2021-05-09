@@ -1,5 +1,9 @@
 load("//bazel/java:junit5.bzl", "junit5_test")
-load("//server:aspectj.bzl", "woven_java_binary", "woven_junit5_test")
+load("//server:aspectj.bzl", "woven_java_binary")
+
+exports_files([
+    "entrypoint.sh",
+])
 
 java_library(
     name = "chronometry",
@@ -46,43 +50,6 @@ java_library(
 )
 
 java_library(
-    name = "entities_expiration",
-    srcs = ["EntitiesExpiration.java"],
-    deps = [
-        ":chronometry",
-        "//server/main/aspects:annotations",
-        "//server/main/entities:mail_token",
-        "//server/main/entities:session",
-        "//server/main/entities:user",
-        "@maven//:javax_inject_javax_inject",
-        "@maven//:javax_persistence_javax_persistence_api",
-    ],
-)
-
-woven_junit5_test(
-    name = "entities_expiration_test",
-    srcs = ["EntitiesExpirationTest.java"],
-    resources = ["//server/java/META-INF:persistence.xml"],
-    test_package = "server.main",
-    runtime_deps = [
-        "@maven//:com_h2database_h2",
-        "@maven//:javax_xml_bind_jaxb_api",
-    ],
-    deps = [
-        "//server/main:chronometry",
-        "//server/main:entities_expiration",
-        "//server/main/aspects:storage_manager_aspect",
-        "//server/main/entities:key",
-        "//server/main/entities:user",
-        "@maven//:com_google_guava_guava",
-        "@maven//:javax_persistence_javax_persistence_api",
-        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
-        "@maven//:org_aspectj_aspectjrt",
-        "@maven//:org_mockito_mockito_core",
-    ],
-)
-
-java_library(
     name = "app_module",
     srcs = ["AppModule.java"],
     plugins = [
@@ -110,7 +77,6 @@ java_library(
     ],
     deps = [
         ":app_module",
-        ":entities_expiration",
         ":environment",
         "//server/main/geolocation:geolocation_module",
         "//server/main/interceptors:request_metadata_interceptor",
@@ -134,9 +100,8 @@ java_binary(
     srcs = ["Launcher.java"],
     main_class = "server.main.Launcher",
     deps = [
-        "environment",
         ":app_component",
-        ":entities_expiration",
+        ":environment",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/aspects:validate_user_aspect",
         "@maven//:com_beust_jcommander",
@@ -147,6 +112,11 @@ java_binary(
 
 woven_java_binary(
     name = "main",
+    aop_xml = "//server/main/java/META-INF:aop.xml",
+    aspects = [
+        "//server/main/aspects:validate_user_aspect",
+        "//server/main/aspects:storage_manager_aspect",
+    ],
     jvm_flags = [
         # https://github.com/pgjdbc/pgjdbc/issues/986
         "--add-opens java.base/java.util=ALL-UNNAMED",
@@ -154,13 +124,16 @@ woven_java_binary(
     main_class = "server.main.Launcher",
     resources = [
         "//server/java/META-INF:persistence.xml",
-        "//server/java/templates:mail_verification_code.body.twig",
-        "//server/java/templates:mail_verification_code.head.twig",
+        "//server/main/java/templates:mail_verification_code.body.twig",
+        "//server/main/java/templates:mail_verification_code.head.twig",
     ],
-    visibility = ["//:root", "//server:internal"],
+    visibility = [
+        "//:root",
+        "//server:internal",
+    ],
     runtime_deps = [
-        "//server/main:app_component",
-        "//server/main:launcher",
+        ":app_component",
+        ":launcher",
         "@maven//:io_grpc_grpc_netty_shaded",
         "@maven//:io_grpc_grpc_protobuf",
         "@maven//:io_grpc_grpc_stub",

@@ -12,8 +12,18 @@ container_image(
     base = "@io_docker_index_library_openjdk//image",
     cmd = ["./entrypoint.sh"],
     directory = "/root",
-    files = ["entrypoint.sh"],
+    files = ["//server/main:entrypoint.sh"],
     ports = ["5001"],
     tars = ["//server/main:main_package"],
+    workdir = "/root",
+)
+
+container_image(
+    name = "janitor",
+    base = "@io_docker_index_library_openjdk//image",
+    cmd = ["./entrypoint.sh"],
+    directory = "/root",
+    files = ["//server/janitor:entrypoint.sh"],
+    tars = ["//server/janitor:janitor_package"],
     workdir = "/root",
 )

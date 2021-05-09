@@ -42,6 +42,11 @@ java_library(
 woven_junit5_test(
     name = "account_operations_client_test",
     srcs = ["AccountOperationsClientTest.java"],
+    aop_xml = "//server/main/java/META-INF:aop.xml",
+    aspects = [
+        "//server/main/aspects:validate_user_aspect",
+        "//server/main/aspects:storage_manager_aspect",
+    ],
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "server.main.storage",
     runtime_deps = [
@@ -95,6 +100,11 @@ java_library(
 woven_junit5_test(
     name = "key_operations_client_test",
     srcs = ["KeyOperationsClientTest.java"],
+    aop_xml = "//server/main/java/META-INF:aop.xml",
+    aspects = [
+        "//server/main/aspects:validate_user_aspect",
+        "//server/main/aspects:storage_manager_aspect",
+    ],
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "server.main.storage",
     runtime_deps = [
@@ -135,6 +145,7 @@ java_library(
         "//server/main/storage:account_operations_interface",
         "//server/main/storage:key_operations_interface",
         "@maven//:com_google_dagger_dagger",
+        "@maven//:com_google_guava_guava",
         "@maven//:javax_inject_javax_inject",
         "@maven//:javax_persistence_javax_persistence_api",
     ],

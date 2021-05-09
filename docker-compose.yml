@@ -29,6 +29,8 @@ services:
       - geoipupdate_license_key
     volumes:
       - '/root/geo_ip:/usr/share/GeoIP'
+  janitor:
+    image: dubov94/keyring-janitor
   postgres:
     image: 'postgres:10'
     environment:

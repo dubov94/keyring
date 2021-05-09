@@ -39,6 +39,11 @@ java_library(
 woven_junit5_test(
     name = "administration_service_test",
     srcs = ["AdministrationServiceTest.java"],
+    aop_xml = "//server/main/java/META-INF:aop.xml",
+    aspects = [
+        "//server/main/aspects:validate_user_aspect",
+        "//server/main/aspects:storage_manager_aspect",
+    ],
     test_package = "server.main.services",
     deps = [
         "//proto:service_java_grpc",

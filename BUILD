@@ -23,10 +23,16 @@ command(
     command = "//grpc_gateway:main",
 )
 
+command(
+    name = "janitor",
+    command = "//server/janitor",
+)
+
 multirun(
     name = "backends",
     commands = [
         ":grpc_gateway",
+        ":janitor",
         ":server",
     ],
     parallel = True,

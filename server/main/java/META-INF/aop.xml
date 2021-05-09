@@ -6,7 +6,6 @@
             <include within="server.main.aspects.*"/>
             <include within="server.main.storage.*"/>
             <include within="server.main.services.*"/>
-            <include within="server.main.EntitiesExpiration"/>
         </weaver>
     </aspects>
 </aspectj>

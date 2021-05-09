@@ -1,0 +1,9 @@
+<aspectj>
+    <aspects>
+        <aspect name="server.main.aspects.StorageManagerAspect"/>
+        <weaver>
+            <include within="server.main.aspects.*"/>
+            <include within="server.janitor.tasks.*"/>
+        </weaver>
+    </aspects>
+</aspectj>

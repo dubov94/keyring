@@ -7,14 +7,11 @@ ASPECTJ_JVM_FLAGS = [
     # https://www.eclipse.org/aspectj/doc/released/README-194.html
     "--add-opens java.base/java.lang=ALL-UNNAMED",
 ]
-AOP_XML = "//server/java/META-INF:aop.xml"
-ASPECTS = [
-    "//server/main/aspects:validate_user_aspect",
-    "//server/main/aspects:storage_manager_aspect",
-]
 
 def woven_java_binary(
         name,
+        aop_xml,
+        aspects,
         main_class,
         data = [],
         jvm_flags = [],
@@ -28,8 +25,8 @@ def woven_java_binary(
         data = all_data,
         jvm_flags = all_jvm_flags,
         main_class = main_class,
-        resources = resources + [AOP_XML],
-        runtime_deps = runtime_deps + ASPECTS,
+        resources = resources + [aop_xml],
+        runtime_deps = runtime_deps + aspects,
         visibility = visibility,
     )
     java_package(
@@ -43,6 +40,8 @@ def woven_java_binary(
 def woven_junit5_test(
         name,
         srcs,
+        aop_xml,
+        aspects,
         test_package,
         data = [],
         jvm_flags = [],
@@ -54,8 +53,8 @@ def woven_junit5_test(
         srcs = srcs,
         data = data + [ASPECTJ_WEAVER],
         jvm_flags = jvm_flags + ASPECTJ_JVM_FLAGS,
-        resources = resources + [AOP_XML],
+        resources = resources + [aop_xml],
         test_package = test_package,
-        runtime_deps = runtime_deps + ASPECTS,
+        runtime_deps = runtime_deps + aspects,
         deps = deps,
     )
