@@ -55,6 +55,7 @@ import { Password } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
 import { authnViaApiSignal, backgroundAuthnSignal } from '../../authn/actions'
+import { getQrcEncoder } from '@/cryptography/qrc_encoder'
 
 export const logOutEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(logOut)),
@@ -315,11 +316,14 @@ export const otpParamsGenerationEpic: Epic<RootAction, RootAction, RootState> = 
           headers: {
             [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
           }
-        })).pipe(switchMap((response: ServiceGenerateOtpParamsResponse) => of(otpParamsGenerationSignal(success({
-          sharedSecret: response.sharedSecret!,
-          scratchCodes: response.scratchCodes!,
-          keyUri: response.keyUri!
-        })))))
+        })).pipe(switchMap((response: ServiceGenerateOtpParamsResponse) => from(getQrcEncoder().encode(response.keyUri!)).pipe(
+          switchMap((qrcDataUrl) => of(otpParamsGenerationSignal(success({
+            sharedSecret: response.sharedSecret!,
+            scratchCodes: response.scratchCodes!,
+            keyUri: response.keyUri!,
+            qrcDataUrl
+          }))))
+        )))
       ).pipe(
         catchError((error) => of(otpParamsGenerationSignal(exception(errorToMessage(error)))))
       )

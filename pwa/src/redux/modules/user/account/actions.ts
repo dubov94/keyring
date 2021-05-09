@@ -93,6 +93,7 @@ export interface OtpParams {
   sharedSecret: string;
   scratchCodes: string[];
   keyUri: string;
+  qrcDataUrl: string;
 }
 export const generateOtpParams = createAction('user/account/generateOtpParams')()
 export const otpParamsGenerationSignal = createAction('user/account/otpParamsGenerationSignal')<DeepReadonly<

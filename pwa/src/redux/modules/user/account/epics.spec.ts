@@ -70,6 +70,7 @@ import { authnViaApiSignal, registrationSignal } from '../../authn/actions'
 import { showToast } from '../../ui/toast/actions'
 import { SodiumClient } from '@/cryptography/sodium_client'
 import { emplace } from '../keys/actions'
+import { QrcEncoder, QRC_ENCODER_TOKEN } from '@/cryptography/qrc_encoder'
 
 describe('releaseMailTokenEpic', () => {
   it('emits release sequence', async () => {
@@ -653,6 +654,11 @@ describe('otpParamsGenerationEpic', () => {
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
       useValue: instance(mockAdministrationApi)
     })
+    const mockQrcEncoder: QrcEncoder = mock<QrcEncoder>()
+    when(mockQrcEncoder.encode('uri')).thenResolve('qrc')
+    container.register<QrcEncoder>(QRC_ENCODER_TOKEN, {
+      useValue: instance(mockQrcEncoder)
+    })
 
     const epicTracker = new EpicTracker(otpParamsGenerationEpic(action$, state$, {}))
     actionSubject.next(generateOtpParams())
@@ -664,7 +670,8 @@ describe('otpParamsGenerationEpic', () => {
       otpParamsGenerationSignal(success({
         sharedSecret: 'secret',
         scratchCodes: ['a', 'b', 'c'],
-        keyUri: 'uri'
+        keyUri: 'uri',
+        qrcDataUrl: 'qrc'
       }))
     ])
   })

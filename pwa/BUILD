@@ -101,6 +101,7 @@ vue_cli_launcher(
 DEPENDENCIES = [
     "@pwa_npm//@types/libsodium-wrappers",
     "@pwa_npm//@types/lodash",
+    "@pwa_npm//@types/qrcode",
     "@pwa_npm//@types/ua-parser-js",
     "@pwa_npm//@types/vuedraggable",
     "@pwa_npm//@types/vuelidate",
@@ -121,6 +122,7 @@ DEPENDENCIES = [
     "@pwa_npm//lodash",
     # For `ts_swagger_api`.
     "@pwa_npm//portable-fetch",
+    "@pwa_npm//qrcode",
     "@pwa_npm//redux-observable",
     "@pwa_npm//reflect-metadata",
     "@pwa_npm//register-service-worker",

@@ -228,7 +228,8 @@ describe('otpParamsGeneration', () => {
   const signalAction = otpParamsGenerationSignal(success({
     sharedSecret: 'secret',
     scratchCodes: ['a', 'b', 'c'],
-    keyUri: 'uri'
+    keyUri: 'uri',
+    qrcDataUrl: 'qrc'
   }))
 
   describe('otpParamsGenerationSignal', () => {

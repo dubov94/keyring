@@ -26,6 +26,8 @@ import { VUE_CONSTRUCTOR_TOKEN } from './vue_di'
 import { sha1 } from './cryptography/sha1'
 import axios from 'axios'
 import { StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN, ZxcvbnService } from './cryptography/strength_test_service'
+import Qrc from 'qrcode'
+import { QrcEncoder, QRC_ENCODER_TOKEN } from './cryptography/qrc_encoder'
 
 container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
   useValue: SodiumWorker<SodiumWorkerInterface>()
@@ -49,6 +51,10 @@ container.register<PwnedService>(PWNED_SERVICE_TOKEN, {
 
 container.register<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN, {
   useValue: new ZxcvbnService()
+})
+
+container.register<QrcEncoder>(QRC_ENCODER_TOKEN, {
+  useValue: { encode: Qrc.toDataURL }
 })
 
 Vue.config.productionTip = false
