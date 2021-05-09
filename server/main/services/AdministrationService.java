@@ -3,6 +3,13 @@ package server.main.services;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.*;
 
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
+import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
+import com.warrenstrange.googleauth.IGoogleAuthenticator;
+import io.grpc.stub.StreamObserver;
+import java.util.*;
+import java.util.stream.Stream;
+import javax.inject.Inject;
 import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.aspects.Annotations.ValidateUser;
@@ -16,13 +23,6 @@ import server.main.keyvalue.UserPointer;
 import server.main.proto.service.*;
 import server.main.storage.AccountOperationsInterface;
 import server.main.storage.KeyOperationsInterface;
-import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
-import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
-import com.warrenstrange.googleauth.IGoogleAuthenticator;
-import io.grpc.stub.StreamObserver;
-import java.util.*;
-import java.util.stream.Stream;
-import javax.inject.Inject;
 
 public class AdministrationService extends AdministrationGrpc.AdministrationImplBase {
   private KeyOperationsInterface keyOperationsInterface;
@@ -153,25 +153,24 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(identifier);
     if (!maybeUser.isPresent()) {
       throw new ConcurrentModificationException();
+    }
+    User user = maybeUser.get();
+    if (!Utilities.doesDigestMatchUser(cryptography, user, request.getCurrentDigest())) {
+      response.onNext(
+          ChangeMasterKeyResponse.newBuilder()
+              .setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST)
+              .build());
     } else {
-      User user = maybeUser.get();
-      if (!Utilities.doesDigestMatchUser(cryptography, user, request.getCurrentDigest())) {
-        response.onNext(
-            ChangeMasterKeyResponse.newBuilder()
-                .setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST)
-                .build());
-      } else {
-        ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
-        accountOperationsInterface.changeMasterKey(
-            identifier,
-            renewal.getSalt(),
-            cryptography.computeHash(renewal.getDigest()),
-            renewal.getKeysList());
-        List<Session> sessions = accountOperationsInterface.readSessions(identifier);
-        keyValueClient.dropSessions(sessions.stream().map(Session::getKey).collect(toList()));
-        String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
-        response.onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey(sessionKey).build());
-      }
+      ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
+      accountOperationsInterface.changeMasterKey(
+          identifier,
+          renewal.getSalt(),
+          cryptography.computeHash(renewal.getDigest()),
+          renewal.getKeysList());
+      List<Session> sessions = accountOperationsInterface.readSessions(identifier);
+      keyValueClient.dropSessions(sessions.stream().map(Session::getKey).collect(toList()));
+      String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
+      response.onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey(sessionKey).build());
     }
     response.onCompleted();
   }
@@ -184,22 +183,21 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
       throw new ConcurrentModificationException();
+    }
+    User user = maybeUser.get();
+    if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
+      response.onNext(
+          ChangeUsernameResponse.newBuilder()
+              .setError(ChangeUsernameResponse.Error.INVALID_DIGEST)
+              .build());
+    } else if (accountOperationsInterface.getUserByName(request.getUsername()).isPresent()) {
+      response.onNext(
+          ChangeUsernameResponse.newBuilder()
+              .setError(ChangeUsernameResponse.Error.NAME_TAKEN)
+              .build());
     } else {
-      User user = maybeUser.get();
-      if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
-        response.onNext(
-            ChangeUsernameResponse.newBuilder()
-                .setError(ChangeUsernameResponse.Error.INVALID_DIGEST)
-                .build());
-      } else if (accountOperationsInterface.getUserByName(request.getUsername()).isPresent()) {
-        response.onNext(
-            ChangeUsernameResponse.newBuilder()
-                .setError(ChangeUsernameResponse.Error.NAME_TAKEN)
-                .build());
-      } else {
-        accountOperationsInterface.changeUsername(userIdentifier, request.getUsername());
-        response.onNext(ChangeUsernameResponse.getDefaultInstance());
-      }
+      accountOperationsInterface.changeUsername(userIdentifier, request.getUsername());
+      response.onNext(ChangeUsernameResponse.getDefaultInstance());
     }
     response.onCompleted();
   }
@@ -212,21 +210,20 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
       throw new ConcurrentModificationException();
+    }
+    User user = maybeUser.get();
+    if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
+      response.onNext(
+          DeleteAccountResponse.newBuilder()
+              .setError(DeleteAccountResponse.Error.INVALID_DIGEST)
+              .build());
     } else {
-      User user = maybeUser.get();
-      if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
-        response.onNext(
-            DeleteAccountResponse.newBuilder()
-                .setError(DeleteAccountResponse.Error.INVALID_DIGEST)
-                .build());
-      } else {
-        keyValueClient.dropSessions(
-            accountOperationsInterface.readSessions(userIdentifier).stream()
-                .map(Session::getKey)
-                .collect(toList()));
-        accountOperationsInterface.markAccountAsDeleted(userIdentifier);
-        response.onNext(DeleteAccountResponse.getDefaultInstance());
-      }
+      keyValueClient.dropSessions(
+          accountOperationsInterface.readSessions(userIdentifier).stream()
+              .map(Session::getKey)
+              .collect(toList()));
+      accountOperationsInterface.markAccountAsDeleted(userIdentifier);
+      response.onNext(DeleteAccountResponse.getDefaultInstance());
     }
     response.onCompleted();
   }
@@ -264,12 +261,20 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void generateOtpParams(
       GenerateOtpParamsRequest request, StreamObserver<GenerateOtpParamsResponse> response) {
+    Optional<User> maybeUser =
+        accountOperationsInterface.getUserByIdentifier(sessionInterceptorKeys.getUserIdentifier());
+    if (!maybeUser.isPresent()) {
+      throw new ConcurrentModificationException();
+    }
     GoogleAuthenticatorKey credentials = googleAuthenticator.createCredentials();
     response.onNext(
         GenerateOtpParamsResponse.newBuilder()
             .setSharedSecret(credentials.getKey())
-            .setKeyUri(GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(null, "Key Ring", credentials))
-            .addAllScratchCodes(() -> Stream.generate(cryptography::generateTts).limit(5).iterator())
+            .setKeyUri(
+                GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(
+                    "keyring", maybeUser.get().getUsername(), credentials))
+            .addAllScratchCodes(
+                () -> Stream.generate(cryptography::generateTts).limit(5).iterator())
             .build());
     response.onCompleted();
   }
