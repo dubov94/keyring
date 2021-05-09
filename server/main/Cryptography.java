@@ -41,7 +41,7 @@ public class Cryptography {
     // https://owasp.org/www-community/vulnerabilities/Insufficient_Session-ID_Length
     byte[] randomBytes = new byte[128 / 8];
     secureRandom.nextBytes(randomBytes);
-    return BaseEncoding.base64().encode(randomBytes);
+    return BaseEncoding.base64().omitPadding().encode(randomBytes);
   }
 
   public String computeHash(String value) {
