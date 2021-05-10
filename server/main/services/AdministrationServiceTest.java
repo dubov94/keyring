@@ -5,18 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import server.main.Cryptography;
-import server.main.MailClient;
-import server.main.aspects.ValidateUserAspect;
-import server.main.entities.MailToken;
-import server.main.entities.Session;
-import server.main.entities.User;
-import server.main.geolocation.GeolocationServiceInterface;
-import server.main.interceptors.SessionInterceptorKeys;
-import server.main.keyvalue.KeyValueClient;
-import server.main.proto.service.*;
-import server.main.storage.AccountOperationsInterface;
-import server.main.storage.KeyOperationsInterface;
 import com.google.common.collect.ImmutableList;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
@@ -35,6 +23,18 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import server.main.Cryptography;
+import server.main.MailClient;
+import server.main.aspects.ValidateUserAspect;
+import server.main.entities.MailToken;
+import server.main.entities.Session;
+import server.main.entities.User;
+import server.main.geolocation.GeolocationServiceInterface;
+import server.main.interceptors.SessionInterceptorKeys;
+import server.main.keyvalue.KeyValueClient;
+import server.main.proto.service.*;
+import server.main.storage.AccountOperationsInterface;
+import server.main.storage.KeyOperationsInterface;
 
 @ExtendWith(MockitoExtension.class)
 class AdministrationServiceTest {
@@ -49,7 +49,12 @@ class AdministrationServiceTest {
   @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
 
   private User user =
-      new User().setIdentifier(0L).setState(User.State.ACTIVE).setSalt("salt").setHash("hash");
+      new User()
+          .setIdentifier(0L)
+          .setState(User.State.ACTIVE)
+          .setUsername("username")
+          .setSalt("salt")
+          .setHash("hash");
   private AdministrationService administrationService;
 
   @BeforeEach
@@ -314,7 +319,8 @@ class AdministrationServiceTest {
         .onNext(
             GenerateOtpParamsResponse.newBuilder()
                 .setSharedSecret("secret")
-                .setKeyUri("otpauth://totp/Key%20Ring?secret=secret&algorithm=SHA1&digits=6&period=30")
+                .setKeyUri(
+                    "otpauth://totp/keyring:username?secret=secret&issuer=keyring&algorithm=SHA1&digits=6&period=30")
                 .addAllScratchCodes(ImmutableList.of("1", "2", "3", "4", "5"))
                 .build());
     verify(mockStreamObserver).onCompleted();
