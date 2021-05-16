@@ -644,7 +644,7 @@ describe('otpParamsGenerationEpic', () => {
     })))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.generateOtpParams(deepEqual({
+    when(mockAdministrationApi.generateOtpParams(deepEqual({}), deepEqual({
       headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' }
     }))).thenResolve(<ServiceGenerateOtpParamsResponse>{
       sharedSecret: 'secret',

@@ -312,7 +312,7 @@ export const otpParamsGenerationEpic: Epic<RootAction, RootAction, RootState> = 
     if (isActionOf(generateOtpParams, action)) {
       return concat(
         of(otpParamsGenerationSignal(indicator(OtpParamsGenerationFlowIndicator.MAKING_REQUEST))),
-        from(getAdministrationApi().generateOtpParams({
+        from(getAdministrationApi().generateOtpParams({}, {
           headers: {
             [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
           }

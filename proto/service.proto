@@ -266,6 +266,7 @@ message GetRecentSessionsResponse {
 message GenerateOtpParamsRequest {}
 
 message GenerateOtpParamsResponse {
+    string otp_params_id = 4;
     string shared_secret = 1;
     repeated string scratch_codes = 2;
     string key_uri = 3;
@@ -333,6 +334,9 @@ service Administration {
         option (google.api.http) = { get: "/administration/get-recent-sessions" };
     }
     rpc GenerateOtpParams (GenerateOtpParamsRequest) returns (GenerateOtpParamsResponse) {
-        option (google.api.http) = { get: "/administration/generate-otp-params" };
+        option (google.api.http) = {
+            post: "/administration/generate-otp-params"
+            body: "*"
+        };
     }
 }
