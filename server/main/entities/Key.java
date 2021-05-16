@@ -18,6 +18,9 @@ public class Key {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private User user;
 
+  @Version
+  private long version;
+
   @Column private String value;
 
   @OneToMany(

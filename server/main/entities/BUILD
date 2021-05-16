@@ -61,6 +61,17 @@ java_library(
 )
 
 java_library(
+    name = "entities",
+    visibility = ["//server:internal"],
+    exports = [
+        ":key",
+        ":mail_token",
+        ":session",
+        ":user",
+    ]
+)
+
+java_library(
     name = "utilities",
     srcs = ["Utilities.java"],
     visibility = ["//server:internal"],

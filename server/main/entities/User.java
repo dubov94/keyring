@@ -15,6 +15,9 @@ public class User {
 
   @CreationTimestamp private Timestamp timestamp;
 
+  @Version
+  private long version;
+
   @Enumerated private State state;
 
   // Note that currently there are no server-side limitations.

@@ -17,6 +17,8 @@ java_library(
     deps = [
         ":environment",
         "//server/main:chronometry",
+        # For `hibernate.hbm2ddl.auto`.
+        "//server/main/entities",
         "@maven//:com_google_dagger_dagger",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_inject_javax_inject",
