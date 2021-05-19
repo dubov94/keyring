@@ -1,23 +1,21 @@
 package server.main.storage;
 
+import static java.util.stream.Collectors.toMap;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import server.main.Chronometry;
 import server.main.aspects.Annotations.EntityController;
 import server.main.aspects.Annotations.LocalTransaction;
 import server.main.entities.*;
 import server.main.proto.service.IdentifiedKey;
 import server.main.proto.service.Password;
-
-import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-import static java.util.stream.Collectors.toMap;
 
 public class AccountOperationsClient implements AccountOperationsInterface {
   private Chronometry chronometry;
@@ -175,5 +173,29 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     } else {
       throw new IllegalArgumentException();
     }
+  }
+
+  @Override
+  @LocalTransaction
+  public OtpParams createOtpParams(
+      long userIdentifier, String sharedSecret, List<String> scratchCodes) {
+    Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
+    if (!maybeUser.isPresent()) {
+      throw new IllegalArgumentException();
+    }
+    User user = maybeUser.get();
+    OtpParams otpParams =
+        new OtpParams().setUser(user).setSharedSecret(sharedSecret).setScratchCodes(scratchCodes);
+    entityManager.persist(otpParams);
+    return otpParams;
+  }
+
+  @Override
+  @LocalTransaction
+  public Optional<OtpParams> getOtpParams(long userId, long otpParamsId) {
+    return Queries.findByUser(entityManager, OtpParams.class, OtpParams_.user, userId)
+        .stream()
+        .filter(otpParams -> Objects.equals(otpParams.getIdentifier(), otpParamsId))
+        .findFirst();
   }
 }

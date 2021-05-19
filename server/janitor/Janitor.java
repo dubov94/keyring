@@ -34,6 +34,7 @@ final class Janitor {
         ImmutableList.of(
             appComponent.deletedUsers(),
             appComponent.expiredMailTokens(),
+            appComponent.expiredOtpParams(),
             appComponent.expiredPendingUsers(),
             appComponent.expiredSessionRecords())) {
       scheduledExecutorService.scheduleWithFixedDelay(task, 0, PERIOD_M, TimeUnit.MINUTES);

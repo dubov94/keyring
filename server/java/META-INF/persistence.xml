@@ -5,6 +5,7 @@
     <persistence-unit name="production">
         <class>server.main.entities.Key</class>
         <class>server.main.entities.MailToken</class>
+        <class>server.main.entities.OtpParams</class>
         <class>server.main.entities.Session</class>
         <class>server.main.entities.Tag</class>
         <class>server.main.entities.User</class>
@@ -24,6 +25,7 @@
     <persistence-unit name="development">
         <class>server.main.entities.Key</class>
         <class>server.main.entities.MailToken</class>
+        <class>server.main.entities.OtpParams</class>
         <class>server.main.entities.Session</class>
         <class>server.main.entities.Tag</class>
         <class>server.main.entities.User</class>
@@ -33,20 +35,19 @@
             <property name="javax.persistence.jdbc.user" value="postgres"/>
             <property name="javax.persistence.jdbc.password" value="postgres"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
-            <property name="hibernate.connection.provider_class"
-                      value="org.hibernate.connection.C3P0ConnectionProvider"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="testing">
         <class>server.main.entities.Key</class>
         <class>server.main.entities.MailToken</class>
+        <class>server.main.entities.OtpParams</class>
         <class>server.main.entities.Session</class>
         <class>server.main.entities.Tag</class>
         <class>server.main.entities.User</class>
         <properties>
-            <property name="javax.persistence.jdbc.driver" value="org.h2.Driver"/>
-            <property name="javax.persistence.jdbc.url" value="jdbc:h2:mem:keyring"/>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="javax.persistence.jdbc.driver" value="org.testcontainers.jdbc.ContainerDatabaseDriver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:tc:postgresql:10:///keyring"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.hbm2ddl.auto" value="create"/>
             <property name="hibernate.show_sql" value="true"/>
         </properties>

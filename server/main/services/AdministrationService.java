@@ -14,6 +14,7 @@ import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.aspects.Annotations.ValidateUser;
 import server.main.entities.MailToken;
+import server.main.entities.OtpParams;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.geolocation.GeolocationServiceInterface;
@@ -266,15 +267,22 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (!maybeUser.isPresent()) {
       throw new ConcurrentModificationException();
     }
+    User user = maybeUser.get();
     GoogleAuthenticatorKey credentials = googleAuthenticator.createCredentials();
+    String sharedSecret = credentials.getKey();
+    List<String> scratchCodes =
+        Stream.generate(cryptography::generateTts).limit(5).collect(toList());
+    OtpParams otpParams =
+        accountOperationsInterface.createOtpParams(
+            user.getIdentifier(), sharedSecret, scratchCodes);
     response.onNext(
         GenerateOtpParamsResponse.newBuilder()
-            .setSharedSecret(credentials.getKey())
+            .setOtpParamsId(String.valueOf(otpParams.getIdentifier()))
+            .setSharedSecret(sharedSecret)
             .setKeyUri(
                 GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(
-                    "keyring", maybeUser.get().getUsername(), credentials))
-            .addAllScratchCodes(
-                () -> Stream.generate(cryptography::generateTts).limit(5).iterator())
+                    "keyring", user.getUsername(), credentials))
+            .addAllScratchCodes(scratchCodes)
             .build());
     response.onCompleted();
   }

@@ -1,12 +1,12 @@
 package server.main.storage;
 
+import java.util.List;
+import java.util.Optional;
 import server.main.entities.MailToken;
+import server.main.entities.OtpParams;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.proto.service.IdentifiedKey;
-
-import java.util.List;
-import java.util.Optional;
 
 public interface AccountOperationsInterface {
   User createUser(String username, String salt, String hash, String mail, String code);
@@ -30,4 +30,8 @@ public interface AccountOperationsInterface {
   List<Session> readSessions(long userIdentifier);
 
   void markAccountAsDeleted(long userIdentifier);
+
+  OtpParams createOtpParams(long userIdentifier, String sharedSecret, List<String> scratchCodes);
+
+  Optional<OtpParams> getOtpParams(long userId, long otpParamsId);
 }

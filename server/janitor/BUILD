@@ -35,6 +35,7 @@ java_library(
         ":environment",
         "//server/janitor/tasks:deleted_users",
         "//server/janitor/tasks:expired_mail_tokens",
+        "//server/janitor/tasks:expired_otp_params",
         "//server/janitor/tasks:expired_pending_users",
         "//server/janitor/tasks:expired_session_records",
         "@maven//:com_google_dagger_dagger",

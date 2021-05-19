@@ -16,6 +16,7 @@ java_library(
     deps = [
         "//proto:service_java_grpc",
         "//server/main/entities:mail_token",
+        "//server/main/entities:otp_params",
         "//server/main/entities:session",
         "//server/main/entities:user",
     ],
@@ -32,6 +33,7 @@ java_library(
         "//server/main/aspects:annotations",
         "//server/main/entities:key",
         "//server/main/entities:mail_token",
+        "//server/main/entities:otp_params",
         "//server/main/entities:session",
         "//server/main/entities:user",
         "//server/main/entities:utilities",
@@ -50,14 +52,15 @@ woven_junit5_test(
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "server.main.storage",
     runtime_deps = [
-        "@maven//:com_h2database_h2",
-        "@maven//:javax_xml_bind_jaxb_api",
+        "@maven//:org_postgresql_postgresql",
+        "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
         "//proto:service_java_grpc",
         "//server/main:chronometry",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:mail_token",
+        "//server/main/entities:otp_params",
         "//server/main/entities:session",
         "//server/main/entities:user",
         "//server/main/entities:utilities",
@@ -108,8 +111,8 @@ woven_junit5_test(
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "server.main.storage",
     runtime_deps = [
-        "@maven//:com_h2database_h2",
-        "@maven//:javax_xml_bind_jaxb_api",
+        "@maven//:org_postgresql_postgresql",
+        "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
         "//proto:service_java_grpc",

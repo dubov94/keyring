@@ -27,6 +27,7 @@ import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.aspects.ValidateUserAspect;
 import server.main.entities.MailToken;
+import server.main.entities.OtpParams;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.geolocation.GeolocationServiceInterface;
@@ -311,6 +312,9 @@ class AdministrationServiceTest {
     final AtomicInteger ttsCounter = new AtomicInteger(0);
     when(mockCryptography.generateTts())
         .thenAnswer((invocation) -> String.valueOf(ttsCounter.incrementAndGet()));
+    ImmutableList<String> scratchCodes = ImmutableList.of("1", "2", "3", "4", "5");
+    when(mockAccountOperationsInterface.createOtpParams(0L, "secret", scratchCodes))
+        .thenReturn(new OtpParams().setIdentifier(1L));
 
     administrationService.generateOtpParams(
         GenerateOtpParamsRequest.getDefaultInstance(), mockStreamObserver);
@@ -318,10 +322,11 @@ class AdministrationServiceTest {
     verify(mockStreamObserver)
         .onNext(
             GenerateOtpParamsResponse.newBuilder()
+                .setOtpParamsId("1")
                 .setSharedSecret("secret")
                 .setKeyUri(
                     "otpauth://totp/keyring:username?secret=secret&issuer=keyring&algorithm=SHA1&digits=6&period=30")
-                .addAllScratchCodes(ImmutableList.of("1", "2", "3", "4", "5"))
+                .addAllScratchCodes(scratchCodes)
                 .build());
     verify(mockStreamObserver).onCompleted();
   }

@@ -1,14 +1,15 @@
 package server.main.storage;
 
-import server.main.Chronometry;
-import server.main.aspects.StorageManagerAspect;
-import server.main.entities.MailToken;
-import server.main.entities.Session;
-import server.main.entities.User;
-import server.main.entities.Utilities;
-import server.main.proto.service.IdentifiedKey;
-import server.main.proto.service.Password;
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.ImmutableList;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import javax.persistence.Persistence;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,16 +17,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-
-import javax.persistence.Persistence;
-import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import server.main.Chronometry;
+import server.main.aspects.StorageManagerAspect;
+import server.main.entities.MailToken;
+import server.main.entities.OtpParams;
+import server.main.entities.Session;
+import server.main.entities.User;
+import server.main.entities.Utilities;
+import server.main.proto.service.IdentifiedKey;
+import server.main.proto.service.Password;
 
 @ExtendWith(MockitoExtension.class)
 class AccountOperationsClientTest {
@@ -126,9 +126,7 @@ class AccountOperationsClientTest {
     assertEquals("salt", user.getSalt());
     assertEquals("hash", user.getHash());
     List<Password> passwords =
-        keyOperationsClient
-            .readKeys(userIdentifier)
-            .stream()
+        keyOperationsClient.readKeys(userIdentifier).stream()
             .map(Utilities::keyToPassword)
             .collect(toList());
     assertEquals(1, passwords.size());
@@ -209,6 +207,22 @@ class AccountOperationsClientTest {
     assertTrue(maybeUser.isPresent());
     User user = maybeUser.get();
     assertEquals(User.State.DELETED, user.getState());
+  }
+
+  @Test
+  void createOtpParams_putsOtpParams() {
+    long userId = createActiveUser();
+
+    long otpParamsId =
+        accountOperationsClient
+            .createOtpParams(userId, "secret", ImmutableList.of("a", "b"))
+            .getIdentifier();
+
+    Optional<OtpParams> maybeOtpParams = accountOperationsClient.getOtpParams(userId, otpParamsId);
+    assertTrue(maybeOtpParams.isPresent());
+    OtpParams otpParams = maybeOtpParams.get();
+    assertEquals(otpParams.getSharedSecret(), "secret");
+    assertEquals(otpParams.getScratchCodes(), ImmutableList.of("a", "b"));
   }
 
   private long createActiveUser() {

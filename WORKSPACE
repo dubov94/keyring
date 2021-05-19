@@ -111,6 +111,7 @@ maven_install(
         "com.google.dagger:dagger:2.14.1",
         "com.google.dagger:dagger-compiler:2.14.1",
         "com.google.guava:guava:24.0-jre",
+        "com.vladmihalcea:hibernate-types-52:2.11.1",
         "com.warrenstrange:googleauth:1.4.0",
         "io.grpc:grpc-netty-shaded:1.28.0",
         "io.grpc:grpc-protobuf:1.28.0",
@@ -130,9 +131,9 @@ maven_install(
         "redis.clients:jedis:2.9.0",
     ] + [
         "org.apiguardian:apiguardian-api:1.0.0",
-        "org.junit.jupiter:junit-jupiter-api:5.5.0",
-        "org.junit.jupiter:junit-jupiter-engine:5.5.0",
-        "org.junit.jupiter:junit-jupiter-params:5.5.0",
+        "org.junit.jupiter:junit-jupiter-api:5.6.2",
+        "org.junit.jupiter:junit-jupiter-engine:5.6.2",
+        "org.junit.jupiter:junit-jupiter-params:5.6.2",
         "org.junit.platform:junit-platform-commons:1.5.0",
         "org.junit.platform:junit-platform-console:1.5.0",
         "org.junit.platform:junit-platform-engine:1.5.0",
@@ -141,9 +142,11 @@ maven_install(
         "org.opentest4j:opentest4j:1.1.1",
     ] + [
         "com.github.kstyrc:embedded-redis:0.6",
-        "com.h2database:h2:1.4.197",
         "name.falgout.jeffrey.testing.junit5:mockito-extension:1.0.0",
         "org.mockito:mockito-core:2.15.0",
+        "org.testcontainers:junit-jupiter:1.15.3",
+        "org.testcontainers:postgresql:1.15.3",
+        "org.testcontainers:testcontainers:1.15.3",
     ],
     repositories = [
         "https://jcenter.bintray.com/",

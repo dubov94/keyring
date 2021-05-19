@@ -21,8 +21,8 @@ woven_junit5_test(
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "server.janitor.tasks",
     runtime_deps = [
-        "@maven//:com_h2database_h2",
-        "@maven//:javax_xml_bind_jaxb_api",
+        "@maven//:org_postgresql_postgresql",
+        "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
         ":deleted_users",
@@ -67,8 +67,8 @@ woven_junit5_test(
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "server.janitor.tasks",
     runtime_deps = [
-        "@maven//:com_h2database_h2",
-        "@maven//:javax_xml_bind_jaxb_api",
+        "@maven//:org_postgresql_postgresql",
+        "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
         ":expired_pending_users",
@@ -94,4 +94,16 @@ java_library(
         "@maven//:javax_inject_javax_inject",
         "@maven//:javax_persistence_javax_persistence_api",
     ],
+)
+
+java_library(
+    name = "expired_otp_params",
+    srcs = ["ExpiredOtpParams.java"],
+    deps = [
+        "//server/main:chronometry",
+        "//server/main/aspects:annotations",
+        "//server/main/entities:otp_params",
+        "@maven//:javax_inject_javax_inject",
+        "@maven//:javax_persistence_javax_persistence_api",
+    ]
 )
