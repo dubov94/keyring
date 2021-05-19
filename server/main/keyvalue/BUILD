@@ -48,7 +48,7 @@ junit5_test(
     srcs = ["KeyValueClientTest.java"],
     test_package = "server.main.keyvalue",
     runtime_deps = [
-        "@maven//:com_github_kstyrc_embedded_redis",
+        "@maven//:org_slf4j_slf4j_simple",
     ],
     deps = [
         "//server/main:chronometry",
@@ -56,10 +56,11 @@ junit5_test(
         "//server/main/keyvalue:key_value_client",
         "//server/main/keyvalue:key_value_exception",
         "//server/main/keyvalue:user_pointer",
-        "@maven//:com_github_kstyrc_embedded_redis",
         "@maven//:com_google_code_gson_gson",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_mockito_mockito_core",
+        "@maven//:org_testcontainers_junit_jupiter",
+        "@maven//:org_testcontainers_testcontainers",
         "@maven//:redis_clients_jedis",
     ],
 )

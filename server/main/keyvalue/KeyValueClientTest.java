@@ -1,57 +1,48 @@
 package server.main.keyvalue;
 
-import server.main.Chronometry;
-import server.main.Cryptography;
-import com.google.gson.Gson;
-import name.falgout.jeffrey.testing.junit5.MockitoExtension;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.embedded.RedisServer;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static redis.clients.jedis.Protocol.DEFAULT_PORT;
+
+import com.google.gson.Gson;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
+import name.falgout.jeffrey.testing.junit5.MockitoExtension;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import server.main.Chronometry;
+import server.main.Cryptography;
 
 @ExtendWith(MockitoExtension.class)
+@Testcontainers
 class KeyValueClientTest {
-  // To avoid conflicts with redis-server.service.
-  private static int redisPort = DEFAULT_PORT + 1;
-  private static RedisServer redisServer;
+  @Container
+  public GenericContainer redisContainer =
+      new GenericContainer(DockerImageName.parse("redis")).withExposedPorts(6379);
+
   private static JedisPool jedisPool;
   private static Gson gson;
   @Mock private Cryptography mockCryptography;
   @Mock private Chronometry mockChronometry;
   private KeyValueClient keyValueClient;
 
-  @BeforeAll
-  static void beforeAll() throws IOException {
-    gson = new Gson();
-    redisServer = new RedisServer(redisPort);
-    redisServer.start();
-    jedisPool = new JedisPool(new JedisPoolConfig(), "localhost", redisPort);
-  }
-
-  @AfterAll
-  static void afterAll() {
-    redisServer.stop();
-  }
-
   @BeforeEach
   void beforeEach() {
+    jedisPool =
+        new JedisPool(
+            new JedisPoolConfig(), redisContainer.getHost(), redisContainer.getFirstMappedPort());
+    gson = new Gson();
     keyValueClient = new KeyValueClient(jedisPool, mockCryptography, gson, mockChronometry);
     when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
     when(mockChronometry.isBefore(eq(Instant.EPOCH), any(Instant.class))).thenReturn(false);
@@ -97,8 +88,7 @@ class KeyValueClientTest {
       Thread.sleep(10);
       long ttlBefore = jedis.pttl("session:" + identifier);
 
-      Optional<UserPointer> reply =
-          keyValueClient.getSessionAndUpdateItsExpirationTime(identifier);
+      Optional<UserPointer> reply = keyValueClient.getSessionAndUpdateItsExpirationTime(identifier);
       long ttlAfter = jedis.pttl("session:" + identifier);
 
       assertEquals(0L, reply.get().getIdentifier());
