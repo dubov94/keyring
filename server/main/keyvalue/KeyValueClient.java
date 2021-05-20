@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class KeyValueClient {
-  private static final int SESSION_LIFETIME_IN_SECONDS = 5 * 60;
+  private static final int SESSION_LIFETIME_IN_SECONDS = 10 * 60;
 
   private static final ImmutableMap<SetPresenceConstraint, String>
       SET_PRESENCE_CONSTRAINT_TO_PARAMETER_VALUE =
