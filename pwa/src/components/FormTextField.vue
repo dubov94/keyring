@@ -1,6 +1,6 @@
 <template>
   <v-text-field :value="value" :type="type" :label="label" :disabled="disabled"
-    :prepend-icon="prependIcon" :autofocus="autofocus" ref="input"
+    :prepend-icon="prependIcon" :autofocus="autofocus" ref="input" :solo="solo"
     :error-messages="errorMessages" @blur="touch" @keydown.native.enter="touch"
     @focus="reset" @input="input"></v-text-field>
 </template>
@@ -14,6 +14,7 @@ export default {
     'errors',
     'label',
     'prependIcon',
+    'solo',
     'type',
     'value'
   ],
