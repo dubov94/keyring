@@ -30,7 +30,7 @@ public final class ExpiredOtpParams implements Runnable {
     Root<OtpParams> otpParamsRoot = criteriaDelete.from(OtpParams.class);
     criteriaDelete.where(
         criteriaBuilder.lessThan(
-            otpParamsRoot.get(OtpParams_.timestamp),
+            otpParamsRoot.get(OtpParams_.creationTimestamp),
             chronometry.pastTimestamp(10, ChronoUnit.MINUTES)));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }

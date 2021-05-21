@@ -272,6 +272,23 @@ message GenerateOtpParamsResponse {
     string key_uri = 3;
 }
 
+message AcceptOtpParamsRequest {
+    string otp_params_id = 1;
+    string otp = 2;
+    bool yield_trusted_token = 3;
+}
+
+message AcceptOtpParamsResponse {
+    enum Error {
+        NONE = 0;
+        NOT_FOUND = 1;
+        INVALID_CODE = 2;
+    }
+
+    Error error = 1;
+    string trusted_token = 2;
+}
+
 service Administration {
     rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse) {
         option (google.api.http) = {
@@ -336,6 +353,12 @@ service Administration {
     rpc GenerateOtpParams (GenerateOtpParamsRequest) returns (GenerateOtpParamsResponse) {
         option (google.api.http) = {
             post: "/administration/generate-otp-params"
+            body: "*"
+        };
+    }
+    rpc AcceptOtpParams (AcceptOtpParamsRequest) returns (AcceptOtpParamsResponse) {
+        option (google.api.http) = {
+            post: "/administration/accept-otp-params"
             body: "*"
         };
     }

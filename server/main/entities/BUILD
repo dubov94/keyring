@@ -67,12 +67,26 @@ java_library(
 )
 
 java_library(
+    name = "otp_tokens",
+    srcs = ["OtpToken.java"],
+    plugins = ["//bazel/java:hibernate_jpamodelgen"],
+    visibility = ["//server:internal"],
+    deps = [
+        ":user",
+        "@maven//:javax_annotation_javax_annotation_api",
+        "@maven//:javax_persistence_javax_persistence_api",
+        "@maven//:org_hibernate_hibernate_core",
+    ],
+)
+
+java_library(
     name = "entities",
     visibility = ["//server:internal"],
     exports = [
         ":key",
         ":mail_token",
         ":otp_params",
+        ":otp_tokens",
         ":session",
         ":user",
     ],

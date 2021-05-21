@@ -21,6 +21,7 @@ import server.main.Chronometry;
 import server.main.aspects.StorageManagerAspect;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
+import server.main.entities.OtpToken;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.entities.Utilities;
@@ -216,13 +217,37 @@ class AccountOperationsClientTest {
     long otpParamsId =
         accountOperationsClient
             .createOtpParams(userId, "secret", ImmutableList.of("a", "b"))
-            .getIdentifier();
+            .getId();
 
     Optional<OtpParams> maybeOtpParams = accountOperationsClient.getOtpParams(userId, otpParamsId);
     assertTrue(maybeOtpParams.isPresent());
     OtpParams otpParams = maybeOtpParams.get();
     assertEquals(otpParams.getSharedSecret(), "secret");
     assertEquals(otpParams.getScratchCodes(), ImmutableList.of("a", "b"));
+  }
+
+  @Test
+  void acceptOtpParams_persistsSharedSecretScratchCodes() {
+    long userId = createActiveUser();
+    OtpParams otpParams =
+        accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of("a", "b"));
+
+    accountOperationsClient.acceptOtpParams(otpParams.getId());
+
+    assertEquals(Optional.empty(), accountOperationsClient.getOtpParams(userId, otpParams.getId()));
+    User user = accountOperationsClient.getUserByIdentifier(userId).get();
+    assertEquals("secret", user.getSharedSecret());
+    assertTrue(accountOperationsClient.getOtpToken(userId, "a").isPresent());
+    assertTrue(accountOperationsClient.getOtpToken(userId, "b").isPresent());
+  }
+
+  @Test
+  void createOtpToken_putsOtpToken() {
+    long userId = createActiveUser();
+
+    accountOperationsClient.createOtpToken(userId, "value");
+
+    assertTrue(accountOperationsClient.getOtpToken(userId, "value").isPresent());
   }
 
   private long createActiveUser() {

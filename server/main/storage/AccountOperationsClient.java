@@ -193,9 +193,44 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public Optional<OtpParams> getOtpParams(long userId, long otpParamsId) {
-    return Queries.findByUser(entityManager, OtpParams.class, OtpParams_.user, userId)
-        .stream()
-        .filter(otpParams -> Objects.equals(otpParams.getIdentifier(), otpParamsId))
+    return Queries.findByUser(entityManager, OtpParams.class, OtpParams_.user, userId).stream()
+        .filter(otpParams -> Objects.equals(otpParams.getId(), otpParamsId))
+        .findFirst();
+  }
+
+  @Override
+  @LocalTransaction
+  public void acceptOtpParams(long otpParamsId) {
+    Optional<OtpParams> maybeOtpParams =
+        Optional.ofNullable(entityManager.find(OtpParams.class, otpParamsId));
+    if (!maybeOtpParams.isPresent()) {
+      throw new IllegalArgumentException();
+    }
+    OtpParams otpParams = maybeOtpParams.get();
+    User user = otpParams.getUser();
+    user.setSharedSecret(otpParams.getSharedSecret());
+    for (String scratchCode : otpParams.getScratchCodes()) {
+      entityManager.persist(new OtpToken().setUser(user).setIsInitial(true).setValue(scratchCode));
+    }
+    entityManager.persist(user);
+    entityManager.remove(otpParams);
+  }
+
+  @Override
+  @LocalTransaction
+  public void createOtpToken(long userId, String otpToken) {
+    entityManager.persist(
+        new OtpToken()
+            .setUser(new User().setIdentifier(userId))
+            .setIsInitial(false)
+            .setValue(otpToken));
+  }
+
+  @Override
+  @LocalTransaction
+  public Optional<OtpToken> getOtpToken(long userId, String value) {
+    return Queries.findByUser(entityManager, OtpToken.class, OtpToken_.user, userId).stream()
+        .filter(otpParams -> Objects.equals(otpParams.getValue(), value))
         .findFirst();
   }
 }

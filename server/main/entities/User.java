@@ -1,10 +1,9 @@
 package server.main.entities;
 
-import org.hibernate.annotations.CreationTimestamp;
-
-import javax.persistence.*;
-import java.time.Instant;
 import java.sql.Timestamp;
+import java.time.Instant;
+import javax.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "users")
@@ -15,8 +14,7 @@ public class User {
 
   @CreationTimestamp private Timestamp timestamp;
 
-  @Version
-  private long version;
+  @Version private long version;
 
   @Enumerated private State state;
 
@@ -27,6 +25,9 @@ public class User {
   @Column private String salt;
 
   @Column private String hash;
+
+  @Column(name = "shared_secret")
+  private String sharedSecret;
 
   @Column private String mail;
 
@@ -75,6 +76,15 @@ public class User {
 
   public User setHash(String hash) {
     this.hash = hash;
+    return this;
+  }
+
+  public String getSharedSecret() {
+    return sharedSecret;
+  }
+
+  public User setSharedSecret(String sharedSecret) {
+    this.sharedSecret = sharedSecret;
     return this;
   }
 

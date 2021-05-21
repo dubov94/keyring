@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
+import server.main.entities.OtpToken;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.proto.service.IdentifiedKey;
@@ -34,4 +35,10 @@ public interface AccountOperationsInterface {
   OtpParams createOtpParams(long userIdentifier, String sharedSecret, List<String> scratchCodes);
 
   Optional<OtpParams> getOtpParams(long userId, long otpParamsId);
+
+  void acceptOtpParams(long otpParamsId);
+
+  void createOtpToken(long userId, String otpToken);
+
+  Optional<OtpToken> getOtpToken(long userId, String value);
 }

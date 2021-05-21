@@ -277,13 +277,42 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
             user.getIdentifier(), sharedSecret, scratchCodes);
     response.onNext(
         GenerateOtpParamsResponse.newBuilder()
-            .setOtpParamsId(String.valueOf(otpParams.getIdentifier()))
+            .setOtpParamsId(String.valueOf(otpParams.getId()))
             .setSharedSecret(sharedSecret)
             .setKeyUri(
                 GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(
                     "keyring", user.getUsername(), credentials))
             .addAllScratchCodes(scratchCodes)
             .build());
+    response.onCompleted();
+  }
+
+  @Override
+  @ValidateUser
+  public void acceptOtpParams(
+      AcceptOtpParamsRequest request, StreamObserver<AcceptOtpParamsResponse> response) {
+    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
+    Optional<OtpParams> maybeOtpParams =
+        accountOperationsInterface.getOtpParams(
+            userIdentifier, Long.valueOf(request.getOtpParamsId()));
+    AcceptOtpParamsResponse.Builder builder = AcceptOtpParamsResponse.newBuilder();
+    if (!maybeOtpParams.isPresent()) {
+      builder.setError(AcceptOtpParamsResponse.Error.NOT_FOUND);
+    } else {
+      OtpParams otpParams = maybeOtpParams.get();
+      if (!googleAuthenticator.authorize(
+          otpParams.getSharedSecret(), Integer.valueOf(request.getOtp()))) {
+        builder.setError(AcceptOtpParamsResponse.Error.INVALID_CODE);
+      } else {
+        accountOperationsInterface.acceptOtpParams(otpParams.getId());
+        if (request.getYieldTrustedToken()) {
+          String otpToken = cryptography.generateTts();
+          accountOperationsInterface.createOtpToken(userIdentifier, otpToken);
+          builder.setTrustedToken(otpToken);
+        }
+      }
+    }
+    response.onNext(builder.build());
     response.onCompleted();
   }
 }

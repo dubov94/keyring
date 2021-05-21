@@ -6,6 +6,7 @@
         <class>server.main.entities.Key</class>
         <class>server.main.entities.MailToken</class>
         <class>server.main.entities.OtpParams</class>
+        <class>server.main.entities.OtpToken</class>
         <class>server.main.entities.Session</class>
         <class>server.main.entities.Tag</class>
         <class>server.main.entities.User</class>
@@ -26,6 +27,7 @@
         <class>server.main.entities.Key</class>
         <class>server.main.entities.MailToken</class>
         <class>server.main.entities.OtpParams</class>
+        <class>server.main.entities.OtpToken</class>
         <class>server.main.entities.Session</class>
         <class>server.main.entities.Tag</class>
         <class>server.main.entities.User</class>
@@ -41,6 +43,7 @@
         <class>server.main.entities.Key</class>
         <class>server.main.entities.MailToken</class>
         <class>server.main.entities.OtpParams</class>
+        <class>server.main.entities.OtpToken</class>
         <class>server.main.entities.Session</class>
         <class>server.main.entities.Tag</class>
         <class>server.main.entities.User</class>

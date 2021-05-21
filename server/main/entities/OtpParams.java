@@ -17,9 +17,11 @@ import org.hibernate.annotations.TypeDef;
 public class OtpParams {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long identifier;
+  private long id;
 
-  @CreationTimestamp private Timestamp timestamp;
+  @CreationTimestamp
+  @Column(name = "creation_timestamp")
+  private Timestamp creationTimestamp;
 
   @ManyToOne
   @OnDelete(action = OnDeleteAction.CASCADE)
@@ -33,13 +35,17 @@ public class OtpParams {
   // Not `List` due to https://github.com/vladmihalcea/hibernate-types/issues/137.
   private String[] scratchCodes;
 
-  public long getIdentifier() {
-    return identifier;
+  public long getId() {
+    return id;
   }
 
-  public OtpParams setIdentifier(long identifier) {
-    this.identifier = identifier;
+  public OtpParams setId(long id) {
+    this.id = id;
     return this;
+  }
+
+  public User getUser() {
+    return user;
   }
 
   public OtpParams setUser(User user) {

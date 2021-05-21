@@ -16,6 +16,7 @@ final class Ddl {
     metadataSources.addAnnotatedClass(Key.class);
     metadataSources.addAnnotatedClass(MailToken.class);
     metadataSources.addAnnotatedClass(OtpParams.class);
+    metadataSources.addAnnotatedClass(OtpToken.class);
     metadataSources.addAnnotatedClass(Session.class);
     metadataSources.addAnnotatedClass(Tag.class);
     metadataSources.addAnnotatedClass(User.class);

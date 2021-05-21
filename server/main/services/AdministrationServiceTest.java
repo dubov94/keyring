@@ -314,7 +314,7 @@ class AdministrationServiceTest {
         .thenAnswer((invocation) -> String.valueOf(ttsCounter.incrementAndGet()));
     ImmutableList<String> scratchCodes = ImmutableList.of("1", "2", "3", "4", "5");
     when(mockAccountOperationsInterface.createOtpParams(0L, "secret", scratchCodes))
-        .thenReturn(new OtpParams().setIdentifier(1L));
+        .thenReturn(new OtpParams().setId(1L));
 
     administrationService.generateOtpParams(
         GenerateOtpParamsRequest.getDefaultInstance(), mockStreamObserver);
@@ -328,6 +328,28 @@ class AdministrationServiceTest {
                     "otpauth://totp/keyring:username?secret=secret&issuer=keyring&algorithm=SHA1&digits=6&period=30")
                 .addAllScratchCodes(scratchCodes)
                 .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void acceptOtpParams_codeMatches_completesSuccessfully() {
+    when(mockAccountOperationsInterface.getOtpParams(0L, 1L))
+        .thenReturn(Optional.of(new OtpParams().setId(1L).setSharedSecret("secret")));
+    when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
+    when(mockCryptography.generateTts()).thenReturn("token");
+
+    administrationService.acceptOtpParams(
+        AcceptOtpParamsRequest.newBuilder()
+            .setOtpParamsId("1")
+            .setOtp("42")
+            .setYieldTrustedToken(true)
+            .build(),
+        mockStreamObserver);
+
+    verify(mockAccountOperationsInterface).acceptOtpParams(1L);
+    verify(mockAccountOperationsInterface).createOtpToken(0L, "token");
+    verify(mockStreamObserver)
+        .onNext(AcceptOtpParamsResponse.newBuilder().setTrustedToken("token").build());
     verify(mockStreamObserver).onCompleted();
   }
 
