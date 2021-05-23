@@ -3,7 +3,10 @@
     <user-menu v-model="showMenu"></user-menu>
     <v-content>
       <v-container fluid>
-        <v-layout wrap justify-center align-center>
+        <v-layout wrap justify-center>
+          <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
+            <change-username></change-username>
+          </v-flex>
           <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
             <change-master-key></change-master-key>
           </v-flex>
@@ -12,9 +15,6 @@
           </v-flex>
           <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
             <change-mail></change-mail>
-          </v-flex>
-          <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
-            <change-username></change-username>
           </v-flex>
           <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
             <delete-account></delete-account>
