@@ -64,22 +64,20 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
-      throw new ConcurrentModificationException();
-    } else {
-      User user = maybeUser.get();
-      if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
-        response.onNext(
-            AcquireMailTokenResponse.newBuilder()
-                .setError(AcquireMailTokenResponse.Error.INVALID_DIGEST)
-                .build());
-      } else {
-        String mail = request.getMail();
-        String code = cryptography.generateUacs();
-        accountOperationsInterface.createMailToken(userIdentifier, mail, code);
-        mailClient.sendMailVerificationCode(mail, code);
-        response.onNext(AcquireMailTokenResponse.getDefaultInstance());
-      }
+      response.onError(new StatusException(Status.ABORTED));
+      return;
     }
+    User user = maybeUser.get();
+    AcquireMailTokenResponse.Builder builder = AcquireMailTokenResponse.newBuilder();
+    if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
+      builder.setError(AcquireMailTokenResponse.Error.INVALID_DIGEST);
+    } else {
+      String mail = request.getMail();
+      String code = cryptography.generateUacs();
+      accountOperationsInterface.createMailToken(userIdentifier, mail, code);
+      mailClient.sendMailVerificationCode(mail, code);
+    }
+    response.onNext(builder.build());
     response.onCompleted();
   }
 
@@ -87,19 +85,17 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser(states = {User.State.PENDING, User.State.ACTIVE})
   public void releaseMailToken(
       ReleaseMailTokenRequest request, StreamObserver<ReleaseMailTokenResponse> response) {
-    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
     Optional<MailToken> maybeMailToken =
-        accountOperationsInterface.getMailToken(userIdentifier, request.getCode());
+        accountOperationsInterface.getMailToken(sessionInterceptorKeys.getUserIdentifier(), request.getCode());
+    ReleaseMailTokenResponse.Builder builder = ReleaseMailTokenResponse.newBuilder();
     if (!maybeMailToken.isPresent()) {
-      response.onNext(
-          ReleaseMailTokenResponse.newBuilder()
-              .setError(ReleaseMailTokenResponse.Error.INVALID_CODE)
-              .build());
+      builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE);
     } else {
       MailToken mailToken = maybeMailToken.get();
       accountOperationsInterface.releaseMailToken(mailToken.getIdentifier());
-      response.onNext(ReleaseMailTokenResponse.newBuilder().setMail(mailToken.getMail()).build());
+      builder.setMail(mailToken.getMail());
     }
+    response.onNext(builder.build());
     response.onCompleted();
   }
 
@@ -155,14 +151,13 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     long identifier = sessionInterceptorKeys.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(identifier);
     if (!maybeUser.isPresent()) {
-      throw new ConcurrentModificationException();
+      response.onError(new StatusException(Status.ABORTED));
+      return;
     }
     User user = maybeUser.get();
+    ChangeMasterKeyResponse.Builder builder = ChangeMasterKeyResponse.newBuilder();
     if (!Utilities.doesDigestMatchUser(cryptography, user, request.getCurrentDigest())) {
-      response.onNext(
-          ChangeMasterKeyResponse.newBuilder()
-              .setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST)
-              .build());
+      builder.setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST);
     } else {
       ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
       accountOperationsInterface.changeMasterKey(
@@ -173,8 +168,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       List<Session> sessions = accountOperationsInterface.readSessions(identifier);
       keyValueClient.dropSessions(sessions.stream().map(Session::getKey).collect(toList()));
       String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
-      response.onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey(sessionKey).build());
+      builder.setSessionKey(sessionKey);
     }
+    response.onNext(builder.build());
     response.onCompleted();
   }
 
@@ -185,23 +181,19 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
-      throw new ConcurrentModificationException();
+      response.onError(new StatusException(Status.ABORTED));
+      return;
     }
     User user = maybeUser.get();
+    ChangeUsernameResponse.Builder builder = ChangeUsernameResponse.newBuilder();
     if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
-      response.onNext(
-          ChangeUsernameResponse.newBuilder()
-              .setError(ChangeUsernameResponse.Error.INVALID_DIGEST)
-              .build());
+      builder.setError(ChangeUsernameResponse.Error.INVALID_DIGEST);
     } else if (accountOperationsInterface.getUserByName(request.getUsername()).isPresent()) {
-      response.onNext(
-          ChangeUsernameResponse.newBuilder()
-              .setError(ChangeUsernameResponse.Error.NAME_TAKEN)
-              .build());
+      builder.setError(ChangeUsernameResponse.Error.NAME_TAKEN);
     } else {
       accountOperationsInterface.changeUsername(userIdentifier, request.getUsername());
-      response.onNext(ChangeUsernameResponse.getDefaultInstance());
     }
+    response.onNext(builder.build());
     response.onCompleted();
   }
 
@@ -212,22 +204,21 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
-      throw new ConcurrentModificationException();
+      response.onError(new StatusException(Status.ABORTED));
+      return;
     }
     User user = maybeUser.get();
+    DeleteAccountResponse.Builder builder = DeleteAccountResponse.newBuilder();
     if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
-      response.onNext(
-          DeleteAccountResponse.newBuilder()
-              .setError(DeleteAccountResponse.Error.INVALID_DIGEST)
-              .build());
+      builder.setError(DeleteAccountResponse.Error.INVALID_DIGEST);
     } else {
       keyValueClient.dropSessions(
           accountOperationsInterface.readSessions(userIdentifier).stream()
               .map(Session::getKey)
               .collect(toList()));
       accountOperationsInterface.markAccountAsDeleted(userIdentifier);
-      response.onNext(DeleteAccountResponse.getDefaultInstance());
     }
+    response.onNext(builder.build());
     response.onCompleted();
   }
 
@@ -267,7 +258,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     Optional<User> maybeUser =
         accountOperationsInterface.getUserByIdentifier(sessionInterceptorKeys.getUserIdentifier());
     if (!maybeUser.isPresent()) {
-      throw new ConcurrentModificationException();
+      response.onError(new StatusException(Status.ABORTED));
+      return;
     }
     User user = maybeUser.get();
     GoogleAuthenticatorKey credentials = googleAuthenticator.createCredentials();
