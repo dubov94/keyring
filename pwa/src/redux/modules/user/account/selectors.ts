@@ -8,6 +8,7 @@ import {
   MailTokenReleaseFlowIndicator,
   MasterKeyChangeFlowIndicator,
   OtpParams,
+  OtpParamsAcceptanceFlowIndicator,
   OtpParamsGenerationFlowIndicator,
   UsernameChangeFlowIndicator
 } from './actions'
@@ -16,8 +17,10 @@ import {
   ServiceChangeUsernameResponseError,
   ServiceChangeMasterKeyResponseError,
   ServiceAcquireMailTokenResponseError,
-  ServiceDeleteAccountResponseError
+  ServiceDeleteAccountResponseError,
+  ServiceAcceptOtpParamsResponseError
 } from '@/api/definitions'
+import { option } from 'fp-ts'
 
 export const isAuthenticated = (state: RootState): boolean => state.user.account.isAuthenticated
 export const canAccessApi = (state: RootState): boolean => state.user.account.sessionKey !== null
@@ -43,3 +46,6 @@ export const isOtpEnabled = (state: RootState): boolean => state.user.account.is
 
 export type OtpParamsGeneration = RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>
 export const otpParamsGeneration = (state: RootState): DeepReadonly<OtpParamsGeneration> => state.user.account.otpParamsGeneration
+
+export type OtpParamsAcceptance = RemoteData<OtpParamsAcceptanceFlowIndicator, {}, StandardError<ServiceAcceptOtpParamsResponseError>>
+export const otpParamsAcceptance = (state: RootState): DeepReadonly<OtpParamsAcceptance> => state.user.account.otpParamsAcceptance

@@ -28,14 +28,18 @@ import {
   usernameChangeReset,
   usernameChangeSignal,
   otpParamsGenerationSignal,
-  otpParamsGenerationReset
+  otpParamsGenerationReset,
+  OtpParamsAcceptanceFlowIndicator,
+  otpParamsAcceptanceSignal,
+  otpParamsAcceptanceReset
 } from './actions'
 import {
   ServiceReleaseMailTokenResponseError,
   ServiceAcquireMailTokenResponseError,
   ServiceChangeMasterKeyResponseError,
   ServiceChangeUsernameResponseError,
-  ServiceDeleteAccountResponseError
+  ServiceDeleteAccountResponseError,
+  ServiceAcceptOtpParamsResponseError
 } from '@/api/definitions'
 import { DeepReadonly } from 'ts-essentials'
 import { castDraft } from 'immer'
@@ -52,8 +56,9 @@ export default createReducer<{
   masterKeyChange: RemoteData<MasterKeyChangeFlowIndicator, {}, StandardError<ServiceChangeMasterKeyResponseError>>;
   usernameChange: RemoteData<UsernameChangeFlowIndicator, {}, StandardError<ServiceChangeUsernameResponseError>>;
   accountDeletion: RemoteData<AccountDeletionFlowIndicator, {}, StandardError<ServiceDeleteAccountResponseError>>;
-  otpParamsGeneration: RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>;
   isOtpEnabled: boolean;
+  otpParamsGeneration: RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>;
+  otpParamsAcceptance: RemoteData<OtpParamsAcceptanceFlowIndicator, {}, StandardError<ServiceAcceptOtpParamsResponseError>>;
 }>(
   {
     isAuthenticated: false,
@@ -68,7 +73,8 @@ export default createReducer<{
     usernameChange: zero(),
     accountDeletion: zero(),
     isOtpEnabled: false,
-    otpParamsGeneration: zero()
+    otpParamsGeneration: zero(),
+    otpParamsAcceptance: zero()
   },
   (builder) => builder
     .addMatcher(isActionSuccess(registrationSignal), (state, action) => {
@@ -160,5 +166,18 @@ export default createReducer<{
     })
     .addMatcher(isActionOf(otpParamsGenerationReset), (state) => {
       state.otpParamsGeneration = withNoResult(state.otpParamsGeneration)
+    })
+    .addMatcher(isActionOf(otpParamsAcceptanceSignal), (state, action) => {
+      state.otpParamsAcceptance = reducer(
+        identity<OtpParamsAcceptanceFlowIndicator>(),
+        () => ({}),
+        identity<StandardError<ServiceAcceptOtpParamsResponseError>>()
+      )(state.otpParamsAcceptance, action.payload)
+    })
+    .addMatcher(isActionSuccess(otpParamsAcceptanceSignal), (state) => {
+      state.isOtpEnabled = true
+    })
+    .addMatcher(isActionOf(otpParamsAcceptanceReset), (state) => {
+      state.otpParamsAcceptance = withNoResult(state.otpParamsAcceptance)
     })
 )

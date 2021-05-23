@@ -6,8 +6,10 @@ import {
   ServiceAcquireMailTokenResponseError,
   ServiceChangeMasterKeyResponseError,
   ServiceChangeUsernameResponseError,
-  ServiceDeleteAccountResponseError
+  ServiceDeleteAccountResponseError,
+  ServiceAcceptOtpParamsResponseError
 } from '@/api/definitions'
+import { option } from 'fp-ts'
 
 export const logOut = createAction('user/account/logOut')()
 
@@ -90,6 +92,7 @@ export enum OtpParamsGenerationFlowIndicator {
   MAKING_REQUEST = 'MAKING_REQUEST'
 }
 export interface OtpParams {
+  otpParamsId: string;
   sharedSecret: string;
   scratchCodes: string[];
   keyUri: string;
@@ -100,3 +103,15 @@ export const otpParamsGenerationSignal = createAction('user/account/otpParamsGen
   FlowSignal<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>
 >>()
 export const otpParamsGenerationReset = createAction('user/account/otpParamsGenerationReset')()
+
+export enum OtpParamsAcceptanceFlowIndicator {
+  MAKING_REQUEST = 'MAKING_REQUEST'
+}
+export const acceptOtpParams = createAction('user/account/acceptOtpParams')<DeepReadonly<{
+  otpParamsId: string;
+  otp: string;
+}>>()
+export const otpParamsAcceptanceSignal = createAction('user/account/otpParamsAcceptanceSignal')<DeepReadonly<
+  FlowSignal<OtpParamsAcceptanceFlowIndicator, option.Option<string>, StandardError<ServiceAcceptOtpParamsResponseError>>
+>>()
+export const otpParamsAcceptanceReset = createAction('user/account/otpParamsAcceptanceReset')()

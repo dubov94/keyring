@@ -6,6 +6,8 @@ import static java.util.stream.Collectors.*;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
+import io.grpc.Status;
+import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.stream.Stream;
@@ -295,21 +297,21 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     Optional<OtpParams> maybeOtpParams =
         accountOperationsInterface.getOtpParams(
             userIdentifier, Long.valueOf(request.getOtpParamsId()));
-    AcceptOtpParamsResponse.Builder builder = AcceptOtpParamsResponse.newBuilder();
     if (!maybeOtpParams.isPresent()) {
-      builder.setError(AcceptOtpParamsResponse.Error.NOT_FOUND);
+      response.onError(new StatusException(Status.NOT_FOUND));
+      return;
+    }
+    AcceptOtpParamsResponse.Builder builder = AcceptOtpParamsResponse.newBuilder();
+    OtpParams otpParams = maybeOtpParams.get();
+    if (!googleAuthenticator.authorize(
+        otpParams.getSharedSecret(), Integer.valueOf(request.getOtp()))) {
+      builder.setError(AcceptOtpParamsResponse.Error.INVALID_CODE);
     } else {
-      OtpParams otpParams = maybeOtpParams.get();
-      if (!googleAuthenticator.authorize(
-          otpParams.getSharedSecret(), Integer.valueOf(request.getOtp()))) {
-        builder.setError(AcceptOtpParamsResponse.Error.INVALID_CODE);
-      } else {
-        accountOperationsInterface.acceptOtpParams(otpParams.getId());
-        if (request.getYieldTrustedToken()) {
-          String otpToken = cryptography.generateTts();
-          accountOperationsInterface.createOtpToken(userIdentifier, otpToken);
-          builder.setTrustedToken(otpToken);
-        }
+      accountOperationsInterface.acceptOtpParams(otpParams.getId());
+      if (request.getYieldTrustedToken()) {
+        String otpToken = cryptography.generateTts();
+        accountOperationsInterface.createOtpToken(userIdentifier, otpToken);
+        builder.setTrustedToken(otpToken);
       }
     }
     response.onNext(builder.build());

@@ -34,14 +34,19 @@
         </div>
         <p>Enter a one-time six-digit code from the application to confirm.</p>
         <v-form @keydown.native.enter.prevent="activate">
-          <form-text-field type="text" class="mb-4" solo v-model="otp"></form-text-field>
+          <form-text-field type="text" class="mb-4" solo
+            :value="activation.otp" @input="setActivationOtp"
+            :dirty="$v.activation.$dirty" :errors="activationOtpErrors"
+            @touch="$v.activation.$touch()" @reset="$v.activation.$reset()"></form-text-field>
           <div class="mx-3">
-            <v-btn block color="primary" @click="activate">Activate</v-btn>
+            <v-btn block color="primary" @click="activate" :disabled="!canAccessApi" :loading="otpParamsAcceptanceInProgress">
+              Activate
+            </v-btn>
           </div>
         </v-form>
       </div>
       <div v-else class="text-xs-center">
-        <v-btn color="primary" @click="enable" :disabled="!canAccessApi" :loading="otpGenerationInProgress">
+        <v-btn color="primary" @click="generate" :disabled="!canAccessApi" :loading="otpParamsGenerationInProgress">
           Enable
         </v-btn>
       </div>
@@ -50,18 +55,55 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { isOtpEnabled, canAccessApi, OtpParamsGeneration, otpParamsGeneration } from '@/redux/modules/user/account/selectors'
-import { generateOtpParams, otpParamsGenerationReset, OtpParams } from '@/redux/modules/user/account/actions'
+import Vue, { VueConstructor } from 'vue'
+import {
+  isOtpEnabled,
+  canAccessApi,
+  OtpParamsGeneration,
+  otpParamsGeneration,
+  OtpParamsAcceptance,
+  otpParamsAcceptance
+} from '@/redux/modules/user/account/selectors'
+import {
+  generateOtpParams,
+  otpParamsGenerationReset,
+  OtpParams,
+  acceptOtpParams,
+  otpParamsAcceptanceSignal,
+  otpParamsAcceptanceReset
+} from '@/redux/modules/user/account/actions'
 import { DeepReadonly } from 'ts-essentials'
-import { hasIndicator, data } from '@/redux/remote_data'
+import { hasIndicator, data, error } from '@/redux/remote_data'
 import { option, function as fn } from 'fp-ts'
+import { filter, takeUntil } from 'rxjs/operators'
+import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
+import { ServiceAcceptOtpParamsResponseError } from '@/api/definitions'
 
-export default Vue.extend({
+interface Mixins {
+  activation: { frozen: boolean };
+  otpParamsAcceptance: DeepReadonly<OtpParamsAcceptance>;
+}
+
+export default (Vue as VueConstructor<Vue & Mixins>).extend({
   data () {
     return {
-      otp: '',
-      frozen: false
+      activation: {
+        otp: '',
+        frozen: false
+      }
+    }
+  },
+  validations: {
+    activation: {
+      valid () {
+        return fn.pipe(
+          error(this.otpParamsAcceptance),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceAcceptOtpParamsResponseError.INVALIDCODE),
+          option.map(() => !this.activation.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
+      }
     }
   },
   computed: {
@@ -74,23 +116,63 @@ export default Vue.extend({
     otpParamsGeneration (): DeepReadonly<OtpParamsGeneration> {
       return otpParamsGeneration(this.$data.$state)
     },
-    otpGenerationInProgress (): boolean {
+    otpParamsGenerationInProgress (): boolean {
       return hasIndicator(this.otpParamsGeneration)
     },
     maybeOtpParams (): DeepReadonly<OtpParams> | null {
       return fn.pipe(this.otpParamsGeneration, data, option.toNullable)
+    },
+    otpParamsAcceptance (): DeepReadonly<OtpParamsAcceptance> {
+      return otpParamsAcceptance(this.$data.$state)
+    },
+    otpParamsAcceptanceInProgress (): boolean {
+      return hasIndicator(this.otpParamsAcceptance)
+    },
+    activationOtpErrors (): { [key: string]: boolean } {
+      return {
+        [this.$t('INVALID_CODE') as string]: !this.$v.activation.valid
+      }
     }
   },
+  created () {
+    this.$data.$actions.pipe(
+      filter(isActionSuccess(otpParamsAcceptanceSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.activation.otp = ''
+      this.activation.frozen = false
+      this.$v.activation.$reset()
+      this.dispatch(otpParamsGenerationReset())
+      this.dispatch(otpParamsAcceptanceReset())
+    })
+  },
   methods: {
-    enable () {
+    generate () {
       this.dispatch(generateOtpParams())
     },
+    setActivationOtp (value: string) {
+      this.activation.otp = value
+      this.activation.frozen = false
+    },
     activate () {
-      console.log('OtpSwitch.activate')
+      if (this.canAccessApi && !this.otpParamsAcceptanceInProgress) {
+        this.$v.activation.$touch()
+        if (!this.$v.activation.$invalid) {
+          this.activation.frozen = true
+          if (!this.maybeOtpParams) {
+            throw new Error('`otpParamsGeneration` has no data')
+          }
+          this.dispatch(acceptOtpParams({
+            otpParamsId: this.maybeOtpParams.otpParamsId,
+            otp: this.activation.otp
+          }))
+        }
+      }
     }
   },
   beforeDestroy () {
     this.dispatch(otpParamsGenerationReset())
+    this.dispatch(otpParamsAcceptanceReset())
   }
 })
 </script>

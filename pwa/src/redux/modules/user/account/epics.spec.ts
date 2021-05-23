@@ -31,7 +31,11 @@ import {
   usernameChangeSignal,
   generateOtpParams,
   otpParamsGenerationSignal,
-  OtpParamsGenerationFlowIndicator
+  OtpParamsGenerationFlowIndicator,
+  otpParamsAcceptanceSignal,
+  otpParamsAcceptanceReset,
+  acceptOtpParams,
+  OtpParamsAcceptanceFlowIndicator
 } from './actions'
 import {
   acquireMailTokenEpic,
@@ -47,7 +51,9 @@ import {
   changeMasterKeyEpic,
   displayMasterKeyChangeExceptionsEpic,
   remoteRehashEpic,
-  otpParamsGenerationEpic
+  otpParamsGenerationEpic,
+  otpParamsAcceptanceEpic,
+  displayOtpParamsAcceptanceExceptionsEpic
 } from './epics'
 import {
   AdministrationApi,
@@ -61,7 +67,9 @@ import {
   ServiceDeleteAccountResponseError,
   ServiceChangeMasterKeyResponse,
   ServiceChangeMasterKeyResponseError,
-  ServiceGenerateOtpParamsResponse
+  ServiceGenerateOtpParamsResponse,
+  ServiceAcceptOtpParamsResponse,
+  ServiceAcceptOtpParamsResponseError
 } from '@/api/definitions'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { container } from 'tsyringe'
@@ -71,6 +79,8 @@ import { showToast } from '../../ui/toast/actions'
 import { SodiumClient } from '@/cryptography/sodium_client'
 import { emplace } from '../keys/actions'
 import { QrcEncoder, QRC_ENCODER_TOKEN } from '@/cryptography/qrc_encoder'
+import { option } from 'fp-ts'
+import { depotActivationData } from '../../depot/actions'
 
 describe('releaseMailTokenEpic', () => {
   it('emits release sequence', async () => {
@@ -647,6 +657,7 @@ describe('otpParamsGenerationEpic', () => {
     when(mockAdministrationApi.generateOtpParams(deepEqual({}), deepEqual({
       headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' }
     }))).thenResolve(<ServiceGenerateOtpParamsResponse>{
+      otpParamsId: 'id',
       sharedSecret: 'secret',
       scratchCodes: ['a', 'b', 'c'],
       keyUri: 'uri'
@@ -668,11 +679,88 @@ describe('otpParamsGenerationEpic', () => {
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       otpParamsGenerationSignal(indicator(OtpParamsGenerationFlowIndicator.MAKING_REQUEST)),
       otpParamsGenerationSignal(success({
+        otpParamsId: 'id',
         sharedSecret: 'secret',
         scratchCodes: ['a', 'b', 'c'],
         keyUri: 'uri',
         qrcDataUrl: 'qrc'
       }))
+    ])
+  })
+})
+
+describe('otpParamsAcceptanceEpic', () => {
+  it('emits acceptance sequence', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(registrationSignal(success({
+      username: 'user',
+      parametrization: 'parametrization',
+      sessionKey: 'sessionKey',
+      encryptionKey: 'encryptionKey'
+    })))
+    store.dispatch(depotActivationData({
+      username: 'user',
+      salt: 'salt',
+      hash: 'hash',
+      vaultKey: 'vaultKey'
+    }))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
+    when(mockAdministrationApi.acceptOtpParams(deepEqual({
+      otpParamsId: 'id',
+      otp: 'otp',
+      yieldTrustedToken: true
+    }), deepEqual({
+      headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' }
+    }))).thenResolve(<ServiceAcceptOtpParamsResponse>{
+      error: ServiceAcceptOtpParamsResponseError.NONE,
+      trustedToken: 'token'
+    })
+    container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
+      useValue: instance(mockAdministrationApi)
+    })
+
+    const epicTracker = new EpicTracker(otpParamsAcceptanceEpic(action$, state$, {}))
+    actionSubject.next(acceptOtpParams({
+      otpParamsId: 'id',
+      otp: 'otp'
+    }))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      otpParamsAcceptanceSignal(indicator(OtpParamsAcceptanceFlowIndicator.MAKING_REQUEST)),
+      otpParamsAcceptanceSignal(success(option.of('token')))
+    ])
+  })
+
+  it('emits acceptance cancellation', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(otpParamsAcceptanceEpic(action$, state$, {}))
+    actionSubject.next(otpParamsAcceptanceReset())
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      otpParamsAcceptanceSignal(cancel())
+    ])
+  })
+})
+
+describe('displayOtpParamsAcceptanceExceptionsEpic', () => {
+  it('emits toast data', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(displayOtpParamsAcceptanceExceptionsEpic(action$, state$, {}))
+    actionSubject.next(otpParamsAcceptanceSignal(exception('exception')))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      showToast({ message: 'exception' })
     ])
   })
 })

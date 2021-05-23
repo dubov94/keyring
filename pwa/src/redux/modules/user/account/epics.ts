@@ -34,7 +34,11 @@ import {
   generateOtpParams,
   otpParamsGenerationReset,
   otpParamsGenerationSignal,
-  OtpParamsGenerationFlowIndicator
+  OtpParamsGenerationFlowIndicator,
+  acceptOtpParams,
+  otpParamsAcceptanceReset,
+  otpParamsAcceptanceSignal,
+  OtpParamsAcceptanceFlowIndicator
 } from './actions'
 import {
   ServiceReleaseMailTokenResponse,
@@ -47,7 +51,9 @@ import {
   ServiceChangeUsernameResponseError,
   ServiceDeleteAccountResponse,
   ServiceDeleteAccountResponseError,
-  ServiceGenerateOtpParamsResponse
+  ServiceGenerateOtpParamsResponse,
+  ServiceAcceptOtpParamsResponse,
+  ServiceAcceptOtpParamsResponseError
 } from '@/api/definitions'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { getSodiumClient } from '@/cryptography/sodium_client'
@@ -56,6 +62,8 @@ import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
 import { authnViaApiSignal, backgroundAuthnSignal } from '../../authn/actions'
 import { getQrcEncoder } from '@/cryptography/qrc_encoder'
+import { isDepotActive } from '../../depot/selectors'
+import { option } from 'fp-ts'
 
 export const logOutEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(logOut)),
@@ -318,6 +326,7 @@ export const otpParamsGenerationEpic: Epic<RootAction, RootAction, RootState> = 
           }
         })).pipe(switchMap((response: ServiceGenerateOtpParamsResponse) => from(getQrcEncoder().encode(response.keyUri!)).pipe(
           switchMap((qrcDataUrl) => of(otpParamsGenerationSignal(success({
+            otpParamsId: response.otpParamsId!,
             sharedSecret: response.sharedSecret!,
             scratchCodes: response.scratchCodes!,
             keyUri: response.keyUri!,
@@ -335,3 +344,39 @@ export const otpParamsGenerationEpic: Epic<RootAction, RootAction, RootState> = 
 )
 
 export const displayOtpParamsGenerationExceptionsEpic = createDisplayExceptionsEpic(otpParamsGenerationSignal)
+
+export const otpParamsAcceptanceEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionOf([acceptOtpParams, otpParamsAcceptanceReset])),
+  withLatestFrom(state$),
+  switchMap(([action, state]) => {
+    if (isActionOf(acceptOtpParams, action)) {
+      const yieldTrustedToken = isDepotActive(state)
+      return concat(
+        of(otpParamsAcceptanceSignal(indicator(OtpParamsAcceptanceFlowIndicator.MAKING_REQUEST))),
+        from(getAdministrationApi().acceptOtpParams({
+          otpParamsId: action.payload.otpParamsId,
+          otp: action.payload.otp,
+          yieldTrustedToken
+        }, {
+          headers: {
+            [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
+          }
+        })).pipe(switchMap((response: ServiceAcceptOtpParamsResponse) => {
+          switch (response.error) {
+            case ServiceAcceptOtpParamsResponseError.NONE:
+              return of(otpParamsAcceptanceSignal(success(
+                yieldTrustedToken ? option.of(response.trustedToken!) : option.none
+              )))
+            default:
+              return of(otpParamsAcceptanceSignal(failure(response.error!)))
+          }
+        }))
+      )
+    } else if (isActionOf(otpParamsAcceptanceReset, action)) {
+      return of(otpParamsAcceptanceSignal(cancel()))
+    }
+    return EMPTY
+  })
+)
+
+export const displayOtpParamsAcceptanceExceptionsEpic = createDisplayExceptionsEpic(otpParamsAcceptanceSignal)

@@ -2,6 +2,7 @@ import { success } from '@/redux/flow_signal'
 import { hasData } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
 import { expect } from 'chai'
+import { option } from 'fp-ts'
 import { authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal, registrationSignal } from '../../authn/actions'
 import {
   accountDeletionReset,
@@ -13,6 +14,8 @@ import {
   MasterKeyChangeData,
   masterKeyChangeReset,
   masterKeyChangeSignal,
+  otpParamsAcceptanceReset,
+  otpParamsAcceptanceSignal,
   otpParamsGenerationReset,
   otpParamsGenerationSignal,
   remoteRehashSignal,
@@ -226,6 +229,7 @@ describe('accountDeletion', () => {
 
 describe('otpParamsGeneration', () => {
   const signalAction = otpParamsGenerationSignal(success({
+    otpParamsId: 'id',
     sharedSecret: 'secret',
     scratchCodes: ['a', 'b', 'c'],
     keyUri: 'uri',
@@ -245,6 +249,32 @@ describe('otpParamsGeneration', () => {
       const state = reduce(reducer, undefined, [signalAction, otpParamsGenerationReset()])
 
       expect(hasData(state.otpParamsGeneration)).to.be.false
+    })
+  })
+})
+
+describe('otpParamsAcceptance', () => {
+  const signalAction = otpParamsAcceptanceSignal(success(option.of('token')))
+
+  describe('otpParamsAcceptanceSignal', () => {
+    it('updates the result', () => {
+      const state = reducer(undefined, signalAction)
+
+      expect(hasData(state.otpParamsAcceptance)).to.be.true
+    })
+
+    it('sets `isOtpEnabled` to true', () => {
+      const state = reducer(undefined, signalAction)
+
+      expect(state.isOtpEnabled).to.be.true
+    })
+  })
+
+  describe('otpParamsAcceptanceReset', () => {
+    it('clears the result', () => {
+      const state = reduce(reducer, undefined, [signalAction, otpParamsAcceptanceReset()])
+
+      expect(hasData(state.otpParamsAcceptance)).to.be.false
     })
   })
 })

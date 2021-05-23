@@ -281,8 +281,7 @@ message AcceptOtpParamsRequest {
 message AcceptOtpParamsResponse {
     enum Error {
         NONE = 0;
-        NOT_FOUND = 1;
-        INVALID_CODE = 2;
+        INVALID_CODE = 1;
     }
 
     Error error = 1;

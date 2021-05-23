@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -208,6 +209,10 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     }
     OtpParams otpParams = maybeOtpParams.get();
     User user = otpParams.getUser();
+    if (user.getSharedSecret() != null) {
+      throw new IllegalArgumentException();
+    }
+    entityManager.lock(user, LockModeType.PESSIMISTIC_READ);
     user.setSharedSecret(otpParams.getSharedSecret());
     for (String scratchCode : otpParams.getScratchCodes()) {
       entityManager.persist(new OtpToken().setUser(user).setIsInitial(true).setValue(scratchCode));
