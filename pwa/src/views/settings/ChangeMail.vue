@@ -93,7 +93,7 @@ import { DeepReadonly } from 'ts-essentials'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 
 interface Mixins {
-  requestGroup: { password: { frozen: boolean} };
+  requestGroup: { password: { frozen: boolean } };
   code: { frozen: boolean };
   mailTokenAcquisition: DeepReadonly<MailTokenAcquisition>;
   mailTokenRelease: DeepReadonly<MailTokenRelease>;
