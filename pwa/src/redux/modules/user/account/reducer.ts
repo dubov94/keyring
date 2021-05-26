@@ -31,7 +31,10 @@ import {
   otpParamsGenerationReset,
   OtpParamsAcceptanceFlowIndicator,
   otpParamsAcceptanceSignal,
-  otpParamsAcceptanceReset
+  otpParamsAcceptanceReset,
+  otpResetSignal,
+  OtpResetFlowIndicator,
+  cancelOtpReset
 } from './actions'
 import {
   ServiceReleaseMailTokenResponseError,
@@ -39,7 +42,8 @@ import {
   ServiceChangeMasterKeyResponseError,
   ServiceChangeUsernameResponseError,
   ServiceDeleteAccountResponseError,
-  ServiceAcceptOtpParamsResponseError
+  ServiceAcceptOtpParamsResponseError,
+  ServiceResetOtpResponseError
 } from '@/api/definitions'
 import { DeepReadonly } from 'ts-essentials'
 import { castDraft } from 'immer'
@@ -59,6 +63,7 @@ export default createReducer<{
   isOtpEnabled: boolean;
   otpParamsGeneration: RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>;
   otpParamsAcceptance: RemoteData<OtpParamsAcceptanceFlowIndicator, {}, StandardError<ServiceAcceptOtpParamsResponseError>>;
+  otpReset: RemoteData<OtpResetFlowIndicator, {}, StandardError<ServiceResetOtpResponseError>>;
 }>(
   {
     isAuthenticated: false,
@@ -74,7 +79,8 @@ export default createReducer<{
     accountDeletion: zero(),
     isOtpEnabled: false,
     otpParamsGeneration: zero(),
-    otpParamsAcceptance: zero()
+    otpParamsAcceptance: zero(),
+    otpReset: zero()
   },
   (builder) => builder
     .addMatcher(isActionSuccess(registrationSignal), (state, action) => {
@@ -179,5 +185,18 @@ export default createReducer<{
     })
     .addMatcher(isActionOf(otpParamsAcceptanceReset), (state) => {
       state.otpParamsAcceptance = withNoResult(state.otpParamsAcceptance)
+    })
+    .addMatcher(isActionOf(otpResetSignal), (state, action) => {
+      state.otpReset = reducer(
+        identity<OtpResetFlowIndicator>(),
+        () => ({}),
+        identity<StandardError<ServiceResetOtpResponseError>>()
+      )(state.otpReset, action.payload)
+    })
+    .addMatcher(isActionSuccess(otpResetSignal), (state) => {
+      state.isOtpEnabled = false
+    })
+    .addMatcher(isActionOf(cancelOtpReset), (state) => {
+      state.otpReset = withNoResult(state.otpReset)
     })
 )

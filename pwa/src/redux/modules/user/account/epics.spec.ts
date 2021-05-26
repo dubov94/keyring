@@ -35,7 +35,11 @@ import {
   otpParamsAcceptanceSignal,
   otpParamsAcceptanceReset,
   acceptOtpParams,
-  OtpParamsAcceptanceFlowIndicator
+  OtpParamsAcceptanceFlowIndicator,
+  otpResetSignal,
+  resetOtp,
+  OtpResetFlowIndicator,
+  cancelOtpReset
 } from './actions'
 import {
   acquireMailTokenEpic,
@@ -53,7 +57,9 @@ import {
   remoteRehashEpic,
   otpParamsGenerationEpic,
   otpParamsAcceptanceEpic,
-  displayOtpParamsAcceptanceExceptionsEpic
+  displayOtpParamsAcceptanceExceptionsEpic,
+  displayOtpResetExceptionsEpic,
+  otpResetEpic
 } from './epics'
 import {
   AdministrationApi,
@@ -69,7 +75,9 @@ import {
   ServiceChangeMasterKeyResponseError,
   ServiceGenerateOtpParamsResponse,
   ServiceAcceptOtpParamsResponse,
-  ServiceAcceptOtpParamsResponseError
+  ServiceAcceptOtpParamsResponseError,
+  ServiceResetOtpResponse,
+  ServiceResetOtpResponseError
 } from '@/api/definitions'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { container } from 'tsyringe'
@@ -756,6 +764,69 @@ describe('displayOtpParamsAcceptanceExceptionsEpic', () => {
 
     const epicTracker = new EpicTracker(displayOtpParamsAcceptanceExceptionsEpic(action$, state$, {}))
     actionSubject.next(otpParamsAcceptanceSignal(exception('exception')))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      showToast({ message: 'exception' })
+    ])
+  })
+})
+
+describe('otpResetEpic', () => {
+  it('emits reset sequence', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(registrationSignal(success({
+      username: 'user',
+      parametrization: 'parametrization',
+      sessionKey: 'sessionKey',
+      encryptionKey: 'encryptionKey'
+    })))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
+    when(mockAdministrationApi.resetOtp(
+      deepEqual({ otp: 'otp' }),
+      deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
+    )).thenResolve(<ServiceResetOtpResponse>{
+      error: ServiceResetOtpResponseError.NONE
+    })
+    container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
+      useValue: instance(mockAdministrationApi)
+    })
+
+    const epicTracker = new EpicTracker(otpResetEpic(action$, state$, {}))
+    actionSubject.next(resetOtp({ otp: 'otp' }))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      otpResetSignal(indicator(OtpResetFlowIndicator.MAKING_REQUEST)),
+      otpResetSignal(success({}))
+    ])
+  })
+
+  it('emits reset cancellation', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(otpResetEpic(action$, state$, {}))
+    actionSubject.next(cancelOtpReset())
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      otpResetSignal(cancel())
+    ])
+  })
+})
+
+describe('displayOtpResetExceptionsEpic', () => {
+  it('emits toast data', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(displayOtpResetExceptionsEpic(action$, state$, {}))
+    actionSubject.next(otpResetSignal(exception('exception')))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 

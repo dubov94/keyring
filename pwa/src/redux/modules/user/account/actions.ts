@@ -7,7 +7,8 @@ import {
   ServiceChangeMasterKeyResponseError,
   ServiceChangeUsernameResponseError,
   ServiceDeleteAccountResponseError,
-  ServiceAcceptOtpParamsResponseError
+  ServiceAcceptOtpParamsResponseError,
+  ServiceResetOtpResponseError
 } from '@/api/definitions'
 import { option } from 'fp-ts'
 
@@ -115,3 +116,14 @@ export const otpParamsAcceptanceSignal = createAction('user/account/otpParamsAcc
   FlowSignal<OtpParamsAcceptanceFlowIndicator, option.Option<string>, StandardError<ServiceAcceptOtpParamsResponseError>>
 >>()
 export const otpParamsAcceptanceReset = createAction('user/account/otpParamsAcceptanceReset')()
+
+export enum OtpResetFlowIndicator {
+  MAKING_REQUEST = 'MAKING_REQUEST'
+}
+export const resetOtp = createAction('user/account/resetOtp')<DeepReadonly<{
+  otp: string;
+}>>()
+export const otpResetSignal = createAction('user/account/otpResetSignal')<DeepReadonly<
+  FlowSignal<OtpResetFlowIndicator, {}, StandardError<ServiceResetOtpResponseError>>
+>>()
+export const cancelOtpReset = createAction('user/account/cancelOtpReset')()

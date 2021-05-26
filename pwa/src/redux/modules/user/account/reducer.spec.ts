@@ -7,6 +7,7 @@ import { authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal, registra
 import {
   accountDeletionReset,
   accountDeletionSignal,
+  cancelOtpReset,
   mailTokenAcquisitionReset,
   mailTokenAcquisitionSignal,
   mailTokenReleaseReset,
@@ -18,6 +19,7 @@ import {
   otpParamsAcceptanceSignal,
   otpParamsGenerationReset,
   otpParamsGenerationSignal,
+  otpResetSignal,
   remoteRehashSignal,
   usernameChangeReset,
   usernameChangeSignal
@@ -275,6 +277,35 @@ describe('otpParamsAcceptance', () => {
       const state = reduce(reducer, undefined, [signalAction, otpParamsAcceptanceReset()])
 
       expect(hasData(state.otpParamsAcceptance)).to.be.false
+    })
+  })
+})
+
+describe('otpReset', () => {
+  const signalAction = otpResetSignal(success({}))
+
+  describe('otpResetSignal', () => {
+    it('updates the result', () => {
+      const state = reducer(undefined, signalAction)
+
+      expect(hasData(state.otpReset)).to.be.true
+    })
+
+    it('sets `isOtpEnabled` to false', () => {
+      const state = reduce(reducer, undefined, [
+        otpParamsAcceptanceSignal(success(option.of('token'))),
+        signalAction
+      ])
+
+      expect(state.isOtpEnabled).to.be.false
+    })
+  })
+
+  describe('cancelOtpReset', () => {
+    it('clears the result', () => {
+      const state = reduce(reducer, undefined, [signalAction, cancelOtpReset()])
+
+      expect(hasData(state.otpReset)).to.be.false
     })
   })
 })

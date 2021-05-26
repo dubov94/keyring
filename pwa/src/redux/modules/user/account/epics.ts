@@ -38,7 +38,11 @@ import {
   acceptOtpParams,
   otpParamsAcceptanceReset,
   otpParamsAcceptanceSignal,
-  OtpParamsAcceptanceFlowIndicator
+  OtpParamsAcceptanceFlowIndicator,
+  resetOtp,
+  cancelOtpReset,
+  otpResetSignal,
+  OtpResetFlowIndicator
 } from './actions'
 import {
   ServiceReleaseMailTokenResponse,
@@ -53,7 +57,9 @@ import {
   ServiceDeleteAccountResponseError,
   ServiceGenerateOtpParamsResponse,
   ServiceAcceptOtpParamsResponse,
-  ServiceAcceptOtpParamsResponseError
+  ServiceAcceptOtpParamsResponseError,
+  ServiceResetOtpResponse,
+  ServiceResetOtpResponseError
 } from '@/api/definitions'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { getSodiumClient } from '@/cryptography/sodium_client'
@@ -371,6 +377,8 @@ export const otpParamsAcceptanceEpic: Epic<RootAction, RootAction, RootState> = 
               return of(otpParamsAcceptanceSignal(failure(response.error!)))
           }
         }))
+      ).pipe(
+        catchError((error) => of(otpParamsAcceptanceSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(otpParamsAcceptanceReset, action)) {
       return of(otpParamsAcceptanceSignal(cancel()))
@@ -380,3 +388,36 @@ export const otpParamsAcceptanceEpic: Epic<RootAction, RootAction, RootState> = 
 )
 
 export const displayOtpParamsAcceptanceExceptionsEpic = createDisplayExceptionsEpic(otpParamsAcceptanceSignal)
+
+export const otpResetEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionOf([resetOtp, cancelOtpReset])),
+  withLatestFrom(state$),
+  switchMap(([action, state]) => {
+    if (isActionOf(resetOtp, action)) {
+      return concat(
+        of(otpResetSignal(indicator(OtpResetFlowIndicator.MAKING_REQUEST))),
+        from(getAdministrationApi().resetOtp({
+          otp: action.payload.otp
+        }, {
+          headers: {
+            [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
+          }
+        })).pipe(switchMap((response: ServiceResetOtpResponse) => {
+          switch (response.error) {
+            case ServiceResetOtpResponseError.NONE:
+              return of(otpResetSignal(success({})))
+            default:
+              return of(otpResetSignal(failure(response.error!)))
+          }
+        }))
+      ).pipe(
+        catchError((error) => of(otpResetSignal(exception(errorToMessage(error)))))
+      )
+    } else if (isActionOf(cancelOtpReset, action)) {
+      return of(otpResetSignal(cancel()))
+    }
+    return EMPTY
+  })
+)
+
+export const displayOtpResetExceptionsEpic = createDisplayExceptionsEpic(otpResetSignal)

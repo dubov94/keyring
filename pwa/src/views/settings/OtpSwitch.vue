@@ -17,8 +17,19 @@
       <v-toolbar-title>Two-factor authentication</v-toolbar-title>
     </v-toolbar>
     <v-card-text>
-      <div v-if="isOtpEnabled" class="text-xs-center">
-        <v-btn color="primary" :disabled="true">Disable</v-btn>
+      <div v-if="isOtpEnabled">
+        <p class="text-xs-center">Enter a one-time / recovery code to disable.</p>
+        <v-form @keydown.native.enter.prevent="deactivate">
+          <form-text-field type="text" class="mb-4" :solo="true" :invalid="!$v.deactivation.valid"
+            :value="deactivation.otp" @input="setDeactivationOtp"
+            :dirty="$v.deactivation.$dirty" :append-icon="deactivationOtpIcon"
+            @touch="$v.deactivation.$touch()" @reset="$v.deactivation.$reset()"></form-text-field>
+          <div class="mx-3">
+            <v-btn block color="primary" @click="deactivate" :disabled="!canAccessApi" :loading="otpResetInProgress">
+              Disable
+            </v-btn>
+          </div>
+        </v-form>
       </div>
       <div v-else-if="maybeOtpParams">
         <p>
@@ -34,9 +45,9 @@
         </div>
         <p>Enter a one-time six-digit code from the application to confirm.</p>
         <v-form @keydown.native.enter.prevent="activate">
-          <form-text-field type="text" class="mb-4" solo
+          <form-text-field type="text" class="mb-4" :solo="true" :invalid="!$v.activation.valid"
             :value="activation.otp" @input="setActivationOtp"
-            :dirty="$v.activation.$dirty" :errors="activationOtpErrors"
+            :dirty="$v.activation.$dirty" :append-icon="activationOtpIcon"
             @touch="$v.activation.$touch()" @reset="$v.activation.$reset()"></form-text-field>
           <div class="mx-3">
             <v-btn block color="primary" @click="activate" :disabled="!canAccessApi" :loading="otpParamsAcceptanceInProgress">
@@ -62,7 +73,9 @@ import {
   OtpParamsGeneration,
   otpParamsGeneration,
   OtpParamsAcceptance,
-  otpParamsAcceptance
+  otpParamsAcceptance,
+  OtpReset,
+  otpReset
 } from '@/redux/modules/user/account/selectors'
 import {
   generateOtpParams,
@@ -70,24 +83,36 @@ import {
   OtpParams,
   acceptOtpParams,
   otpParamsAcceptanceSignal,
-  otpParamsAcceptanceReset
+  otpParamsAcceptanceReset,
+  resetOtp,
+  otpResetSignal,
+  cancelOtpReset
 } from '@/redux/modules/user/account/actions'
 import { DeepReadonly } from 'ts-essentials'
 import { hasIndicator, data, error } from '@/redux/remote_data'
 import { option, function as fn } from 'fp-ts'
 import { filter, takeUntil } from 'rxjs/operators'
 import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
-import { ServiceAcceptOtpParamsResponseError } from '@/api/definitions'
+import {
+  ServiceAcceptOtpParamsResponseError,
+  ServiceResetOtpResponseError
+} from '@/api/definitions'
 
 interface Mixins {
   activation: { frozen: boolean };
+  deactivation: { frozen: boolean };
   otpParamsAcceptance: DeepReadonly<OtpParamsAcceptance>;
+  otpReset: DeepReadonly<OtpReset>;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   data () {
     return {
       activation: {
+        otp: '',
+        frozen: false
+      },
+      deactivation: {
         otp: '',
         frozen: false
       }
@@ -101,6 +126,17 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
           option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
             value.value === ServiceAcceptOtpParamsResponseError.INVALIDCODE),
           option.map(() => !this.activation.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
+      }
+    },
+    deactivation: {
+      valid () {
+        return fn.pipe(
+          error(this.otpReset),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceResetOtpResponseError.INVALIDCODE),
+          option.map(() => !this.deactivation.frozen),
           option.getOrElse<boolean>(() => true)
         )
       }
@@ -128,10 +164,17 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     otpParamsAcceptanceInProgress (): boolean {
       return hasIndicator(this.otpParamsAcceptance)
     },
-    activationOtpErrors (): { [key: string]: boolean } {
-      return {
-        [this.$t('INVALID_CODE') as string]: !this.$v.activation.valid
-      }
+    activationOtpIcon (): string {
+      return this.$v.activation.valid ? '' : 'error'
+    },
+    otpReset (): DeepReadonly<OtpReset> {
+      return otpReset(this.$data.$state)
+    },
+    otpResetInProgress (): boolean {
+      return hasIndicator(this.otpReset)
+    },
+    deactivationOtpIcon (): string {
+      return this.$v.deactivation.valid ? '' : 'error'
     }
   },
   created () {
@@ -144,6 +187,15 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.$v.activation.$reset()
       this.dispatch(otpParamsGenerationReset())
       this.dispatch(otpParamsAcceptanceReset())
+    })
+    this.$data.$actions.pipe(
+      filter(isActionSuccess(otpResetSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.deactivation.otp = ''
+      this.deactivation.frozen = false
+      this.$v.deactivation.$reset()
+      this.dispatch(cancelOtpReset())
     })
   },
   methods: {
@@ -168,11 +220,27 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
           }))
         }
       }
+    },
+    setDeactivationOtp (value: string) {
+      this.deactivation.otp = value
+      this.deactivation.frozen = false
+    },
+    deactivate () {
+      if (this.canAccessApi && !this.otpResetInProgress) {
+        this.$v.deactivation.$touch()
+        if (!this.$v.deactivation.$invalid) {
+          this.deactivation.frozen = true
+          this.dispatch(resetOtp({
+            otp: this.deactivation.otp
+          }))
+        }
+      }
     }
   },
   beforeDestroy () {
     this.dispatch(otpParamsGenerationReset())
     this.dispatch(otpParamsAcceptanceReset())
+    this.dispatch(cancelOtpReset())
   }
 })
 </script>

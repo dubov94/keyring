@@ -2,15 +2,17 @@
   <v-text-field :value="value" :type="type" :label="label" :disabled="disabled"
     :prepend-icon="prependIcon" :autofocus="autofocus" ref="input" :solo="solo"
     :error-messages="errorMessages" @blur="touch" @keydown.native.enter="touch"
-    @focus="reset" @input="input"></v-text-field>
+    @focus="reset" @input="input" :append-icon="appendIcon" :error="error"></v-text-field>
 </template>
 
 <script>
 export default {
   props: [
+    'appendIcon',
     'autofocus',
     'disabled',
     'dirty',
+    'invalid',
     'errors',
     'label',
     'prependIcon',
@@ -48,12 +50,16 @@ export default {
   computed: {
     errorMessages () {
       if (this.dirty) {
-        return Object.entries(this.errors)
+        return Object.entries(this.errors || {})
           .filter(([, value]) => value)
           .map(([key]) => key)
       } else {
         return []
       }
+    },
+    error () {
+      return this.dirtyInternal && (
+        this.invalid || this.errorMessages.length > 0)
     }
   },
   watch: {
