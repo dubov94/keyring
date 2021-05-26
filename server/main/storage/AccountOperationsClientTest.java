@@ -21,7 +21,6 @@ import server.main.Chronometry;
 import server.main.aspects.StorageManagerAspect;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
-import server.main.entities.OtpToken;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.entities.Utilities;
@@ -248,6 +247,20 @@ class AccountOperationsClientTest {
     accountOperationsClient.createOtpToken(userId, "value");
 
     assertTrue(accountOperationsClient.getOtpToken(userId, "value").isPresent());
+  }
+
+  @Test
+  void resetOtp_removesSharedSecretScratchCodes() {
+    long userId = createActiveUser();
+    OtpParams otpParams =
+        accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of("token"));
+    accountOperationsClient.acceptOtpParams(otpParams.getId());
+
+    accountOperationsClient.resetOtp(userId);
+
+    User user = accountOperationsClient.getUserByIdentifier(userId).get();
+    assertNull(user.getSharedSecret());
+    assertFalse(accountOperationsClient.getOtpToken(userId, "token").isPresent());
   }
 
   private long createActiveUser() {

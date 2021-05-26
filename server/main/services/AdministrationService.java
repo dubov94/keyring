@@ -86,7 +86,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void releaseMailToken(
       ReleaseMailTokenRequest request, StreamObserver<ReleaseMailTokenResponse> response) {
     Optional<MailToken> maybeMailToken =
-        accountOperationsInterface.getMailToken(sessionInterceptorKeys.getUserIdentifier(), request.getCode());
+        accountOperationsInterface.getMailToken(
+            sessionInterceptorKeys.getUserIdentifier(), request.getCode());
     ReleaseMailTokenResponse.Builder builder = ReleaseMailTokenResponse.newBuilder();
     if (!maybeMailToken.isPresent()) {
       builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE);
@@ -306,6 +307,30 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         builder.setTrustedToken(otpToken);
       }
     }
+    response.onNext(builder.build());
+    response.onCompleted();
+  }
+
+  @Override
+  @ValidateUser
+  public void resetOtp(ResetOtpRequest request, StreamObserver<ResetOtpResponse> response) {
+    long userId = sessionInterceptorKeys.getUserIdentifier();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    if (!maybeUser.isPresent()) {
+      response.onError(new StatusException(Status.ABORTED));
+      return;
+    }
+    User user = maybeUser.get();
+    String sharedSecret = user.getSharedSecret();
+    if (sharedSecret == null) {
+      response.onError(new StatusException(Status.INVALID_ARGUMENT));
+      return;
+    }
+    ResetOtpResponse.Builder builder = ResetOtpResponse.newBuilder();
+    if (!googleAuthenticator.authorize(sharedSecret, Integer.valueOf(request.getOtp()))) {
+      builder.setError(ResetOtpResponse.Error.INVALID_CODE);
+    }
+    accountOperationsInterface.resetOtp(userId);
     response.onNext(builder.build());
     response.onCompleted();
   }

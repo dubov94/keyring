@@ -41,4 +41,6 @@ public interface AccountOperationsInterface {
   void createOtpToken(long userId, String otpToken);
 
   Optional<OtpToken> getOtpToken(long userId, String value);
+
+  void resetOtp(long userId);
 }

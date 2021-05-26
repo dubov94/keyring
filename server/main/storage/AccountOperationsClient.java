@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.persistence.EntityManager;
-import javax.persistence.LockModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -212,12 +211,11 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     if (user.getSharedSecret() != null) {
       throw new IllegalArgumentException();
     }
-    entityManager.lock(user, LockModeType.PESSIMISTIC_READ);
     user.setSharedSecret(otpParams.getSharedSecret());
+    entityManager.persist(user);
     for (String scratchCode : otpParams.getScratchCodes()) {
       entityManager.persist(new OtpToken().setUser(user).setIsInitial(true).setValue(scratchCode));
     }
-    entityManager.persist(user);
     entityManager.remove(otpParams);
   }
 
@@ -237,5 +235,21 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     return Queries.findByUser(entityManager, OtpToken.class, OtpToken_.user, userId).stream()
         .filter(otpParams -> Objects.equals(otpParams.getValue(), value))
         .findFirst();
+  }
+
+  @Override
+  @LocalTransaction
+  public void resetOtp(long userId) {
+    Optional<User> maybeUser = getUserByIdentifier(userId);
+    if (!maybeUser.isPresent()) {
+      throw new IllegalArgumentException();
+    }
+    User user = maybeUser.get();
+    user.setSharedSecret(null);
+    entityManager.persist(user);
+    List<OtpToken> otpTokens = Queries.findByUser(entityManager, OtpToken.class, OtpToken_.user, userId);
+    for (OtpToken otpToken : otpTokens) {
+      entityManager.remove(otpToken);
+    }
   }
 }

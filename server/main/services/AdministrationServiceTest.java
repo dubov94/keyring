@@ -353,6 +353,18 @@ class AdministrationServiceTest {
     verify(mockStreamObserver).onCompleted();
   }
 
+  @Test
+  void resetOtpParams_codeMatches_triggersReset() {
+    user.setSharedSecret("secret");
+    when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
+
+    administrationService.resetOtp(ResetOtpRequest.newBuilder().setOtp("42").build(), mockStreamObserver);
+
+    verify(mockAccountOperationsInterface).resetOtp(0L);
+    verify(mockStreamObserver).onNext(ResetOtpResponse.getDefaultInstance());
+    verify(mockStreamObserver).onCompleted();
+  }
+
   private void verifyOnErrorUnauthenticated() {
     ArgumentCaptor<StatusException> argumentCaptor = ArgumentCaptor.forClass(StatusException.class);
     verify(mockStreamObserver).onError(argumentCaptor.capture());
