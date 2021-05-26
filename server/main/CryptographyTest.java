@@ -1,15 +1,15 @@
 package server.main;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
+
+import java.security.SecureRandom;
+import java.util.Optional;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-
-import java.security.SecureRandom;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CryptographyTest {
@@ -38,5 +38,26 @@ class CryptographyTest {
     String code = cryptography.generateUacs();
 
     assertEquals("99", code);
+  }
+
+  @Test
+  void convertTotp_ignoresWhitespaces() {
+    Optional<Integer> totp = cryptography.convertTotp(" 12 34 56 ");
+
+    assertEquals(Optional.of(123456), totp);
+  }
+
+  @Test
+  void convertTotp_ensuresOnlyDigits() {
+    Optional<Integer> totp = cryptography.convertTotp("12ab56");
+
+    assertEquals(Optional.empty(), totp);
+  }
+
+  @Test
+  void convertTotp_ensuresSixSymbols() {
+    Optional<Integer> totp = cryptography.convertTotp("1234567");
+
+    assertEquals(Optional.empty(), totp);
   }
 }

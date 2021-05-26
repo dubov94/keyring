@@ -28,6 +28,7 @@ import server.main.MailClient;
 import server.main.aspects.ValidateUserAspect;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
+import server.main.entities.OtpToken;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.geolocation.GeolocationServiceInterface;
@@ -335,6 +336,7 @@ class AdministrationServiceTest {
   void acceptOtpParams_codeMatches_completesSuccessfully() {
     when(mockAccountOperationsInterface.getOtpParams(0L, 1L))
         .thenReturn(Optional.of(new OtpParams().setId(1L).setSharedSecret("secret")));
+    when(mockCryptography.convertTotp("42")).thenReturn(Optional.of(42));
     when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
     when(mockCryptography.generateTts()).thenReturn("token");
 
@@ -354,11 +356,28 @@ class AdministrationServiceTest {
   }
 
   @Test
-  void resetOtpParams_codeMatches_triggersReset() {
+  void resetOtpParams_totpMatches_triggersReset() {
     user.setSharedSecret("secret");
+    when(mockCryptography.convertTotp("42")).thenReturn(Optional.of(42));
     when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
 
-    administrationService.resetOtp(ResetOtpRequest.newBuilder().setOtp("42").build(), mockStreamObserver);
+    administrationService.resetOtp(
+        ResetOtpRequest.newBuilder().setOtp("42").build(), mockStreamObserver);
+
+    verify(mockAccountOperationsInterface).resetOtp(0L);
+    verify(mockStreamObserver).onNext(ResetOtpResponse.getDefaultInstance());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void resetOtpParams_ttsMatches_triggersReset() {
+    user.setSharedSecret("secret");
+    when(mockCryptography.convertTotp("token")).thenReturn(Optional.empty());
+    when(mockAccountOperationsInterface.getOtpToken(0L, "token", true))
+        .thenReturn(Optional.of(new OtpToken().setId(1L)));
+
+    administrationService.resetOtp(
+        ResetOtpRequest.newBuilder().setOtp("token").build(), mockStreamObserver);
 
     verify(mockAccountOperationsInterface).resetOtp(0L);
     verify(mockStreamObserver).onNext(ResetOtpResponse.getDefaultInstance());

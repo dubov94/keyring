@@ -236,8 +236,8 @@ class AccountOperationsClientTest {
     assertEquals(Optional.empty(), accountOperationsClient.getOtpParams(userId, otpParams.getId()));
     User user = accountOperationsClient.getUserByIdentifier(userId).get();
     assertEquals("secret", user.getSharedSecret());
-    assertTrue(accountOperationsClient.getOtpToken(userId, "a").isPresent());
-    assertTrue(accountOperationsClient.getOtpToken(userId, "b").isPresent());
+    assertTrue(accountOperationsClient.getOtpToken(userId, "a", true).isPresent());
+    assertTrue(accountOperationsClient.getOtpToken(userId, "b", true).isPresent());
   }
 
   @Test
@@ -246,7 +246,18 @@ class AccountOperationsClientTest {
 
     accountOperationsClient.createOtpToken(userId, "value");
 
-    assertTrue(accountOperationsClient.getOtpToken(userId, "value").isPresent());
+    assertTrue(accountOperationsClient.getOtpToken(userId, "value", false).isPresent());
+  }
+
+  @Test
+  void deleteOtpToken_removesOtpToken() {
+    long userId = createActiveUser();
+    accountOperationsClient.createOtpToken(userId, "value");
+    long tokenId = accountOperationsClient.getOtpToken(userId, "value", false).get().getId();
+
+    accountOperationsClient.deleteOtpToken(tokenId);
+
+    assertFalse(accountOperationsClient.getOtpToken(userId, "value", false).isPresent());
   }
 
   @Test
@@ -260,7 +271,7 @@ class AccountOperationsClientTest {
 
     User user = accountOperationsClient.getUserByIdentifier(userId).get();
     assertNull(user.getSharedSecret());
-    assertFalse(accountOperationsClient.getOtpToken(userId, "token").isPresent());
+    assertFalse(accountOperationsClient.getOtpToken(userId, "token", true).isPresent());
   }
 
   private long createActiveUser() {

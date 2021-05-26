@@ -296,8 +296,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     AcceptOtpParamsResponse.Builder builder = AcceptOtpParamsResponse.newBuilder();
     OtpParams otpParams = maybeOtpParams.get();
-    if (!googleAuthenticator.authorize(
-        otpParams.getSharedSecret(), Integer.valueOf(request.getOtp()))) {
+    Optional<Integer> maybeTotp = cryptography.convertTotp(request.getOtp());
+    if (!maybeTotp.isPresent()
+        || !googleAuthenticator.authorize(otpParams.getSharedSecret(), maybeTotp.get())) {
       builder.setError(AcceptOtpParamsResponse.Error.INVALID_CODE);
     } else {
       accountOperationsInterface.acceptOtpParams(otpParams.getId());
@@ -327,10 +328,16 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       return;
     }
     ResetOtpResponse.Builder builder = ResetOtpResponse.newBuilder();
-    if (!googleAuthenticator.authorize(sharedSecret, Integer.valueOf(request.getOtp()))) {
+    Optional<Integer> maybeTotp = cryptography.convertTotp(request.getOtp());
+    if (maybeTotp.isPresent() && !googleAuthenticator.authorize(sharedSecret, maybeTotp.get())
+        || !maybeTotp.isPresent()
+            && !accountOperationsInterface
+                .getOtpToken(userId, request.getOtp(), true)
+                .isPresent()) {
       builder.setError(ResetOtpResponse.Error.INVALID_CODE);
+    } else {
+      accountOperationsInterface.resetOtp(userId);
     }
-    accountOperationsInterface.resetOtp(userId);
     response.onNext(builder.build());
     response.onCompleted();
   }

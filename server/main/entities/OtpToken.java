@@ -28,6 +28,15 @@ public class OtpToken {
 
   @Column private String value;
 
+  public long getId() {
+    return id;
+  }
+
+  public OtpToken setId(long id) {
+    this.id = id;
+    return this;
+  }
+
   public User getUser() {
     return user;
   }
@@ -44,6 +53,10 @@ public class OtpToken {
   public OtpToken setValue(String value) {
     this.value = value;
     return this;
+  }
+
+  public boolean getIsInitial() {
+    return isInitial;
   }
 
   public OtpToken setIsInitial(boolean isInitial) {

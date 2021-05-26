@@ -53,6 +53,7 @@ woven_junit5_test(
         "//server/main/aspects:validate_user_aspect",
         "//server/main/entities:mail_token",
         "//server/main/entities:otp_params",
+        "//server/main/entities:otp_token",
         "//server/main/entities:session",
         "//server/main/entities:user",
         "//server/main/geolocation:geolocation_service_interface",

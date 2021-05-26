@@ -40,7 +40,9 @@ public interface AccountOperationsInterface {
 
   void createOtpToken(long userId, String otpToken);
 
-  Optional<OtpToken> getOtpToken(long userId, String value);
+  Optional<OtpToken> getOtpToken(long userId, String value, boolean mustBeInitial);
+
+  void deleteOtpToken(long tokenId);
 
   void resetOtp(long userId);
 }

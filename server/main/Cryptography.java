@@ -4,10 +4,13 @@ import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 import java.security.SecureRandom;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class Cryptography {
   private int uacsLength;
   private SecureRandom secureRandom;
+  private static Pattern totpPattern = Pattern.compile("^\\d{6}$");
 
   Cryptography(SecureRandom secureRandom, int uacsLength) {
     this.secureRandom = secureRandom;
@@ -46,5 +49,13 @@ public class Cryptography {
 
   public String computeHash(String value) {
     return Hashing.sha256().hashString(value, Charsets.UTF_8).toString();
+  }
+
+  public Optional<Integer> convertTotp(String raw) {
+    String normalized = raw.replaceAll("\\s", "");
+    if (totpPattern.matcher(normalized).matches()) {
+      return Optional.of(Integer.valueOf(normalized));
+    }
+    return Optional.empty();
   }
 }
