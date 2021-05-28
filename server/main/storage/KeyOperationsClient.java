@@ -5,7 +5,6 @@ import server.main.aspects.Annotations.LocalTransaction;
 import server.main.entities.Key;
 import server.main.entities.Key_;
 import server.main.entities.User;
-import server.main.entities.Utilities;
 import server.main.proto.service.IdentifiedKey;
 import server.main.proto.service.Password;
 
@@ -19,8 +18,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   @Override
   @LocalTransaction
   public Key createKey(long userIdentifier, Password proto) {
-    Key entity =
-        Utilities.passwordToKey(proto)
+    Key entity = new Key().mergeFromPassword(proto)
             .setUser(entityManager.getReference(User.class, userIdentifier));
     entityManager.persist(entity);
     return entity;
@@ -40,7 +38,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     if (maybeEntity.isPresent()) {
       Key entity = maybeEntity.get();
       if (entity.getUser().getIdentifier() == userIdentifier) {
-        Utilities.updateKeyWithPassword(entity, proto.getPassword());
+        entity.mergeFromPassword(proto.getPassword());
         entityManager.persist(entity);
         return;
       }

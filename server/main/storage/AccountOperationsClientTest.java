@@ -19,11 +19,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import server.main.Chronometry;
 import server.main.aspects.StorageManagerAspect;
+import server.main.entities.Key;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
 import server.main.entities.Session;
 import server.main.entities.User;
-import server.main.entities.Utilities;
 import server.main.proto.service.IdentifiedKey;
 import server.main.proto.service.Password;
 
@@ -127,7 +127,7 @@ class AccountOperationsClientTest {
     assertEquals("hash", user.getHash());
     List<Password> passwords =
         keyOperationsClient.readKeys(userIdentifier).stream()
-            .map(Utilities::keyToPassword)
+            .map(Key::toPassword)
             .collect(toList());
     assertEquals(1, passwords.size());
     assertEquals(password, passwords.get(0));

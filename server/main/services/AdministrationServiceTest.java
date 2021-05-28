@@ -120,7 +120,7 @@ class AdministrationServiceTest {
 
   @Test
   void changeMasterKey_digestDoesNotMatchHash_repliesWithError() {
-    when(mockCryptography.computeHash("random")).thenReturn("random");
+    when(mockCryptography.doesDigestMatchHash("random", "hash")).thenReturn(false);
 
     administrationService.changeMasterKey(
         ChangeMasterKeyRequest.newBuilder().setCurrentDigest("random").build(), mockStreamObserver);
@@ -136,7 +136,7 @@ class AdministrationServiceTest {
   @Test
   void changeMasterKey_digestsMatch_repliesWithDefault() {
     IdentifiedKey identifiedKey = IdentifiedKey.newBuilder().setIdentifier(0L).build();
-    when(mockCryptography.computeHash("digest")).thenReturn("hash");
+    when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.computeHash("suffix")).thenReturn("xiffus");
     when(mockAccountOperationsInterface.readSessions(0L))
         .thenReturn(
@@ -166,7 +166,7 @@ class AdministrationServiceTest {
 
   @Test
   void acquireMailToken_digestsMismatch_repliesWithError() {
-    when(mockCryptography.computeHash("random")).thenReturn("random");
+    when(mockCryptography.doesDigestMatchHash("digest", "random")).thenReturn(false);
     administrationService.acquireMailToken(
         AcquireMailTokenRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
 
@@ -180,7 +180,7 @@ class AdministrationServiceTest {
 
   @Test
   void acquireMailToken_digestsMatch_repliesWithDefault() {
-    when(mockCryptography.computeHash("digest")).thenReturn("hash");
+    when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.generateUacs()).thenReturn("0");
 
     administrationService.acquireMailToken(
@@ -195,7 +195,7 @@ class AdministrationServiceTest {
 
   @Test
   void changeUsername_digestsMismatch_repliesWithError() {
-    when(mockCryptography.computeHash("random")).thenReturn("random");
+    when(mockCryptography.doesDigestMatchHash("random", "hash")).thenReturn(false);
     administrationService.changeUsername(
         ChangeUsernameRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
 
@@ -209,7 +209,7 @@ class AdministrationServiceTest {
 
   @Test
   void changeUsername_getsExistingUsername_repliesWithError() {
-    when(mockCryptography.computeHash("digest")).thenReturn("hash");
+    when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(Optional.of(new User()));
 
@@ -227,7 +227,7 @@ class AdministrationServiceTest {
 
   @Test
   void changeUsername_getsUniqueUsername_repliesWithDefault() {
-    when(mockCryptography.computeHash("digest")).thenReturn("hash");
+    when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
 
     administrationService.changeUsername(
@@ -241,7 +241,7 @@ class AdministrationServiceTest {
 
   @Test
   void deleteAccount_digestsMismatch_repliesWithError() {
-    when(mockCryptography.computeHash("random")).thenReturn("random");
+    when(mockCryptography.doesDigestMatchHash("digest", "random")).thenReturn(false);
     administrationService.deleteAccount(
         DeleteAccountRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
 
@@ -255,7 +255,7 @@ class AdministrationServiceTest {
 
   @Test
   void deleteAccount_digestsMatch_repliesWithDefault() {
-    when(mockCryptography.computeHash("digest")).thenReturn("hash");
+    when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockAccountOperationsInterface.readSessions(0L))
         .thenReturn(ImmutableList.of(new Session().setKey("session")));
 

@@ -106,6 +106,10 @@ public class User {
     return this;
   }
 
+  public boolean isActivated() {
+    return getMail() != null;
+  }
+
   public enum State {
     PENDING,
     ACTIVE,

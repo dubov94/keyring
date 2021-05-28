@@ -1,25 +1,24 @@
 package server.main.storage;
 
-import server.main.Chronometry;
-import server.main.aspects.StorageManagerAspect;
-import server.main.entities.Utilities;
-import server.main.proto.service.IdentifiedKey;
-import server.main.proto.service.Password;
+import static java.util.stream.Collectors.toList;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.common.collect.ImmutableList;
+import java.util.List;
+import java.util.Random;
+import java.util.UUID;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-
-import static java.util.stream.Collectors.toList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import server.main.Chronometry;
+import server.main.aspects.StorageManagerAspect;
+import server.main.entities.Key;
+import server.main.proto.service.IdentifiedKey;
+import server.main.proto.service.Password;
 
 class KeyOperationsClientTest {
   private static final EntityManagerFactory entityManagerFactory =
@@ -48,10 +47,8 @@ class KeyOperationsClientTest {
     keyOperationsClient.createKey(userIdentifier, password);
 
     List<Password> passwords =
-        keyOperationsClient
-            .readKeys(userIdentifier)
-            .stream()
-            .map(Utilities::keyToPassword)
+        keyOperationsClient.readKeys(userIdentifier).stream()
+            .map(Key::toPassword)
             .collect(toList());
     assertEquals(1, passwords.size());
     assertEquals(password, passwords.get(0));
@@ -74,10 +71,8 @@ class KeyOperationsClientTest {
         IdentifiedKey.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build());
 
     List<Password> passwords =
-        keyOperationsClient
-            .readKeys(userIdentifier)
-            .stream()
-            .map(Utilities::keyToPassword)
+        keyOperationsClient.readKeys(userIdentifier).stream()
+            .map(Key::toPassword)
             .collect(toList());
     assertEquals(1, passwords.size());
     assertEquals(password, passwords.get(0));

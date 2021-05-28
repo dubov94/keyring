@@ -2,26 +2,15 @@ load("//bazel/java:junit5.bzl", "junit5_test")
 load("//server:aspectj.bzl", "woven_junit5_test")
 
 java_library(
-    name = "utilities",
-    srcs = ["Utilities.java"],
-    deps = [
-        "//proto:service_java_grpc",
-        "//server/main:cryptography",
-        "//server/main/entities:key",
-        "//server/main/entities:user",
-    ],
-)
-
-java_library(
     name = "administration_service",
     srcs = ["AdministrationService.java"],
     visibility = ["//server:internal"],
     deps = [
-        ":utilities",
         "//proto:service_java_grpc",
         "//server/main:cryptography",
         "//server/main:mail_client",
         "//server/main/aspects:annotations",
+        "//server/main/entities:key",
         "//server/main/entities:mail_token",
         "//server/main/entities:otp_params",
         "//server/main/entities:session",
@@ -75,10 +64,10 @@ java_library(
     srcs = ["AuthenticationService.java"],
     visibility = ["//server:internal"],
     deps = [
-        ":utilities",
         "//proto:service_java_grpc",
         "//server/main:cryptography",
         "//server/main:mail_client",
+        "//server/main/entities:key",
         "//server/main/entities:user",
         "//server/main/interceptors:request_metadata_interceptor_keys",
         "//server/main/keyvalue:key_value_client",

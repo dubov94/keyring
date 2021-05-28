@@ -6,6 +6,7 @@ import com.google.common.io.BaseEncoding;
 import java.security.SecureRandom;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.Objects;
 
 public class Cryptography {
   private int uacsLength;
@@ -57,5 +58,9 @@ public class Cryptography {
       return Optional.of(Integer.valueOf(normalized));
     }
     return Optional.empty();
+  }
+
+  public boolean doesDigestMatchHash(String digest, String hash) {
+    return Objects.equals(computeHash(digest), hash);
   }
 }

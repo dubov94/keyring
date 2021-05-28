@@ -178,7 +178,7 @@ class AuthenticationServiceTest {
                     .setUsername("username")
                     .setSalt("salt")
                     .setHash("hash")));
-    when(mockCryptography.computeHash("digest")).thenReturn("hash");
+    when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
     when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
     when(mockRequestMetadataInterceptorKeys.getUserAgent()).thenReturn("Chrome/0.0.0");

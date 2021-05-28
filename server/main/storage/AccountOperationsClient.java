@@ -67,7 +67,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
       if (maybeUser.isPresent()) {
         User user = maybeUser.get();
         user.setMail(mailToken.getMail());
-        if (Utilities.isUserActivated(user)) {
+        if (user.isActivated()) {
           user.setState(User.State.ACTIVE);
         }
         entityManager.persist(user);
@@ -114,7 +114,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
           throw new IllegalArgumentException();
         } else {
           Password proto = maybeProto.get();
-          Utilities.updateKeyWithPassword(entity, proto);
+          entity.mergeFromPassword(proto);
           entityManager.persist(entity);
         }
       }

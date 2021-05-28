@@ -1,11 +1,14 @@
 package server.main.entities;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import static java.util.stream.Collectors.toList;
 
-import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import server.main.proto.service.IdentifiedKey;
+import server.main.proto.service.Password;
 
 @Entity
 @Table(name = "keys")
@@ -18,17 +21,15 @@ public class Key {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private User user;
 
-  @Version
-  private long version;
+  @Version private long version;
 
   @Column private String value;
 
   @OneToMany(
-    mappedBy = "key",
-    fetch = FetchType.EAGER,
-    cascade = CascadeType.ALL,
-    orphanRemoval = true
-  )
+      mappedBy = "key",
+      fetch = FetchType.EAGER,
+      cascade = CascadeType.ALL,
+      orphanRemoval = true)
   @OnDelete(action = OnDeleteAction.CASCADE)
   private List<Tag> tags;
 
@@ -66,5 +67,30 @@ public class Key {
     }
     tags.forEach(tag -> this.tags.add(tag.setKey(this)));
     return this;
+  }
+
+  public Key mergeFromPassword(Password password) {
+    setValue(password.getValue());
+    setTags(
+        password.getTagsList().stream().map(label -> new Tag().setValue(label)).collect(toList()));
+    return this;
+  }
+
+  public Password toPassword() {
+    return Password.newBuilder()
+        .setValue(getValue())
+        .addAllTags(getTags().stream().map(Tag::getValue).collect(toList()))
+        .build();
+  }
+
+  public IdentifiedKey toIdentifiedKey() {
+    return IdentifiedKey.newBuilder()
+        .setPassword(
+            Password.newBuilder()
+                .setValue(getValue())
+                .addAllTags(getTags().stream().map(Tag::getValue).collect(toList()))
+                .build())
+        .setIdentifier(getIdentifier())
+        .build();
   }
 }

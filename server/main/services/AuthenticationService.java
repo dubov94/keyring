@@ -2,8 +2,14 @@ package server.main.services;
 
 import static java.util.stream.Collectors.toList;
 
+import io.grpc.stub.StreamObserver;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import javax.inject.Inject;
 import server.main.Cryptography;
 import server.main.MailClient;
+import server.main.entities.Key;
 import server.main.entities.User;
 import server.main.interceptors.RequestMetadataInterceptorKeys;
 import server.main.keyvalue.KeyValueClient;
@@ -11,11 +17,6 @@ import server.main.keyvalue.UserPointer;
 import server.main.proto.service.*;
 import server.main.storage.AccountOperationsInterface;
 import server.main.storage.KeyOperationsInterface;
-import io.grpc.stub.StreamObserver;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import javax.inject.Inject;
 
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
   private AccountOperationsInterface accountOperationsInterface;
@@ -85,7 +86,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
           LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
     } else {
       User user = maybeUser.get();
-      if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())
+      if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())
           || Objects.equals(user.getState(), User.State.DELETED)) {
         response.onNext(
             LogInResponse.newBuilder().setError(LogInResponse.Error.INVALID_CREDENTIALS).build());
@@ -109,7 +110,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         }
         List<IdentifiedKey> userKeys =
             keyOperationsInterface.readKeys(user.getIdentifier()).stream()
-                .map(Utilities::entityToIdentifiedKey)
+                .map(Key::toIdentifiedKey)
                 .collect(toList());
         payloadBuilder.setKeySet(
             LogInResponse.Payload.KeySet.newBuilder().addAllItems(userKeys).build());

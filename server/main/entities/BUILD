@@ -20,6 +20,7 @@ java_library(
     visibility = ["//server:internal"],
     deps = [
         ":user",
+        "//proto:service_java_grpc",
         "@maven//:javax_annotation_javax_annotation_api",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_hibernate_hibernate_core",
@@ -89,17 +90,6 @@ java_library(
         ":otp_token",
         ":session",
         ":user",
-    ],
-)
-
-java_library(
-    name = "utilities",
-    srcs = ["Utilities.java"],
-    visibility = ["//server:internal"],
-    deps = [
-        ":key",
-        ":user",
-        "//proto:service_java_grpc",
     ],
 )
 

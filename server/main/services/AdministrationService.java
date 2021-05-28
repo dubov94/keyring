@@ -17,6 +17,7 @@ import server.main.MailClient;
 import server.main.aspects.Annotations.ValidateUser;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
+import server.main.entities.Key;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.geolocation.GeolocationServiceInterface;
@@ -69,7 +70,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     User user = maybeUser.get();
     AcquireMailTokenResponse.Builder builder = AcquireMailTokenResponse.newBuilder();
-    if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
+    if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())) {
       builder.setError(AcquireMailTokenResponse.Error.INVALID_DIGEST);
     } else {
       String mail = request.getMail();
@@ -122,7 +123,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void readKeys(ReadKeysRequest request, StreamObserver<ReadKeysResponse> response) {
     List<IdentifiedKey> keys =
         keyOperationsInterface.readKeys(sessionInterceptorKeys.getUserIdentifier()).stream()
-            .map(Utilities::entityToIdentifiedKey)
+            .map(Key::toIdentifiedKey)
             .collect(toList());
     response.onNext(ReadKeysResponse.newBuilder().addAllKeys(keys).build());
     response.onCompleted();
@@ -157,7 +158,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     User user = maybeUser.get();
     ChangeMasterKeyResponse.Builder builder = ChangeMasterKeyResponse.newBuilder();
-    if (!Utilities.doesDigestMatchUser(cryptography, user, request.getCurrentDigest())) {
+    if (!cryptography.doesDigestMatchHash(request.getCurrentDigest(), user.getHash())) {
       builder.setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST);
     } else {
       ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
@@ -187,7 +188,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     User user = maybeUser.get();
     ChangeUsernameResponse.Builder builder = ChangeUsernameResponse.newBuilder();
-    if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
+    if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())) {
       builder.setError(ChangeUsernameResponse.Error.INVALID_DIGEST);
     } else if (accountOperationsInterface.getUserByName(request.getUsername()).isPresent()) {
       builder.setError(ChangeUsernameResponse.Error.NAME_TAKEN);
@@ -210,7 +211,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     User user = maybeUser.get();
     DeleteAccountResponse.Builder builder = DeleteAccountResponse.newBuilder();
-    if (!Utilities.doesDigestMatchUser(cryptography, user, request.getDigest())) {
+    if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())) {
       builder.setError(DeleteAccountResponse.Error.INVALID_DIGEST);
     } else {
       keyValueClient.dropSessions(
