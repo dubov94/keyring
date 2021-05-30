@@ -19,7 +19,7 @@ applicationDatabase.version(2).stores({
   independentClients: '++id, clientId'
 });
 
-const MAX_AGE_S = 2 * 28 * 24 * 60 * 60;
+const MAX_AGE_S = 7 * 24 * 60 * 60;
 const precacheName = workbox.core.cacheNames.precache;
 const indexCacheKey = precacheController.getCacheKeyForURL('/index.html');
 
