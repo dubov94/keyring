@@ -22,6 +22,7 @@ java_library(
         "//server/main/storage:account_operations_interface",
         "//server/main/storage:key_operations_interface",
         "@maven//:com_warrenstrange_googleauth",
+        "@maven//:io_vavr_vavr",
         "@maven//:javax_inject_javax_inject",
     ],
 )
@@ -74,6 +75,7 @@ java_library(
         "//server/main/keyvalue:user_pointer",
         "//server/main/storage:account_operations_interface",
         "//server/main/storage:key_operations_interface",
+        "@maven//:io_vavr_vavr",
         "@maven//:javax_inject_javax_inject",
     ],
 )

@@ -116,6 +116,7 @@ maven_install(
         "io.grpc:grpc-netty-shaded:1.28.0",
         "io.grpc:grpc-protobuf:1.28.0",
         "io.grpc:grpc-stub:1.28.0",
+        "io.vavr:vavr:0.10.3",
         "javax.activation:activation:1.1.1",
         "javax.annotation:javax.annotation-api:1.3.2",
         "javax.xml.bind:jaxb-api:2.3.0",

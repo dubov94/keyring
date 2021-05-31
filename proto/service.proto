@@ -61,21 +61,7 @@ message LogInResponse {
         INVALID_CREDENTIALS = 1;
     }
 
-    message Payload {
-        reserved 2, 3, 5;
-
-        message KeySet {
-            repeated IdentifiedKey items = 1;
-        }
-
-        string session_key = 1;
-        bool requires_mail_verification = 6;
-        string mail = 7;
-        KeySet key_set = 4;
-    }
-
     Error error = 1;
-    Payload payload = 2 [deprecated = true];
     UserData user_data = 3;
     OtpContext otp_context = 4;
 }

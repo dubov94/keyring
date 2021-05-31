@@ -9,15 +9,16 @@ import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
+import io.vavr.control.Either;
 import java.util.*;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.aspects.Annotations.ValidateUser;
+import server.main.entities.Key;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
-import server.main.entities.Key;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.geolocation.GeolocationServiceInterface;
@@ -58,46 +59,56 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     this.googleAuthenticator = googleAuthenticator;
   }
 
-  @Override
-  @ValidateUser
-  public void acquireMailToken(
-      AcquireMailTokenRequest request, StreamObserver<AcquireMailTokenResponse> response) {
+  private Either<StatusException, AcquireMailTokenResponse> _acquireMailToken(
+      AcquireMailTokenRequest request) {
     long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
-      response.onError(new StatusException(Status.ABORTED));
-      return;
+      return Either.left(new StatusException(Status.ABORTED));
     }
     User user = maybeUser.get();
     AcquireMailTokenResponse.Builder builder = AcquireMailTokenResponse.newBuilder();
     if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())) {
-      builder.setError(AcquireMailTokenResponse.Error.INVALID_DIGEST);
-    } else {
-      String mail = request.getMail();
-      String code = cryptography.generateUacs();
-      accountOperationsInterface.createMailToken(userIdentifier, mail, code);
-      mailClient.sendMailVerificationCode(mail, code);
+      return Either.right(builder.setError(AcquireMailTokenResponse.Error.INVALID_DIGEST).build());
     }
-    response.onNext(builder.build());
-    response.onCompleted();
+    String mail = request.getMail();
+    String code = cryptography.generateUacs();
+    accountOperationsInterface.createMailToken(userIdentifier, mail, code);
+    mailClient.sendMailVerificationCode(mail, code);
+    return Either.right(builder.build());
+  }
+
+  @Override
+  @ValidateUser
+  public void acquireMailToken(
+      AcquireMailTokenRequest request, StreamObserver<AcquireMailTokenResponse> response) {
+    Either<StatusException, AcquireMailTokenResponse> result = _acquireMailToken(request);
+    if (result.isRight()) {
+      response.onNext(result.get());
+      response.onCompleted();
+    } else {
+      response.onError(result.getLeft());
+    }
+  }
+
+  private ReleaseMailTokenResponse _releaseMailToken(ReleaseMailTokenRequest request) {
+    ReleaseMailTokenResponse.Builder builder = ReleaseMailTokenResponse.newBuilder();
+    Optional<MailToken> maybeMailToken =
+        accountOperationsInterface.getMailToken(
+            sessionInterceptorKeys.getUserIdentifier(), request.getCode());
+    if (!maybeMailToken.isPresent()) {
+      return builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE).build();
+    }
+    MailToken mailToken = maybeMailToken.get();
+    accountOperationsInterface.releaseMailToken(mailToken.getIdentifier());
+    return builder.setMail(mailToken.getMail()).build();
   }
 
   @Override
   @ValidateUser(states = {User.State.PENDING, User.State.ACTIVE})
   public void releaseMailToken(
       ReleaseMailTokenRequest request, StreamObserver<ReleaseMailTokenResponse> response) {
-    Optional<MailToken> maybeMailToken =
-        accountOperationsInterface.getMailToken(
-            sessionInterceptorKeys.getUserIdentifier(), request.getCode());
-    ReleaseMailTokenResponse.Builder builder = ReleaseMailTokenResponse.newBuilder();
-    if (!maybeMailToken.isPresent()) {
-      builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE);
-    } else {
-      MailToken mailToken = maybeMailToken.get();
-      accountOperationsInterface.releaseMailToken(mailToken.getIdentifier());
-      builder.setMail(mailToken.getMail());
-    }
-    response.onNext(builder.build());
+    response.onNext(_releaseMailToken(request));
     response.onCompleted();
   }
 
@@ -146,82 +157,107 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     response.onCompleted();
   }
 
-  @Override
-  @ValidateUser
-  public void changeMasterKey(
-      ChangeMasterKeyRequest request, StreamObserver<ChangeMasterKeyResponse> response) {
+  private Either<StatusException, ChangeMasterKeyResponse> _changeMasterKey(
+      ChangeMasterKeyRequest request) {
     long identifier = sessionInterceptorKeys.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(identifier);
     if (!maybeUser.isPresent()) {
-      response.onError(new StatusException(Status.ABORTED));
-      return;
+      return Either.left(new StatusException(Status.ABORTED));
     }
     User user = maybeUser.get();
     ChangeMasterKeyResponse.Builder builder = ChangeMasterKeyResponse.newBuilder();
     if (!cryptography.doesDigestMatchHash(request.getCurrentDigest(), user.getHash())) {
-      builder.setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST);
-    } else {
-      ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
-      accountOperationsInterface.changeMasterKey(
-          identifier,
-          renewal.getSalt(),
-          cryptography.computeHash(renewal.getDigest()),
-          renewal.getKeysList());
-      List<Session> sessions = accountOperationsInterface.readSessions(identifier);
-      keyValueClient.dropSessions(sessions.stream().map(Session::getKey).collect(toList()));
-      String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
-      builder.setSessionKey(sessionKey);
+      return Either.right(
+          builder.setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST).build());
     }
-    response.onNext(builder.build());
-    response.onCompleted();
+    ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
+    accountOperationsInterface.changeMasterKey(
+        identifier,
+        renewal.getSalt(),
+        cryptography.computeHash(renewal.getDigest()),
+        renewal.getKeysList());
+    List<Session> sessions = accountOperationsInterface.readSessions(identifier);
+    keyValueClient.dropSessions(sessions.stream().map(Session::getKey).collect(toList()));
+    String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
+    return Either.right(builder.setSessionKey(sessionKey).build());
+  }
+
+  @Override
+  @ValidateUser
+  public void changeMasterKey(
+      ChangeMasterKeyRequest request, StreamObserver<ChangeMasterKeyResponse> response) {
+    Either<StatusException, ChangeMasterKeyResponse> result = _changeMasterKey(request);
+    if (result.isRight()) {
+      response.onNext(result.get());
+      response.onCompleted();
+    } else {
+      response.onError(result.getLeft());
+    }
+  }
+
+  private Either<StatusException, ChangeUsernameResponse> _changeUsername(
+      ChangeUsernameRequest request) {
+    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
+    if (!maybeUser.isPresent()) {
+      return Either.left(new StatusException(Status.ABORTED));
+    }
+    User user = maybeUser.get();
+    ChangeUsernameResponse.Builder builder = ChangeUsernameResponse.newBuilder();
+    if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())) {
+      return Either.right(builder.setError(ChangeUsernameResponse.Error.INVALID_DIGEST).build());
+    }
+    if (accountOperationsInterface.getUserByName(request.getUsername()).isPresent()) {
+      return Either.right(builder.setError(ChangeUsernameResponse.Error.NAME_TAKEN).build());
+    }
+    accountOperationsInterface.changeUsername(userIdentifier, request.getUsername());
+    return Either.right(builder.build());
   }
 
   @Override
   @ValidateUser
   public void changeUsername(
       ChangeUsernameRequest request, StreamObserver<ChangeUsernameResponse> response) {
+    Either<StatusException, ChangeUsernameResponse> result = _changeUsername(request);
+    if (result.isRight()) {
+      response.onNext(result.get());
+      response.onCompleted();
+    } else {
+      response.onError(result.getLeft());
+    }
+  }
+
+  private Either<StatusException, DeleteAccountResponse> _deleteAccount(
+      DeleteAccountRequest request) {
     long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
-      response.onError(new StatusException(Status.ABORTED));
-      return;
+      return Either.left(new StatusException(Status.ABORTED));
     }
     User user = maybeUser.get();
-    ChangeUsernameResponse.Builder builder = ChangeUsernameResponse.newBuilder();
+    DeleteAccountResponse.Builder builder = DeleteAccountResponse.newBuilder();
     if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())) {
-      builder.setError(ChangeUsernameResponse.Error.INVALID_DIGEST);
-    } else if (accountOperationsInterface.getUserByName(request.getUsername()).isPresent()) {
-      builder.setError(ChangeUsernameResponse.Error.NAME_TAKEN);
-    } else {
-      accountOperationsInterface.changeUsername(userIdentifier, request.getUsername());
+      return Either.right(builder.setError(DeleteAccountResponse.Error.INVALID_DIGEST).build());
     }
-    response.onNext(builder.build());
-    response.onCompleted();
+    keyValueClient.dropSessions(
+        accountOperationsInterface.readSessions(userIdentifier).stream()
+            .map(Session::getKey)
+            .collect(toList()));
+    accountOperationsInterface.markAccountAsDeleted(userIdentifier);
+    return Either.right(builder.build());
   }
 
   @Override
   @ValidateUser
   public void deleteAccount(
       DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> response) {
-    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
-    if (!maybeUser.isPresent()) {
-      response.onError(new StatusException(Status.ABORTED));
-      return;
-    }
-    User user = maybeUser.get();
-    DeleteAccountResponse.Builder builder = DeleteAccountResponse.newBuilder();
-    if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())) {
-      builder.setError(DeleteAccountResponse.Error.INVALID_DIGEST);
+    Either<StatusException, DeleteAccountResponse> result = _deleteAccount(request);
+    if (result.isRight()) {
+      response.onNext(result.get());
+      response.onCompleted();
     } else {
-      keyValueClient.dropSessions(
-          accountOperationsInterface.readSessions(userIdentifier).stream()
-              .map(Session::getKey)
-              .collect(toList()));
-      accountOperationsInterface.markAccountAsDeleted(userIdentifier);
+      response.onError(result.getLeft());
     }
-    response.onNext(builder.build());
-    response.onCompleted();
   }
 
   @Override
@@ -253,15 +289,12 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     response.onCompleted();
   }
 
-  @Override
-  @ValidateUser
-  public void generateOtpParams(
-      GenerateOtpParamsRequest request, StreamObserver<GenerateOtpParamsResponse> response) {
+  private Either<StatusException, GenerateOtpParamsResponse> _generateOtpParams(
+      GenerateOtpParamsRequest request) {
     Optional<User> maybeUser =
         accountOperationsInterface.getUserByIdentifier(sessionInterceptorKeys.getUserIdentifier());
     if (!maybeUser.isPresent()) {
-      response.onError(new StatusException(Status.ABORTED));
-      return;
+      return Either.left(new StatusException(Status.ABORTED));
     }
     User user = maybeUser.get();
     GoogleAuthenticatorKey credentials = googleAuthenticator.createCredentials();
@@ -271,7 +304,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     OtpParams otpParams =
         accountOperationsInterface.createOtpParams(
             user.getIdentifier(), sharedSecret, scratchCodes);
-    response.onNext(
+    return Either.right(
         GenerateOtpParamsResponse.newBuilder()
             .setOtpParamsId(String.valueOf(otpParams.getId()))
             .setSharedSecret(sharedSecret)
@@ -280,53 +313,69 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
                     "keyring", user.getUsername(), credentials))
             .addAllScratchCodes(scratchCodes)
             .build());
-    response.onCompleted();
   }
 
   @Override
   @ValidateUser
-  public void acceptOtpParams(
-      AcceptOtpParamsRequest request, StreamObserver<AcceptOtpParamsResponse> response) {
+  public void generateOtpParams(
+      GenerateOtpParamsRequest request, StreamObserver<GenerateOtpParamsResponse> response) {
+    Either<StatusException, GenerateOtpParamsResponse> result = _generateOtpParams(request);
+    if (result.isRight()) {
+      response.onNext(result.get());
+      response.onCompleted();
+    } else {
+      response.onError(result.getLeft());
+    }
+  }
+
+  private Either<StatusException, AcceptOtpParamsResponse> _acceptOtpParams(
+      AcceptOtpParamsRequest request) {
     long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
     Optional<OtpParams> maybeOtpParams =
         accountOperationsInterface.getOtpParams(
             userIdentifier, Long.valueOf(request.getOtpParamsId()));
     if (!maybeOtpParams.isPresent()) {
-      response.onError(new StatusException(Status.NOT_FOUND));
-      return;
+      return Either.left(new StatusException(Status.NOT_FOUND));
     }
     AcceptOtpParamsResponse.Builder builder = AcceptOtpParamsResponse.newBuilder();
     OtpParams otpParams = maybeOtpParams.get();
     Optional<Integer> maybeTotp = cryptography.convertTotp(request.getOtp());
     if (!maybeTotp.isPresent()
         || !googleAuthenticator.authorize(otpParams.getSharedSecret(), maybeTotp.get())) {
-      builder.setError(AcceptOtpParamsResponse.Error.INVALID_CODE);
-    } else {
-      accountOperationsInterface.acceptOtpParams(otpParams.getId());
-      if (request.getYieldTrustedToken()) {
-        String otpToken = cryptography.generateTts();
-        accountOperationsInterface.createOtpToken(userIdentifier, otpToken);
-        builder.setTrustedToken(otpToken);
-      }
+      return Either.right(builder.setError(AcceptOtpParamsResponse.Error.INVALID_CODE).build());
     }
-    response.onNext(builder.build());
-    response.onCompleted();
+    accountOperationsInterface.acceptOtpParams(otpParams.getId());
+    if (request.getYieldTrustedToken()) {
+      String otpToken = cryptography.generateTts();
+      accountOperationsInterface.createOtpToken(userIdentifier, otpToken);
+      builder.setTrustedToken(otpToken);
+    }
+    return Either.right(builder.build());
   }
 
   @Override
   @ValidateUser
-  public void resetOtp(ResetOtpRequest request, StreamObserver<ResetOtpResponse> response) {
+  public void acceptOtpParams(
+      AcceptOtpParamsRequest request, StreamObserver<AcceptOtpParamsResponse> response) {
+    Either<StatusException, AcceptOtpParamsResponse> result = _acceptOtpParams(request);
+    if (result.isRight()) {
+      response.onNext(result.get());
+      response.onCompleted();
+    } else {
+      response.onError(result.getLeft());
+    }
+  }
+
+  private Either<StatusException, ResetOtpResponse> _resetOtp(ResetOtpRequest request) {
     long userId = sessionInterceptorKeys.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
-      response.onError(new StatusException(Status.ABORTED));
-      return;
+      return Either.left(new StatusException(Status.ABORTED));
     }
     User user = maybeUser.get();
     String sharedSecret = user.getSharedSecret();
     if (sharedSecret == null) {
-      response.onError(new StatusException(Status.INVALID_ARGUMENT));
-      return;
+      return Either.left(new StatusException(Status.INVALID_ARGUMENT));
     }
     ResetOtpResponse.Builder builder = ResetOtpResponse.newBuilder();
     Optional<Integer> maybeTotp = cryptography.convertTotp(request.getOtp());
@@ -335,11 +384,21 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
             && !accountOperationsInterface
                 .getOtpToken(userId, request.getOtp(), true)
                 .isPresent()) {
-      builder.setError(ResetOtpResponse.Error.INVALID_CODE);
-    } else {
-      accountOperationsInterface.resetOtp(userId);
+      return Either.right(builder.setError(ResetOtpResponse.Error.INVALID_CODE).build());
     }
-    response.onNext(builder.build());
-    response.onCompleted();
+    accountOperationsInterface.resetOtp(userId);
+    return Either.right(builder.build());
+  }
+
+  @Override
+  @ValidateUser
+  public void resetOtp(ResetOtpRequest request, StreamObserver<ResetOtpResponse> response) {
+    Either<StatusException, ResetOtpResponse> result = _resetOtp(request);
+    if (result.isRight()) {
+      response.onNext(result.get());
+      response.onCompleted();
+    } else {
+      response.onError(result.getLeft());
+    }
   }
 }

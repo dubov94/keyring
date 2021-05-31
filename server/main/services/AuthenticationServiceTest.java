@@ -4,6 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.grpc.stub.StreamObserver;
+import java.util.Optional;
+import name.falgout.jeffrey.testing.junit5.MockitoExtension;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.entities.User;
@@ -12,13 +19,6 @@ import server.main.keyvalue.KeyValueClient;
 import server.main.proto.service.*;
 import server.main.storage.AccountOperationsInterface;
 import server.main.storage.KeyOperationsInterface;
-import io.grpc.stub.StreamObserver;
-import java.util.Optional;
-import name.falgout.jeffrey.testing.junit5.MockitoExtension;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
@@ -192,12 +192,6 @@ class AuthenticationServiceTest {
     verify(mockStreamObserver)
         .onNext(
             LogInResponse.newBuilder()
-                .setPayload(
-                    LogInResponse.Payload.newBuilder()
-                        .setSessionKey("identifier")
-                        .setRequiresMailVerification(true)
-                        .setKeySet(LogInResponse.Payload.KeySet.getDefaultInstance())
-                        .build())
                 .setUserData(
                     UserData.newBuilder()
                         .setSessionKey("identifier")
