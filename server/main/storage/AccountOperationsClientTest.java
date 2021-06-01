@@ -221,7 +221,7 @@ class AccountOperationsClientTest {
     Optional<OtpParams> maybeOtpParams = accountOperationsClient.getOtpParams(userId, otpParamsId);
     assertTrue(maybeOtpParams.isPresent());
     OtpParams otpParams = maybeOtpParams.get();
-    assertEquals(otpParams.getSharedSecret(), "secret");
+    assertEquals(otpParams.getOtpSharedSecret(), "secret");
     assertEquals(otpParams.getScratchCodes(), ImmutableList.of("a", "b"));
   }
 
@@ -235,7 +235,7 @@ class AccountOperationsClientTest {
 
     assertEquals(Optional.empty(), accountOperationsClient.getOtpParams(userId, otpParams.getId()));
     User user = accountOperationsClient.getUserByIdentifier(userId).get();
-    assertEquals("secret", user.getSharedSecret());
+    assertEquals("secret", user.getOtpSharedSecret());
     assertTrue(accountOperationsClient.getOtpToken(userId, "a", true).isPresent());
     assertTrue(accountOperationsClient.getOtpToken(userId, "b", true).isPresent());
   }
@@ -270,7 +270,7 @@ class AccountOperationsClientTest {
     accountOperationsClient.resetOtp(userId);
 
     User user = accountOperationsClient.getUserByIdentifier(userId).get();
-    assertNull(user.getSharedSecret());
+    assertNull(user.getOtpSharedSecret());
     assertFalse(accountOperationsClient.getOtpToken(userId, "token", true).isPresent());
   }
 

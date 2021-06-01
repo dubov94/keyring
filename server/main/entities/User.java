@@ -26,8 +26,8 @@ public class User {
 
   @Column private String hash;
 
-  @Column(name = "shared_secret")
-  private String sharedSecret;
+  @Column(name = "otp_shared_secret")
+  private String otpSharedSecret;
 
   @Column private String mail;
 
@@ -79,12 +79,12 @@ public class User {
     return this;
   }
 
-  public String getSharedSecret() {
-    return sharedSecret;
+  public String getOtpSharedSecret() {
+    return otpSharedSecret;
   }
 
-  public User setSharedSecret(String sharedSecret) {
-    this.sharedSecret = sharedSecret;
+  public User setOtpSharedSecret(String otpSharedSecret) {
+    this.otpSharedSecret = otpSharedSecret;
     return this;
   }
 

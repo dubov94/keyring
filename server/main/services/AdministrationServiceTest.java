@@ -335,7 +335,7 @@ class AdministrationServiceTest {
   @Test
   void acceptOtpParams_codeMatches_completesSuccessfully() {
     when(mockAccountOperationsInterface.getOtpParams(0L, 1L))
-        .thenReturn(Optional.of(new OtpParams().setId(1L).setSharedSecret("secret")));
+        .thenReturn(Optional.of(new OtpParams().setId(1L).setOtpSharedSecret("secret")));
     when(mockCryptography.convertTotp("42")).thenReturn(Optional.of(42));
     when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
     when(mockCryptography.generateTts()).thenReturn("token");
@@ -357,7 +357,7 @@ class AdministrationServiceTest {
 
   @Test
   void resetOtpParams_totpMatches_triggersReset() {
-    user.setSharedSecret("secret");
+    user.setOtpSharedSecret("secret");
     when(mockCryptography.convertTotp("42")).thenReturn(Optional.of(42));
     when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
 
@@ -371,7 +371,7 @@ class AdministrationServiceTest {
 
   @Test
   void resetOtpParams_ttsMatches_triggersReset() {
-    user.setSharedSecret("secret");
+    user.setOtpSharedSecret("secret");
     when(mockCryptography.convertTotp("token")).thenReturn(Optional.empty());
     when(mockAccountOperationsInterface.getOtpToken(0L, "token", true))
         .thenReturn(Optional.of(new OtpToken().setId(1L)));

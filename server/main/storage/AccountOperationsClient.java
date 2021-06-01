@@ -185,7 +185,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     }
     User user = maybeUser.get();
     OtpParams otpParams =
-        new OtpParams().setUser(user).setSharedSecret(sharedSecret).setScratchCodes(scratchCodes);
+        new OtpParams().setUser(user).setOtpSharedSecret(sharedSecret).setScratchCodes(scratchCodes);
     entityManager.persist(otpParams);
     return otpParams;
   }
@@ -208,10 +208,10 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     }
     OtpParams otpParams = maybeOtpParams.get();
     User user = otpParams.getUser();
-    if (user.getSharedSecret() != null) {
+    if (user.getOtpSharedSecret() != null) {
       throw new IllegalArgumentException();
     }
-    user.setSharedSecret(otpParams.getSharedSecret());
+    user.setOtpSharedSecret(otpParams.getOtpSharedSecret());
     entityManager.persist(user);
     for (String scratchCode : otpParams.getScratchCodes()) {
       entityManager.persist(new OtpToken().setUser(user).setIsInitial(true).setValue(scratchCode));
@@ -259,7 +259,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
       throw new IllegalArgumentException();
     }
     User user = maybeUser.get();
-    user.setSharedSecret(null);
+    user.setOtpSharedSecret(null);
     entityManager.persist(user);
     List<OtpToken> otpTokens =
         Queries.findByUser(entityManager, OtpToken.class, OtpToken_.user, userId);

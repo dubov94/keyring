@@ -53,11 +53,11 @@ public class OtpParams {
     return this;
   }
 
-  public String getSharedSecret() {
+  public String getOtpSharedSecret() {
     return sharedSecret;
   }
 
-  public OtpParams setSharedSecret(String sharedSecret) {
+  public OtpParams setOtpSharedSecret(String sharedSecret) {
     this.sharedSecret = sharedSecret;
     return this;
   }

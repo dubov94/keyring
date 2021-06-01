@@ -341,7 +341,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     OtpParams otpParams = maybeOtpParams.get();
     Optional<Integer> maybeTotp = cryptography.convertTotp(request.getOtp());
     if (!maybeTotp.isPresent()
-        || !googleAuthenticator.authorize(otpParams.getSharedSecret(), maybeTotp.get())) {
+        || !googleAuthenticator.authorize(otpParams.getOtpSharedSecret(), maybeTotp.get())) {
       return Either.right(builder.setError(AcceptOtpParamsResponse.Error.INVALID_CODE).build());
     }
     accountOperationsInterface.acceptOtpParams(otpParams.getId());
@@ -373,7 +373,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       return Either.left(new StatusException(Status.ABORTED));
     }
     User user = maybeUser.get();
-    String sharedSecret = user.getSharedSecret();
+    String sharedSecret = user.getOtpSharedSecret();
     if (sharedSecret == null) {
       return Either.left(new StatusException(Status.INVALID_ARGUMENT));
     }
