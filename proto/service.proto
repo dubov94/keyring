@@ -56,6 +56,8 @@ message OtpContext {
 }
 
 message LogInResponse {
+    reserved 2;
+
     enum Error {
         NONE = 0;
         INVALID_CREDENTIALS = 1;
