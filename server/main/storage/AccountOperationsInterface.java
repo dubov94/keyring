@@ -45,4 +45,8 @@ public interface AccountOperationsInterface {
   void deleteOtpToken(long tokenId);
 
   void resetOtp(long userId);
+
+  boolean acquireOtpSpareAttempt(long userId);
+
+  void restoreOtpSpareAttempts(long userId);
 }

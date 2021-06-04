@@ -28,8 +28,7 @@ class Launcher {
   private void initialize(Environment environment) {
     appComponent = DaggerAppComponent.builder().environment(environment).build();
     Aspects.aspectOf(ValidateUserAspect.class)
-        .initialize(
-            appComponent.sessionInterceptorKeys(), appComponent.accountOperationsInterface());
+        .initialize(appComponent.sessionAccessor(), appComponent.accountOperationsInterface());
     Aspects.aspectOf(StorageManagerAspect.class).initialize(appComponent.entityManagerFactory());
   }
 
@@ -40,12 +39,12 @@ class Launcher {
                 ServerInterceptors.intercept(
                     appComponent.authenticationService(),
                     appComponent.versionInterceptor(),
-                    appComponent.requestMetadataInterceptor()))
+                    appComponent.agentInterceptor()))
             .addService(
                 ServerInterceptors.intercept(
                     appComponent.administrationService(),
                     appComponent.versionInterceptor(),
-                    appComponent.requestMetadataInterceptor(),
+                    appComponent.agentInterceptor(),
                     appComponent.sessionInterceptor()))
             .build();
     server.start();

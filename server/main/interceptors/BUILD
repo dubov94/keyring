@@ -1,6 +1,6 @@
 java_library(
-    name = "request_metadata_interceptor_keys",
-    srcs = ["RequestMetadataInterceptorKeys.java"],
+    name = "agent_accessor",
+    srcs = ["AgentAccessor.java"],
     visibility = ["//server:internal"],
     deps = [
         "@maven//:io_grpc_grpc_api",
@@ -9,19 +9,19 @@ java_library(
 )
 
 java_library(
-    name = "request_metadata_interceptor",
-    srcs = ["RequestMetadataInterceptor.java"],
+    name = "agent_interceptor",
+    srcs = ["AgentInterceptor.java"],
     visibility = ["//server:internal"],
     deps = [
-        ":request_metadata_interceptor_keys",
+        ":agent_accessor",
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_context",
     ],
 )
 
 java_library(
-    name = "session_interceptor_keys",
-    srcs = ["SessionInterceptorKeys.java"],
+    name = "session_accessor",
+    srcs = ["SessionAccessor.java"],
     visibility = ["//server:internal"],
     deps = [
         "//server/main/keyvalue:user_pointer",
@@ -35,7 +35,7 @@ java_library(
     srcs = ["SessionInterceptor.java"],
     visibility = ["//server:internal"],
     deps = [
-        ":session_interceptor_keys",
+        ":session_accessor",
         "//server/main/keyvalue:key_value_client",
         "//server/main/keyvalue:user_pointer",
         "@maven//:io_grpc_grpc_api",
@@ -45,8 +45,8 @@ java_library(
 )
 
 java_library(
-    name = "version_interceptor_keys",
-    srcs = ["VersionInterceptorKeys.java"],
+    name = "version_accessor",
+    srcs = ["VersionAccessor.java"],
     deps = [
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_context",
@@ -58,7 +58,7 @@ java_library(
     srcs = ["VersionInterceptor.java"],
     visibility = ["//server:internal"],
     deps = [
-        ":version_interceptor_keys",
+        ":version_accessor",
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_context",
     ],

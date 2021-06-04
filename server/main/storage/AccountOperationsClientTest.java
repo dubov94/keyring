@@ -226,7 +226,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
-  void acceptOtpParams_persistsSharedSecretScratchCodes() {
+  void acceptOtpParams_persistsOtpData() {
     long userId = createActiveUser();
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of("a", "b"));
@@ -236,6 +236,7 @@ class AccountOperationsClientTest {
     assertEquals(Optional.empty(), accountOperationsClient.getOtpParams(userId, otpParams.getId()));
     User user = accountOperationsClient.getUserByIdentifier(userId).get();
     assertEquals("secret", user.getOtpSharedSecret());
+    assertEquals(5, user.getOtpSpareAttempts());
     assertTrue(accountOperationsClient.getOtpToken(userId, "a", true).isPresent());
     assertTrue(accountOperationsClient.getOtpToken(userId, "b", true).isPresent());
   }
@@ -261,7 +262,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
-  void resetOtp_removesSharedSecretScratchCodes() {
+  void resetOtp_removesOtpData() {
     long userId = createActiveUser();
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of("token"));
@@ -271,6 +272,7 @@ class AccountOperationsClientTest {
 
     User user = accountOperationsClient.getUserByIdentifier(userId).get();
     assertNull(user.getOtpSharedSecret());
+    assertEquals(0, user.getOtpSpareAttempts());
     assertFalse(accountOperationsClient.getOtpToken(userId, "token", true).isPresent());
   }
 

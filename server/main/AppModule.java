@@ -1,17 +1,16 @@
 package server.main;
 
-import server.main.interceptors.RequestMetadataInterceptor;
-import server.main.interceptors.RequestMetadataInterceptorKeys;
-import server.main.interceptors.SessionInterceptorKeys;
-import server.main.interceptors.VersionInterceptor;
 import com.google.gson.Gson;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import dagger.Module;
 import dagger.Provides;
-
-import javax.inject.Singleton;
 import java.security.SecureRandom;
+import javax.inject.Singleton;
+import server.main.interceptors.AgentAccessor;
+import server.main.interceptors.AgentInterceptor;
+import server.main.interceptors.SessionAccessor;
+import server.main.interceptors.VersionInterceptor;
 
 @Module
 class AppModule {
@@ -31,20 +30,20 @@ class AppModule {
 
   @Provides
   @Singleton
-  static SessionInterceptorKeys provideSessionKeys() {
-    return new SessionInterceptorKeys();
+  static SessionAccessor provideSessionKeys() {
+    return new SessionAccessor();
   }
 
   @Provides
   @Singleton
-  static RequestMetadataInterceptor provideUserMetadataInterceptor() {
-    return new RequestMetadataInterceptor();
+  static AgentInterceptor provideUserMetadataInterceptor() {
+    return new AgentInterceptor();
   }
 
   @Provides
   @Singleton
-  static RequestMetadataInterceptorKeys provideUserMetadataKeys() {
-    return new RequestMetadataInterceptorKeys();
+  static AgentAccessor provideUserMetadataKeys() {
+    return new AgentAccessor();
   }
 
   @Provides

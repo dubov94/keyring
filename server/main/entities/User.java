@@ -29,6 +29,9 @@ public class User {
   @Column(name = "otp_shared_secret")
   private String otpSharedSecret;
 
+  @Column(name = "otp_spare_attempts", columnDefinition = "int4 default 0")
+  private int otpSpareAttempts;
+
   @Column private String mail;
 
   @Column(name = "last_session")
@@ -86,6 +89,22 @@ public class User {
   public User setOtpSharedSecret(String otpSharedSecret) {
     this.otpSharedSecret = otpSharedSecret;
     return this;
+  }
+
+  public int getOtpSpareAttempts() {
+    return otpSpareAttempts;
+  }
+
+  public User setOtpSpareAttempts(int otpSpareAttempts) {
+    this.otpSpareAttempts = otpSpareAttempts;
+    return this;
+  }
+
+  public void decrementOtpSpareAttempts() {
+    if (otpSpareAttempts == 0) {
+      throw new IllegalStateException();
+    }
+    otpSpareAttempts -= 1;
   }
 
   public String getMail() {

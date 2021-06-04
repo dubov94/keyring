@@ -2,15 +2,21 @@ package server.main.services;
 
 import static java.util.stream.Collectors.toList;
 
+import com.warrenstrange.googleauth.IGoogleAuthenticator;
+import io.grpc.Status;
+import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
+import io.vavr.control.Either;
 import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import server.main.Cryptography;
+import server.main.Environment;
 import server.main.MailClient;
 import server.main.entities.Key;
+import server.main.entities.OtpToken;
 import server.main.entities.User;
-import server.main.interceptors.RequestMetadataInterceptorKeys;
+import server.main.interceptors.AgentAccessor;
 import server.main.keyvalue.KeyValueClient;
 import server.main.keyvalue.UserPointer;
 import server.main.proto.service.*;
@@ -23,7 +29,9 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private KeyValueClient keyValueClient;
   private Cryptography cryptography;
   private MailClient mailClient;
-  private RequestMetadataInterceptorKeys requestMetadataInterceptorKeys;
+  private AgentAccessor agentAccessor;
+  private Environment environment;
+  private IGoogleAuthenticator googleAuthenticator;
 
   @Inject
   AuthenticationService(
@@ -32,13 +40,17 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       Cryptography cryptography,
       MailClient mailClient,
       KeyValueClient keyValueClient,
-      RequestMetadataInterceptorKeys requestMetadataInterceptorKeys) {
+      AgentAccessor agentAccessor,
+      Environment environment,
+      IGoogleAuthenticator googleAuthenticator) {
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
     this.cryptography = cryptography;
     this.mailClient = mailClient;
     this.keyValueClient = keyValueClient;
-    this.requestMetadataInterceptorKeys = requestMetadataInterceptorKeys;
+    this.agentAccessor = agentAccessor;
+    this.environment = environment;
+    this.googleAuthenticator = googleAuthenticator;
   }
 
   private RegisterResponse _register(RegisterRequest request) {
@@ -56,8 +68,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     accountOperationsInterface.createSession(
         user.getIdentifier(),
         sessionKey,
-        requestMetadataInterceptorKeys.getIpAddress(),
-        requestMetadataInterceptorKeys.getUserAgent());
+        agentAccessor.getIpAddress(),
+        agentAccessor.getUserAgent());
     mailClient.sendMailVerificationCode(mail, code);
     return builder.setSessionKey(sessionKey).build();
   }
@@ -83,23 +95,13 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     response.onCompleted();
   }
 
-  private LogInResponse _logIn(LogInRequest request) {
-    LogInResponse.Builder builder = LogInResponse.newBuilder();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByName(request.getUsername());
-    if (!maybeUser.isPresent()) {
-      return builder.setError(LogInResponse.Error.INVALID_CREDENTIALS).build();
-    }
-    User user = maybeUser.get();
-    if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())
-        || Objects.equals(user.getState(), User.State.DELETED)) {
-      return builder.setError(LogInResponse.Error.INVALID_CREDENTIALS).build();
-    }
+  private UserData newUserData(User user) {
     String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
     accountOperationsInterface.createSession(
         user.getIdentifier(),
         sessionKey,
-        requestMetadataInterceptorKeys.getIpAddress(),
-        requestMetadataInterceptorKeys.getUserAgent());
+        agentAccessor.getIpAddress(),
+        agentAccessor.getUserAgent());
     UserData.Builder userDataBuilder = UserData.newBuilder();
     userDataBuilder.setSessionKey(sessionKey);
     if (user.getMail() == null) {
@@ -111,7 +113,30 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         keyOperationsInterface.readKeys(user.getIdentifier()).stream()
             .map(Key::toIdentifiedKey)
             .collect(toList()));
-    return builder.setUserData(userDataBuilder).build();
+    return userDataBuilder.build();
+  }
+
+  private LogInResponse _logIn(LogInRequest request) {
+    LogInResponse.Builder builder = LogInResponse.newBuilder();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByName(request.getUsername());
+    if (!maybeUser.isPresent()) {
+      return builder.setError(LogInResponse.Error.INVALID_CREDENTIALS).build();
+    }
+    User user = maybeUser.get();
+    if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())
+        || Objects.equals(user.getState(), User.State.DELETED)) {
+      return builder.setError(LogInResponse.Error.INVALID_CREDENTIALS).build();
+    }
+    if (!environment.isProduction() && user.getOtpSharedSecret() != null) {
+      String authnKey = keyValueClient.createAuthn(user.getIdentifier());
+      return builder
+          .setOtpContext(
+              OtpContext.newBuilder()
+                  .setAuthnKey(authnKey)
+                  .setAttemptsLeft(user.getOtpSpareAttempts()))
+          .build();
+    }
+    return builder.setUserData(newUserData(user)).build();
   }
 
   @Override
@@ -120,8 +145,50 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     response.onCompleted();
   }
 
+  private Either<StatusException, ProvideOtpResponse> _provideOtp(ProvideOtpRequest request) {
+    ProvideOtpResponse.Builder builder = ProvideOtpResponse.newBuilder();
+    Optional<Long> maybeUserId = keyValueClient.getUserByAuthn(request.getAuthnKey());
+    if (!maybeUserId.isPresent()) {
+      return Either.left(new StatusException(Status.UNAUTHENTICATED));
+    }
+    long userId = maybeUserId.get();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    if (!maybeUser.isPresent()) {
+      return Either.left(new StatusException(Status.ABORTED));
+    }
+    User user = maybeUser.get();
+    Optional<Integer> maybeTotp = cryptography.convertTotp(request.getOtp());
+    if (maybeTotp.isPresent()) {
+      boolean acquired = accountOperationsInterface.acquireOtpSpareAttempt(userId);
+      if (!acquired || !googleAuthenticator.authorize(user.getOtpSharedSecret(), maybeTotp.get())) {
+        return Either.right(builder.setError(ProvideOtpResponse.Error.INVALID_CODE).build());
+      }
+    } else {
+      Optional<OtpToken> maybeOtpToken =
+          accountOperationsInterface.getOtpToken(
+              userId, request.getOtp(), /* mustBeInitial = */ false);
+      if (!maybeOtpToken.isPresent()) {
+        return Either.right(builder.setError(ProvideOtpResponse.Error.INVALID_CODE).build());
+      }
+      accountOperationsInterface.deleteOtpToken(maybeOtpToken.get().getId());
+    }
+    accountOperationsInterface.restoreOtpSpareAttempts(userId);
+    if (request.getYieldTrustedToken()) {
+      String otpToken = cryptography.generateTts();
+      accountOperationsInterface.createOtpToken(userId, otpToken);
+      builder.setTrustedToken(otpToken);
+    }
+    return Either.right(builder.setUserData(newUserData(user)).build());
+  }
+
   @Override
   public void provideOtp(ProvideOtpRequest request, StreamObserver<ProvideOtpResponse> response) {
-    throw new UnsupportedOperationException();
+    Either<StatusException, ProvideOtpResponse> result = _provideOtp(request);
+    if (result.isRight()) {
+      response.onNext(result.get());
+      response.onCompleted();
+    } else {
+      response.onError(result.getLeft());
+    }
   }
 }

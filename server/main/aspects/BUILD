@@ -40,7 +40,7 @@ java_library(
     deps = [
         ":annotations",
         "//server/main/entities:user",
-        "//server/main/interceptors:session_interceptor_keys",
+        "//server/main/interceptors:session_accessor",
         "//server/main/storage:account_operations_interface",
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_stub",
@@ -56,7 +56,7 @@ junit5_test(
         "//server/main/aspects:annotations",
         "//server/main/aspects:validate_user_aspect",
         "//server/main/entities:user",
-        "//server/main/interceptors:session_interceptor_keys",
+        "//server/main/interceptors:session_accessor",
         "//server/main/storage:account_operations_interface",
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_stub",

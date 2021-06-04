@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.stub.StreamObserver;
 import java.util.Optional;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
@@ -12,9 +13,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import server.main.Cryptography;
+import server.main.Environment;
 import server.main.MailClient;
 import server.main.entities.User;
-import server.main.interceptors.RequestMetadataInterceptorKeys;
+import server.main.entities.OtpToken;
+import server.main.interceptors.AgentAccessor;
 import server.main.keyvalue.KeyValueClient;
 import server.main.proto.service.*;
 import server.main.storage.AccountOperationsInterface;
@@ -27,8 +30,10 @@ class AuthenticationServiceTest {
   @Mock private Cryptography mockCryptography;
   @Mock private MailClient mockMailClient;
   @Mock private KeyValueClient mockKeyValueClient;
-  @Mock private RequestMetadataInterceptorKeys mockRequestMetadataInterceptorKeys;
+  @Mock private AgentAccessor mockAgentAccessor;
   @Mock private StreamObserver mockStreamObserver;
+  @Mock private Environment mockEnvironment;
+  @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
 
   private AuthenticationService authenticationService;
 
@@ -41,7 +46,9 @@ class AuthenticationServiceTest {
             mockCryptography,
             mockMailClient,
             mockKeyValueClient,
-            mockRequestMetadataInterceptorKeys);
+            mockAgentAccessor,
+            mockEnvironment,
+            mockGoogleAuthenticator);
   }
 
   @Test
@@ -63,10 +70,10 @@ class AuthenticationServiceTest {
     when(mockCryptography.generateUacs()).thenReturn("0");
     when(mockAccountOperationsInterface.createUser(
             "username", "salt", "hash", "mail@example.com", "0"))
-        .thenReturn(new User().setIdentifier(0L));
+        .thenReturn(new User().setIdentifier(1L));
     when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
-    when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
-    when(mockRequestMetadataInterceptorKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
+    when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockAgentAccessor.getUserAgent()).thenReturn("Chrome/0.0.0");
 
     authenticationService.register(
         RegisterRequest.newBuilder()
@@ -80,7 +87,7 @@ class AuthenticationServiceTest {
     verify(mockAccountOperationsInterface)
         .createUser("username", "salt", "hash", "mail@example.com", "0");
     verify(mockAccountOperationsInterface)
-        .createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
+        .createSession(1L, "identifier", "127.0.0.1", "Chrome/0.0.0");
     verify(mockMailClient).sendMailVerificationCode("mail@example.com", "0");
     verify(mockStreamObserver)
         .onNext(RegisterResponse.newBuilder().setSessionKey("identifier").build());
@@ -102,7 +109,7 @@ class AuthenticationServiceTest {
   void getSalt_validUsername_repliesWithAuthenticationSalt() {
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
-            Optional.of(new User().setIdentifier(0L).setUsername("username").setSalt("salt")));
+            Optional.of(new User().setIdentifier(1L).setUsername("username").setSalt("salt")));
 
     authenticationService.getSalt(
         GetSaltRequest.newBuilder().setUsername("username").build(), mockStreamObserver);
@@ -129,7 +136,7 @@ class AuthenticationServiceTest {
         .thenReturn(
             Optional.of(
                 new User()
-                    .setIdentifier(0L)
+                    .setIdentifier(1L)
                     .setUsername("username")
                     .setSalt("salt")
                     .setHash("hash")));
@@ -151,7 +158,7 @@ class AuthenticationServiceTest {
         .thenReturn(
             Optional.of(
                 new User()
-                    .setIdentifier(0L)
+                    .setIdentifier(1L)
                     .setState(User.State.DELETED)
                     .setUsername("username")
                     .setSalt("salt")
@@ -169,34 +176,152 @@ class AuthenticationServiceTest {
   }
 
   @Test
-  void logIn_validPair_repliesWithSessionKeyAndState() {
+  void logIn_validPair_repliesWithUserData() {
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(
                 new User()
-                    .setIdentifier(0L)
+                    .setIdentifier(1L)
                     .setUsername("username")
                     .setSalt("salt")
                     .setHash("hash")));
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
+    when(mockEnvironment.isProduction()).thenReturn(false);
     when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
-    when(mockRequestMetadataInterceptorKeys.getIpAddress()).thenReturn("127.0.0.1");
-    when(mockRequestMetadataInterceptorKeys.getUserAgent()).thenReturn("Chrome/0.0.0");
+    when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockAgentAccessor.getUserAgent()).thenReturn("Chrome/0.0.0");
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface)
-        .createSession(0L, "identifier", "127.0.0.1", "Chrome/0.0.0");
+        .createSession(1L, "identifier", "127.0.0.1", "Chrome/0.0.0");
     verify(mockStreamObserver)
         .onNext(
             LogInResponse.newBuilder()
                 .setUserData(
                     UserData.newBuilder()
                         .setSessionKey("identifier")
-                        .setMailVerificationRequired(true)
-                        .build())
+                        .setMailVerificationRequired(true))
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void provideOtp_outOfAttempts_repliesWithError() {
+    when(mockKeyValueClient.getUserByAuthn("authn")).thenReturn(Optional.of(1L));
+    when(mockAccountOperationsInterface.getUserByIdentifier(1L))
+        .thenReturn(Optional.of(new User().setIdentifier(7L)));
+    when(mockCryptography.convertTotp("otp")).thenReturn(Optional.of(42));
+    when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(false);
+
+    authenticationService.provideOtp(
+        ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
+        mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            ProvideOtpResponse.newBuilder()
+                .setError(ProvideOtpResponse.Error.INVALID_CODE)
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void provideOtp_otpUnauthorized_repliesWithError() {
+    when(mockKeyValueClient.getUserByAuthn("authn")).thenReturn(Optional.of(1L));
+    when(mockAccountOperationsInterface.getUserByIdentifier(1L))
+        .thenReturn(Optional.of(new User().setIdentifier(7L).setOtpSharedSecret("secret")));
+    when(mockCryptography.convertTotp("otp")).thenReturn(Optional.of(42));
+    when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(true);
+    when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(false);
+
+    authenticationService.provideOtp(
+        ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
+        mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            ProvideOtpResponse.newBuilder()
+                .setError(ProvideOtpResponse.Error.INVALID_CODE)
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void provideOtp_otpAuthorized_repliesWithUserData() {
+    when(mockKeyValueClient.getUserByAuthn("authn")).thenReturn(Optional.of(1L));
+    when(mockAccountOperationsInterface.getUserByIdentifier(1L))
+        .thenReturn(Optional.of(new User().setIdentifier(1L).setOtpSharedSecret("secret")));
+    when(mockCryptography.convertTotp("otp")).thenReturn(Optional.of(42));
+    when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(true);
+    when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
+    when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockAgentAccessor.getUserAgent()).thenReturn("Chrome/0.0.0");
+    when(mockKeyValueClient.createSession(any())).thenReturn("session");
+
+    authenticationService.provideOtp(
+        ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
+        mockStreamObserver);
+
+    verify(mockAccountOperationsInterface)
+        .createSession(1L, "session", "127.0.0.1", "Chrome/0.0.0");
+    verify(mockStreamObserver)
+        .onNext(
+            ProvideOtpResponse.newBuilder()
+                .setUserData(
+                    UserData.newBuilder()
+                        .setSessionKey("session")
+                        .setMailVerificationRequired(true))
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void provideOtp_tokenAbsent_repliesWithError() {
+    when(mockKeyValueClient.getUserByAuthn("authn")).thenReturn(Optional.of(1L));
+    when(mockAccountOperationsInterface.getUserByIdentifier(1L))
+        .thenReturn(Optional.of(new User().setIdentifier(7L)));
+    when(mockCryptography.convertTotp("otp")).thenReturn(Optional.empty());
+    when(mockAccountOperationsInterface.getOtpToken(1L, "otp", false)).thenReturn(Optional.empty());
+
+    authenticationService.provideOtp(
+        ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
+        mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            ProvideOtpResponse.newBuilder()
+                .setError(ProvideOtpResponse.Error.INVALID_CODE)
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void provideOtp_tokenPresent_deletesAndReplies() {
+    when(mockKeyValueClient.getUserByAuthn("authn")).thenReturn(Optional.of(1L));
+    when(mockAccountOperationsInterface.getUserByIdentifier(1L))
+        .thenReturn(Optional.of(new User().setIdentifier(7L)));
+    when(mockCryptography.convertTotp("otp")).thenReturn(Optional.empty());
+    when(mockAccountOperationsInterface.getOtpToken(1L, "otp", false))
+        .thenReturn(Optional.of(new OtpToken().setId(42L)));
+    when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockAgentAccessor.getUserAgent()).thenReturn("Chrome/0.0.0");
+    when(mockKeyValueClient.createSession(any())).thenReturn("session");
+
+    authenticationService.provideOtp(
+        ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
+        mockStreamObserver);
+
+    verify(mockAccountOperationsInterface).deleteOtpToken(42L);
+    verify(mockStreamObserver)
+        .onNext(
+            ProvideOtpResponse.newBuilder()
+                .setUserData(
+                    UserData.newBuilder()
+                        .setSessionKey("session")
+                        .setMailVerificationRequired(true))
                 .build());
     verify(mockStreamObserver).onCompleted();
   }

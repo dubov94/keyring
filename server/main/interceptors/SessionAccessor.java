@@ -1,15 +1,15 @@
 package server.main.interceptors;
 
-import server.main.keyvalue.UserPointer;
 import io.grpc.Context;
 import io.grpc.Metadata;
+import server.main.keyvalue.UserPointer;
 
-public class SessionInterceptorKeys {
-  static final Context.Key<UserPointer> CONTEXT_USER_POINTER_KEY =
-      Context.key("user-projection");
-  static final Context.Key<String> CONTEXT_SESSION_TOKEN_KEY = Context.key("session-token");
+public class SessionAccessor {
   static final Metadata.Key<String> METADATA_SESSION_TOKEN_KEY =
       Metadata.Key.of("X-Session-Token", Metadata.ASCII_STRING_MARSHALLER);
+
+  static final Context.Key<UserPointer> CONTEXT_USER_POINTER_KEY = Context.key("user-pointer");
+  static final Context.Key<String> CONTEXT_SESSION_TOKEN_KEY = Context.key("session-token");
 
   public String getSessionIdentifier() {
     return CONTEXT_SESSION_TOKEN_KEY.get();

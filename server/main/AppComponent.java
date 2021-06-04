@@ -5,9 +5,9 @@ import dagger.Component;
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 import server.main.geolocation.GeolocationModule;
-import server.main.interceptors.RequestMetadataInterceptor;
+import server.main.interceptors.AgentInterceptor;
+import server.main.interceptors.SessionAccessor;
 import server.main.interceptors.SessionInterceptor;
-import server.main.interceptors.SessionInterceptorKeys;
 import server.main.interceptors.VersionInterceptor;
 import server.main.keyvalue.KeyValueModule;
 import server.main.services.AdministrationService;
@@ -32,13 +32,13 @@ interface AppComponent {
 
   SessionInterceptor sessionInterceptor();
 
-  SessionInterceptorKeys sessionInterceptorKeys();
+  SessionAccessor sessionAccessor();
 
   EntityManagerFactory entityManagerFactory();
 
   AccountOperationsInterface accountOperationsInterface();
 
-  RequestMetadataInterceptor requestMetadataInterceptor();
+  AgentInterceptor agentInterceptor();
 
   VersionInterceptor versionInterceptor();
 

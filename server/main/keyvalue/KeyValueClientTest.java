@@ -96,6 +96,17 @@ class KeyValueClientTest {
     }
   }
 
+  @Test
+  void createAuthn_getsUniqueId_putsAuthnToUserId() {
+    String authnId = generateUniqueIdentifier();
+    when(mockCryptography.generateTts()).thenReturn(authnId);
+
+    String reply = keyValueClient.createAuthn(7L);
+
+    assertEquals(authnId, reply);
+    assertEquals(Optional.of(7L), keyValueClient.getUserByAuthn(authnId));
+  }
+
   private String generateUniqueIdentifier() {
     return UUID.randomUUID().toString();
   }

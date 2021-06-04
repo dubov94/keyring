@@ -19,10 +19,11 @@ import server.main.aspects.Annotations.ValidateUser;
 import server.main.entities.Key;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
+import server.main.entities.OtpToken;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.geolocation.GeolocationServiceInterface;
-import server.main.interceptors.SessionInterceptorKeys;
+import server.main.interceptors.SessionAccessor;
 import server.main.keyvalue.KeyValueClient;
 import server.main.keyvalue.UserPointer;
 import server.main.proto.service.*;
@@ -33,7 +34,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private KeyOperationsInterface keyOperationsInterface;
   private AccountOperationsInterface accountOperationsInterface;
   private GeolocationServiceInterface geolocationServiceInterface;
-  private SessionInterceptorKeys sessionInterceptorKeys;
+  private SessionAccessor sessionAccessor;
   private KeyValueClient keyValueClient;
   private Cryptography cryptography;
   private MailClient mailClient;
@@ -44,7 +45,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       KeyOperationsInterface keyOperationsInterface,
       AccountOperationsInterface accountOperationsInterface,
       GeolocationServiceInterface geolocationServiceInterface,
-      SessionInterceptorKeys sessionInterceptorKeys,
+      SessionAccessor sessionAccessor,
       KeyValueClient keyValueClient,
       Cryptography cryptography,
       MailClient mailClient,
@@ -52,7 +53,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     this.keyOperationsInterface = keyOperationsInterface;
     this.accountOperationsInterface = accountOperationsInterface;
     this.geolocationServiceInterface = geolocationServiceInterface;
-    this.sessionInterceptorKeys = sessionInterceptorKeys;
+    this.sessionAccessor = sessionAccessor;
     this.keyValueClient = keyValueClient;
     this.cryptography = cryptography;
     this.mailClient = mailClient;
@@ -61,7 +62,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, AcquireMailTokenResponse> _acquireMailToken(
       AcquireMailTokenRequest request) {
-    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
+    long userIdentifier = sessionAccessor.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
@@ -95,7 +96,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     ReleaseMailTokenResponse.Builder builder = ReleaseMailTokenResponse.newBuilder();
     Optional<MailToken> maybeMailToken =
         accountOperationsInterface.getMailToken(
-            sessionInterceptorKeys.getUserIdentifier(), request.getCode());
+            sessionAccessor.getUserIdentifier(), request.getCode());
     if (!maybeMailToken.isPresent()) {
       return builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE).build();
     }
@@ -123,7 +124,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void createKey(CreateKeyRequest request, StreamObserver<CreateKeyResponse> response) {
     long identifier =
         keyOperationsInterface
-            .createKey(sessionInterceptorKeys.getUserIdentifier(), request.getPassword())
+            .createKey(sessionAccessor.getUserIdentifier(), request.getPassword())
             .getIdentifier();
     response.onNext(CreateKeyResponse.newBuilder().setIdentifier(identifier).build());
     response.onCompleted();
@@ -133,7 +134,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void readKeys(ReadKeysRequest request, StreamObserver<ReadKeysResponse> response) {
     List<IdentifiedKey> keys =
-        keyOperationsInterface.readKeys(sessionInterceptorKeys.getUserIdentifier()).stream()
+        keyOperationsInterface.readKeys(sessionAccessor.getUserIdentifier()).stream()
             .map(Key::toIdentifiedKey)
             .collect(toList());
     response.onNext(ReadKeysResponse.newBuilder().addAllKeys(keys).build());
@@ -143,7 +144,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @Override
   @ValidateUser
   public void updateKey(UpdateKeyRequest request, StreamObserver<UpdateKeyResponse> response) {
-    keyOperationsInterface.updateKey(sessionInterceptorKeys.getUserIdentifier(), request.getKey());
+    keyOperationsInterface.updateKey(sessionAccessor.getUserIdentifier(), request.getKey());
     response.onNext(UpdateKeyResponse.getDefaultInstance());
     response.onCompleted();
   }
@@ -151,15 +152,14 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @Override
   @ValidateUser
   public void deleteKey(DeleteKeyRequest request, StreamObserver<DeleteKeyResponse> response) {
-    keyOperationsInterface.deleteKey(
-        sessionInterceptorKeys.getUserIdentifier(), request.getIdentifier());
+    keyOperationsInterface.deleteKey(sessionAccessor.getUserIdentifier(), request.getIdentifier());
     response.onNext(DeleteKeyResponse.getDefaultInstance());
     response.onCompleted();
   }
 
   private Either<StatusException, ChangeMasterKeyResponse> _changeMasterKey(
       ChangeMasterKeyRequest request) {
-    long identifier = sessionInterceptorKeys.getUserIdentifier();
+    long identifier = sessionAccessor.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(identifier);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
@@ -197,7 +197,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, ChangeUsernameResponse> _changeUsername(
       ChangeUsernameRequest request) {
-    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
+    long userIdentifier = sessionAccessor.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
@@ -229,7 +229,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, DeleteAccountResponse> _deleteAccount(
       DeleteAccountRequest request) {
-    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
+    long userIdentifier = sessionAccessor.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
@@ -264,7 +264,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void getRecentSessions(
       GetRecentSessionsRequest request, StreamObserver<GetRecentSessionsResponse> response) {
-    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
+    long userIdentifier = sessionAccessor.getUserIdentifier();
     List<Session> sessions =
         accountOperationsInterface.readSessions(userIdentifier).stream()
             .sorted(Comparator.comparing(Session::getTimestamp).reversed())
@@ -292,7 +292,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private Either<StatusException, GenerateOtpParamsResponse> _generateOtpParams(
       GenerateOtpParamsRequest request) {
     Optional<User> maybeUser =
-        accountOperationsInterface.getUserByIdentifier(sessionInterceptorKeys.getUserIdentifier());
+        accountOperationsInterface.getUserByIdentifier(sessionAccessor.getUserIdentifier());
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -330,7 +330,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, AcceptOtpParamsResponse> _acceptOtpParams(
       AcceptOtpParamsRequest request) {
-    long userIdentifier = sessionInterceptorKeys.getUserIdentifier();
+    long userIdentifier = sessionAccessor.getUserIdentifier();
     Optional<OtpParams> maybeOtpParams =
         accountOperationsInterface.getOtpParams(
             userIdentifier, Long.valueOf(request.getOtpParamsId()));
@@ -367,7 +367,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   private Either<StatusException, ResetOtpResponse> _resetOtp(ResetOtpRequest request) {
-    long userId = sessionInterceptorKeys.getUserIdentifier();
+    long userId = sessionAccessor.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
@@ -379,13 +379,19 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     ResetOtpResponse.Builder builder = ResetOtpResponse.newBuilder();
     Optional<Integer> maybeTotp = cryptography.convertTotp(request.getOtp());
-    if (maybeTotp.isPresent() && !googleAuthenticator.authorize(sharedSecret, maybeTotp.get())
-        || !maybeTotp.isPresent()
-            && !accountOperationsInterface
-                .getOtpToken(userId, request.getOtp(), true)
-                .isPresent()) {
-      return Either.right(builder.setError(ResetOtpResponse.Error.INVALID_CODE).build());
+    if (maybeTotp.isPresent()) {
+      if (!googleAuthenticator.authorize(sharedSecret, maybeTotp.get())) {
+        return Either.right(builder.setError(ResetOtpResponse.Error.INVALID_CODE).build());
+      }
+    } else {
+      Optional<OtpToken> maybeOtpToken =
+          accountOperationsInterface.getOtpToken(
+              userId, request.getOtp(), /* mustBeInitial = */ true);
+      if (!maybeOtpToken.isPresent()) {
+        return Either.right(builder.setError(ResetOtpResponse.Error.INVALID_CODE).build());
+      }
     }
+    // Implies token deletion.
     accountOperationsInterface.resetOtp(userId);
     return Either.right(builder.build());
   }

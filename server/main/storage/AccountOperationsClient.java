@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -18,6 +19,8 @@ import server.main.proto.service.IdentifiedKey;
 import server.main.proto.service.Password;
 
 public class AccountOperationsClient implements AccountOperationsInterface {
+  private static final int INITIAL_SPARE_ATTEMPTS = 5;
+
   private Chronometry chronometry;
   @EntityController private EntityManager entityManager;
 
@@ -185,7 +188,10 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     }
     User user = maybeUser.get();
     OtpParams otpParams =
-        new OtpParams().setUser(user).setOtpSharedSecret(sharedSecret).setScratchCodes(scratchCodes);
+        new OtpParams()
+            .setUser(user)
+            .setOtpSharedSecret(sharedSecret)
+            .setScratchCodes(scratchCodes);
     entityManager.persist(otpParams);
     return otpParams;
   }
@@ -212,6 +218,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
       throw new IllegalArgumentException();
     }
     user.setOtpSharedSecret(otpParams.getOtpSharedSecret());
+    user.setOtpSpareAttempts(INITIAL_SPARE_ATTEMPTS);
     entityManager.persist(user);
     for (String scratchCode : otpParams.getScratchCodes()) {
       entityManager.persist(new OtpToken().setUser(user).setIsInitial(true).setValue(scratchCode));
@@ -222,11 +229,16 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public void createOtpToken(long userId, String otpToken) {
-    entityManager.persist(
-        new OtpToken()
-            .setUser(new User().setIdentifier(userId))
-            .setIsInitial(false)
-            .setValue(otpToken));
+    Optional<User> maybeUser = getUserByIdentifier(userId);
+    if (!maybeUser.isPresent()) {
+      throw new IllegalArgumentException();
+    }
+    User user = maybeUser.get();
+    entityManager.lock(user, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+    if (user.getOtpSharedSecret() != null) {
+      throw new IllegalArgumentException();
+    }
+    entityManager.persist(new OtpToken().setUser(user).setIsInitial(false).setValue(otpToken));
   }
 
   @Override
@@ -260,11 +272,40 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     }
     User user = maybeUser.get();
     user.setOtpSharedSecret(null);
+    user.setOtpSpareAttempts(0);
     entityManager.persist(user);
     List<OtpToken> otpTokens =
         Queries.findByUser(entityManager, OtpToken.class, OtpToken_.user, userId);
     for (OtpToken otpToken : otpTokens) {
       entityManager.remove(otpToken);
     }
+  }
+
+  @Override
+  @LocalTransaction
+  public boolean acquireOtpSpareAttempt(long userId) {
+    Optional<User> maybeUser = getUserByIdentifier(userId);
+    if (!maybeUser.isPresent()) {
+      throw new IllegalArgumentException();
+    }
+    User user = maybeUser.get();
+    boolean acquired = user.getOtpSpareAttempts() > 0;
+    if (acquired) {
+      user.decrementOtpSpareAttempts();
+      entityManager.persist(user);
+    }
+    return acquired;
+  }
+
+  @Override
+  @LocalTransaction
+  public void restoreOtpSpareAttempts(long userId) {
+    Optional<User> maybeUser = getUserByIdentifier(userId);
+    if (!maybeUser.isPresent()) {
+      throw new IllegalArgumentException();
+    }
+    User user = maybeUser.get();
+    user.setOtpSpareAttempts(INITIAL_SPARE_ATTEMPTS);
+    entityManager.persist(user);
   }
 }

@@ -1,21 +1,21 @@
 package server.main.keyvalue;
 
-import server.main.Chronometry;
-import server.main.Cryptography;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Optional;
+import javax.inject.Inject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
-
-import javax.inject.Inject;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
+import server.main.Chronometry;
+import server.main.Cryptography;
 
 public class KeyValueClient {
-  private static final int SESSION_LIFETIME_IN_SECONDS = 10 * 60;
+  private static final int SESSION_LIFETIME_S = 10 * 60;
+  private static final int AUTHN_LIFETIME_S = 5 * 60;
 
   private static final ImmutableMap<SetPresenceConstraint, String>
       SET_PRESENCE_CONSTRAINT_TO_PARAMETER_VALUE =
@@ -45,28 +45,27 @@ public class KeyValueClient {
   }
 
   public String createSession(UserPointer userPointer) {
-    String sessionIdentifier = cryptography.generateTts();
+    String sessionId = cryptography.generateTts();
     try (Jedis jedis = jedisPool.getResource()) {
       String status =
           jedis.set(
-              convertSessionIdentifierToKey(sessionIdentifier),
+              convertSessionIdToKey(sessionId),
               gson.toJson(userPointer.setCreationTimeInMs(chronometry.currentTime())),
               SET_PRESENCE_CONSTRAINT_TO_PARAMETER_VALUE.get(SetPresenceConstraint.MUST_ABSENT),
               SET_EXPIRATION_UNIT_TO_PARAMETER_VALUE.get(SetExpirationUnit.SECONDS),
-              SESSION_LIFETIME_IN_SECONDS);
+              SESSION_LIFETIME_S);
       if (status == null) {
-        throw new KeyValueException("Constraint violation");
-      } else {
-        return sessionIdentifier;
+        throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
       }
+      return sessionId;
     }
   }
 
   public Optional<UserPointer> getSessionAndUpdateItsExpirationTime(String sessionIdentifier) {
     try (Jedis jedis = jedisPool.getResource()) {
-      String key = convertSessionIdentifierToKey(sessionIdentifier);
+      String key = convertSessionIdToKey(sessionIdentifier);
       Transaction transaction = jedis.multi();
-      transaction.expire(key, SESSION_LIFETIME_IN_SECONDS);
+      transaction.expire(key, SESSION_LIFETIME_S);
       Response<String> userPointerString = transaction.get(key);
       transaction.exec();
       return Optional.ofNullable(userPointerString.get())
@@ -83,13 +82,40 @@ public class KeyValueClient {
 
   public void dropSessions(List<String> identifierList) {
     try (Jedis jedis = jedisPool.getResource()) {
-      jedis.del(
-          identifierList.stream().map(this::convertSessionIdentifierToKey).toArray(String[]::new));
+      jedis.del(identifierList.stream().map(this::convertSessionIdToKey).toArray(String[]::new));
     }
   }
 
-  private String convertSessionIdentifierToKey(String sessionIdentifier) {
-    return String.format("session:%s", sessionIdentifier);
+  private String convertSessionIdToKey(String sessionId) {
+    return String.format("session:%s", sessionId);
+  }
+
+  public String createAuthn(long userId) {
+    String authnId = cryptography.generateTts();
+    try (Jedis jedis = jedisPool.getResource()) {
+      String status =
+          jedis.set(
+              convertAuthnIdToKey(authnId),
+              String.valueOf(userId),
+              SET_PRESENCE_CONSTRAINT_TO_PARAMETER_VALUE.get(SetPresenceConstraint.MUST_ABSENT),
+              SET_EXPIRATION_UNIT_TO_PARAMETER_VALUE.get(SetExpirationUnit.SECONDS),
+              AUTHN_LIFETIME_S);
+      if (status == null) {
+        throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
+      }
+      return authnId;
+    }
+  }
+
+  public Optional<Long> getUserByAuthn(String authnId) {
+    try (Jedis jedis = jedisPool.getResource()) {
+      String authnKey = convertAuthnIdToKey(authnId);
+      return Optional.ofNullable(jedis.get(authnKey)).map(Long::valueOf);
+    }
+  }
+
+  private String convertAuthnIdToKey(String authnId) {
+    return String.format("authn:%s", authnId);
   }
 
   private enum SetPresenceConstraint {

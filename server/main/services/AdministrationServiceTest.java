@@ -32,7 +32,7 @@ import server.main.entities.OtpToken;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.geolocation.GeolocationServiceInterface;
-import server.main.interceptors.SessionInterceptorKeys;
+import server.main.interceptors.SessionAccessor;
 import server.main.keyvalue.KeyValueClient;
 import server.main.proto.service.*;
 import server.main.storage.AccountOperationsInterface;
@@ -43,7 +43,7 @@ class AdministrationServiceTest {
   @Mock private KeyOperationsInterface mockKeyOperationsInterface;
   @Mock private AccountOperationsInterface mockAccountOperationsInterface;
   @Mock private GeolocationServiceInterface mockGeolocationServiceInterface;
-  @Mock private SessionInterceptorKeys mockSessionInterceptorKeys;
+  @Mock private SessionAccessor mockSessionAccessor;
   @Mock private KeyValueClient mockKeyValueClient;
   @Mock private StreamObserver mockStreamObserver;
   @Mock private Cryptography mockCryptography;
@@ -52,7 +52,7 @@ class AdministrationServiceTest {
 
   private User user =
       new User()
-          .setIdentifier(0L)
+          .setIdentifier(7L)
           .setState(User.State.ACTIVE)
           .setUsername("username")
           .setSalt("salt")
@@ -62,19 +62,19 @@ class AdministrationServiceTest {
   @BeforeEach
   void beforeEach() {
     Aspects.aspectOf(ValidateUserAspect.class)
-        .initialize(mockSessionInterceptorKeys, mockAccountOperationsInterface);
+        .initialize(mockSessionAccessor, mockAccountOperationsInterface);
     administrationService =
         new AdministrationService(
             mockKeyOperationsInterface,
             mockAccountOperationsInterface,
             mockGeolocationServiceInterface,
-            mockSessionInterceptorKeys,
+            mockSessionAccessor,
             mockKeyValueClient,
             mockCryptography,
             mockMailClient,
             mockGoogleAuthenticator);
     long userIdentifier = user.getIdentifier();
-    when(mockSessionInterceptorKeys.getUserIdentifier()).thenReturn(userIdentifier);
+    when(mockSessionAccessor.getUserIdentifier()).thenReturn(userIdentifier);
     when(mockAccountOperationsInterface.getUserByIdentifier(userIdentifier))
         .thenAnswer(invocation -> Optional.of(user));
   }
@@ -138,10 +138,10 @@ class AdministrationServiceTest {
     IdentifiedKey identifiedKey = IdentifiedKey.newBuilder().setIdentifier(0L).build();
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.computeHash("suffix")).thenReturn("xiffus");
-    when(mockAccountOperationsInterface.readSessions(0L))
+    when(mockAccountOperationsInterface.readSessions(7L))
         .thenReturn(
             ImmutableList.of(new Session().setKey("random"), new Session().setKey("session")));
-    when(mockSessionInterceptorKeys.getSessionIdentifier()).thenReturn("session");
+    when(mockSessionAccessor.getSessionIdentifier()).thenReturn("session");
     when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
 
     administrationService.changeMasterKey(
@@ -157,7 +157,7 @@ class AdministrationServiceTest {
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface)
-        .changeMasterKey(0L, "prefix", "xiffus", ImmutableList.of(identifiedKey));
+        .changeMasterKey(7L, "prefix", "xiffus", ImmutableList.of(identifiedKey));
     verify(mockKeyValueClient).dropSessions(ImmutableList.of("random", "session"));
     verify(mockStreamObserver)
         .onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey("identifier").build());
@@ -187,7 +187,7 @@ class AdministrationServiceTest {
         AcquireMailTokenRequest.newBuilder().setDigest("digest").setMail("user@mail.com").build(),
         mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).createMailToken(0L, "user@mail.com", "0");
+    verify(mockAccountOperationsInterface).createMailToken(7L, "user@mail.com", "0");
     verify(mockMailClient).sendMailVerificationCode("user@mail.com", "0");
     verify(mockStreamObserver).onNext(AcquireMailTokenResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
@@ -234,7 +234,7 @@ class AdministrationServiceTest {
         ChangeUsernameRequest.newBuilder().setDigest("digest").setUsername("username").build(),
         mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).changeUsername(0L, "username");
+    verify(mockAccountOperationsInterface).changeUsername(7L, "username");
     verify(mockStreamObserver).onNext(ChangeUsernameResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
   }
@@ -256,14 +256,14 @@ class AdministrationServiceTest {
   @Test
   void deleteAccount_digestsMatch_repliesWithDefault() {
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
-    when(mockAccountOperationsInterface.readSessions(0L))
+    when(mockAccountOperationsInterface.readSessions(7L))
         .thenReturn(ImmutableList.of(new Session().setKey("session")));
 
     administrationService.deleteAccount(
         DeleteAccountRequest.newBuilder().setDigest("digest").build(), mockStreamObserver);
 
     verify(mockKeyValueClient).dropSessions(ImmutableList.of("session"));
-    verify(mockAccountOperationsInterface).markAccountAsDeleted(0L);
+    verify(mockAccountOperationsInterface).markAccountAsDeleted(7L);
     verify(mockStreamObserver).onNext(DeleteAccountResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
   }
@@ -276,7 +276,7 @@ class AdministrationServiceTest {
                 .setTimestamp(Timestamp.from(instant))
                 .setIpAddress("127.0.0.1")
                 .setUserAgent("Chrome/0.0.0");
-    when(mockAccountOperationsInterface.readSessions(0L))
+    when(mockAccountOperationsInterface.readSessions(7L))
         .thenReturn(
             ImmutableList.of(
                 createDatabaseSession.apply(Instant.ofEpochSecond(1)),
@@ -314,7 +314,7 @@ class AdministrationServiceTest {
     when(mockCryptography.generateTts())
         .thenAnswer((invocation) -> String.valueOf(ttsCounter.incrementAndGet()));
     ImmutableList<String> scratchCodes = ImmutableList.of("1", "2", "3", "4", "5");
-    when(mockAccountOperationsInterface.createOtpParams(0L, "secret", scratchCodes))
+    when(mockAccountOperationsInterface.createOtpParams(7L, "secret", scratchCodes))
         .thenReturn(new OtpParams().setId(1L));
 
     administrationService.generateOtpParams(
@@ -334,7 +334,7 @@ class AdministrationServiceTest {
 
   @Test
   void acceptOtpParams_codeMatches_completesSuccessfully() {
-    when(mockAccountOperationsInterface.getOtpParams(0L, 1L))
+    when(mockAccountOperationsInterface.getOtpParams(7L, 1L))
         .thenReturn(Optional.of(new OtpParams().setId(1L).setOtpSharedSecret("secret")));
     when(mockCryptography.convertTotp("42")).thenReturn(Optional.of(42));
     when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
@@ -349,7 +349,7 @@ class AdministrationServiceTest {
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface).acceptOtpParams(1L);
-    verify(mockAccountOperationsInterface).createOtpToken(0L, "token");
+    verify(mockAccountOperationsInterface).createOtpToken(7L, "token");
     verify(mockStreamObserver)
         .onNext(AcceptOtpParamsResponse.newBuilder().setTrustedToken("token").build());
     verify(mockStreamObserver).onCompleted();
@@ -364,7 +364,7 @@ class AdministrationServiceTest {
     administrationService.resetOtp(
         ResetOtpRequest.newBuilder().setOtp("42").build(), mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).resetOtp(0L);
+    verify(mockAccountOperationsInterface).resetOtp(7L);
     verify(mockStreamObserver).onNext(ResetOtpResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
   }
@@ -373,13 +373,13 @@ class AdministrationServiceTest {
   void resetOtpParams_ttsMatches_triggersReset() {
     user.setOtpSharedSecret("secret");
     when(mockCryptography.convertTotp("token")).thenReturn(Optional.empty());
-    when(mockAccountOperationsInterface.getOtpToken(0L, "token", true))
+    when(mockAccountOperationsInterface.getOtpToken(7L, "token", true))
         .thenReturn(Optional.of(new OtpToken().setId(1L)));
 
     administrationService.resetOtp(
         ResetOtpRequest.newBuilder().setOtp("token").build(), mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).resetOtp(0L);
+    verify(mockAccountOperationsInterface).resetOtp(7L);
     verify(mockStreamObserver).onNext(ResetOtpResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
   }
