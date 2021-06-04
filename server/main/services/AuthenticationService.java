@@ -147,7 +147,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
 
   private Either<StatusException, ProvideOtpResponse> _provideOtp(ProvideOtpRequest request) {
     ProvideOtpResponse.Builder builder = ProvideOtpResponse.newBuilder();
-    Optional<Long> maybeUserId = keyValueClient.getUserByAuthn(request.getAuthnKey());
+    String authnKey = request.getAuthnKey();
+    Optional<Long> maybeUserId = keyValueClient.getUserByAuthn(authnKey);
     if (!maybeUserId.isPresent()) {
       return Either.left(new StatusException(Status.UNAUTHENTICATED));
     }
@@ -183,6 +184,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       }
       accountOperationsInterface.deleteOtpToken(maybeOtpToken.get().getId());
     }
+    keyValueClient.dropAuthn(authnKey);
     accountOperationsInterface.restoreOtpSpareAttempts(userId);
     if (request.getYieldTrustedToken()) {
       String otpToken = cryptography.generateTts();

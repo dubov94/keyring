@@ -270,6 +270,7 @@ class AuthenticationServiceTest {
         ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
         mockStreamObserver);
 
+    verify(mockKeyValueClient).dropAuthn("authn");
     verify(mockAccountOperationsInterface)
         .createSession(1L, "session", "127.0.0.1", "Chrome/0.0.0");
     verify(mockStreamObserver)
@@ -321,6 +322,7 @@ class AuthenticationServiceTest {
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface).deleteOtpToken(42L);
+    verify(mockKeyValueClient).dropAuthn("authn");
     verify(mockAccountOperationsInterface).restoreOtpSpareAttempts(1L);
     verify(mockStreamObserver)
         .onNext(

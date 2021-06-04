@@ -57,7 +57,7 @@ class KeyValueClientTest {
 
     assertEquals(identifier, reply);
     assertEquals(
-        0L, keyValueClient.getSessionAndUpdateItsExpirationTime(identifier).get().getIdentifier());
+        0L, keyValueClient.touchSession(identifier).get().getIdentifier());
   }
 
   @Test
@@ -72,14 +72,14 @@ class KeyValueClientTest {
   }
 
   @Test
-  void getSessionAndUpdateItsExpirationTime_noSuchIdentifier_returnsEmpty() {
+  void touchSession_noSuchIdentifier_returnsEmpty() {
     String identifier = generateUniqueIdentifier();
 
-    assertFalse(keyValueClient.getSessionAndUpdateItsExpirationTime(identifier).isPresent());
+    assertFalse(keyValueClient.touchSession(identifier).isPresent());
   }
 
   @Test
-  void getSessionAndUpdateItsExpirationTime_findsIdentifier_updatesExpirationTime()
+  void touchSession_findsIdentifier_updatesExpirationTime()
       throws Exception {
     try (Jedis jedis = jedisPool.getResource()) {
       String identifier = generateUniqueIdentifier();
@@ -88,7 +88,7 @@ class KeyValueClientTest {
       Thread.sleep(10);
       long ttlBefore = jedis.pttl("session:" + identifier);
 
-      Optional<UserPointer> reply = keyValueClient.getSessionAndUpdateItsExpirationTime(identifier);
+      Optional<UserPointer> reply = keyValueClient.touchSession(identifier);
       long ttlAfter = jedis.pttl("session:" + identifier);
 
       assertEquals(0L, reply.get().getIdentifier());

@@ -61,7 +61,7 @@ public class KeyValueClient {
     }
   }
 
-  public Optional<UserPointer> getSessionAndUpdateItsExpirationTime(String sessionIdentifier) {
+  public Optional<UserPointer> touchSession(String sessionIdentifier) {
     try (Jedis jedis = jedisPool.getResource()) {
       String key = convertSessionIdToKey(sessionIdentifier);
       Transaction transaction = jedis.multi();
@@ -111,6 +111,12 @@ public class KeyValueClient {
     try (Jedis jedis = jedisPool.getResource()) {
       String authnKey = convertAuthnIdToKey(authnId);
       return Optional.ofNullable(jedis.get(authnKey)).map(Long::valueOf);
+    }
+  }
+
+  public void dropAuthn(String authnId) {
+    try (Jedis jedis = jedisPool.getResource()) {
+      jedis.del(convertAuthnIdToKey(authnId));
     }
   }
 

@@ -21,7 +21,7 @@ public class SessionInterceptor implements ServerInterceptor {
     String sessionToken = metadata.get(SessionAccessor.METADATA_SESSION_TOKEN_KEY);
     if (sessionToken != null) {
       Optional<UserPointer> maybeUserPointer =
-          keyValueClient.getSessionAndUpdateItsExpirationTime(sessionToken);
+          keyValueClient.touchSession(sessionToken);
       if (maybeUserPointer.isPresent()) {
         return Contexts.interceptCall(
             Context.current()
