@@ -105,5 +105,17 @@ java_library(
         "//server/main/entities:otp_params",
         "@maven//:javax_inject_javax_inject",
         "@maven//:javax_persistence_javax_persistence_api",
-    ]
+    ],
+)
+
+java_library(
+    name = "expired_otp_tokens",
+    srcs = ["ExpiredOtpTokens.java"],
+    deps = [
+        "//server/main:chronometry",
+        "//server/main/aspects:annotations",
+        "//server/main/entities:otp_token",
+        "@maven//:javax_inject_javax_inject",
+        "@maven//:javax_persistence_javax_persistence_api",
+    ],
 )

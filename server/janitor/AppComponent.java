@@ -7,6 +7,7 @@ import javax.persistence.EntityManagerFactory;
 import server.janitor.tasks.DeletedUsers;
 import server.janitor.tasks.ExpiredMailTokens;
 import server.janitor.tasks.ExpiredOtpParams;
+import server.janitor.tasks.ExpiredOtpTokens;
 import server.janitor.tasks.ExpiredPendingUsers;
 import server.janitor.tasks.ExpiredSessionRecords;
 
@@ -20,6 +21,8 @@ interface AppComponent {
   ExpiredMailTokens expiredMailTokens();
 
   ExpiredOtpParams expiredOtpParams();
+
+  ExpiredOtpTokens expiredOtpTokens();
 
   ExpiredPendingUsers expiredPendingUsers();
 
