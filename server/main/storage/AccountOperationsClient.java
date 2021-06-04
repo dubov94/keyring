@@ -91,10 +91,15 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     return entityManager.createQuery(criteriaQuery).getResultList().stream().findFirst();
   }
 
-  @Override
   @LocalTransaction
+  private Optional<User> getUserByIdentifier(long identifier, LockModeType lockModeType) {
+    return Optional.ofNullable(entityManager.find(User.class, identifier, lockModeType));
+  }
+
+  @Override
   public Optional<User> getUserByIdentifier(long identifier) {
-    return Optional.ofNullable(entityManager.find(User.class, identifier));
+    // https://stackoverflow.com/a/13569657
+    return getUserByIdentifier(identifier, LockModeType.NONE);
   }
 
   @Override
@@ -229,13 +234,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public void createOtpToken(long userId, String otpToken) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
+    Optional<User> maybeUser = getUserByIdentifier(userId, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
     User user = maybeUser.get();
-    entityManager.lock(user, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
-    if (user.getOtpSharedSecret() != null) {
+    if (user.getOtpSharedSecret() == null) {
       throw new IllegalArgumentException();
     }
     entityManager.persist(new OtpToken().setUser(user).setIsInitial(false).setValue(otpToken));
@@ -283,18 +287,19 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @LocalTransaction
-  public boolean acquireOtpSpareAttempt(long userId) {
+  public Optional<Integer> acquireOtpSpareAttempt(long userId) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
     User user = maybeUser.get();
-    boolean acquired = user.getOtpSpareAttempts() > 0;
-    if (acquired) {
-      user.decrementOtpSpareAttempts();
-      entityManager.persist(user);
+    int attemptsLeft = user.getOtpSpareAttempts();
+    if (attemptsLeft == 0) {
+      return Optional.empty();
     }
-    return acquired;
+    user.decrementOtpSpareAttempts();
+    entityManager.persist(user);
+    return Optional.of(attemptsLeft - 1);
   }
 
   @Override
@@ -305,6 +310,9 @@ public class AccountOperationsClient implements AccountOperationsInterface {
       throw new IllegalArgumentException();
     }
     User user = maybeUser.get();
+    if (user.getOtpSharedSecret() == null) {
+      throw new IllegalArgumentException();
+    }
     user.setOtpSpareAttempts(INITIAL_SPARE_ATTEMPTS);
     entityManager.persist(user);
   }

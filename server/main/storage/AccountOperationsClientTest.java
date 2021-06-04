@@ -244,6 +244,9 @@ class AccountOperationsClientTest {
   @Test
   void createOtpToken_putsOtpToken() {
     long userId = createActiveUser();
+    OtpParams otpParams =
+        accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of());
+    accountOperationsClient.acceptOtpParams(otpParams.getId());
 
     accountOperationsClient.createOtpToken(userId, "value");
 
@@ -253,6 +256,9 @@ class AccountOperationsClientTest {
   @Test
   void deleteOtpToken_removesOtpToken() {
     long userId = createActiveUser();
+    OtpParams otpParams =
+        accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of());
+    accountOperationsClient.acceptOtpParams(otpParams.getId());
     accountOperationsClient.createOtpToken(userId, "value");
     long tokenId = accountOperationsClient.getOtpToken(userId, "value", false).get().getId();
 

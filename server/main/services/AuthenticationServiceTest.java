@@ -15,8 +15,8 @@ import org.mockito.Mock;
 import server.main.Cryptography;
 import server.main.Environment;
 import server.main.MailClient;
-import server.main.entities.User;
 import server.main.entities.OtpToken;
+import server.main.entities.User;
 import server.main.interceptors.AgentAccessor;
 import server.main.keyvalue.KeyValueClient;
 import server.main.proto.service.*;
@@ -214,7 +214,7 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.getUserByIdentifier(1L))
         .thenReturn(Optional.of(new User().setIdentifier(7L)));
     when(mockCryptography.convertTotp("otp")).thenReturn(Optional.of(42));
-    when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(false);
+    when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(Optional.empty());
 
     authenticationService.provideOtp(
         ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
@@ -223,7 +223,7 @@ class AuthenticationServiceTest {
     verify(mockStreamObserver)
         .onNext(
             ProvideOtpResponse.newBuilder()
-                .setError(ProvideOtpResponse.Error.INVALID_CODE)
+                .setError(ProvideOtpResponse.Error.ATTEMPTS_EXHAUSTED)
                 .build());
     verify(mockStreamObserver).onCompleted();
   }
@@ -232,9 +232,11 @@ class AuthenticationServiceTest {
   void provideOtp_otpUnauthorized_repliesWithError() {
     when(mockKeyValueClient.getUserByAuthn("authn")).thenReturn(Optional.of(1L));
     when(mockAccountOperationsInterface.getUserByIdentifier(1L))
-        .thenReturn(Optional.of(new User().setIdentifier(7L).setOtpSharedSecret("secret")));
+        .thenReturn(
+            Optional.of(
+                new User().setIdentifier(7L).setOtpSharedSecret("secret").setOtpSpareAttempts(3)));
     when(mockCryptography.convertTotp("otp")).thenReturn(Optional.of(42));
-    when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(true);
+    when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(Optional.of(2));
     when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(false);
 
     authenticationService.provideOtp(
@@ -245,6 +247,7 @@ class AuthenticationServiceTest {
         .onNext(
             ProvideOtpResponse.newBuilder()
                 .setError(ProvideOtpResponse.Error.INVALID_CODE)
+                .setAttemptsLeft(2)
                 .build());
     verify(mockStreamObserver).onCompleted();
   }
@@ -253,9 +256,11 @@ class AuthenticationServiceTest {
   void provideOtp_otpAuthorized_repliesWithUserData() {
     when(mockKeyValueClient.getUserByAuthn("authn")).thenReturn(Optional.of(1L));
     when(mockAccountOperationsInterface.getUserByIdentifier(1L))
-        .thenReturn(Optional.of(new User().setIdentifier(1L).setOtpSharedSecret("secret")));
+        .thenReturn(
+            Optional.of(
+                new User().setIdentifier(1L).setOtpSharedSecret("secret").setOtpSpareAttempts(3)));
     when(mockCryptography.convertTotp("otp")).thenReturn(Optional.of(42));
-    when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(true);
+    when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(Optional.of(2));
     when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
     when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
     when(mockAgentAccessor.getUserAgent()).thenReturn("Chrome/0.0.0");
@@ -282,7 +287,7 @@ class AuthenticationServiceTest {
   void provideOtp_tokenAbsent_repliesWithError() {
     when(mockKeyValueClient.getUserByAuthn("authn")).thenReturn(Optional.of(1L));
     when(mockAccountOperationsInterface.getUserByIdentifier(1L))
-        .thenReturn(Optional.of(new User().setIdentifier(7L)));
+        .thenReturn(Optional.of(new User().setIdentifier(7L).setOtpSpareAttempts(3)));
     when(mockCryptography.convertTotp("otp")).thenReturn(Optional.empty());
     when(mockAccountOperationsInterface.getOtpToken(1L, "otp", false)).thenReturn(Optional.empty());
 
@@ -294,6 +299,7 @@ class AuthenticationServiceTest {
         .onNext(
             ProvideOtpResponse.newBuilder()
                 .setError(ProvideOtpResponse.Error.INVALID_CODE)
+                .setAttemptsLeft(3)
                 .build());
     verify(mockStreamObserver).onCompleted();
   }
@@ -315,6 +321,7 @@ class AuthenticationServiceTest {
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface).deleteOtpToken(42L);
+    verify(mockAccountOperationsInterface).restoreOtpSpareAttempts(1L);
     verify(mockStreamObserver)
         .onNext(
             ProvideOtpResponse.newBuilder()

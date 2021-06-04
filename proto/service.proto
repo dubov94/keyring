@@ -78,6 +78,7 @@ message ProvideOtpResponse {
     enum Error {
         NONE = 0;
         INVALID_CODE = 1;
+        ATTEMPTS_EXHAUSTED = 2;
     }
 
     Error error = 1;

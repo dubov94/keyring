@@ -159,16 +159,27 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     User user = maybeUser.get();
     Optional<Integer> maybeTotp = cryptography.convertTotp(request.getOtp());
     if (maybeTotp.isPresent()) {
-      boolean acquired = accountOperationsInterface.acquireOtpSpareAttempt(userId);
-      if (!acquired || !googleAuthenticator.authorize(user.getOtpSharedSecret(), maybeTotp.get())) {
-        return Either.right(builder.setError(ProvideOtpResponse.Error.INVALID_CODE).build());
+      Optional<Integer> attemptsLeft = accountOperationsInterface.acquireOtpSpareAttempt(userId);
+      if (!attemptsLeft.isPresent()) {
+        return Either.right(builder.setError(ProvideOtpResponse.Error.ATTEMPTS_EXHAUSTED).build());
+      }
+      if (!googleAuthenticator.authorize(user.getOtpSharedSecret(), maybeTotp.get())) {
+        return Either.right(
+            builder
+                .setError(ProvideOtpResponse.Error.INVALID_CODE)
+                .setAttemptsLeft(attemptsLeft.get())
+                .build());
       }
     } else {
       Optional<OtpToken> maybeOtpToken =
           accountOperationsInterface.getOtpToken(
               userId, request.getOtp(), /* mustBeInitial = */ false);
       if (!maybeOtpToken.isPresent()) {
-        return Either.right(builder.setError(ProvideOtpResponse.Error.INVALID_CODE).build());
+        return Either.right(
+            builder
+                .setError(ProvideOtpResponse.Error.INVALID_CODE)
+                .setAttemptsLeft(user.getOtpSpareAttempts())
+                .build());
       }
       accountOperationsInterface.deleteOtpToken(maybeOtpToken.get().getId());
     }

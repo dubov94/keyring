@@ -46,7 +46,7 @@ public interface AccountOperationsInterface {
 
   void resetOtp(long userId);
 
-  boolean acquireOtpSpareAttempt(long userId);
+  Optional<Integer> acquireOtpSpareAttempt(long userId);
 
   void restoreOtpSpareAttempts(long userId);
 }
