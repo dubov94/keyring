@@ -56,7 +56,7 @@ self.addEventListener('install', (event) => {
 const isClientDependent = async (clientId) => {
   try {
     const entries = await applicationDatabase.independentClients
-      .where('clientId').equals(clientId);
+      .where('clientId').equals(clientId).toArray();
     return entries.length === 0;
   } catch (error) {
     console.warn(error);
@@ -119,10 +119,10 @@ const isLatestVersion = async () => {
   }
 };
 
-const ingestIsLatest = async (eventName) => {
+const ingestIsLatest = async () => {
   const isLatest = await isLatestVersion();
   if (isLatest) {
-    await writeSwEvent(eventName);
+    await writeSwEvent(SwEvent.NAVIGATE);
   }
   return isLatest;
 };
@@ -136,13 +136,13 @@ const saveIndependentClient = async (clientId) => {
 const fetchHandler = async (event, isNavigationRequest, cacheKey) => {
   if (isNavigationRequest) {
     if (await isCacheObsolete()) {
-      if (!await ingestIsLatest(SwEvent.NAVIGATE)) {
+      if (!await ingestIsLatest()) {
         await saveIndependentClient(event.clientId);
         // Some of the assets may still come from the cache.
         return fetch(indexCacheKey);
       }
     } else {
-      event.waitUntil(ingestIsLatest(SwEvent.NAVIGATE));
+      event.waitUntil(ingestIsLatest());
     }
   }
   const precache = await self.caches.open(precacheName);
