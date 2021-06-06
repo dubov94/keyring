@@ -87,7 +87,7 @@ import { showToast } from '../../ui/toast/actions'
 import { SodiumClient } from '@/cryptography/sodium_client'
 import { emplace } from '../keys/actions'
 import { QrcEncoder, QRC_ENCODER_TOKEN } from '@/cryptography/qrc_encoder'
-import { option } from 'fp-ts'
+import { option, either } from 'fp-ts'
 import { depotActivationData } from '../../depot/actions'
 
 describe('releaseMailTokenEpic', () => {
@@ -630,10 +630,12 @@ describe('remoteRehashEpic', () => {
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys: []
+      content: either.right({
+        sessionKey: 'sessionKey',
+        mailVerificationRequired: false,
+        mail: 'mail@example.com',
+        userKeys: []
+      })
     })))
     actionSubject.complete()
     await epicTracker.waitForCompletion()

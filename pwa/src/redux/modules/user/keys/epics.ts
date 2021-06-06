@@ -1,9 +1,9 @@
 import { getAdministrationApi } from '@/api/api_di'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { exception, indicator, isActionSuccess3, errorToMessage, success } from '@/redux/flow_signal'
+import { exception, indicator, isActionSuccess3, errorToMessage, success, isActionSuccess, isActionSuccess2 } from '@/redux/flow_signal'
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { Epic } from 'redux-observable'
-import { concat, from, of } from 'rxjs'
+import { concat, EMPTY, from, of } from 'rxjs'
 import { catchError, concatMap, filter, mergeMap, switchMap, withLatestFrom } from 'rxjs/operators'
 import { isActionOf } from 'typesafe-actions'
 import {
@@ -23,7 +23,7 @@ import { RootState } from '@/redux/root_reducer'
 import { authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal } from '../../authn/actions'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { disjunction } from '@/redux/predicates'
-import { monoid } from 'fp-ts'
+import { monoid, either } from 'fp-ts'
 
 export const creationEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf(create)),
@@ -106,8 +106,16 @@ export const deletionEpic: Epic<RootAction, RootAction, RootState> = (action$, s
 export const displayCudExceptionsEpic = createDisplayExceptionsEpic([creationSignal, updationSignal, deletionSignal])
 
 export const inheritKeysFromAuthnDataEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
-  filter(isActionSuccess3([authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal])),
-  concatMap((action) => of(emplace(action.payload.data.userKeys)))
+  concatMap((action) => {
+    if (isActionSuccess(authnViaDepotSignal)(action)) {
+      return of(emplace(action.payload.data.userKeys))
+    }
+    if (isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal])(action) &&
+        either.isRight(action.payload.data.content)) {
+      return of(emplace(action.payload.data.content.right.userKeys))
+    }
+    return EMPTY
+  })
 )
 
 export const userKeysUpdateEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(

@@ -2,7 +2,7 @@ import { success } from '@/redux/flow_signal'
 import { hasData } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
 import { expect } from 'chai'
-import { option } from 'fp-ts'
+import { option, either } from 'fp-ts'
 import { authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal, registrationSignal } from '../../authn/actions'
 import {
   accountDeletionReset,
@@ -50,20 +50,24 @@ describe('onlineAuthnSignal', () => {
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys: []
+      content: either.right({
+        sessionKey: 'sessionKey',
+        mailVerificationRequired: false,
+        mail: 'mail@example.com',
+        userKeys: []
+      })
     })),
     backgroundAuthnSignal(success({
       username: 'username',
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys: []
+      content: either.right({
+        sessionKey: 'sessionKey',
+        mailVerificationRequired: false,
+        mail: 'mail@example.com',
+        userKeys: []
+      })
     }))
   ].forEach((trigger) => {
     it(`sets the account state on ${trigger.type}`, () => {

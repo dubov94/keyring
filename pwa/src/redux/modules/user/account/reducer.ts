@@ -47,6 +47,7 @@ import {
 } from '@/api/definitions'
 import { DeepReadonly } from 'ts-essentials'
 import { castDraft } from 'immer'
+import { either } from 'fp-ts'
 
 export default createReducer<{
   isAuthenticated: boolean;
@@ -92,13 +93,16 @@ export default createReducer<{
       state.mailVerificationRequired = true
     })
     .addMatcher(isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal]), (state, action) => {
-      const flowSuccess = action.payload.data
-      state.isAuthenticated = true
-      state.parametrization = flowSuccess.parametrization
-      state.encryptionKey = flowSuccess.encryptionKey
-      state.sessionKey = flowSuccess.sessionKey
-      state.mailVerificationRequired = flowSuccess.mailVerificationRequired
-      state.mail = flowSuccess.mail
+      const data = action.payload.data
+      if (either.isRight(data.content)) {
+        const userData = data.content.right
+        state.isAuthenticated = true
+        state.parametrization = data.parametrization
+        state.encryptionKey = data.encryptionKey
+        state.sessionKey = userData.sessionKey
+        state.mailVerificationRequired = userData.mailVerificationRequired
+        state.mail = userData.mail
+      }
     })
     .addMatcher(isActionSuccess(authnViaDepotSignal), (state) => {
       state.isAuthenticated = true

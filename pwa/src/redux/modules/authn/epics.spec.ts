@@ -46,6 +46,7 @@ import { showToast } from '../ui/toast/actions'
 import { rehydrateDepot } from '../depot/actions'
 import { Key } from '@/redux/entities'
 import { remoteCredentialsMismatchLocal } from '../user/account/actions'
+import { either } from 'fp-ts'
 
 describe('registrationEpic', () => {
   it('emits registration sequence', async () => {
@@ -191,14 +192,16 @@ describe('logInViaApiEpic', () => {
         password: 'password',
         parametrization: 'parametrization',
         encryptionKey: 'encryptionKey',
-        sessionKey: 'sessionKey',
-        mailVerificationRequired: false,
-        mail: 'mail@example.com',
-        userKeys: [{
-          identifier: 'identifier',
-          value: 'value',
-          tags: ['tag']
-        }]
+        content: either.right({
+          sessionKey: 'sessionKey',
+          mailVerificationRequired: false,
+          mail: 'mail@example.com',
+          userKeys: [{
+            identifier: 'identifier',
+            value: 'value',
+            tags: ['tag']
+          }]
+        })
       }))
     ])
   })
@@ -253,10 +256,12 @@ describe('logInViaApiEpic', () => {
         password: 'password',
         parametrization: 'parametrization',
         encryptionKey: 'encryptionKey',
-        sessionKey: 'sessionKey',
-        mailVerificationRequired: false,
-        mail: 'mail@example.com',
-        userKeys: []
+        content: either.right({
+          sessionKey: 'sessionKey',
+          mailVerificationRequired: false,
+          mail: 'mail@example.com',
+          userKeys: []
+        })
       }))
     ])
   })

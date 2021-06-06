@@ -7,6 +7,7 @@ import { FlowSignal, StandardError } from '@/redux/flow_signal'
 import { Key } from '@/redux/entities'
 import { DeepReadonly } from 'ts-essentials'
 import { createAction } from 'typesafe-actions'
+import { either } from 'fp-ts'
 
 export enum RegistrationFlowIndicator {
   GENERATING_PARAMETRIZATION = 'GENERATING_PARAMETRIZATION',
@@ -35,15 +36,22 @@ export enum AuthnViaApiFlowIndicator {
   MAKING_REQUEST = 'API_AUTH_MAKING_REQUEST',
   DECRYPTING_DATA = 'API_AUTH_DECRYPTING_DATA',
 }
+interface OtpContext {
+  authnKey: string;
+  attemptsLeft: number;
+}
+interface UserData {
+  sessionKey: string;
+  mailVerificationRequired: boolean;
+  mail: string | null;
+  userKeys: Key[];
+}
 export interface AuthnViaApiFlowResult {
   username: string;
   password: string;
   parametrization: string;
   encryptionKey: string;
-  sessionKey: string;
-  mailVerificationRequired: boolean;
-  mail: string | null;
-  userKeys: Key[];
+  content: either.Either<OtpContext, UserData>;
 }
 export const logInViaApi = createAction('authn/logInViaApi')<DeepReadonly<{
   username: string;

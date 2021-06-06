@@ -4,6 +4,7 @@ import { authnViaApiReset, authnViaApiSignal, authnViaDepotReset, authnViaDepotS
 import reducer from './reducer'
 import { hasData } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
+import { either } from 'fp-ts'
 
 describe('registration', () => {
   const signalAction = registrationSignal(success({
@@ -37,10 +38,12 @@ describe('authnViaApi', () => {
     password: 'password',
     parametrization: 'parametrization',
     encryptionKey: 'encryptionKey',
-    sessionKey: 'sessionKey',
-    mailVerificationRequired: false,
-    mail: 'mail@example.com',
-    userKeys: []
+    content: either.right({
+      sessionKey: 'sessionKey',
+      mailVerificationRequired: false,
+      mail: 'mail@example.com',
+      userKeys: []
+    })
   }))
 
   describe('authnViaApiSignal', () => {

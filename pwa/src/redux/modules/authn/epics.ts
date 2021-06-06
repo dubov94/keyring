@@ -38,6 +38,7 @@ import { Key } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
 import { remoteCredentialsMismatchLocal } from '../user/account/actions'
+import { either, option, function as fn } from 'fp-ts'
 
 export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf([register, registrationReset])),
@@ -126,10 +127,19 @@ const apiAuthn = <T extends TypeConstant>(
                                 password,
                                 parametrization: getSaltResponse.salt!,
                                 encryptionKey,
-                                sessionKey: logInResponse.userData!.sessionKey!,
-                                mailVerificationRequired: logInResponse.userData!.mailVerificationRequired!,
-                                mail: logInResponse.userData!.mail! || null,
-                                userKeys
+                                content: fn.pipe(
+                                  option.fromNullable(logInResponse.userData),
+                                  either.fromOption(() => ({
+                                    authnKey: logInResponse.otpContext!.authnKey!,
+                                    attemptsLeft: logInResponse.otpContext!.attemptsLeft!
+                                  })),
+                                  either.map((userData) => ({
+                                    sessionKey: userData.sessionKey!,
+                                    mailVerificationRequired: userData.mailVerificationRequired!,
+                                    mail: userData.mail || null,
+                                    userKeys
+                                  }))
+                                )
                               }))))
                             )
                           )

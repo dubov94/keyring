@@ -4,6 +4,7 @@ import { authnViaApiSignal, authnViaDepotSignal, registrationSignal } from '../a
 import { logOut, usernameChangeSignal } from '../user/account/actions'
 import { rehydrateSession } from './actions'
 import reducer from './reducer'
+import { either } from 'fp-ts'
 
 describe('registrationSignal', () => {
   it('updates the username', () => {
@@ -26,10 +27,12 @@ describe('authnSignal', () => {
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys: []
+      content: either.right({
+        sessionKey: 'sessionKey',
+        mailVerificationRequired: false,
+        mail: 'mail@example.com',
+        userKeys: []
+      })
     })),
     authnViaDepotSignal(success({
       username: 'username',

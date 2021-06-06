@@ -7,7 +7,7 @@ import { EMPTY, Subject } from 'rxjs'
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import LogIn from './LogIn.vue'
-import { function as fn } from 'fp-ts'
+import { function as fn, either } from 'fp-ts'
 import { expect } from 'chai'
 import { authnViaApiReset, authnViaApiSignal, authnViaDepotReset, authnViaDepotSignal, initiateBackgroundAuthn, logInViaApi, logInViaDepot } from '@/redux/modules/authn/actions'
 import { activateDepot, rehydrateDepot } from '@/redux/modules/depot/actions'
@@ -107,10 +107,12 @@ describe('LogIn', () => {
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys: []
+      content: either.right({
+        sessionKey: 'sessionKey',
+        mailVerificationRequired: false,
+        mail: 'mail@example.com',
+        userKeys: []
+      })
     })))
     await wrapper.vm.$nextTick()
 

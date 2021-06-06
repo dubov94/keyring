@@ -43,6 +43,7 @@ import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
 import { showToast } from '../../ui/toast/actions'
 import { PayloadAction } from 'typesafe-actions'
 import { Key } from '@/redux/entities'
+import { either } from 'fp-ts'
 
 describe('creationEpic', () => {
   it('emits creation sequence', async () => {
@@ -221,10 +222,12 @@ describe('inheritKeysFromAuthnDataEpic', () => {
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys
+      content: either.right({
+        sessionKey: 'sessionKey',
+        mailVerificationRequired: false,
+        mail: 'mail@example.com',
+        userKeys
+      })
     })),
     authnViaDepotSignal(success({
       username: 'username',
@@ -237,10 +240,12 @@ describe('inheritKeysFromAuthnDataEpic', () => {
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys
+      content: either.right({
+        sessionKey: 'sessionKey',
+        mailVerificationRequired: false,
+        mail: 'mail@example.com',
+        userKeys
+      })
     }))
   ].forEach((trigger) => {
     it(`emits \`emplace\` on ${trigger.type}`, async () => {
