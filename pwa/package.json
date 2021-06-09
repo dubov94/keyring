@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^1.5.0",
-    "@types/zxcvbn": "^4.4.0",
     "axios": "^0.19.2",
     "camelcase-keys": "^6.2.2",
     "core-js": "^3.6.4",
@@ -50,6 +49,7 @@
     "@types/ua-parser-js": "^0.7.33",
     "@types/vuedraggable": "^2.23.1",
     "@types/vuelidate": "^0.7.13",
+    "@types/zxcvbn": "^4.4.0",
     "@typescript-eslint/eslint-plugin": "^2.26.0",
     "@typescript-eslint/parser": "^2.26.0",
     "@vue/cli-plugin-babel": "~4.3.0",
