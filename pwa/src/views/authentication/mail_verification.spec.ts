@@ -1,4 +1,4 @@
-import { ActionQueue, drainActionQueue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin } from '@/components/testing'
+import { ActionQueue, drainActionQueue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin, setUpVuetify } from '@/components/testing'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { createStore, Store } from '@reduxjs/toolkit'
@@ -27,6 +27,7 @@ describe('MailVerification', () => {
     router = new VueRouter({ mode: 'abstract' })
     wrapper = mount(MailVerification, {
       localVue,
+      vuetify: setUpVuetify(),
       stubs: {
         page: true
       },

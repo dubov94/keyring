@@ -1,4 +1,4 @@
-import { ActionQueue, setUpLocalVue, setUpStateMixin } from '@/components/testing'
+import { ActionQueue, setUpLocalVue, setUpStateMixin, setUpVuetify } from '@/components/testing'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { createStore, Store } from '@reduxjs/toolkit'
@@ -21,6 +21,7 @@ describe('CompromisedPasswords', () => {
     actionQueue = new ActionQueue()
     wrapper = shallowMount(CompromisedPasswords, {
       localVue,
+      vuetify: setUpVuetify(),
       mixins: [
         setUpStateMixin(store, actionQueue)
       ]

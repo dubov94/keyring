@@ -1,4 +1,4 @@
-import { ActionQueue, setUpLocalVue, setUpTranslationMixin, setUpStateMixin, getValue, drainActionQueue } from '@/components/testing'
+import { ActionQueue, setUpLocalVue, setUpTranslationMixin, setUpStateMixin, getValue, drainActionQueue, setUpVuetify, tickUntilExists } from '@/components/testing'
 import { success } from '@/redux/flow_signal'
 import { registrationSignal } from '@/redux/modules/authn/actions'
 import { acquireMailToken, mailTokenAcquisitionReset, mailTokenAcquisitionSignal, mailTokenReleaseReset, mailTokenReleaseSignal, releaseMailToken } from '@/redux/modules/user/account/actions'
@@ -31,6 +31,7 @@ describe('ChangeMail', () => {
     $actions = new Subject()
     wrapper = mount(ChangeMail, {
       localVue,
+      vuetify: setUpVuetify(),
       data () {
         return {
           $actions,
@@ -48,7 +49,7 @@ describe('ChangeMail', () => {
   const getPasswordInput = () => wrapper.find('[aria-label="Password"]')
   const getNextButton = () => wrapper.findAll('button').filter(
     (button) => button.text() === 'Next')
-  const getCodeInput = () => wrapper.find('[aria-label="Code"]')
+  const getCodeInput = () => wrapper.find('[aria-label="Verification code"]')
   const getSubmitButton = () => wrapper.findAll('button').filter(
     (button) => button.text() === 'Submit')
 
@@ -67,7 +68,7 @@ describe('ChangeMail', () => {
 
   it('dispatches mail release action', async () => {
     store.dispatch(mailTokenAcquisitionSignal(success('mail@example.com')))
-    await wrapper.vm.$nextTick()
+    await tickUntilExists(getCodeInput, wrapper)
     await getCodeInput().setValue('123456')
     await getSubmitButton().trigger('click')
 
@@ -90,7 +91,7 @@ describe('ChangeMail', () => {
     await getPasswordInput().setValue('password')
     await getNextButton().trigger('click')
     store.dispatch(mailTokenAcquisitionSignal(success('mail@example.com')))
-    await wrapper.vm.$nextTick()
+    await tickUntilExists(getCodeInput, wrapper)
     await getCodeInput().setValue('123456')
     await getSubmitButton().trigger('click')
     store.dispatch(mailTokenReleaseSignal(success('mail@example.com')))

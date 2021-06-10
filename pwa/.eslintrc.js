@@ -8,6 +8,9 @@ module.exports = {
     '@vue/standard',
     '@vue/typescript/recommended'
   ],
+  plugins: [
+    'vuetify'
+  ],
   parserOptions: {
     ecmaVersion: 2020
   },
@@ -15,6 +18,9 @@ module.exports = {
     'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
     'no-useless-constructor': 'off',
+    'vuetify/no-deprecated-classes': 'error',
+    'vuetify/no-deprecated-components': 'error',
+    'vuetify/no-deprecated-props': 'error',
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/consistent-type-assertions': 'off',
     '@typescript-eslint/no-empty-function': 'off',
@@ -43,11 +49,11 @@ module.exports = {
         'no-multi-spaces': 'off',
         'no-multiple-empty-lines': 'off',
         'no-trailing-spaces': 'off',
+        'node/no-deprecated-api': 'off',
         'padded-blocks': 'off',
         quotes: 'off',
         semi: 'off',
         'space-before-function-paren': 'off',
-        'node/no-deprecated-api': 'off',
         '@typescript-eslint/consistent-type-assertions': 'off',
         '@typescript-eslint/no-empty-interface': 'off',
         '@typescript-eslint/no-explicit-any': 'off',

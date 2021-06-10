@@ -23,25 +23,25 @@
     <div class="background" ref="background">
       <canvas class="background__canvas" ref="backgroundCanvas"></canvas>
     </div>
-    <v-content>
+    <v-main>
       <v-container fluid>
         <div class="article">
           <h1 class="heading" :class="nameDynamicClasses">Key Ring</h1>
-          <h2 class="heading mt-3" :class="descriptionDynamicClasses">
+          <h2 class="heading mt-4" :class="descriptionDynamicClasses">
             An unobtrusive password manager 😋
           </h2>
-          <div class="mt-5 text-xs-center">
+          <div class="mt-12 text-center">
             <template v-if="!isAuthenticated">
-              <v-btn large outline color="white" to="/log-in">Log in</v-btn>
-              <v-btn large outline color="white" to="/register">Register</v-btn>
+              <v-btn large outlined color="white" to="/log-in">Log in</v-btn>
+              <v-btn large outlined color="white" to="/register">Register</v-btn>
             </template>
             <template v-if="isAuthenticated">
-              <v-btn large outline color="white" to="/dashboard">Go to dashboard</v-btn>
+              <v-btn large outlined color="white" to="/dashboard">Go to dashboard</v-btn>
             </template>
           </div>
         </div>
       </v-container>
-    </v-content>
+    </v-main>
   </page>
 </template>
 

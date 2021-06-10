@@ -5,7 +5,7 @@ import { reducer, RootState } from '@/redux/root_reducer'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { mount, Wrapper } from '@vue/test-utils'
 import { EMPTY, Subject } from 'rxjs'
-import { ActionQueue, drainActionQueue, setUpLocalVue, setUpStateMixin } from './testing'
+import { ActionQueue, drainActionQueue, setUpLocalVue, setUpStateMixin, setUpVuetify } from './testing'
 import Editor from './Editor.vue'
 import { expect } from 'chai'
 import { create, delete_, emplace, update } from '@/redux/modules/user/keys/actions'
@@ -32,6 +32,7 @@ describe('Editor', () => {
   })
 
   const setUpWrapper = (identifier: string | null, reveal: boolean) => mount(Editor, {
+    vuetify: setUpVuetify(),
     localVue: setUpLocalVue(),
     stubs: {
       'v-dialog': true,

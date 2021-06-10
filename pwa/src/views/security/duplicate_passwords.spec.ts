@@ -1,4 +1,4 @@
-import { ActionQueue, setUpLocalVue, setUpStateMixin } from '@/components/testing'
+import { ActionQueue, setUpLocalVue, setUpStateMixin, setUpVuetify } from '@/components/testing'
 import { success } from '@/redux/flow_signal'
 import { deletionSignal, emplace } from '@/redux/modules/user/keys/actions'
 import { duplicateGroupsSearchSignal } from '@/redux/modules/user/security/actions'
@@ -21,6 +21,7 @@ describe('DuplicatePasswords', () => {
     actionQueue = new ActionQueue()
     wrapper = shallowMount(DuplicatePasswords, {
       localVue,
+      vuetify: setUpVuetify(),
       mixins: [
         setUpStateMixin(store, actionQueue)
       ]

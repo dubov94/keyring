@@ -2,35 +2,35 @@
   <v-navigation-drawer app temporary clipped floating
     :value="value" @input="input">
     <v-list two-line>
-      <v-list-tile to="/dashboard">
-        <v-list-tile-action>
+      <v-list-item to="/dashboard">
+        <v-list-item-action>
           <v-icon>dashboard</v-icon>
-        </v-list-tile-action>
-        <v-list-tile-content>
+        </v-list-item-action>
+        <v-list-item-content>
           Dashboard
-        </v-list-tile-content>
-      </v-list-tile>
-      <v-list-tile to="/security">
-        <v-list-tile-action>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item to="/security">
+        <v-list-item-action>
           <v-icon>shield</v-icon>
-        </v-list-tile-action>
-        <v-list-tile-content>
+        </v-list-item-action>
+        <v-list-item-content>
           Security
-        </v-list-tile-content>
-      </v-list-tile>
-      <v-list-tile to="/settings">
-        <v-list-tile-action>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item to="/settings">
+        <v-list-item-action>
           <v-icon>fa-cog</v-icon>
-        </v-list-tile-action>
-        <v-list-tile-content>
-          <v-list-tile-title>
+        </v-list-item-action>
+        <v-list-item-content>
+          <v-list-item-title>
             Settings
-          </v-list-tile-title>
-          <v-list-tile-sub-title>
+          </v-list-item-title>
+          <v-list-item-subtitle>
             {{ version }}
-          </v-list-tile-sub-title>
-        </v-list-tile-content>
-      </v-list-tile>
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>

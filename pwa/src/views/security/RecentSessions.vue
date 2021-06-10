@@ -1,23 +1,22 @@
 <template>
   <v-container fluid>
-    <v-layout justify-center>
-      <v-flex xs10>
+    <v-row justify-center>
+      <v-col xs10>
         <h2>Recent sessions</h2>
         <p>The table contains entries from the last 28 days.</p>
-        <v-data-table :loading="isLoading"
-          class="elevation-1" disable-initial-sort
+        <v-data-table :loading="isLoading" class="elevation-1"
           :headers="headers" :items="items">
-          <template slot="items" slot-scope="slotProps">
-            <td>{{ slotProps.item.moment }}</td>
-            <td>{{ slotProps.item.location }}</td>
+          <template #item="{ item }">
+            <td>{{ item.moment }}</td>
+            <td>{{ item.location }}</td>
             <td>
-              {{ slotProps.item.browser.name }}
-              {{ slotProps.item.browser.version }}
+              {{ item.browser.name }}
+              {{ item.browser.version }}
             </td>
           </template>
         </v-data-table>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

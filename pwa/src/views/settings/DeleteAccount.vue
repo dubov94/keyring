@@ -8,7 +8,7 @@
         <form-text-field type="password" label="Password" prepend-icon="lock"
           :value="password" @input="setPassword" :dirty="$v.password.$dirty" :errors="passwordErrors"
           @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
-        <div class="mx-3">
+        <div class="mx-4">
           <v-btn block :loading="inProgress"
             color="error" @click="submit" :disabled="!canAccessApi">Submit</v-btn>
         </div>

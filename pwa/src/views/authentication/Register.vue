@@ -1,9 +1,9 @@
 <template>
   <page>
-    <v-content>
+    <v-main>
       <v-container fluid>
-        <v-layout justify-center mt-5>
-          <v-flex xs12 sm6 md4 lg3 xl2>
+        <v-row justify-center mt-12>
+          <v-col xs12 sm6 md4 lg3 xl2>
             <v-card>
               <v-card-text>
                 <v-form @keydown.native.enter.prevent="submit">
@@ -27,24 +27,24 @@
                 </v-form>
               </v-card-text>
               <v-card-actions>
-                <v-btn block color="primary" class="mx-4" @click="submit"
+                <v-btn block color="primary" class="mx-6" @click="submit"
                   :loading="hasIndicatorMessage">
                   <span>Register</span>
-                  <template v-slot:loader>
+                  <template #loader>
                     <v-progress-circular indeterminate :size="23" :width="2">
                     </v-progress-circular>
-                    <span class="ml-3">{{ indicatorMessage }}</span>
+                    <span class="ml-4">{{ indicatorMessage }}</span>
                   </template>
                 </v-btn>
               </v-card-actions>
-              <v-layout justify-center py-2>
+              <v-row justify-center py-2>
                 <router-link to="/log-in">Log in</router-link>
-              </v-layout>
+              </v-row>
             </v-card>
-          </v-flex>
-        </v-layout>
+          </v-col>
+        </v-row>
       </v-container>
-    </v-content>
+    </v-main>
   </page>
 </template>
 

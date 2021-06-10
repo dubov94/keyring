@@ -28,9 +28,9 @@
       v-model="query" prepend-icon="search" label="Search" class="search">
     </v-text-field>
     <user-menu v-model="showMenu"></user-menu>
-    <v-content>
+    <v-main>
       <v-container fluid mx-auto>
-        <div class="mb-3 text-xs-center">
+        <div class="mb-4 text-center">
           <v-pagination v-model="pageNumber" :length="pageCount"
             :total-visible="paginationVisibleCount" circle></v-pagination>
         </div>
@@ -42,7 +42,7 @@
           <v-icon small>fa-plus</v-icon>
         </v-btn>
       </div>
-    </v-content>
+    </v-main>
     <editor v-if="showEditor" :params="editorParams" @close="closeEditor"></editor>
   </page>
 </template>

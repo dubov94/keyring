@@ -1,7 +1,7 @@
 <template>
-  <v-toolbar app clipped-left prominent color="primary" dark>
-    <v-toolbar-side-icon v-if="hasMenu" @click="toggle">
-    </v-toolbar-side-icon>
+  <v-app-bar app clipped-left prominent color="primary" dark>
+    <v-app-bar-nav-icon v-if="hasMenu" @click="toggle">
+    </v-app-bar-nav-icon>
     <v-btn icon :to="homeTarget">
       <v-icon>home</v-icon>
     </v-btn>
@@ -16,27 +16,29 @@
       <v-icon>login</v-icon>
     </v-btn>
     <v-menu v-if="isAuthenticated" offset-y :nudge-bottom="5">
-      <v-btn slot="activator" flat>
-        {{ username }}
-        <v-icon right>account_circle</v-icon>
-      </v-btn>
+      <template #activator="{ on }">
+        <v-btn v-on="on" text>
+          {{ username }}
+          <v-icon right>account_circle</v-icon>
+        </v-btn>
+    </template>
       <v-list two-line class="py-0">
-        <v-list-tile @click="logOut">
-          <v-list-tile-action>
+        <v-list-item @click="logOut">
+          <v-list-item-action>
             <v-icon>fa-sign-out-alt</v-icon>
-          </v-list-tile-action>
-          <v-list-tile-content>
-            <v-list-tile-title>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>
               Log out
-            </v-list-tile-title>
-          </v-list-tile-content>
-        </v-list-tile>
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-menu>
     <template slot="extension" v-if="extended">
       <slot name="extension"></slot>
     </template>
-  </v-toolbar>
+  </v-app-bar>
 </template>
 
 <script lang="ts">

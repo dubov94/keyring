@@ -7,8 +7,8 @@
 
 <template>
   <v-container fluid>
-    <v-layout justify-center align-center wrap>
-      <v-flex xs8>
+    <v-row justify-center align-center wrap>
+      <v-col xs8>
         <h2>Threat analysis</h2>
         <p class="mb-0">
           Click the button to toggle reactive password scrutiny for this
@@ -17,18 +17,18 @@
             target="_blank" rel="noopener noreferrer">Have I Been Pwned</a>
           under the hood.
         </p>
-      </v-flex>
-      <v-flex xs3 offset-xs1 class="text-xs-right">
+      </v-col>
+      <v-col xs3 offset-xs1 class="text-right">
         <v-btn color="primary" @click="toggle">
           {{ isAnalysisOn ? 'Disable' : 'Enable'}}
         </v-btn>
-      </v-flex>
-    </v-layout>
-    <duplicate-passwords v-if="isAnalysisOn" class="mt-4" @edit="editKey">
+      </v-col>
+    </v-row>
+    <duplicate-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">
     </duplicate-passwords>
-    <compromised-passwords v-if="isAnalysisOn" class="mt-4" @edit="editKey">
+    <compromised-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">
     </compromised-passwords>
-    <vulnerable-passwords v-if="isAnalysisOn" class="mt-4" @edit="editKey">
+    <vulnerable-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">
     </vulnerable-passwords>
     <editor v-if="showEditor" :params="editorParams" @close="closeEditor"></editor>
   </v-container>

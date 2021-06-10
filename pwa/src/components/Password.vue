@@ -22,20 +22,22 @@
         <v-icon small>fa-copy</v-icon>
       </v-btn>
       <v-menu>
-        <v-btn icon slot="activator">
-          <v-icon small>fa-ellipsis-v</v-icon>
-        </v-btn>
+        <template #activator="{ on }">
+          <v-btn v-on="on" icon>
+            <v-icon small>fa-ellipsis-v</v-icon>
+          </v-btn>
+        </template>
         <v-list>
-          <v-list-tile @click="toggleReveal">
-            <v-list-tile-content>
+          <v-list-item @click="toggleReveal">
+            <v-list-item-content>
               {{ reveal ? 'Hide' : 'Show' }}
-            </v-list-tile-content>
-          </v-list-tile>
-          <v-list-tile @click="edit" :disabled="!canAccessApi">
-            <v-list-tile-content>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item @click="edit" :disabled="!canAccessApi">
+            <v-list-item-content>
               Edit
-            </v-list-tile-content>
-          </v-list-tile>
+            </v-list-item-content>
+          </v-list-item>
         </v-list>
       </v-menu>
     </v-card-title>

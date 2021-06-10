@@ -2,13 +2,13 @@
   <v-dialog :value="value" @input="close"
     :max-width="maxWidth" @keydown.esc="deny" @keydown.enter="allow">
     <v-card>
-      <v-card-text class="text-xs-center">{{ message }}</v-card-text>
+      <v-card-text class="text-center">{{ message }}</v-card-text>
       <v-card-actions>
-        <v-btn flat color="error" @click="deny">
+        <v-btn text color="error" @click="deny">
           No
         </v-btn>
         <v-spacer></v-spacer>
-        <v-btn flat color="success" @click="allow">
+        <v-btn text color="success" @click="allow">
           Yes
         </v-btn>
       </v-card-actions>

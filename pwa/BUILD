@@ -117,6 +117,7 @@ DEPENDENCIES = [
     "@pwa_npm//axios",
     "@pwa_npm//camelcase-keys",
     "@pwa_npm//eslint-plugin-vue",
+    "@pwa_npm//eslint-plugin-vuetify",
     "@pwa_npm//fp-ts",
     "@pwa_npm//libsodium-wrappers",
     "@pwa_npm//lodash",
@@ -137,12 +138,14 @@ DEPENDENCIES = [
     # For `ts_swagger_api`.
     "@pwa_npm//url",
     "@pwa_npm//vue",
+    "@pwa_npm//vue-cli-plugin-vuetify",
     "@pwa_npm//vue-i18n",
     "@pwa_npm//vue-property-decorator",
     "@pwa_npm//vue-router",
     "@pwa_npm//vuedraggable",
     "@pwa_npm//vuelidate",
     "@pwa_npm//vuetify",
+    "@pwa_npm//vuetify-loader",
     "@pwa_npm//workerize-loader",
     "@pwa_npm//zxcvbn",
 ]

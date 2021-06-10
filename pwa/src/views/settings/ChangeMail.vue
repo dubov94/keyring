@@ -15,53 +15,46 @@
     </v-toolbar>
     <v-card-text class="card-text">
       <template v-if="showAccountMail">
-        <div class="py-3 text-xs-center">{{ accountMail }}</div>
+        <div class="py-4 text-center">{{ accountMail }}</div>
         <v-divider></v-divider>
       </template>
       <template v-if="showAcquisitionMail">
-        <div class="py-3 text-xs-center text--secondary">{{ acquisitionMail }}</div>
+        <div class="py-4 text-center text--secondary">{{ acquisitionMail }}</div>
         <v-divider></v-divider>
       </template>
-      <v-stepper :value="stage">
-        <v-stepper-header>
-          <v-stepper-step :complete="stage > 1" step="1">Request</v-stepper-step>
-          <v-divider></v-divider>
-          <v-stepper-step :complete="stage > 2" step="2">Code</v-stepper-step>
-        </v-stepper-header>
-        <v-stepper-items>
-          <v-stepper-content step="1" style="padding-top: 0;">
-            <v-form @keydown.native.enter.prevent="acquireToken">
-              <form-text-field type="text" label="New e-mail" prepend-icon="mail_outline"
-                v-model="requestGroup.mail" :dirty="$v.requestGroup.mail.$dirty" :errors="mailErrors"
-                @touch="$v.requestGroup.mail.$touch()" @reset="$v.requestGroup.mail.$reset()"></form-text-field>
-              <form-text-field type="password" label="Password" prepend-icon="lock"
-                :value="requestGroup.password.value" @input="setPassword"
-                :dirty="$v.requestGroup.password.$dirty" :errors="passwordErrors"
-                @touch="$v.requestGroup.password.$touch()" @reset="$v.requestGroup.password.$reset()"></form-text-field>
-              <div class="mx-3">
-                <v-btn block :loading="acquisitionInProgress"
-                  color="primary" @click="acquireToken" :disabled="!canAccessApi">
-                  Next
-                </v-btn>
-              </div>
-            </v-form>
-          </v-stepper-content>
-          <v-stepper-content step="2">
-            <v-form @keydown.native.enter.prevent="releaseToken">
-              <form-text-field type="text" label="Code" prepend-icon="verified_user"
-                :value="code.value" @input="setCode"
-                :dirty="$v.code.$dirty" :errors="codeErrors"
-                @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
-              <div class="mx-3">
-                <v-btn block :loading="releaseInProgress"
-                  color="primary" @click="releaseToken" :disabled="!canAccessApi">
-                  Submit
-                </v-btn>
-              </div>
-            </v-form>
-          </v-stepper-content>
-        </v-stepper-items>
-      </v-stepper>
+      <v-window :value="stage">
+        <v-window-item :value="1">
+          <v-form @keydown.native.enter.prevent="acquireToken">
+            <form-text-field type="text" label="New e-mail" prepend-icon="mail_outline"
+              v-model="requestGroup.mail" :dirty="$v.requestGroup.mail.$dirty" :errors="mailErrors"
+              @touch="$v.requestGroup.mail.$touch()" @reset="$v.requestGroup.mail.$reset()"></form-text-field>
+            <form-text-field type="password" label="Password" prepend-icon="lock"
+              :value="requestGroup.password.value" @input="setPassword"
+              :dirty="$v.requestGroup.password.$dirty" :errors="passwordErrors"
+              @touch="$v.requestGroup.password.$touch()" @reset="$v.requestGroup.password.$reset()"></form-text-field>
+            <div class="mx-4">
+              <v-btn block :loading="acquisitionInProgress"
+                color="primary" @click="acquireToken" :disabled="!canAccessApi">
+                Next
+              </v-btn>
+            </div>
+          </v-form>
+        </v-window-item>
+        <v-window-item :value="2">
+          <v-form @keydown.native.enter.prevent="releaseToken">
+            <form-text-field type="text" label="Verification code" prepend-icon="verified_user"
+              :value="code.value" @input="setCode"
+              :dirty="$v.code.$dirty" :errors="codeErrors"
+              @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
+            <div class="mx-4">
+              <v-btn block :loading="releaseInProgress"
+                color="primary" @click="releaseToken" :disabled="!canAccessApi">
+                Submit
+              </v-btn>
+            </div>
+          </v-form>
+        </v-window-item>
+      </v-window>
     </v-card-text>
   </v-card>
 </template>

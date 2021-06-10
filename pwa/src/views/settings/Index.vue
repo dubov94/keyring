@@ -1,27 +1,27 @@
 <template>
   <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch">
     <user-menu v-model="showMenu"></user-menu>
-    <v-content>
+    <v-main>
       <v-container fluid>
-        <v-layout wrap justify-center>
-          <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
+        <v-row wrap justify-center>
+          <v-col xs12 sm8 md6 lg4 xl3 pa-6>
             <change-username></change-username>
-          </v-flex>
-          <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
+          </v-col>
+          <v-col xs12 sm8 md6 lg4 xl3 pa-6>
             <change-master-key></change-master-key>
-          </v-flex>
-          <v-flex xs12 sm8 md6 lg4 xl3 pa-4 v-if="showOtpSwitch">
+          </v-col>
+          <v-col xs12 sm8 md6 lg4 xl3 pa-6 v-if="showOtpSwitch">
             <otp-switch></otp-switch>
-          </v-flex>
-          <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
+          </v-col>
+          <v-col xs12 sm8 md6 lg4 xl3 pa-6>
             <change-mail></change-mail>
-          </v-flex>
-          <v-flex xs12 sm8 md6 lg4 xl3 pa-4>
+          </v-col>
+          <v-col xs12 sm8 md6 lg4 xl3 pa-6>
             <delete-account></delete-account>
-          </v-flex>
-        </v-layout>
+          </v-col>
+        </v-row>
       </v-container>
-    </v-content>
+    </v-main>
   </page>
 </template>
 

@@ -17,14 +17,14 @@
           :value="repeat" @input="setRepeat"
           :dirty="$v.repeat.$dirty" :errors="repeatErrors"
           @touch="$v.repeat.$touch()" @reset="$v.repeat.$reset()"></form-text-field>
-        <div class="mx-3">
+        <div class="mx-4">
           <v-btn block :loading="hasIndicatorMessage"
             color="primary" @click="submit" :disabled="!canAccessApi">
             <span>Submit</span>
-            <template v-slot:loader>
+            <template #loader>
               <v-progress-circular indeterminate :size="23" :width="2">
               </v-progress-circular>
-              <span class="ml-3">{{ indicatorMessage }}</span>
+              <span class="ml-4">{{ indicatorMessage }}</span>
             </template>
           </v-btn>
         </div>

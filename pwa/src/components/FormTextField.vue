@@ -2,7 +2,8 @@
   <v-text-field :value="value" :type="type" :label="label" :disabled="disabled"
     :prepend-icon="prependIcon" :autofocus="autofocus" ref="input" :solo="solo"
     :error-messages="errorMessages" @blur="touch" @keydown.native.enter="touch"
-    @focus="reset" @input="input" :append-icon="appendIcon" :error="error"></v-text-field>
+    @focus="reset" @input="input" :append-icon="appendIcon" :error="error"
+    :aria-label="label"></v-text-field>
 </template>
 
 <script>

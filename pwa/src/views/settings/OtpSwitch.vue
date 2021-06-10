@@ -18,13 +18,13 @@
     </v-toolbar>
     <v-card-text>
       <div v-if="isOtpEnabled">
-        <p class="text-xs-center">Enter a one-time / recovery code to disable.</p>
+        <p class="text-center">Enter a one-time / recovery code to disable.</p>
         <v-form @keydown.native.enter.prevent="deactivate">
-          <form-text-field type="text" class="mb-4" :solo="true" :invalid="!$v.deactivation.valid"
+          <form-text-field type="text" class="mb-6" :solo="true" :invalid="!$v.deactivation.valid"
             :value="deactivation.otp" @input="setDeactivationOtp"
             :dirty="$v.deactivation.$dirty" :append-icon="deactivationOtpIcon"
             @touch="$v.deactivation.$touch()" @reset="$v.deactivation.$reset()"></form-text-field>
-          <div class="mx-3">
+          <div class="mx-4">
             <v-btn block color="primary" @click="deactivate" :disabled="!canAccessApi" :loading="otpResetInProgress">
               Disable
             </v-btn>
@@ -36,27 +36,27 @@
           Scan the image with <a href="https://support.google.com/accounts/answer/1066447" rel="nopener noreferrer">
           Google Authenticator</a> or a similar application.
         </p>
-        <img class="qrc mb-3" :src="maybeOtpParams.qrcDataUrl"/>
+        <img class="qrc mb-4" :src="maybeOtpParams.qrcDataUrl"/>
         <p>Print out or save the recovery codes.</p>
-        <div class="mb-3">
-          <v-chip v-for="(item, index) in maybeOtpParams.scratchCodes" :key="index" class="mb-3">
+        <div class="mb-4">
+          <v-chip v-for="(item, index) in maybeOtpParams.scratchCodes" :key="index" class="mb-4">
             {{ item }}
           </v-chip>
         </div>
         <p>Enter a one-time six-digit code from the application to confirm.</p>
         <v-form @keydown.native.enter.prevent="activate">
-          <form-text-field type="text" class="mb-4" :solo="true" :invalid="!$v.activation.valid"
+          <form-text-field type="text" class="mb-6" :solo="true" :invalid="!$v.activation.valid"
             :value="activation.otp" @input="setActivationOtp"
             :dirty="$v.activation.$dirty" :append-icon="activationOtpIcon"
             @touch="$v.activation.$touch()" @reset="$v.activation.$reset()"></form-text-field>
-          <div class="mx-3">
+          <div class="mx-4">
             <v-btn block color="primary" @click="activate" :disabled="!canAccessApi" :loading="otpParamsAcceptanceInProgress">
               Activate
             </v-btn>
           </div>
         </v-form>
       </div>
-      <div v-else class="text-xs-center">
+      <div v-else class="text-center">
         <v-btn color="primary" @click="generate" :disabled="!canAccessApi" :loading="otpParamsGenerationInProgress">
           Enable
         </v-btn>

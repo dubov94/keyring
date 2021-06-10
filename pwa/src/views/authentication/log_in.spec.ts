@@ -1,4 +1,4 @@
-import { ActionQueue, drainActionQueue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin } from '@/components/testing'
+import { ActionQueue, drainActionQueue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin, setUpVuetify } from '@/components/testing'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { createStore, Store } from '@reduxjs/toolkit'
@@ -29,6 +29,7 @@ describe('LogIn', () => {
     router = new VueRouter({ mode: 'abstract' })
     wrapper = mount(LogIn, {
       localVue,
+      vuetify: setUpVuetify(),
       stubs: {
         page: true
       },
@@ -48,7 +49,7 @@ describe('LogIn', () => {
 
   const getUsernameInput = () => wrapper.find('[aria-label="Username"]')
   const getPasswordInput = () => wrapper.find('[aria-label="Password"]')
-  const getPersistanceSwitch = () => wrapper.find('.switch > label')
+  const getPersistanceSwitch = () => wrapper.find('[role="switch"]')
   const getRegisterButton = () => wrapper.find('button')
 
   it('dispatches remote authentication action', async () => {

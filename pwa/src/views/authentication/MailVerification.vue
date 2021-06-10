@@ -11,10 +11,10 @@
 
 <template>
   <page>
-    <v-content>
+    <v-main>
       <v-container fluid>
-        <v-layout justify-center mt-5>
-          <v-flex xs12 sm6 md4 lg3 xl2>
+        <v-row justify-center mt-12>
+          <v-col xs12 sm6 md4 lg3 xl2>
             <v-card>
               <v-card-text class="card-text">
                 <v-stepper :value="2" vertical class="stepper">
@@ -29,19 +29,17 @@
                     </v-form>
                   </v-stepper-content>
                   <v-stepper-step step="3">Enjoy!</v-stepper-step>
-                  <v-stepper-items>
-                  </v-stepper-items>
                 </v-stepper>
               </v-card-text>
               <v-card-actions>
-                <v-btn block color="primary" class="mx-3 mb-2"
+                <v-btn block color="primary" class="mx-4 mb-2"
                   @click="submit" :loading="inProgress">Activate</v-btn>
               </v-card-actions>
             </v-card>
-          </v-flex>
-        </v-layout>
+          </v-col>
+        </v-row>
       </v-container>
-    </v-content>
+    </v-main>
   </page>
 </template>
 

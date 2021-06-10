@@ -9,13 +9,17 @@ import last from 'lodash/last'
 import { Store } from '@reduxjs/toolkit'
 import { RootState } from '@/redux/root_reducer'
 
+Vue.use(Vuetify)
+;(global as any).requestAnimationFrame = (callback: () => {}) => callback()
+
 export const setUpLocalVue = (): VueConstructor<Vue> => {
   const localVue = createLocalVue()
-  localVue.use(Vuetify)
   localVue.use(Vuelidate)
   localVue.component('form-text-field', FormTextField)
   return localVue
 }
+
+export const setUpVuetify = () => new Vuetify()
 
 export class ActionQueue {
   private queue: Future<RootAction>[] = []
@@ -79,4 +83,10 @@ export const setUpStateMixin = (
 
 export const getValue = (wrapper: Wrapper<Vue>) => {
   return (<HTMLInputElement>wrapper.element).value
+}
+
+export const tickUntilExists = async (getter: (wrapper: Wrapper<Vue>) => Wrapper<Vue>, wrapper: Wrapper<Vue>) => {
+  while (!getter(wrapper).exists()) {
+    await wrapper.vm.$nextTick()
+  }
 }

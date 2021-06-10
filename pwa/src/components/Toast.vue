@@ -1,7 +1,7 @@
 <template>
-  <v-snackbar :value="show" @input="setVisibility" auto-height :timeout="timeout">
+  <v-snackbar :value="show" @input="setVisibility" :timeout="timeout">
     {{ message }}
-    <v-btn color="warning" flat @click="setVisibility(false)">Close</v-btn>
+    <v-btn color="warning" text @click="setVisibility(false)">Close</v-btn>
   </v-snackbar>
 </template>
 

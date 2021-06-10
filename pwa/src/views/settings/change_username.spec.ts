@@ -1,4 +1,4 @@
-import { ActionQueue, drainActionQueue, getValue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin } from '@/components/testing'
+import { ActionQueue, drainActionQueue, getValue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin, setUpVuetify } from '@/components/testing'
 import { success } from '@/redux/flow_signal'
 import { registrationSignal } from '@/redux/modules/authn/actions'
 import { RootAction } from '@/redux/root_action'
@@ -31,6 +31,7 @@ describe('ChangeUsername', () => {
     $actions = new Subject()
     wrapper = mount(ChangeUsername, {
       localVue,
+      vuetify: setUpVuetify(),
       data () {
         return {
           $actions,

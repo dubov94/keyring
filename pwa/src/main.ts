@@ -4,10 +4,9 @@ import 'reflect-metadata'
 import { container } from 'tsyringe'
 import { Subject } from 'rxjs'
 
-import 'vuetify/dist/vuetify.min.css'
 import Vue, { VueConstructor } from 'vue'
 import Vuelidate from 'vuelidate'
-import Vuetify from 'vuetify'
+import Vuetify from 'vuetify/lib'
 import Application from './Application.vue'
 import FormTextField from './components/FormTextField.vue'
 
@@ -109,7 +108,9 @@ Vue.mixin({
   }
 })
 
+const vuetify = new Vuetify()
 new Vue({
+  vuetify,
   render: h => h(Application),
   router: Router,
   i18n: getVueI18n()

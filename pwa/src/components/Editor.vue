@@ -60,11 +60,11 @@
     <v-card>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn flat color="primary" @click="suggest">
+        <v-btn text color="primary" @click="suggest">
           Generate
         </v-btn>
         <v-spacer></v-spacer>
-        <v-btn flat color="primary" @click="copySecret">
+        <v-btn text color="primary" @click="copySecret">
           Copy
         </v-btn>
         <v-spacer></v-spacer>
@@ -78,10 +78,10 @@
           </v-text-field>
           <strength-score class="mt-2" :value="strengthScore"></strength-score>
         </div>
-        <draggable class="mt-3" v-model="draft.chips"
+        <draggable class="mt-4" v-model="draft.chips"
           :options="draggableOptions" :move="move">
-          <v-chip disabled outline class="elevation-3" color="black"
-            :close="draft.chips.length > 1 || index > 0"
+          <v-chip disabled outlined class="elevation-3" color="black"
+            :click:close="draft.chips.length > 1 || index > 0"
             v-for="(value, index) in draft.chips" :key="index"
             @input="removeChip(index)">
             <v-icon small class="badge__handle">drag_indicator</v-icon>
@@ -91,7 +91,7 @@
               <span class="badge__label">{{ value }}</span>
             </div>
           </v-chip>
-          <v-btn @click="addChip" outline round class="new-badge-button elevation-3">
+          <v-btn @click="addChip" outlined rounded class="new-badge-button elevation-3">
             <v-icon left small>fa-plus</v-icon>Label
           </v-btn>
         </draggable>
@@ -101,13 +101,13 @@
         <v-progress-circular indeterminate color="green"
           v-if="inProgress"></v-progress-circular>
         <v-spacer></v-spacer>
-        <v-btn flat v-if="identifier !== null" color="error" @click="requestRemoval">
+        <v-btn text v-if="identifier !== null" color="error" @click="requestRemoval">
           Remove
         </v-btn>
-        <v-btn flat color="primary" @click="requestDiscard">
+        <v-btn text color="primary" @click="requestDiscard">
           Cancel
         </v-btn>
-        <v-btn flat color="primary" @click="save">
+        <v-btn text color="primary" @click="save">
           Save
         </v-btn>
       </v-card-actions>

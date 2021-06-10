@@ -1,6 +1,6 @@
 import { mount, Wrapper } from '@vue/test-utils'
 import DeleteAccount from './DeleteAccount.vue'
-import { ActionQueue, drainActionQueue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin } from '@/components/testing'
+import { ActionQueue, drainActionQueue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin, setUpVuetify } from '@/components/testing'
 import { accountDeletionReset, deleteAccount } from '@/redux/modules/user/account/actions'
 import { expect } from 'chai'
 import { RootAction } from '@/redux/root_action'
@@ -27,6 +27,7 @@ describe('DeleteAccount', () => {
     actionQueue = new ActionQueue()
     wrapper = mount(DeleteAccount, {
       localVue,
+      vuetify: setUpVuetify(),
       mixins: [
         setUpTranslationMixin(fn.identity),
         setUpStateMixin(store, actionQueue)

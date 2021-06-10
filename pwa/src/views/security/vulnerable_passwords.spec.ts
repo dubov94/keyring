@@ -1,4 +1,4 @@
-import { ActionQueue, setUpLocalVue, setUpStateMixin } from '@/components/testing'
+import { ActionQueue, setUpLocalVue, setUpStateMixin, setUpVuetify } from '@/components/testing'
 import { Color } from '@/cryptography/strength_test_service'
 import { success } from '@/redux/flow_signal'
 import { emplace } from '@/redux/modules/user/keys/actions'
@@ -22,6 +22,7 @@ describe('VulnerablePasswords', () => {
     actionQueue = new ActionQueue()
     wrapper = shallowMount(VulnerablePasswords, {
       localVue,
+      vuetify: setUpVuetify(),
       mixins: [
         setUpStateMixin(store, actionQueue)
       ]

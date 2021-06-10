@@ -1,4 +1,4 @@
-import { ActionQueue, setUpLocalVue, setUpStateMixin } from '@/components/testing'
+import { ActionQueue, setUpLocalVue, setUpStateMixin, setUpVuetify } from '@/components/testing'
 import { success } from '@/redux/flow_signal'
 import { registrationSignal } from '@/redux/modules/authn/actions'
 import { RootAction } from '@/redux/root_action'
@@ -30,6 +30,7 @@ describe('Dashboard', () => {
     $actions = new Subject()
     wrapper = shallowMount(Dashboard, {
       localVue,
+      vuetify: setUpVuetify(),
       propsData: {
         cardsPerPage: 2
       },

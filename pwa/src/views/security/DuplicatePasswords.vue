@@ -1,7 +1,7 @@
 <template>
   <v-card>
     <v-card-title>
-      <v-layout justify-space-between align-center>
+      <v-row justify-space-between align-center>
         <h3>
           Duplicate groups &mdash;
           <span v-if="groupCount < 0">⚠️</span>
@@ -11,11 +11,11 @@
         <v-progress-circular v-show="inProgress" indeterminate
           :size="24" :width="2" color="primary">
         </v-progress-circular>
-      </v-layout>
+      </v-row>
     </v-card-title>
     <v-divider v-if="groupCount > 0"></v-divider>
     <v-card-text v-if="groupCount > 0">
-      <div class="mb-3 text-xs-center">
+      <div class="mb-4 text-center">
         <v-pagination v-model="groupNumber" :length="groupCount" circle
           :total-visible="$vuetify.breakpoint.smAndUp ? 7 : 5"></v-pagination>
       </div>
