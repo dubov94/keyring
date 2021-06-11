@@ -32,8 +32,8 @@
           </h2>
           <div class="mt-12 text-center">
             <template v-if="!isAuthenticated">
-              <v-btn large outlined color="white" to="/log-in">Log in</v-btn>
-              <v-btn large outlined color="white" to="/register">Register</v-btn>
+              <v-btn class="mx-2" large outlined color="white" to="/log-in">Log in</v-btn>
+              <v-btn class="mx-2" large outlined color="white" to="/register">Register</v-btn>
             </template>
             <template v-if="isAuthenticated">
               <v-btn large outlined color="white" to="/dashboard">Go to dashboard</v-btn>
