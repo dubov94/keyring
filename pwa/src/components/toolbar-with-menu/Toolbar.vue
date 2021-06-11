@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app clipped-left prominent color="primary" dark>
+  <v-app-bar app clipped-left color="primary" dark>
     <v-app-bar-nav-icon v-if="hasMenu" @click="toggle">
     </v-app-bar-nav-icon>
     <v-btn icon :to="homeTarget">
