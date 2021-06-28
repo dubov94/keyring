@@ -2,8 +2,8 @@
   <page>
     <v-main>
       <v-container fluid>
-        <v-row justify-center mt-12>
-          <v-col xs12 sm6 md4 lg3 xl2>
+        <v-row no-gutters class="mt-12" justify="center">
+          <v-col :cols="12" :sm="6" :md="4" :lg="3" :xl="2">
             <v-card>
               <v-card-text>
                 <v-form @keydown.native.enter.prevent="submit">
@@ -26,9 +26,8 @@
                   </form-text-field>
                 </v-form>
               </v-card-text>
-              <v-card-actions>
-                <v-btn block color="primary" class="mx-6" @click="submit"
-                  :loading="hasIndicatorMessage">
+              <v-card-actions class="px-6">
+                <v-btn block color="primary" @click="submit" :loading="hasIndicatorMessage">
                   <span>Register</span>
                   <template #loader>
                     <v-progress-circular indeterminate :size="23" :width="2">
@@ -37,9 +36,9 @@
                   </template>
                 </v-btn>
               </v-card-actions>
-              <v-row justify-center py-2>
+              <div class="pb-2 text-center">
                 <router-link to="/log-in">Log in</router-link>
-              </v-row>
+              </div>
             </v-card>
           </v-col>
         </v-row>
