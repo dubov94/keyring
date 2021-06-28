@@ -108,7 +108,11 @@ Vue.mixin({
   }
 })
 
-const vuetify = new Vuetify()
+const vuetify = new Vuetify({
+  icons: {
+    iconfont: 'md'
+  }
+})
 new Vue({
   vuetify,
   render: h => h(Application),

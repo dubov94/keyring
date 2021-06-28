@@ -3,7 +3,7 @@
     padding: 0;
   }
 
-  .stepper {
+  .card-text > .stepper {
     box-shadow: none;
     padding-bottom: 0;
   }
@@ -13,14 +13,14 @@
   <page>
     <v-main>
       <v-container fluid>
-        <v-row justify-center mt-12>
-          <v-col xs12 sm6 md4 lg3 xl2>
+        <v-row no-gutters class="mt-12" justify="center">
+          <v-col :cols="12" :sm="6" :md="4" :lg="3" :xl="2">
             <v-card>
               <v-card-text class="card-text">
                 <v-stepper :value="2" vertical class="stepper">
-                  <v-stepper-step :complete="true" step="1">Register</v-stepper-step>
-                  <v-stepper-step step="2">Activate</v-stepper-step>
-                  <v-stepper-content step="2">
+                  <v-stepper-step :complete="true" :step="1">Register</v-stepper-step>
+                  <v-stepper-step :step="2">Activate</v-stepper-step>
+                  <v-stepper-content :step="2">
                     <v-form @keydown.native.enter.prevent="submit">
                       <form-text-field type="text" label="Verification code" prepend-icon="verified_user"
                         :value="code.value" @input="setCode"
@@ -28,12 +28,13 @@
                         @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
                     </v-form>
                   </v-stepper-content>
-                  <v-stepper-step step="3">Enjoy!</v-stepper-step>
+                  <v-stepper-step :step="3">Enjoy!</v-stepper-step>
                 </v-stepper>
               </v-card-text>
-              <v-card-actions>
-                <v-btn block color="primary" class="mx-4 mb-2"
-                  @click="submit" :loading="inProgress">Activate</v-btn>
+              <v-card-actions class="px-6 pb-4">
+                <v-btn block color="primary" @click="submit" :loading="inProgress">
+                  Activate
+                </v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
