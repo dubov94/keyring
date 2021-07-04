@@ -1,15 +1,19 @@
 <style scoped>
-  .card >>> .card__title {
+  .v-card >>> .v-card__title {
     padding-top: 0;
     padding-bottom: 0;
   }
 
-  .chip >>> .chip__content {
+  .v-chip >>> .v-chip__content {
     cursor: pointer;
   }
 
   .key {
     font-family: 'Roboto Mono', monospace;
+  }
+
+  .key >>> .v-input__slot {
+    padding: 0 4px !important;
   }
 </style>
 
@@ -17,13 +21,13 @@
   <v-card>
     <v-card-title>
       <v-text-field :type="reveal ? 'text' : 'password'" solo flat readonly
-        class="key" :value="value"></v-text-field>
-      <v-btn icon @click="copyText(value)">
+        class="key" :value="value" hide-details></v-text-field>
+      <v-btn icon @click="copyText(value)" class="ma-2">
         <v-icon small>fa-copy</v-icon>
       </v-btn>
       <v-menu>
         <template #activator="{ on }">
-          <v-btn v-on="on" icon>
+          <v-btn v-on="on" icon class="ma-2">
             <v-icon small>fa-ellipsis-v</v-icon>
           </v-btn>
         </template>
@@ -44,8 +48,8 @@
     <strength-score v-if="showScore" :value="score"></strength-score>
     <v-divider v-if="showTags && !showScore"></v-divider>
     <v-card-text v-if="showTags">
-      <v-chip disabled v-for="(label, index) in tags" :key="index"
-        color="white" class="elevation-3" @click="copyText(label)">
+      <v-chip v-for="(label, index) in tags" :key="index"
+        class="ma-1 elevation-3" outlined @click="copyText(label)">
         {{ label }}
       </v-chip>
     </v-card-text>

@@ -24,16 +24,16 @@
 <template>
   <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch"
     :toolbar-is-extended="toolbarIsExtended">
-    <v-text-field :slot="toolbarSearchSlot" solo-inverted flat ref="search"
-      v-model="query" prepend-icon="search" label="Search" class="search">
+    <v-text-field :slot="toolbarSearchSlot" solo-inverted flat ref="search" hide-details
+      v-model="query" prepend-inner-icon="search" label="Search" class="search">
     </v-text-field>
     <user-menu v-model="showMenu"></user-menu>
     <v-main>
-      <v-container fluid mx-auto>
-        <div class="mb-4 text-center">
-          <v-pagination v-model="pageNumber" :length="pageCount"
-            :total-visible="paginationVisibleCount" circle></v-pagination>
-        </div>
+      <div class="my-3 text-center">
+        <v-pagination v-model="pageNumber" :length="pageCount"
+          :total-visible="paginationVisibleCount" circle></v-pagination>
+      </div>
+      <v-container fluid>
         <password-masonry :user-keys="visibleCards" @edit="openEditor">
         </password-masonry>
       </v-container>

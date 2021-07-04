@@ -1,6 +1,5 @@
 <template>
-  <v-navigation-drawer app temporary clipped floating
-    :value="value" @input="input">
+  <v-navigation-drawer app temporary floating :value="value" @input="input">
     <v-list two-line>
       <v-list-item to="/dashboard">
         <v-list-item-action>

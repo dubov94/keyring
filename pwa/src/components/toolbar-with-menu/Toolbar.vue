@@ -1,8 +1,8 @@
 <template>
-  <v-app-bar app clipped-left color="primary" dark>
+  <v-app-bar app color="primary" dark :height="64" :extension-height="64">
     <v-app-bar-nav-icon v-if="hasMenu" @click="toggle">
     </v-app-bar-nav-icon>
-    <v-btn icon :to="homeTarget">
+    <v-btn icon :to="homeTarget" class="ma-2">
       <v-icon>home</v-icon>
     </v-btn>
     <slot>
@@ -12,16 +12,16 @@
       rel="noopener noreferrer">
       <v-icon>help_outline</v-icon>
     </v-btn>
-    <v-btn v-if="!isAuthenticated" icon to="/log-in">
+    <v-btn v-if="!isAuthenticated" icon to="/log-in" class="ma-2">
       <v-icon>login</v-icon>
     </v-btn>
     <v-menu v-if="isAuthenticated" offset-y :nudge-bottom="5">
       <template #activator="{ on }">
-        <v-btn v-on="on" text>
+        <v-btn v-on="on" text class="ma-2">
           {{ username }}
           <v-icon right>account_circle</v-icon>
         </v-btn>
-    </template>
+      </template>
       <v-list two-line class="py-0">
         <v-list-item @click="logOut">
           <v-list-item-action>

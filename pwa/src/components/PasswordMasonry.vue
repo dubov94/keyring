@@ -7,7 +7,7 @@
 <template>
   <v-row wrap align-center>
     <v-col v-for="item in userKeys" :key="item.identifier"
-      class="masonry__brick" sm12 md6 lg4>
+      class="masonry__brick" :cols="12" :md="6" :lg="4">
       <password :identifier="item.identifier" :value="item.value" :tags="item.tags"
         :score="item.score" @edit="handleEditKey(item.identifier, $event)">
       </password>

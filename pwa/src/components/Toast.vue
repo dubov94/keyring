@@ -1,7 +1,12 @@
 <template>
   <v-snackbar :value="show" @input="setVisibility" :timeout="timeout">
     {{ message }}
-    <v-btn color="warning" text @click="setVisibility(false)">Close</v-btn>
+    <template #action="{ attrs }">
+      <v-btn color="warning" text v-bind="attrs" class="ml-4"
+        @click="setVisibility(false)">
+        Close
+      </v-btn>
+    </template>
   </v-snackbar>
 </template>
 

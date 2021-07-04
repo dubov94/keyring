@@ -15,8 +15,6 @@ export default createReducer<{
   (builder) => builder
     .addMatcher(isActionOf(hideToast), (state) => {
       state.show = false
-      state.message = null
-      state.timeout = NaN
     })
     .addMatcher(isActionOf(toastReadyToBeShown), (state, action) => {
       state.message = action.payload.message
