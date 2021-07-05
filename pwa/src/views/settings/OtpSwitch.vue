@@ -5,10 +5,6 @@
     border: 1px dashed #BDBDBD;
     border-radius: 5px;
   }
-
-  .chip {
-    margin-bottom: 4px !important;
-  }
 </style>
 
 <template>
@@ -20,8 +16,8 @@
       <div v-if="isOtpEnabled">
         <p class="text-center">Enter a one-time / recovery code to disable.</p>
         <v-form @keydown.native.enter.prevent="deactivate">
-          <form-text-field type="text" class="mb-6" :solo="true" :invalid="!$v.deactivation.valid"
-            :value="deactivation.otp" @input="setDeactivationOtp"
+          <form-text-field type="text" class="mb-6" solo :invalid="!$v.deactivation.valid"
+            :value="deactivation.otp" @input="setDeactivationOtp" :hide-details="true"
             :dirty="$v.deactivation.$dirty" :append-icon="deactivationOtpIcon"
             @touch="$v.deactivation.$touch()" @reset="$v.deactivation.$reset()"></form-text-field>
           <div class="mx-4">
@@ -38,15 +34,15 @@
         </p>
         <img class="qrc mb-4" :src="maybeOtpParams.qrcDataUrl"/>
         <p>Print out or save the recovery codes.</p>
-        <div class="mb-4">
-          <v-chip v-for="(item, index) in maybeOtpParams.scratchCodes" :key="index" class="mb-4">
+        <div>
+          <v-chip v-for="(item, index) in maybeOtpParams.scratchCodes" :key="index" class="mb-4 mr-4">
             {{ item }}
           </v-chip>
         </div>
         <p>Enter a one-time six-digit code from the application to confirm.</p>
         <v-form @keydown.native.enter.prevent="activate">
-          <form-text-field type="text" class="mb-6" :solo="true" :invalid="!$v.activation.valid"
-            :value="activation.otp" @input="setActivationOtp"
+          <form-text-field type="text" class="mb-6" solo :invalid="!$v.activation.valid"
+            :value="activation.otp" @input="setActivationOtp" :hide-details="true"
             :dirty="$v.activation.$dirty" :append-icon="activationOtpIcon"
             @touch="$v.activation.$touch()" @reset="$v.activation.$reset()"></form-text-field>
           <div class="mx-4">

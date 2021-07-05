@@ -17,9 +17,9 @@
           :value="repeat" @input="setRepeat"
           :dirty="$v.repeat.$dirty" :errors="repeatErrors"
           @touch="$v.repeat.$touch()" @reset="$v.repeat.$reset()"></form-text-field>
-        <div class="mx-4">
-          <v-btn block :loading="hasIndicatorMessage"
-            color="primary" @click="submit" :disabled="!canAccessApi">
+        <div class="mx-4 mt-4">
+          <v-btn block color="primary" :loading="hasIndicatorMessage"
+            @click="submit" :disabled="!canAccessApi">
             <span>Submit</span>
             <template #loader>
               <v-progress-circular indeterminate :size="23" :width="2">

@@ -13,9 +13,9 @@
           :value="password" @input="setPassword"
           :dirty="$v.password.$dirty" :errors="passwordErrors"
           @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
-        <div class="mx-4">
-          <v-btn block :loading="inProgress"
-            color="primary" @click="submit" :disabled="!canAccessApi">Submit</v-btn>
+        <div class="mx-4 mt-4">
+          <v-btn block color="primary" :loading="inProgress"
+            @click="submit" :disabled="!canAccessApi">Submit</v-btn>
         </div>
       </v-form>
     </v-card-text>

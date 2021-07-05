@@ -2,21 +2,21 @@
   <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch">
     <user-menu v-model="showMenu"></user-menu>
     <v-main>
-      <v-container fluid>
-        <v-row wrap justify-center>
-          <v-col xs12 sm8 md6 lg4 xl3 pa-6>
+      <v-container fluid class="pa-7">
+        <v-row justify="center">
+          <v-col :cols="12" :sm="8" :md="6" :lg="4" :xl="3">
             <change-username></change-username>
           </v-col>
-          <v-col xs12 sm8 md6 lg4 xl3 pa-6>
+          <v-col :cols="12" :sm="8" :md="6" :lg="4" :xl="3">
             <change-master-key></change-master-key>
           </v-col>
-          <v-col xs12 sm8 md6 lg4 xl3 pa-6 v-if="showOtpSwitch">
+          <v-col :cols="12" :sm="8" :md="6" :lg="4" :xl="3" v-if="showOtpSwitch">
             <otp-switch></otp-switch>
           </v-col>
-          <v-col xs12 sm8 md6 lg4 xl3 pa-6>
+          <v-col :cols="12" :sm="8" :md="6" :lg="4" :xl="3">
             <change-mail></change-mail>
           </v-col>
-          <v-col xs12 sm8 md6 lg4 xl3 pa-6>
+          <v-col :cols="12" :sm="8" :md="6" :lg="4" :xl="3">
             <delete-account></delete-account>
           </v-col>
         </v-row>

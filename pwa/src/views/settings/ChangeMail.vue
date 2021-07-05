@@ -22,7 +22,7 @@
         <div class="py-4 text-center text--secondary">{{ acquisitionMail }}</div>
         <v-divider></v-divider>
       </template>
-      <v-window :value="stage">
+      <v-window :value="stage" class="pa-4">
         <v-window-item :value="1">
           <v-form @keydown.native.enter.prevent="acquireToken">
             <form-text-field type="text" label="New e-mail" prepend-icon="mail_outline"
@@ -32,7 +32,7 @@
               :value="requestGroup.password.value" @input="setPassword"
               :dirty="$v.requestGroup.password.$dirty" :errors="passwordErrors"
               @touch="$v.requestGroup.password.$touch()" @reset="$v.requestGroup.password.$reset()"></form-text-field>
-            <div class="mx-4">
+            <div class="mx-4 mt-4">
               <v-btn block :loading="acquisitionInProgress"
                 color="primary" @click="acquireToken" :disabled="!canAccessApi">
                 Next
@@ -46,7 +46,7 @@
               :value="code.value" @input="setCode"
               :dirty="$v.code.$dirty" :errors="codeErrors"
               @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
-            <div class="mx-4">
+            <div class="mx-4 mt-4">
               <v-btn block :loading="releaseInProgress"
                 color="primary" @click="releaseToken" :disabled="!canAccessApi">
                 Submit

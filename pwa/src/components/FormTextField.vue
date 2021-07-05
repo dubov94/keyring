@@ -3,7 +3,7 @@
     :prepend-icon="prependIcon" :autofocus="autofocus" ref="input" :solo="solo"
     :error-messages="errorMessages" @blur="touch" @keydown.native.enter="touch"
     @focus="reset" @input="input" :append-icon="appendIcon" :error="error"
-    :aria-label="label"></v-text-field>
+    :aria-label="label" :hide-details="hideDetails || false"></v-text-field>
 </template>
 
 <script>
@@ -13,6 +13,7 @@ export default {
     'autofocus',
     'disabled',
     'dirty',
+    'hideDetails',
     'invalid',
     'errors',
     'label',
