@@ -29,7 +29,7 @@
     </v-text-field>
     <user-menu v-model="showMenu"></user-menu>
     <v-main>
-      <div class="my-3 text-center">
+      <div class="mt-3 text-center">
         <v-pagination v-model="pageNumber" :length="pageCount"
           :total-visible="paginationVisibleCount" circle></v-pagination>
       </div>

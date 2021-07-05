@@ -1,22 +1,26 @@
 <template>
   <v-card>
     <v-card-title>
-      <v-row justify-space-between align-center>
-        <h3>
-          Compromised passwords &mdash;
-          <span v-if="keyCount < 0">⚠️</span>
-          <span v-else-if="keyCount === 0" class="success--text">0</span>
-          <span v-else class="error--text">{{ keyCount }}</span>
-        </h3>
-        <v-progress-circular v-show="inProgress" indeterminate
-          :size="24" :width="2" color="primary">
-        </v-progress-circular>
-      </v-row>
+      <v-container fluid>
+        <v-row justify="space-between" align="center">
+          <h4>
+            Compromised passwords &mdash;
+            <span v-if="keyCount < 0">⚠️</span>
+            <span v-else-if="keyCount === 0" class="success--text">0</span>
+            <span v-else class="error--text">{{ keyCount }}</span>
+          </h4>
+          <v-progress-circular v-show="inProgress" indeterminate
+            :size="24" :width="2" color="primary">
+          </v-progress-circular>
+        </v-row>
+      </v-container>
     </v-card-title>
     <v-divider v-if="keyCount > 0"></v-divider>
     <v-card-text v-if="keyCount > 0">
-      <password-masonry :user-keys="exposedKeys" @edit="editKey">
-      </password-masonry>
+      <v-container fluid>
+        <password-masonry :user-keys="exposedKeys" @edit="editKey">
+        </password-masonry>
+      </v-container>
     </v-card-text>
   </v-card>
 </template>

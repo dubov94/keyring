@@ -1,26 +1,30 @@
 <template>
   <v-card>
     <v-card-title>
-      <v-row justify-space-between align-center>
-        <h3>
-          Duplicate groups &mdash;
-          <span v-if="groupCount < 0">⚠️</span>
-          <span class="success--text" v-else-if="groupCount === 0">0</span>
-          <span class="warning--text" v-else>{{ groupCount }}</span>
-        </h3>
-        <v-progress-circular v-show="inProgress" indeterminate
-          :size="24" :width="2" color="primary">
-        </v-progress-circular>
-      </v-row>
+      <v-container fluid>
+        <v-row justify="space-between" align="center">
+          <h4>
+            Duplicate groups &mdash;
+            <span v-if="groupCount < 0">⚠️</span>
+            <span class="success--text" v-else-if="groupCount === 0">0</span>
+            <span class="warning--text" v-else>{{ groupCount }}</span>
+          </h4>
+          <v-progress-circular v-show="inProgress" indeterminate
+            :size="24" :width="2" color="primary">
+          </v-progress-circular>
+        </v-row>
+      </v-container>
     </v-card-title>
     <v-divider v-if="groupCount > 0"></v-divider>
     <v-card-text v-if="groupCount > 0">
-      <div class="mb-4 text-center">
+      <div class="text-center">
         <v-pagination v-model="groupNumber" :length="groupCount" circle
           :total-visible="$vuetify.breakpoint.smAndUp ? 7 : 5"></v-pagination>
       </div>
-      <password-masonry :user-keys="groupCards" @edit="editKey">
-      </password-masonry>
+      <v-container fluid>
+        <password-masonry :user-keys="groupCards" @edit="editKey">
+        </password-masonry>
+      </v-container>
     </v-card-text>
   </v-card>
 </template>

@@ -7,8 +7,8 @@
 
 <template>
   <v-container fluid>
-    <v-row justify-center align-center wrap>
-      <v-col xs8>
+    <v-row justify="center" align="center">
+      <v-col :cols="8">
         <h2>Threat analysis</h2>
         <p class="mb-0">
           Click the button to toggle reactive password scrutiny for this
@@ -18,7 +18,7 @@
           under the hood.
         </p>
       </v-col>
-      <v-col xs3 offset-xs1 class="text-right">
+      <v-col :cols="3" :offset="1" class="text-right">
         <v-btn color="primary" @click="toggle">
           {{ isAnalysisOn ? 'Disable' : 'Enable'}}
         </v-btn>
