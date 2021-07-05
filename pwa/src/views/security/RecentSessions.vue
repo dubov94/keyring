@@ -1,18 +1,20 @@
 <template>
   <v-container fluid>
-    <v-row justify-center>
-      <v-col xs10>
+    <v-row justify="center">
+      <v-col :cols="10">
         <h2>Recent sessions</h2>
         <p>The table contains entries from the last 28 days.</p>
         <v-data-table :loading="isLoading" class="elevation-1"
           :headers="headers" :items="items">
           <template #item="{ item }">
-            <td>{{ item.moment }}</td>
-            <td>{{ item.location }}</td>
-            <td>
-              {{ item.browser.name }}
-              {{ item.browser.version }}
-            </td>
+            <tr>
+              <td>{{ item.moment }}</td>
+              <td>{{ item.location }}</td>
+              <td>
+                {{ item.browser.name }}
+                {{ item.browser.version }}
+              </td>
+            </tr>
           </template>
         </v-data-table>
       </v-col>
