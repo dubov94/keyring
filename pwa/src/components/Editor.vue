@@ -1,18 +1,4 @@
 <style scoped>
-  .card >>> .card__title {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-
-  .chip {
-    font-size: 14px;
-    border: none;
-  }
-
-  .chip >>> .badge__close {
-    margin-left: 0;
-  }
-
   .badge__handle {
     cursor: move;
   }
@@ -46,12 +32,9 @@
     caret-color: black !important;
   }
 
-  /* Matches `.chip`. */
   .new-badge-button {
     border: none;
-    height: 32px;
-    margin: 4px;
-    min-width: 0;
+    height: 32px !important;
   }
 </style>
 
@@ -72,18 +55,18 @@
       <v-card-text class="pt-0">
         <div class="key-with-score">
           <v-text-field :type="reveal ? 'text' : 'password'"
-            solo class="key" v-model="draft.secret"
+            solo class="key" hide-details v-model="draft.secret"
             :append-icon="reveal ? 'visibility_off' : 'visibility'"
-            :append-icon-cb="() => reveal = !reveal">
+            @click:append="() => reveal = !reveal">
           </v-text-field>
           <strength-score class="mt-2" :value="strengthScore"></strength-score>
         </div>
         <draggable class="mt-4" v-model="draft.chips"
           :options="draggableOptions" :move="move">
-          <v-chip disabled outlined class="elevation-3" color="black"
-            :click:close="draft.chips.length > 1 || index > 0"
+          <v-chip class="ma-1 elevation-3" outlined
+            :close="draft.chips.length > 1 || index > 0"
             v-for="(value, index) in draft.chips" :key="index"
-            @input="removeChip(index)">
+            @click:close="removeChip(index)">
             <v-icon small class="badge__handle">drag_indicator</v-icon>
             <div class="badge__content">
               <input type="text" :value="value" class="badge__input" ref="chips"
@@ -91,7 +74,8 @@
               <span class="badge__label">{{ value }}</span>
             </div>
           </v-chip>
-          <v-btn @click="addChip" outlined rounded class="new-badge-button elevation-3">
+          <v-btn @click="addChip" outlined rounded
+            class="new-badge-button ma-1 elevation-3">
             <v-icon left small>fa-plus</v-icon>Label
           </v-btn>
         </draggable>

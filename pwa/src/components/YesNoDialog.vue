@@ -2,7 +2,7 @@
   <v-dialog :value="value" @input="close"
     :max-width="maxWidth" @keydown.esc="deny" @keydown.enter="allow">
     <v-card>
-      <v-card-text class="text-center">{{ message }}</v-card-text>
+      <v-card-text class="py-4 text-center">{{ message }}</v-card-text>
       <v-card-actions>
         <v-btn text color="error" @click="deny">
           No
