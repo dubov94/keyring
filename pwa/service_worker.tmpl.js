@@ -23,6 +23,10 @@ const MAX_AGE_S = 7 * 24 * 60 * 60;
 const precacheName = workbox.core.cacheNames.precache;
 const indexCacheKey = precacheController.getCacheKeyForURL('/index.html');
 
+const maxAgeInstant = () => {
+  return Date.now() - MAX_AGE_S * 1000;
+};
+
 const isCacheObsolete = async () => {
   const events = await applicationDatabase.swEvents
     .where('event').equals(SwEvent.NAVIGATE)
@@ -30,7 +34,7 @@ const isCacheObsolete = async () => {
   if (events.length === 0) {
     return true;
   }
-  return events[0].timestamp + MAX_AGE_S * 1000 < Date.now();
+  return events[0].timestamp < maxAgeInstant();
 };
 
 const writeSwEvent = async (eventName) => {
@@ -80,7 +84,7 @@ const reloadDependentClients = async () => {
 
 const dropObsoleteSwEvents = async () => {
   await applicationDatabase.swEvents
-    .where('version').notEqual(APP_VERSION)
+    .where('timestamp').below(maxAgeInstant())
     .delete();
 };
 
