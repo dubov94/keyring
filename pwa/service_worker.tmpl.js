@@ -36,7 +36,7 @@ const isCacheObsolete = async () => {
         entry.event === SwEvent.INSTALL && activated.has(entry.version)) {
       return entry.timestamp < maxAgeInstant();
     } else if (entry.event === SwEvent.ACTIVATE) {
-      activated.add(entry.timestamp);
+      activated.add(entry.version);
     }
   }
   return true;
