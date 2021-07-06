@@ -28,13 +28,18 @@ const maxAgeInstant = () => {
 };
 
 const isCacheObsolete = async () => {
-  const events = await applicationDatabase.swEvents
-    .where('event').equals(SwEvent.NAVIGATE)
-    .limit(1).reverse().sortBy('timestamp');
-  if (events.length === 0) {
-    return true;
+  const entries = await applicationDatabase
+    .swEvents.reverse().sortBy('timestamp');
+  const activated = new Set();
+  for (const entry of entries) {
+    if (entry.event === SwEvent.NAVIGATE ||
+        entry.event === SwEvent.INSTALL && activated.has(entry.version)) {
+      return entry.timestamp < maxAgeInstant();
+    } else if (entry.event === SwEvent.ACTIVATE) {
+      activated.add(entry.timestamp);
+    }
   }
-  return events[0].timestamp < maxAgeInstant();
+  return true;
 };
 
 const writeSwEvent = async (eventName) => {
