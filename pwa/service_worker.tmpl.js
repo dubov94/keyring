@@ -25,7 +25,7 @@ const indexCacheKey = precacheController.getCacheKeyForURL('/index.html');
 
 const isCacheObsolete = async () => {
   const events = await applicationDatabase.swEvents
-    .where('event').anyOf([SwEvent.ACTIVATE, SwEvent.NAVIGATE])
+    .where('event').equals(SwEvent.NAVIGATE)
     .limit(1).reverse().sortBy('timestamp');
   if (events.length === 0) {
     return true;
@@ -119,14 +119,6 @@ const isLatestVersion = async () => {
   }
 };
 
-const ingestIsLatest = async () => {
-  const isLatest = await isLatestVersion();
-  if (isLatest) {
-    await writeSwEvent(SwEvent.NAVIGATE);
-  }
-  return isLatest;
-};
-
 const saveIndependentClient = async (clientId) => {
   await applicationDatabase.independentClients.add({
     clientId: clientId
@@ -135,15 +127,17 @@ const saveIndependentClient = async (clientId) => {
 
 const fetchHandler = async (event, isNavigationRequest, cacheKey) => {
   if (isNavigationRequest) {
-    if (await isCacheObsolete()) {
-      if (!await ingestIsLatest()) {
-        await saveIndependentClient(event.clientId);
-        // Some of the assets may still come from the cache.
-        return fetch(indexCacheKey);
-      }
-    } else {
-      event.waitUntil(ingestIsLatest());
+    const isLatestPromise = isLatestVersion();
+    if (await isCacheObsolete() && !await isLatestPromise) {
+      await saveIndependentClient(event.clientId);
+      // Some of the assets may still come from the cache.
+      return fetch(indexCacheKey);
     }
+    event.waitUntil(async () => {
+      if (await isLatestPromise) {
+        await writeSwEvent(SwEvent.NAVIGATE);
+      }
+    });
   }
   const precache = await self.caches.open(precacheName);
   const response = await precache.match(cacheKey);
