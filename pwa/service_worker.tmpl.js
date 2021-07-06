@@ -137,11 +137,11 @@ const fetchHandler = async (event, isNavigationRequest, cacheKey) => {
       // Some of the assets may still come from the cache.
       return fetch(indexCacheKey);
     }
-    event.waitUntil(async () => {
+    event.waitUntil((async () => {
       if (await isLatestPromise) {
         await writeSwEvent(SwEvent.NAVIGATE);
       }
-    });
+    })());
   }
   const precache = await self.caches.open(precacheName);
   const response = await precache.match(cacheKey);
