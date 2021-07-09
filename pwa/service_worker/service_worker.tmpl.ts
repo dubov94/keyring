@@ -1,23 +1,47 @@
-importScripts('https://unpkg.com/dexie@3.0.2/dist/dexie.min.js');
+import Dexie from 'dexie';
 
 const APP_VERSION = '$STABLE_GIT_REVISION';
-
-const SwEvent = {
-  INSTALL: 'install',
-  ACTIVATE: 'activate',
-  NAVIGATE: 'navigate'
+const scope = self as unknown as ServiceWorkerGlobalScope & {
+  __precacheManifest: { url: string; revision: string }[]
 };
 
-workbox.core.setCacheNameDetails({ prefix: 'keyring.pwa' });
+enum SwEventType {
+  INSTALL = 'install',
+  ACTIVATE = 'activate',
+  NAVIGATE = 'navigate'
+}
+
+workbox.core.setCacheNameDetails({ prefix: 'keyring.pwa' })
 
 const precacheController = new workbox.precaching.PrecacheController();
-precacheController.addToCacheList(self.__precacheManifest);
+precacheController.addToCacheList(scope.__precacheManifest);
 
-const applicationDatabase = new Dexie('application');
-applicationDatabase.version(2).stores({
-  swEvents: '++id, version, event, timestamp',
-  independentClients: '++id, clientId'
-});
+interface SwEvent {
+  id?: number;
+  version: string;
+  event: SwEventType;
+  timestamp: number;
+}
+
+interface IndependentClient {
+  id?: number;
+  clientId: string;
+}
+
+class ApplicationDatabase extends Dexie {
+  swEvents: Dexie.Table<SwEvent, number>;
+  independentClients: Dexie.Table<IndependentClient, number>;
+
+  constructor() {
+    super('application');
+
+    this.version(2).stores({
+      swEvents: '++id, version, event, timestamp',
+      independentClients: '++id, clientId'
+    });
+  }
+}
+const applicationDatabase = new ApplicationDatabase();
 
 const MAX_AGE_S = 7 * 24 * 60 * 60;
 const precacheName = workbox.core.cacheNames.precache;
@@ -32,10 +56,10 @@ const isCacheObsolete = async () => {
     .swEvents.reverse().sortBy('timestamp');
   const activated = new Set();
   for (const entry of entries) {
-    if (entry.event === SwEvent.NAVIGATE ||
-        entry.event === SwEvent.INSTALL && activated.has(entry.version)) {
+    if (entry.event === SwEventType.NAVIGATE ||
+        entry.event === SwEventType.INSTALL && activated.has(entry.version)) {
       return entry.timestamp < maxAgeInstant();
-    } else if (entry.event === SwEvent.ACTIVATE) {
+    } else if (entry.event === SwEventType.ACTIVATE) {
       activated.add(entry.version);
     }
   }
@@ -53,12 +77,14 @@ const writeSwEvent = async (eventName) => {
 const installHandler = async () => {
   await precacheController.install();
   if (await isCacheObsolete()) {
-    await self.skipWaiting();
+    // Always happens on the initial installation as `isCacheObsolete`
+    // returns `true`.
+    await scope.skipWaiting();
   }
-  await writeSwEvent(SwEvent.INSTALL);
+  await writeSwEvent(SwEventType.INSTALL);
 };
 
-self.addEventListener('install', (event) => {
+scope.addEventListener('install', (event) => {
   event.waitUntil(installHandler());
 });
 
@@ -74,12 +100,12 @@ const isClientDependent = async (clientId) => {
 };
 
 const reloadDependentClients = async () => {
-  const windowClients = await self.clients.matchAll({ type: 'window' });
+  const windowClients = await scope.clients.matchAll({ type: 'window' });
   // Do not block on `navigate` as it goes through the service worker.
   windowClients.forEach(async (client) => {
     try {
-      if (await isClientDependent(client.id)) {
-        await client.navigate(client.url);
+      if (client.type === 'window' && await isClientDependent(client.id)) {
+        await (client as WindowClient).navigate(client.url);
       }
     } catch (error) {
       console.warn(error);
@@ -96,7 +122,7 @@ const dropObsoleteSwEvents = async () => {
 const dropObsoleteIndependentClients = async () => {
   const entries = await applicationDatabase.independentClients.toArray();
   await Promise.all(entries.map(async (entry) => {
-    if (!await self.clients.get(entry.clientId)) {
+    if (!await scope.clients.get(entry.clientId)) {
       await applicationDatabase.independentClients.delete(entry.id);
     }
   }));
@@ -110,10 +136,10 @@ const activateHandler = async () => {
   }
   await dropObsoleteSwEvents();
   await dropObsoleteIndependentClients();
-  await writeSwEvent(SwEvent.ACTIVATE);
+  await writeSwEvent(SwEventType.ACTIVATE);
 };
 
-self.addEventListener('activate', (event) => {
+scope.addEventListener('activate', (event) => {
   event.waitUntil(activateHandler());
 });
 
@@ -144,16 +170,16 @@ const fetchHandler = async (event, isNavigationRequest, cacheKey) => {
     }
     event.waitUntil((async () => {
       if (await isLatestPromise) {
-        await writeSwEvent(SwEvent.NAVIGATE);
+        await writeSwEvent(SwEventType.NAVIGATE);
       }
     })());
   }
-  const precache = await self.caches.open(precacheName);
+  const precache = await scope.caches.open(precacheName);
   const response = await precache.match(cacheKey);
   return response ? response : fetch(cacheKey);
 };
 
-self.addEventListener('fetch', (event) => {
+scope.addEventListener('fetch', (event) => {
   // https://fetch.spec.whatwg.org/#dom-requestmode-navigate
   const isNavigationRequest = event.request.mode === 'navigate';
   const cacheKey = isNavigationRequest ? (
@@ -164,8 +190,8 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-self.addEventListener('message', (event) => {
+scope.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
+    scope.skipWaiting();
   }
 });

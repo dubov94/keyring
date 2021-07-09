@@ -56,7 +56,7 @@ module.exports = {
     },
     workboxPluginMode: 'InjectManifest',
     workboxOptions: {
-      swSrc: `${__dirname}/service-worker.js`,
+      swSrc: `${__dirname}/service_worker/service-worker.js`,
       // Inherited from https://github.com/vuejs/vue-cli/pull/769.
       exclude: [
         'robots.txt',

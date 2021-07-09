@@ -63,16 +63,13 @@ status_vars_template(
     template = "metadata.tmpl.json",
 )
 
-status_vars_template(
-    name = "service_worker",
-    output = "service-worker.js",
-    template = "service_worker.tmpl.js",
-)
-
 filegroup_copy(
     name = "package_json",
     srcs = ["package.json"],
-    visibility = ["//:root"],
+    visibility = [
+        ":internal",
+        "//:root",
+    ],
 )
 
 SOURCES = [
@@ -80,9 +77,9 @@ SOURCES = [
     ":package_json",
     ":public",
     ":metadata_json",
-    ":service_worker",
     ":src",
     ":vue_config",
+    "//pwa/service_worker",
     "//pwa/src/api/definitions:swagger_api",
 ]
 
