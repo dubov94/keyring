@@ -18,7 +18,7 @@
                     @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
                     :autofocus="!usernameIsEmpty"></form-text-field>
                   <v-switch hide-details color="primary" label="Remember me"
-                    :input-value="persist" @change="setPersist" class="mt-0"></v-switch>
+                    :input-value="persist" @change="setPersist" class="mt-2"></v-switch>
                 </v-form>
               </v-card-text>
               <v-card-actions class="px-6">

@@ -1,14 +1,7 @@
-<style scoped>
-  .container {
-    max-width: var(--max-content-width);
-    margin: 0 auto;
-  }
-</style>
-
 <template>
   <v-container fluid>
     <v-row justify="center" align="center">
-      <v-col :cols="8">
+      <v-col :cols="10" :md="7">
         <h2>Threat analysis</h2>
         <p class="mb-0">
           Click the button to toggle reactive password scrutiny for this
@@ -18,18 +11,20 @@
           under the hood.
         </p>
       </v-col>
-      <v-col :cols="3" :offset="1" class="text-right">
+      <v-col :cols="10" :md="2" :offset-md="1" class="text-center text-md-right">
         <v-btn color="primary" @click="toggle">
           {{ isAnalysisOn ? 'Disable' : 'Enable'}}
         </v-btn>
       </v-col>
+      <v-col :cols="10">
+        <duplicate-passwords v-if="isAnalysisOn" @edit="editKey">
+        </duplicate-passwords>
+        <compromised-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">
+        </compromised-passwords>
+        <vulnerable-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">
+        </vulnerable-passwords>
+      </v-col>
     </v-row>
-    <duplicate-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">
-    </duplicate-passwords>
-    <compromised-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">
-    </compromised-passwords>
-    <vulnerable-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">
-    </vulnerable-passwords>
     <editor v-if="showEditor" :params="editorParams" @close="closeEditor"></editor>
   </v-container>
 </template>

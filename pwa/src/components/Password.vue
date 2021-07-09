@@ -19,7 +19,7 @@
 
 <template>
   <v-card>
-    <v-card-title>
+    <v-card-title class="flex-nowrap">
       <v-text-field :type="reveal ? 'text' : 'password'" solo flat readonly
         class="key" :value="value" hide-details></v-text-field>
       <v-btn icon @click="copyText(value)" class="ma-2">
