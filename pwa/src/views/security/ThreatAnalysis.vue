@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-row justify="center" align="center">
-      <v-col :cols="10" :md="7">
+      <v-col :cols="12" :md="7">
         <h2>Threat analysis</h2>
         <p class="mb-0">
           Click the button to toggle reactive password scrutiny for this
@@ -11,12 +11,12 @@
           under the hood.
         </p>
       </v-col>
-      <v-col :cols="10" :md="2" :offset-md="1" class="text-center text-md-right">
+      <v-col :cols="12" :offset-md="1" :md="2" class="text-center text-md-right">
         <v-btn color="primary" @click="toggle">
           {{ isAnalysisOn ? 'Disable' : 'Enable'}}
         </v-btn>
       </v-col>
-      <v-col :cols="10">
+      <v-col :cols="12" :md="10">
         <duplicate-passwords v-if="isAnalysisOn" @edit="editKey">
         </duplicate-passwords>
         <compromised-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">

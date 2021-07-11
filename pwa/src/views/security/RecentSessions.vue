@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <v-row justify="center">
-      <v-col :cols="10">
+      <v-col :cols="12" :md="10">
         <h2>Recent sessions</h2>
         <p>The table contains entries from the last 28 days.</p>
         <v-data-table :loading="isLoading" class="elevation-1"
