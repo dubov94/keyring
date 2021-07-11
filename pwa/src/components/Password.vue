@@ -22,12 +22,12 @@
     <v-card-title class="flex-nowrap">
       <v-text-field :type="reveal ? 'text' : 'password'" solo flat readonly
         class="key" :value="value" hide-details></v-text-field>
-      <v-btn icon @click="copyText(value)" class="ma-2">
+      <v-btn icon @click="copyText(value)">
         <v-icon small>fa-copy</v-icon>
       </v-btn>
       <v-menu>
         <template #activator="{ on }">
-          <v-btn v-on="on" icon class="ma-2">
+          <v-btn v-on="on" icon>
             <v-icon small>fa-ellipsis-v</v-icon>
           </v-btn>
         </template>
