@@ -20,7 +20,8 @@ import {
   initiateBackgroundAuthn,
   AuthnViaApiSignal,
   backgroundAuthnSignal,
-  remoteAuthnComplete
+  remoteAuthnComplete,
+  AuthnViaApiParams
 } from './actions'
 import {
   ServiceRegisterResponse,
@@ -39,7 +40,7 @@ import { Key } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
 import { remoteCredentialsMismatchLocal } from '../user/account/actions'
-import { either, option, function as fn } from 'fp-ts'
+import { either } from 'fp-ts'
 
 export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf([register, registrationReset])),
@@ -110,10 +111,26 @@ const apiAuthn = <T extends TypeConstant>(
                   })).pipe(
                     switchMap((logInResponse: ServiceLogInResponse) => {
                       switch (logInResponse.error) {
-                        case ServiceLogInResponseError.NONE:
+                        case ServiceLogInResponseError.NONE: {
+                          const params: AuthnViaApiParams = {
+                            username,
+                            password,
+                            parametrization: getSaltResponse.salt!,
+                            encryptionKey
+                          }
+                          if (logInResponse.userData === null) {
+                            return of(signalCreator(success({
+                              ...params,
+                              content: either.left({
+                                authnKey: logInResponse.otpContext!.authnKey!,
+                                attemptsLeft: logInResponse.otpContext!.attemptsLeft!
+                              })
+                            })))
+                          }
+                          const userData = logInResponse.userData!
                           return concat(
                             of(signalCreator(indicator(AuthnViaApiFlowIndicator.DECRYPTING_DATA))),
-                            forkJoin(logInResponse.userData!.userKeys!.map(
+                            forkJoin(userData.userKeys!.map(
                               async (item: ServiceIdentifiedKey): Promise<Key> => ({
                                 identifier: item.identifier!,
                                 ...(await getSodiumClient().decryptPassword(encryptionKey, {
@@ -124,26 +141,17 @@ const apiAuthn = <T extends TypeConstant>(
                             )).pipe(
                               defaultIfEmpty(<Key[]>[]),
                               switchMap((userKeys) => of(signalCreator(success({
-                                username,
-                                password,
-                                parametrization: getSaltResponse.salt!,
-                                encryptionKey,
-                                content: fn.pipe(
-                                  option.fromNullable(logInResponse.userData),
-                                  either.fromOption(() => ({
-                                    authnKey: logInResponse.otpContext!.authnKey!,
-                                    attemptsLeft: logInResponse.otpContext!.attemptsLeft!
-                                  })),
-                                  either.map((userData) => ({
-                                    sessionKey: userData.sessionKey!,
-                                    mailVerificationRequired: userData.mailVerificationRequired!,
-                                    mail: userData.mail || null,
-                                    userKeys
-                                  }))
-                                )
+                                ...params,
+                                content: either.right({
+                                  sessionKey: userData.sessionKey!,
+                                  mailVerificationRequired: userData.mailVerificationRequired!,
+                                  mail: userData.mail || null,
+                                  userKeys
+                                })
                               }))))
                             )
                           )
+                        }
                         default:
                           return of(signalCreator(failure(logInResponse.error!)))
                       }

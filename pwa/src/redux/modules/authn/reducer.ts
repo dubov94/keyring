@@ -14,7 +14,6 @@ import {
   AuthnViaDepotFlowIndicator,
   authnViaDepotReset,
   authnViaDepotSignal,
-  OtpContext,
   RegistrationFlowIndicator,
   registrationReset,
   registrationSignal

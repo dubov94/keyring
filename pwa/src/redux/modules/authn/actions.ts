@@ -36,7 +36,7 @@ export enum AuthnViaApiFlowIndicator {
   MAKING_REQUEST = 'API_AUTH_MAKING_REQUEST',
   DECRYPTING_DATA = 'API_AUTH_DECRYPTING_DATA',
 }
-interface AuthnViaApiParams {
+export interface AuthnViaApiParams {
   username: string;
   password: string;
   parametrization: string;

@@ -5,35 +5,42 @@
         <v-row no-gutters class="mt-12" justify="center">
           <v-col :cols="12" :sm="6" :md="4" :lg="3" :xl="2">
             <v-card>
-              <v-card-text>
-                <v-form @keydown.native.enter.prevent="submit">
-                  <form-text-field type="text" label="Username" prepend-icon="person"
-                    :value="username" @input="setUsername"
-                    :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
-                    @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
-                    :autofocus="usernameIsEmpty" :disabled="usernameMatchesDepot"></form-text-field>
-                  <form-text-field type="password" label="Password" prepend-icon="lock"
-                    :value="password" @input="setPassword"
-                    :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
-                    @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
-                    :autofocus="!usernameIsEmpty"></form-text-field>
-                  <v-switch hide-details color="primary" label="Remember me"
-                    :input-value="persist" @change="setPersist" class="mt-2"></v-switch>
-                </v-form>
-              </v-card-text>
-              <v-card-actions class="px-6">
-                <v-btn block color="primary" @click="submit" :loading="hasIndicatorMessage">
-                  <span>Log in</span>
-                  <template #loader>
-                    <v-progress-circular indeterminate :size="23" :width="2">
-                    </v-progress-circular>
-                    <span class="ml-4">{{ indicatorMessage }}</span>
-                  </template>
-                </v-btn>
-              </v-card-actions>
-              <div class="pb-2 text-center">
-                <router-link to="/register">Register</router-link>
-              </div>
+              <v-window :value="step">
+                <v-window-item>
+                  <v-card-text>
+                    <v-form @keydown.native.enter.prevent="submit">
+                      <form-text-field type="text" label="Username" prepend-icon="person"
+                        :value="username" @input="setUsername"
+                        :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
+                        @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
+                        :autofocus="usernameIsEmpty" :disabled="usernameMatchesDepot"></form-text-field>
+                      <form-text-field type="password" label="Password" prepend-icon="lock"
+                        :value="password" @input="setPassword"
+                        :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
+                        @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
+                        :autofocus="!usernameIsEmpty"></form-text-field>
+                      <v-switch hide-details color="primary" label="Remember me"
+                        :input-value="persist" @change="setPersist" class="mt-2"></v-switch>
+                    </v-form>
+                  </v-card-text>
+                  <v-card-actions class="px-6">
+                    <v-btn block color="primary" @click="submit" :loading="hasIndicatorMessage">
+                      <span>Log in</span>
+                      <template #loader>
+                        <v-progress-circular indeterminate :size="23" :width="2">
+                        </v-progress-circular>
+                        <span class="ml-4">{{ indicatorMessage }}</span>
+                      </template>
+                    </v-btn>
+                  </v-card-actions>
+                  <div class="pb-2 text-center">
+                    <router-link to="/register">Register</router-link>
+                  </div>
+                </v-window-item>
+                <v-window-item>
+                  OtpContext
+                </v-window-item>
+              </v-window>
             </v-card>
           </v-col>
         </v-row>
@@ -58,7 +65,9 @@ import {
   authnViaDepotSignal,
   initiateBackgroundAuthn,
   AuthnViaDepotFlowError,
-  remoteAuthnComplete
+  remoteAuthnComplete,
+  AuthnViaApiFlowResult,
+  OtpContext
 } from '@/redux/modules/authn/actions'
 import { authnViaApi, AuthnViaApi, authnViaDepot, AuthnViaDepot } from '@/redux/modules/authn/selectors'
 import { isFailureOf, isActionSuccess, isSignalFailure } from '@/redux/flow_signal'
@@ -67,7 +76,7 @@ import { showToast } from '@/redux/modules/ui/toast/actions'
 import { takeUntil, filter } from 'rxjs/operators'
 import { Observable } from 'rxjs'
 import { function as fn, option, map, eq, array } from 'fp-ts'
-import { error } from '@/redux/remote_data'
+import { error, data } from '@/redux/remote_data'
 import { activateDepot, clearDepot } from '@/redux/modules/depot/actions'
 import { depotUsername } from '@/redux/modules/depot/selectors'
 import { isActionOf } from 'typesafe-actions'
@@ -176,8 +185,22 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     credentialsGroup: ['username', 'password']
   },
   computed: {
+    step () {
+      let step = 0
+      if (this.otpContext !== null) {
+        step += 1
+      }
+      return step
+    },
     authnViaApi (): DeepReadonly<AuthnViaApi> {
       return authnViaApi(this.$data.$state)
+    },
+    otpContext (): DeepReadonly<OtpContext> | null {
+      return fn.pipe(
+        data(this.authnViaApi),
+        option.chain((result: DeepReadonly<AuthnViaApiFlowResult>) => option.getLeft(result.content)),
+        option.getOrElse<DeepReadonly<OtpContext> | null>(() => null)
+      )
     },
     authnViaDepot (): DeepReadonly<AuthnViaDepot> {
       return authnViaDepot(this.$data.$state)
