@@ -22,7 +22,8 @@ import {
   displayAuthnViaApiExceptionsEpic,
   logInViaDepotEpic,
   displayAuthnViaDepotExceptionsEpic,
-  remoteCredentialsMismatchLocalEpic
+  remoteCredentialsMismatchLocalEpic,
+  remoteAuthnCompleteEpic
 } from './epics'
 import {
   AuthnViaApiFlowIndicator,
@@ -38,7 +39,8 @@ import {
   register,
   RegistrationFlowIndicator,
   registrationReset,
-  registrationSignal
+  registrationSignal,
+  remoteAuthnComplete
 } from './actions'
 import { expect } from 'chai'
 import { cancel, exception, failure, indicator, success } from '@/redux/flow_signal'
@@ -441,5 +443,43 @@ describe('remoteCredentialsMismatchLocalEpic', () => {
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       remoteCredentialsMismatchLocal()
     ])
+  })
+})
+
+describe('remoteAuthnCompleteEpic', () => {
+  const params = {
+    username: 'username',
+    password: 'password',
+    parametrization: 'parametrization',
+    encryptionKey: 'encryptionKey'
+  }
+  const userData = {
+    sessionKey: 'sessionKey',
+    mailVerificationRequired: false,
+    mail: 'mail@example.com',
+    userKeys: []
+  }
+  const flowResult = {
+    ...params,
+    content: either.right(userData)
+  }
+
+  ;[
+    authnViaApiSignal(success(flowResult)),
+    backgroundAuthnSignal(success(flowResult))
+  ].forEach((trigger) => {
+    it(`emits the action ${trigger.type}`, async () => {
+      const store: Store<RootState, RootAction> = createStore(reducer)
+      const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+      const epicTracker = new EpicTracker(remoteAuthnCompleteEpic(action$, state$, {}))
+      actionSubject.next(trigger)
+      actionSubject.complete()
+      await epicTracker.waitForCompletion()
+
+      expect(await drainEpicActions(epicTracker)).to.deep.equal([
+        remoteAuthnComplete({ ...params, ...userData })
+      ])
+    })
   })
 })

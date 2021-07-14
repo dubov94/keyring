@@ -19,7 +19,8 @@ import {
   AuthnViaDepotFlowError,
   initiateBackgroundAuthn,
   AuthnViaApiSignal,
-  backgroundAuthnSignal
+  backgroundAuthnSignal,
+  remoteAuthnComplete
 } from './actions'
 import {
   ServiceRegisterResponse,
@@ -33,7 +34,7 @@ import {
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { getAuthenticationApi } from '@/api/api_di'
 import { Epic } from 'redux-observable'
-import { cancel, exception, failure, indicator, isSignalFailure, errorToMessage, success } from '@/redux/flow_signal'
+import { cancel, exception, failure, indicator, isSignalFailure, errorToMessage, success, isActionSuccess2 } from '@/redux/flow_signal'
 import { Key } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
@@ -226,4 +227,21 @@ export const remoteCredentialsMismatchLocalEpic: Epic<RootAction, RootAction, Ro
   filter(isSignalFailure),
   filter((signal) => signal.error.value === ServiceLogInResponseError.INVALIDCREDENTIALS),
   concatMap(() => of(remoteCredentialsMismatchLocal()))
+)
+
+export const remoteAuthnCompleteEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+  filter(isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal])),
+  concatMap((action) => {
+    const { data } = action.payload
+    if (either.isRight(data.content)) {
+      return of(remoteAuthnComplete({
+        username: data.username,
+        password: data.password,
+        parametrization: data.parametrization,
+        encryptionKey: data.encryptionKey,
+        ...data.content.right
+      }))
+    }
+    return EMPTY
+  })
 )

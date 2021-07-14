@@ -3,10 +3,9 @@ import { identity, reducer, RemoteData, withNoResult, zero } from '@/redux/remot
 import { createReducer } from '@reduxjs/toolkit'
 import { isActionOf } from 'typesafe-actions'
 import {
-  authnViaApiSignal,
   authnViaDepotSignal,
-  backgroundAuthnSignal,
-  registrationSignal
+  registrationSignal,
+  remoteAuthnComplete
 } from '../../authn/actions'
 import {
   AccountDeletionFlowIndicator,
@@ -47,7 +46,6 @@ import {
 } from '@/api/definitions'
 import { DeepReadonly } from 'ts-essentials'
 import { castDraft } from 'immer'
-import { either } from 'fp-ts'
 
 export default createReducer<{
   isAuthenticated: boolean;
@@ -92,17 +90,13 @@ export default createReducer<{
       state.sessionKey = flowSuccess.sessionKey
       state.mailVerificationRequired = true
     })
-    .addMatcher(isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal]), (state, action) => {
-      const data = action.payload.data
-      if (either.isRight(data.content)) {
-        const userData = data.content.right
-        state.isAuthenticated = true
-        state.parametrization = data.parametrization
-        state.encryptionKey = data.encryptionKey
-        state.sessionKey = userData.sessionKey
-        state.mailVerificationRequired = userData.mailVerificationRequired
-        state.mail = userData.mail
-      }
+    .addMatcher(isActionOf(remoteAuthnComplete), (state, action) => {
+      state.isAuthenticated = true
+      state.parametrization = action.payload.parametrization
+      state.encryptionKey = action.payload.encryptionKey
+      state.sessionKey = action.payload.sessionKey
+      state.mailVerificationRequired = action.payload.mailVerificationRequired
+      state.mail = action.payload.mail
     })
     .addMatcher(isActionSuccess(authnViaDepotSignal), (state) => {
       state.isAuthenticated = true

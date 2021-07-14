@@ -8,10 +8,9 @@ import { expect } from 'chai'
 import { deepEqual, instance, mock, objectContaining, when } from 'ts-mockito'
 import { container } from 'tsyringe'
 import {
-  authnViaApiSignal,
   authnViaDepotSignal,
-  backgroundAuthnSignal,
-  registrationSignal
+  registrationSignal,
+  remoteAuthnComplete
 } from '../../authn/actions'
 import {
   create,
@@ -43,7 +42,6 @@ import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
 import { showToast } from '../../ui/toast/actions'
 import { PayloadAction } from 'typesafe-actions'
 import { Key } from '@/redux/entities'
-import { either } from 'fp-ts'
 
 describe('creationEpic', () => {
   it('emits creation sequence', async () => {
@@ -217,35 +215,21 @@ describe('inheritKeysFromAuthnDataEpic', () => {
     tags: ['tag']
   }]
   ;[
-    authnViaApiSignal(success({
+    remoteAuthnComplete({
       username: 'username',
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      content: either.right({
-        sessionKey: 'sessionKey',
-        mailVerificationRequired: false,
-        mail: 'mail@example.com',
-        userKeys
-      })
-    })),
+      sessionKey: 'sessionKey',
+      mailVerificationRequired: false,
+      mail: 'mail@example.com',
+      userKeys
+    }),
     authnViaDepotSignal(success({
       username: 'username',
       password: 'password',
       userKeys,
       vaultKey: 'vaultKey'
-    })),
-    backgroundAuthnSignal(success({
-      username: 'username',
-      password: 'password',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      content: either.right({
-        sessionKey: 'sessionKey',
-        mailVerificationRequired: false,
-        mail: 'mail@example.com',
-        userKeys
-      })
     }))
   ].forEach((trigger) => {
     it(`emits \`emplace\` on ${trigger.type}`, async () => {

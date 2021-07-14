@@ -36,6 +36,12 @@ export enum AuthnViaApiFlowIndicator {
   MAKING_REQUEST = 'API_AUTH_MAKING_REQUEST',
   DECRYPTING_DATA = 'API_AUTH_DECRYPTING_DATA',
 }
+interface AuthnViaApiParams {
+  username: string;
+  password: string;
+  parametrization: string;
+  encryptionKey: string;
+}
 export interface OtpContext {
   authnKey: string;
   attemptsLeft: number;
@@ -46,11 +52,7 @@ interface UserData {
   mail: string | null;
   userKeys: Key[];
 }
-export interface AuthnViaApiFlowResult {
-  username: string;
-  password: string;
-  parametrization: string;
-  encryptionKey: string;
+export type AuthnViaApiFlowResult = AuthnViaApiParams & {
   content: either.Either<OtpContext, UserData>;
 }
 export const logInViaApi = createAction('authn/logInViaApi')<DeepReadonly<{
@@ -88,3 +90,5 @@ export const initiateBackgroundAuthn = createAction('authn/initiateBackgroundAut
   password: string;
 }>>()
 export const backgroundAuthnSignal = createAction('authn/backgroundAuthnSignal')<DeepReadonly<AuthnViaApiSignal>>()
+
+export const remoteAuthnComplete = createAction('authn/remoteAuthnComplete')<DeepReadonly<AuthnViaApiParams & UserData>>()

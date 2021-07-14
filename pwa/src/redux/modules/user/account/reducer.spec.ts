@@ -2,8 +2,8 @@ import { success } from '@/redux/flow_signal'
 import { hasData } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
 import { expect } from 'chai'
-import { option, either } from 'fp-ts'
-import { authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal, registrationSignal } from '../../authn/actions'
+import { option } from 'fp-ts'
+import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '../../authn/actions'
 import {
   accountDeletionReset,
   accountDeletionSignal,
@@ -43,43 +43,25 @@ describe('registrationSignal', () => {
   })
 })
 
-describe('onlineAuthnSignal', () => {
-  ;[
-    authnViaApiSignal(success({
+describe('remoteAuthnComplete', () => {
+  it('sets the account state', () => {
+    const state = reducer(undefined, remoteAuthnComplete({
       username: 'username',
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      content: either.right({
-        sessionKey: 'sessionKey',
-        mailVerificationRequired: false,
-        mail: 'mail@example.com',
-        userKeys: []
-      })
-    })),
-    backgroundAuthnSignal(success({
-      username: 'username',
-      password: 'password',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      content: either.right({
-        sessionKey: 'sessionKey',
-        mailVerificationRequired: false,
-        mail: 'mail@example.com',
-        userKeys: []
-      })
+      sessionKey: 'sessionKey',
+      mailVerificationRequired: false,
+      mail: 'mail@example.com',
+      userKeys: []
     }))
-  ].forEach((trigger) => {
-    it(`sets the account state on ${trigger.type}`, () => {
-      const state = reducer(undefined, trigger)
 
-      expect(state.isAuthenticated).to.be.true
-      expect(state.parametrization).to.equal('parametrization')
-      expect(state.encryptionKey).to.equal('encryptionKey')
-      expect(state.sessionKey).to.equal('sessionKey')
-      expect(state.mailVerificationRequired).to.be.false
-      expect(state.mail).to.equal('mail@example.com')
-    })
+    expect(state.isAuthenticated).to.be.true
+    expect(state.parametrization).to.equal('parametrization')
+    expect(state.encryptionKey).to.equal('encryptionKey')
+    expect(state.sessionKey).to.equal('sessionKey')
+    expect(state.mailVerificationRequired).to.be.false
+    expect(state.mail).to.equal('mail@example.com')
   })
 })
 

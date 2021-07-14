@@ -1,5 +1,5 @@
 import { getAdministrationApi } from '@/api/api_di'
-import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success, isActionSuccess2 } from '@/redux/flow_signal'
+import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success } from '@/redux/flow_signal'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
 import { Epic } from 'redux-observable'
@@ -66,7 +66,7 @@ import { getSodiumClient } from '@/cryptography/sodium_client'
 import { Password } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
-import { authnViaApiSignal, backgroundAuthnSignal } from '../../authn/actions'
+import { remoteAuthnComplete } from '../../authn/actions'
 import { getQrcEncoder } from '@/cryptography/qrc_encoder'
 import { isDepotActive } from '../../depot/selectors'
 import { option } from 'fp-ts'
@@ -308,10 +308,10 @@ export const logOutOnCredentialsMismatchEpic: Epic<RootAction, RootAction, RootS
 )
 
 export const remoteRehashEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
-  filter(isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal])),
+  filter(isActionOf(remoteAuthnComplete)),
   withLatestFrom(state$),
   switchMap(([action, state]) => {
-    const { parametrization, password } = action.payload.data
+    const { parametrization, password } = action.payload
     if (!getSodiumClient().isParametrizationUpToDate(parametrization)) {
       return masterKeyChange({ current: password, renewal: password }, state, remoteRehashSignal)
     }

@@ -1,6 +1,6 @@
 import { getAdministrationApi } from '@/api/api_di'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { exception, indicator, isActionSuccess3, errorToMessage, success, isActionSuccess, isActionSuccess2 } from '@/redux/flow_signal'
+import { exception, indicator, isActionSuccess3, errorToMessage, success, isActionSuccess } from '@/redux/flow_signal'
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { Epic } from 'redux-observable'
 import { concat, EMPTY, from, of } from 'rxjs'
@@ -20,10 +20,10 @@ import {
 import { ServiceCreateKeyResponse } from '@/api/definitions'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
-import { authnViaApiSignal, authnViaDepotSignal, backgroundAuthnSignal } from '../../authn/actions'
+import { authnViaDepotSignal, remoteAuthnComplete } from '../../authn/actions'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { disjunction } from '@/redux/predicates'
-import { monoid, either } from 'fp-ts'
+import { monoid } from 'fp-ts'
 
 export const creationEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf(create)),
@@ -110,9 +110,8 @@ export const inheritKeysFromAuthnDataEpic: Epic<RootAction, RootAction, RootStat
     if (isActionSuccess(authnViaDepotSignal)(action)) {
       return of(emplace(action.payload.data.userKeys))
     }
-    if (isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal])(action) &&
-        either.isRight(action.payload.data.content)) {
-      return of(emplace(action.payload.data.content.right.userKeys))
+    if (isActionOf(remoteAuthnComplete)(action)) {
+      return of(emplace(action.payload.userKeys))
     }
     return EMPTY
   })

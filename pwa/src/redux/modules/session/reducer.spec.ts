@@ -1,10 +1,9 @@
 import { success } from '@/redux/flow_signal'
 import { expect } from 'chai'
-import { authnViaApiSignal, authnViaDepotSignal, registrationSignal } from '../authn/actions'
+import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '../authn/actions'
 import { logOut, usernameChangeSignal } from '../user/account/actions'
 import { rehydrateSession } from './actions'
 import reducer from './reducer'
-import { either } from 'fp-ts'
 
 describe('registrationSignal', () => {
   it('updates the username', () => {
@@ -22,18 +21,16 @@ describe('registrationSignal', () => {
 
 describe('authnSignal', () => {
   ;[
-    authnViaApiSignal(success({
+    remoteAuthnComplete({
       username: 'username',
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      content: either.right({
-        sessionKey: 'sessionKey',
-        mailVerificationRequired: false,
-        mail: 'mail@example.com',
-        userKeys: []
-      })
-    })),
+      sessionKey: 'sessionKey',
+      mailVerificationRequired: false,
+      mail: 'mail@example.com',
+      userKeys: []
+    }),
     authnViaDepotSignal(success({
       username: 'username',
       password: 'password',

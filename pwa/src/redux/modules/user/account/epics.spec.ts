@@ -82,12 +82,12 @@ import {
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { container } from 'tsyringe'
 import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
-import { authnViaApiSignal, registrationSignal } from '../../authn/actions'
+import { registrationSignal, remoteAuthnComplete } from '../../authn/actions'
 import { showToast } from '../../ui/toast/actions'
 import { SodiumClient } from '@/cryptography/sodium_client'
 import { emplace } from '../keys/actions'
 import { QrcEncoder, QRC_ENCODER_TOKEN } from '@/cryptography/qrc_encoder'
-import { option, either } from 'fp-ts'
+import { option } from 'fp-ts'
 import { depotActivationData } from '../../depot/actions'
 
 describe('releaseMailTokenEpic', () => {
@@ -625,18 +625,16 @@ describe('remoteRehashEpic', () => {
     })
 
     const epicTracker = new EpicTracker(remoteRehashEpic(action$, state$, {}))
-    actionSubject.next(authnViaApiSignal(success({
+    actionSubject.next(remoteAuthnComplete({
       username: 'username',
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      content: either.right({
-        sessionKey: 'sessionKey',
-        mailVerificationRequired: false,
-        mail: 'mail@example.com',
-        userKeys: []
-      })
-    })))
+      sessionKey: 'sessionKey',
+      mailVerificationRequired: false,
+      mail: 'mail@example.com',
+      userKeys: []
+    }))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
