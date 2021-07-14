@@ -21,12 +21,12 @@ import {
 } from './actions'
 import { StandardError } from '@/redux/flow_signal'
 import { isActionOf } from 'typesafe-actions'
-import { option } from 'fp-ts'
 import { DeepReadonly } from 'ts-essentials'
+import { castDraft } from 'immer'
 
 export default createReducer<{
   registration: RemoteData<RegistrationFlowIndicator, {}, StandardError<ServiceRegisterResponseError>>;
-  authnViaApi: RemoteData<AuthnViaApiFlowIndicator, option.Option<OtpContext>, StandardError<ServiceGetSaltResponseError | ServiceLogInResponseError>>;
+  authnViaApi: RemoteData<AuthnViaApiFlowIndicator, AuthnViaApiFlowResult, StandardError<ServiceGetSaltResponseError | ServiceLogInResponseError>>;
   authnViaDepot: RemoteData<AuthnViaDepotFlowIndicator, {}, StandardError<AuthnViaDepotFlowError>>;
 }>(
   {
@@ -46,11 +46,11 @@ export default createReducer<{
       state.registration = withNoResult(state.registration)
     })
     .addMatcher(isActionOf(authnViaApiSignal), (state, action) => {
-      state.authnViaApi = reducer(
+      state.authnViaApi = castDraft(reducer(
         identity<AuthnViaApiFlowIndicator>(),
-        (result: DeepReadonly<AuthnViaApiFlowResult>) => option.getLeft(result.content),
+        identity<DeepReadonly<AuthnViaApiFlowResult>>(),
         identity<StandardError<ServiceGetSaltResponseError | ServiceLogInResponseError>>()
-      )(state.authnViaApi, action.payload)
+      )(state.authnViaApi, action.payload))
     })
     .addMatcher(isActionOf(authnViaApiReset), (state) => {
       state.authnViaApi = withNoResult(state.authnViaApi)

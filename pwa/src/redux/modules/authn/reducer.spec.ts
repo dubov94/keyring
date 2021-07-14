@@ -33,7 +33,7 @@ describe('registration', () => {
 })
 
 describe('authnViaApi', () => {
-  const signalAction = authnViaApiSignal(success({
+  const flowResult = {
     username: 'username',
     password: 'password',
     parametrization: 'parametrization',
@@ -42,19 +42,14 @@ describe('authnViaApi', () => {
       authnKey: 'token',
       attemptsLeft: 1
     })
-  }))
+  }
+  const signalAction = authnViaApiSignal(success(flowResult))
 
   describe('authnViaApiSignal', () => {
     it('updates the result', () => {
       const state = reducer(undefined, signalAction)
 
-      expect(hasData(state.authnViaApi)).to.be.true
-      expect(data(state.authnViaApi)).to.deep.equal(
-        option.of(option.of({
-          authnKey: 'token',
-          attemptsLeft: 1
-        }))
-      )
+      expect(data(state.authnViaApi)).to.deep.equal(option.of(flowResult))
     })
   })
 

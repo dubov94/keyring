@@ -9,7 +9,7 @@ import VueRouter from 'vue-router'
 import LogIn from './LogIn.vue'
 import { function as fn, either } from 'fp-ts'
 import { expect } from 'chai'
-import { authnViaApiReset, authnViaApiSignal, authnViaDepotReset, authnViaDepotSignal, initiateBackgroundAuthn, logInViaApi, logInViaDepot } from '@/redux/modules/authn/actions'
+import { authnViaApiReset, authnViaApiSignal, authnViaDepotReset, authnViaDepotSignal, initiateBackgroundAuthn, logInViaApi, logInViaDepot, remoteAuthnComplete } from '@/redux/modules/authn/actions'
 import { activateDepot, rehydrateDepot } from '@/redux/modules/depot/actions'
 import { success } from '@/redux/flow_signal'
 
@@ -103,18 +103,16 @@ describe('LogIn', () => {
 
   it('redirects and initiates depot authn on remote authn completion', async () => {
     await getPersistanceSwitch().trigger('click')
-    $actions.next(authnViaApiSignal(success({
+    $actions.next(remoteAuthnComplete({
       username: 'username',
       password: 'password',
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
-      content: either.right({
-        sessionKey: 'sessionKey',
-        mailVerificationRequired: false,
-        mail: 'mail@example.com',
-        userKeys: []
-      })
-    })))
+      sessionKey: 'sessionKey',
+      mailVerificationRequired: false,
+      mail: 'mail@example.com',
+      userKeys: []
+    }))
     await wrapper.vm.$nextTick()
 
     expect(await drainActionQueue(actionQueue)).to.include.deep.members([

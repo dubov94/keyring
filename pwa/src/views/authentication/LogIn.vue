@@ -52,19 +52,19 @@ import {
   AuthnViaApiFlowIndicator,
   logInViaApi,
   authnViaApiReset,
-  authnViaApiSignal,
   AuthnViaDepotFlowIndicator,
   logInViaDepot,
   authnViaDepotReset,
   authnViaDepotSignal,
   initiateBackgroundAuthn,
-  AuthnViaDepotFlowError
+  AuthnViaDepotFlowError,
+  remoteAuthnComplete
 } from '@/redux/modules/authn/actions'
 import { authnViaApi, AuthnViaApi, authnViaDepot, AuthnViaDepot } from '@/redux/modules/authn/selectors'
 import { isFailureOf, isActionSuccess, isSignalFailure } from '@/redux/flow_signal'
 import { DeepReadonly } from 'ts-essentials'
 import { showToast } from '@/redux/modules/ui/toast/actions'
-import { takeUntil, filter, map as rxMap } from 'rxjs/operators'
+import { takeUntil, filter } from 'rxjs/operators'
 import { Observable } from 'rxjs'
 import { function as fn, option, map, eq, array } from 'fp-ts'
 import { error } from '@/redux/remote_data'
@@ -105,13 +105,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     this.username = sessionUsername(this.$data.$state) || usernameFromDepot || ''
     this.persist = usernameFromDepot !== null
     this.actions().pipe(
-      filter(isActionSuccess(authnViaApiSignal)),
+      filter(isActionOf(remoteAuthnComplete)),
       takeUntil(this.$data.$destruction)
     ).subscribe((action) => {
       if (this.persist) {
         this.dispatch(activateDepot({
-          username: action.payload.data.username,
-          password: action.payload.data.password
+          username: action.payload.username,
+          password: action.payload.password
         }))
       }
       this.$router.push('/dashboard')
@@ -128,10 +128,17 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     })
     this.actions().pipe(
       filter(isActionOf(authnViaDepotSignal)),
-      rxMap((action) => action.payload),
-      filter(isSignalFailure),
-      rxMap((signal) => signal.error),
-      filter(isFailureOf([AuthnViaDepotFlowError.INVALID_CREDENTIALS])),
+      filter((action) => {
+        const signal = action.payload
+        if (isSignalFailure(signal)) {
+          const { error } = signal
+          const predicate = isFailureOf([AuthnViaDepotFlowError.INVALID_CREDENTIALS])
+          if (predicate(error)) {
+            return true
+          }
+        }
+        return false
+      }),
       takeUntil(this.$data.$destruction)
     ).subscribe(() => {
       this.dispatch(showToast({
