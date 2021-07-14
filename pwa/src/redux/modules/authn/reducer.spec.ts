@@ -2,9 +2,9 @@ import { success } from '@/redux/flow_signal'
 import { expect } from 'chai'
 import { authnViaApiReset, authnViaApiSignal, authnViaDepotReset, authnViaDepotSignal, registrationReset, registrationSignal } from './actions'
 import reducer from './reducer'
-import { hasData } from '@/redux/remote_data'
+import { hasData, data } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
-import { either } from 'fp-ts'
+import { either, option } from 'fp-ts'
 
 describe('registration', () => {
   const signalAction = registrationSignal(success({
@@ -38,11 +38,9 @@ describe('authnViaApi', () => {
     password: 'password',
     parametrization: 'parametrization',
     encryptionKey: 'encryptionKey',
-    content: either.right({
-      sessionKey: 'sessionKey',
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys: []
+    content: either.left({
+      authnKey: 'token',
+      attemptsLeft: 1
     })
   }))
 
@@ -51,6 +49,12 @@ describe('authnViaApi', () => {
       const state = reducer(undefined, signalAction)
 
       expect(hasData(state.authnViaApi)).to.be.true
+      expect(data(state.authnViaApi)).to.deep.equal(
+        option.of(option.of({
+          authnKey: 'token',
+          attemptsLeft: 1
+        }))
+      )
     })
   })
 

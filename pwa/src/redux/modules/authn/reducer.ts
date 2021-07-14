@@ -7,22 +7,26 @@ import {
 import { reducer, RemoteData, zero, identity, withNoResult } from '@/redux/remote_data'
 import {
   AuthnViaApiFlowIndicator,
+  AuthnViaApiFlowResult,
   authnViaApiReset,
   authnViaApiSignal,
   AuthnViaDepotFlowError,
   AuthnViaDepotFlowIndicator,
   authnViaDepotReset,
   authnViaDepotSignal,
+  OtpContext,
   RegistrationFlowIndicator,
   registrationReset,
   registrationSignal
 } from './actions'
 import { StandardError } from '@/redux/flow_signal'
 import { isActionOf } from 'typesafe-actions'
+import { option } from 'fp-ts'
+import { DeepReadonly } from 'ts-essentials'
 
 export default createReducer<{
   registration: RemoteData<RegistrationFlowIndicator, {}, StandardError<ServiceRegisterResponseError>>;
-  authnViaApi: RemoteData<AuthnViaApiFlowIndicator, {}, StandardError<ServiceGetSaltResponseError | ServiceLogInResponseError>>;
+  authnViaApi: RemoteData<AuthnViaApiFlowIndicator, option.Option<OtpContext>, StandardError<ServiceGetSaltResponseError | ServiceLogInResponseError>>;
   authnViaDepot: RemoteData<AuthnViaDepotFlowIndicator, {}, StandardError<AuthnViaDepotFlowError>>;
 }>(
   {
@@ -44,7 +48,7 @@ export default createReducer<{
     .addMatcher(isActionOf(authnViaApiSignal), (state, action) => {
       state.authnViaApi = reducer(
         identity<AuthnViaApiFlowIndicator>(),
-        () => ({}),
+        (result: DeepReadonly<AuthnViaApiFlowResult>) => option.getLeft(result.content),
         identity<StandardError<ServiceGetSaltResponseError | ServiceLogInResponseError>>()
       )(state.authnViaApi, action.payload)
     })
