@@ -21,7 +21,13 @@ import {
   AuthnViaApiSignal,
   backgroundAuthnSignal,
   remoteAuthnComplete,
-  AuthnViaApiParams
+  AuthnViaApiParams,
+  authnOtpProvisionReset,
+  authnOtpProvisionSignal,
+  AuthnOtpProvisionSignal,
+  provideOtp,
+  AuthnOtpProvisionFlowIndicator,
+  UserData
 } from './actions'
 import {
   ServiceRegisterResponse,
@@ -30,7 +36,10 @@ import {
   ServiceGetSaltResponseError,
   ServiceLogInResponse,
   ServiceLogInResponseError,
-  ServiceIdentifiedKey
+  ServiceIdentifiedKey,
+  ServiceProvideOtpResponse,
+  ServiceProvideOtpResponseError,
+  ServiceUserData
 } from '@/api/definitions'
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { getAuthenticationApi } from '@/api/api_di'
@@ -40,7 +49,7 @@ import { Key } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
 import { remoteCredentialsMismatchLocal } from '../user/account/actions'
-import { either } from 'fp-ts'
+import { either, option } from 'fp-ts'
 
 export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf([register, registrationReset])),
@@ -90,6 +99,26 @@ export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action
 
 export const displayRegistrationExceptionsEpic = createDisplayExceptionsEpic(registrationSignal)
 
+const decodeUserData = (encryptionKey: string, userData: ServiceUserData): Observable<UserData> => {
+  return forkJoin(userData.userKeys!.map(
+    async (item: ServiceIdentifiedKey): Promise<Key> => ({
+      identifier: item.identifier!,
+      ...(await getSodiumClient().decryptPassword(encryptionKey, {
+        value: item.password!.value!,
+        tags: item.password!.tags!
+      }))
+    })
+  )).pipe(
+    defaultIfEmpty(<Key[]>[]),
+    switchMap((userKeys) => of({
+      sessionKey: userData.sessionKey!,
+      mailVerificationRequired: userData.mailVerificationRequired!,
+      mail: userData.mail || null,
+      userKeys
+    }))
+  )
+}
+
 const apiAuthn = <T extends TypeConstant>(
   { username, password }: { username: string; password: string },
   signalCreator: (payload: DeepReadonly<AuthnViaApiSignal>) => PayloadAction<T, DeepReadonly<AuthnViaApiSignal>> & RootAction
@@ -127,27 +156,12 @@ const apiAuthn = <T extends TypeConstant>(
                               })
                             })))
                           }
-                          const userData = logInResponse.userData!
                           return concat(
                             of(signalCreator(indicator(AuthnViaApiFlowIndicator.DECRYPTING_DATA))),
-                            forkJoin(userData.userKeys!.map(
-                              async (item: ServiceIdentifiedKey): Promise<Key> => ({
-                                identifier: item.identifier!,
-                                ...(await getSodiumClient().decryptPassword(encryptionKey, {
-                                  value: item.password!.value!,
-                                  tags: item.password!.tags!
-                                }))
-                              })
-                            )).pipe(
-                              defaultIfEmpty(<Key[]>[]),
-                              switchMap((userKeys) => of(signalCreator(success({
+                            decodeUserData(encryptionKey, logInResponse.userData!).pipe(
+                              switchMap((userData) => of(signalCreator(success({
                                 ...params,
-                                content: either.right({
-                                  sessionKey: userData.sessionKey!,
-                                  mailVerificationRequired: userData.mailVerificationRequired!,
-                                  mail: userData.mail || null,
-                                  userKeys
-                                })
+                                content: either.right(userData)
                               }))))
                             )
                           )
@@ -183,6 +197,52 @@ export const logInViaApiEpic: Epic<RootAction, RootAction, RootState> = (action$
 )
 
 export const displayAuthnViaApiExceptionsEpic = createDisplayExceptionsEpic(authnViaApiSignal)
+
+const otpProvision = <T extends TypeConstant>(
+  { encryptionKey, authnKey, otp, yieldTrustedToken }: { encryptionKey: string; authnKey: string; otp: string; yieldTrustedToken: boolean },
+  signalCreator: (payload: DeepReadonly<AuthnOtpProvisionSignal>) => PayloadAction<T, DeepReadonly<AuthnOtpProvisionSignal>> & RootAction
+): Observable<RootAction> => {
+  return concat(
+    of(signalCreator(indicator(AuthnOtpProvisionFlowIndicator.MAKING_REQUEST))),
+    from(getAuthenticationApi().provideOtp({ authnKey, otp, yieldTrustedToken })).pipe(
+      switchMap((response: ServiceProvideOtpResponse) => {
+        switch (response.error) {
+          case ServiceProvideOtpResponseError.NONE:
+            return concat(
+              of(signalCreator(indicator(AuthnOtpProvisionFlowIndicator.DECRYPTING_DATA))),
+              decodeUserData(encryptionKey, response.userData!).pipe(
+                switchMap((userData) => of(signalCreator(success({
+                  trustedToken: option.fromNullable(response.trustedToken),
+                  userData
+                }))))
+              )
+            )
+          default:
+            return of(signalCreator(failure({
+              error: response.error!,
+              attemptsLeft: response.attemptsLeft!
+            })))
+        }
+      })
+    )
+  ).pipe(
+    catchError((error) => of(signalCreator(exception(errorToMessage(error)))))
+  )
+}
+
+export const provideOtpEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+  filter(isActionOf([provideOtp, authnOtpProvisionReset])),
+  switchMap((action) => {
+    if (isActionOf(provideOtp, action)) {
+      return otpProvision(action.payload, authnOtpProvisionSignal)
+    } else if (isActionOf(authnOtpProvisionReset, action)) {
+      return of(authnOtpProvisionSignal(cancel()))
+    }
+    return EMPTY
+  })
+)
+
+export const displayAuthnOtpProvisionExceptionsEpic = createDisplayExceptionsEpic(authnOtpProvisionSignal)
 
 export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf([logInViaDepot, authnViaDepotReset])),

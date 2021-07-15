@@ -1,13 +1,14 @@
 import {
   ServiceRegisterResponseError,
   ServiceGetSaltResponseError,
-  ServiceLogInResponseError
+  ServiceLogInResponseError,
+  ServiceProvideOtpResponseError
 } from '@/api/definitions'
 import { FlowSignal, StandardError } from '@/redux/flow_signal'
 import { Key } from '@/redux/entities'
 import { DeepReadonly } from 'ts-essentials'
 import { createAction } from 'typesafe-actions'
-import { either } from 'fp-ts'
+import { either, option } from 'fp-ts'
 
 export enum RegistrationFlowIndicator {
   GENERATING_PARAMETRIZATION = 'GENERATING_PARAMETRIZATION',
@@ -46,7 +47,7 @@ export interface OtpContext {
   authnKey: string;
   attemptsLeft: number;
 }
-interface UserData {
+export interface UserData {
   sessionKey: string;
   mailVerificationRequired: boolean;
   mail: string | null;
@@ -62,6 +63,28 @@ export const logInViaApi = createAction('authn/logInViaApi')<DeepReadonly<{
 export type AuthnViaApiSignal = FlowSignal<AuthnViaApiFlowIndicator, AuthnViaApiFlowResult, StandardError<ServiceGetSaltResponseError | ServiceLogInResponseError>>
 export const authnViaApiSignal = createAction('authn/viaApi/signal')<DeepReadonly<AuthnViaApiSignal>>()
 export const authnViaApiReset = createAction('authn/viaApi/reset')()
+
+export enum AuthnOtpProvisionFlowIndicator {
+  MAKING_REQUEST = 'MAKING_REQUEST',
+  DECRYPTING_DATA = 'DECRYPTING_DATA',
+}
+export const provideOtp = createAction('authn/provideOtp')<DeepReadonly<{
+  encryptionKey: string;
+  authnKey: string;
+  otp: string;
+  yieldTrustedToken: boolean;
+}>>()
+interface AuthnOtpProvisionFlowResult {
+  trustedToken: option.Option<string>;
+  userData: UserData;
+}
+interface AuthnOtpProvisionFlowError {
+  error: ServiceProvideOtpResponseError;
+  attemptsLeft: number;
+}
+export type AuthnOtpProvisionSignal = FlowSignal<AuthnOtpProvisionFlowIndicator, AuthnOtpProvisionFlowResult, StandardError<AuthnOtpProvisionFlowError>>
+export const authnOtpProvisionSignal = createAction('authn/otpProvision/signal')<DeepReadonly<AuthnOtpProvisionSignal>>()
+export const authnOtpProvisionReset = createAction('authn/otpProvision/reset')()
 
 export enum AuthnViaDepotFlowIndicator {
   COMPUTING_MASTER_KEY_DERIVATIVES = 'DEPOT_AUTH_COMPUTING_MASTER_KEY_DERIVATIVES',

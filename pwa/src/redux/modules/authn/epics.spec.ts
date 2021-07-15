@@ -12,7 +12,9 @@ import {
   ServiceGetSaltResponse,
   ServiceGetSaltResponseError,
   ServiceLogInResponse,
-  ServiceLogInResponseError
+  ServiceLogInResponseError,
+  ServiceProvideOtpResponse,
+  ServiceProvideOtpResponseError
 } from '@/api/definitions'
 import { AUTHENTICATION_API_TOKEN } from '@/api/api_di'
 import {
@@ -23,9 +25,14 @@ import {
   logInViaDepotEpic,
   displayAuthnViaDepotExceptionsEpic,
   remoteCredentialsMismatchLocalEpic,
-  remoteAuthnCompleteEpic
+  remoteAuthnCompleteEpic,
+  provideOtpEpic,
+  displayAuthnOtpProvisionExceptionsEpic
 } from './epics'
 import {
+  AuthnOtpProvisionFlowIndicator,
+  authnOtpProvisionReset,
+  authnOtpProvisionSignal,
   AuthnViaApiFlowIndicator,
   authnViaApiReset,
   authnViaApiSignal,
@@ -36,6 +43,7 @@ import {
   backgroundAuthnSignal,
   logInViaApi,
   logInViaDepot,
+  provideOtp,
   register,
   RegistrationFlowIndicator,
   registrationReset,
@@ -43,12 +51,51 @@ import {
   remoteAuthnComplete
 } from './actions'
 import { expect } from 'chai'
-import { cancel, exception, failure, indicator, success } from '@/redux/flow_signal'
+import { cancel, exception, failure, FlowSignal, indicator, StandardError, success } from '@/redux/flow_signal'
 import { showToast } from '../ui/toast/actions'
 import { rehydrateDepot } from '../depot/actions'
 import { Key } from '@/redux/entities'
 import { remoteCredentialsMismatchLocal } from '../user/account/actions'
-import { either } from 'fp-ts'
+import { either, option } from 'fp-ts'
+import { Epic } from 'redux-observable'
+import { PayloadAction, TypeConstant } from 'typesafe-actions'
+
+const testEpicCancellation = <T extends TypeConstant, I, S, E>(
+  epic: Epic<RootAction, RootAction, RootState>,
+  actionCreator: () => RootAction,
+  signalCreator: (payload: FlowSignal<I, S, StandardError<E>>) =>
+    PayloadAction<T, FlowSignal<I, S, StandardError<E>>> & RootAction
+) => async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(epic(action$, state$, {}))
+    actionSubject.next(actionCreator())
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      signalCreator(cancel())
+    ])
+  }
+
+const testEpicException = <T extends TypeConstant, I, S, E>(
+  epic: Epic<RootAction, RootAction, RootState>,
+  signalCreator: (payload: FlowSignal<I, S, StandardError<E>>) =>
+    PayloadAction<T, FlowSignal<I, S, StandardError<E>>> & RootAction
+) => async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(epic(action$, state$, {}))
+    actionSubject.next(signalCreator(exception('exception')))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      showToast({ message: 'exception' })
+    ])
+  }
 
 describe('registrationEpic', () => {
   it('emits registration sequence', async () => {
@@ -99,35 +146,11 @@ describe('registrationEpic', () => {
     ])
   })
 
-  it('emits registration cancellation', async () => {
-    const store: Store<RootState, RootAction> = createStore(reducer)
-    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
-
-    const epicTracker = new EpicTracker(registrationEpic(action$, state$, {}))
-    actionSubject.next(registrationReset())
-    actionSubject.complete()
-    await epicTracker.waitForCompletion()
-
-    expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      registrationSignal(cancel())
-    ])
-  })
+  it('emits registration cancellation', testEpicCancellation(registrationEpic, registrationReset, registrationSignal))
 })
 
 describe('displayRegistrationExceptionsEpic', () => {
-  it('emits toast data', async () => {
-    const store: Store<RootState, RootAction> = createStore(reducer)
-    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
-
-    const epicTracker = new EpicTracker(displayRegistrationExceptionsEpic(action$, state$, {}))
-    actionSubject.next(registrationSignal(exception('exception')))
-    actionSubject.complete()
-    await epicTracker.waitForCompletion()
-
-    expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      showToast({ message: 'exception' })
-    ])
-  })
+  it('emits toast data', testEpicException(displayRegistrationExceptionsEpic, registrationSignal))
 })
 
 describe('logInViaApiEpic', () => {
@@ -268,35 +291,86 @@ describe('logInViaApiEpic', () => {
     ])
   })
 
-  it('emits authentication cancellation', async () => {
-    const store: Store<RootState, RootAction> = createStore(reducer)
-    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
-
-    const epicTracker = new EpicTracker(logInViaApiEpic(action$, state$, {}))
-    actionSubject.next(authnViaApiReset())
-    actionSubject.complete()
-    await epicTracker.waitForCompletion()
-
-    expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      authnViaApiSignal(cancel())
-    ])
-  })
+  it('emits authentication cancellation', testEpicCancellation(logInViaApiEpic, authnViaApiReset, authnViaApiSignal))
 })
 
 describe('displayAuthnViaApiExceptionsEpic', () => {
-  it('emits toast data', async () => {
+  it('emits toast data', testEpicException(displayAuthnViaApiExceptionsEpic, authnViaApiSignal))
+})
+
+describe('provideOtpEpic', () => {
+  it('emits provision sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
+    when(mockAuthenticationApi.provideOtp(deepEqual({
+      authnKey: 'authnKey',
+      otp: 'otp',
+      yieldTrustedToken: false
+    }))).thenResolve(<ServiceProvideOtpResponse>{
+      error: ServiceProvideOtpResponseError.NONE,
+      userData: {
+        sessionKey: 'sessionKey',
+        mailVerificationRequired: false,
+        mail: 'mail@example.com',
+        userKeys: [{
+          identifier: 'identifier',
+          password: {
+            value: '$value',
+            tags: ['$tag']
+          }
+        }]
+      }
+    })
+    container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
+      useValue: instance(mockAuthenticationApi)
+    })
+    const mockSodiumClient = mock(SodiumClient)
+    when(mockSodiumClient.decryptPassword('encryptionKey', deepEqual({
+      value: '$value',
+      tags: ['$tag']
+    }))).thenResolve({
+      value: 'value',
+      tags: ['tag']
+    })
+    container.register(SodiumClient, {
+      useValue: instance(mockSodiumClient)
+    })
 
-    const epicTracker = new EpicTracker(displayAuthnViaApiExceptionsEpic(action$, state$, {}))
-    actionSubject.next(authnViaApiSignal(exception('exception')))
+    const epicTracker = new EpicTracker(provideOtpEpic(action$, state$, {}))
+    actionSubject.next(provideOtp({
+      encryptionKey: 'encryptionKey',
+      authnKey: 'authnKey',
+      otp: 'otp',
+      yieldTrustedToken: false
+    }))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      showToast({ message: 'exception' })
+      authnOtpProvisionSignal(indicator(AuthnOtpProvisionFlowIndicator.MAKING_REQUEST)),
+      authnOtpProvisionSignal(indicator(AuthnOtpProvisionFlowIndicator.DECRYPTING_DATA)),
+      authnOtpProvisionSignal(success({
+        trustedToken: option.none,
+        userData: {
+          sessionKey: 'sessionKey',
+          mailVerificationRequired: false,
+          mail: 'mail@example.com',
+          userKeys: [{
+            identifier: 'identifier',
+            value: 'value',
+            tags: ['tag']
+          }]
+        }
+      }))
     ])
   })
+
+  it('emits provision cancellation', testEpicCancellation(provideOtpEpic, authnOtpProvisionReset, authnOtpProvisionSignal))
+})
+
+describe('displayAuthnOtpProvisionExceptionsEpic', () => {
+  it('emits toast data', testEpicException(displayAuthnOtpProvisionExceptionsEpic, authnOtpProvisionSignal))
 })
 
 describe('logInViaDepotEpic', () => {
@@ -399,35 +473,11 @@ describe('logInViaDepotEpic', () => {
     ])
   })
 
-  it('emits authentication cancellation', async () => {
-    const store: Store<RootState, RootAction> = createStore(reducer)
-    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
-
-    const epicTracker = new EpicTracker(logInViaDepotEpic(action$, state$, {}))
-    actionSubject.next(authnViaDepotReset())
-    actionSubject.complete()
-    await epicTracker.waitForCompletion()
-
-    expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      authnViaDepotSignal(cancel())
-    ])
-  })
+  it('emits authentication cancellation', testEpicCancellation(logInViaDepotEpic, authnViaDepotReset, authnViaDepotSignal))
 })
 
 describe('displayAuthnViaDepotExceptionsEpic', () => {
-  it('emits toast data', async () => {
-    const store: Store<RootState, RootAction> = createStore(reducer)
-    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
-
-    const epicTracker = new EpicTracker(displayAuthnViaDepotExceptionsEpic(action$, state$, {}))
-    actionSubject.next(authnViaDepotSignal(exception('exception')))
-    actionSubject.complete()
-    await epicTracker.waitForCompletion()
-
-    expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      showToast({ message: 'exception' })
-    ])
-  })
+  it('emits toast data', testEpicException(displayAuthnViaDepotExceptionsEpic, authnViaDepotSignal))
 })
 
 describe('remoteCredentialsMismatchLocalEpic', () => {
