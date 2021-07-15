@@ -1,6 +1,6 @@
 import { success } from '@/redux/flow_signal'
 import { expect } from 'chai'
-import { authnViaApiReset, authnViaApiSignal, authnViaDepotReset, authnViaDepotSignal, registrationReset, registrationSignal } from './actions'
+import { authnOtpProvisionReset, authnOtpProvisionSignal, authnViaApiReset, authnViaApiSignal, authnViaDepotReset, authnViaDepotSignal, registrationReset, registrationSignal } from './actions'
 import reducer from './reducer'
 import { hasData, data } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
@@ -58,6 +58,34 @@ describe('authnViaApi', () => {
       const state = reduce(reducer, undefined, [signalAction, authnViaApiReset()])
 
       expect(hasData(state.authnViaApi)).to.be.false
+    })
+  })
+})
+
+describe('authnOtpProvision', () => {
+  const signalAction = authnOtpProvisionSignal(success({
+    trustedToken: option.none,
+    userData: {
+      sessionKey: 'sessionKey',
+      mailVerificationRequired: true,
+      mail: null,
+      userKeys: []
+    }
+  }))
+
+  describe('authnOtpProvisionSignal', () => {
+    it('updates the result', () => {
+      const state = reducer(undefined, signalAction)
+
+      expect(hasData(state.authnOtpProvision)).to.be.true
+    })
+  })
+
+  describe('authnOtpProvisionReset', () => {
+    it('clears the result', () => {
+      const state = reduce(reducer, undefined, [signalAction, authnOtpProvisionReset()])
+
+      expect(hasData(state.authnOtpProvision)).to.be.false
     })
   })
 })

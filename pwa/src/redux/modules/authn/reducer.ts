@@ -2,10 +2,15 @@ import { createReducer } from '@reduxjs/toolkit'
 import {
   ServiceRegisterResponseError,
   ServiceGetSaltResponseError,
-  ServiceLogInResponseError
+  ServiceLogInResponseError,
+  ServiceProvideOtpResponseError
 } from '@/api/definitions'
 import { reducer, RemoteData, zero, identity, withNoResult } from '@/redux/remote_data'
 import {
+  AuthnOtpProvisionFlowError,
+  AuthnOtpProvisionFlowIndicator,
+  authnOtpProvisionReset,
+  authnOtpProvisionSignal,
   AuthnViaApiFlowIndicator,
   AuthnViaApiFlowResult,
   authnViaApiReset,
@@ -26,11 +31,13 @@ import { castDraft } from 'immer'
 export default createReducer<{
   registration: RemoteData<RegistrationFlowIndicator, {}, StandardError<ServiceRegisterResponseError>>;
   authnViaApi: RemoteData<AuthnViaApiFlowIndicator, AuthnViaApiFlowResult, StandardError<ServiceGetSaltResponseError | ServiceLogInResponseError>>;
+  authnOtpProvision: RemoteData<AuthnOtpProvisionFlowIndicator, {}, StandardError<AuthnOtpProvisionFlowError>>;
   authnViaDepot: RemoteData<AuthnViaDepotFlowIndicator, {}, StandardError<AuthnViaDepotFlowError>>;
 }>(
   {
     registration: zero(),
     authnViaApi: zero(),
+    authnOtpProvision: zero(),
     authnViaDepot: zero()
   },
   (builder) => builder
@@ -53,6 +60,16 @@ export default createReducer<{
     })
     .addMatcher(isActionOf(authnViaApiReset), (state) => {
       state.authnViaApi = withNoResult(state.authnViaApi)
+    })
+    .addMatcher(isActionOf(authnOtpProvisionSignal), (state, action) => {
+      state.authnOtpProvision = reducer(
+        identity<AuthnOtpProvisionFlowIndicator>(),
+        () => ({}),
+        identity<StandardError<AuthnOtpProvisionFlowError>>()
+      )(state.authnOtpProvision, action.payload)
+    })
+    .addMatcher(isActionOf(authnOtpProvisionReset), (state) => {
+      state.authnOtpProvision = withNoResult(state.authnOtpProvision)
     })
     .addMatcher(isActionOf(authnViaDepotSignal), (state, action) => {
       state.authnViaDepot = reducer(

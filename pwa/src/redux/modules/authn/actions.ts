@@ -78,7 +78,7 @@ interface AuthnOtpProvisionFlowResult {
   trustedToken: option.Option<string>;
   userData: UserData;
 }
-interface AuthnOtpProvisionFlowError {
+export interface AuthnOtpProvisionFlowError {
   error: ServiceProvideOtpResponseError;
   attemptsLeft: number;
 }
