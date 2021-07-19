@@ -3,6 +3,8 @@ import { RemoteData } from '@/redux/remote_data'
 import { RootState } from '@/redux/root_reducer'
 import { DeepReadonly } from 'ts-essentials'
 import {
+  AuthnOtpProvisionFlowError,
+  AuthnOtpProvisionFlowIndicator,
   AuthnViaApiFlowIndicator,
   AuthnViaApiFlowResult,
   AuthnViaDepotFlowError,
@@ -21,3 +23,5 @@ export type AuthnViaApi = RemoteData<AuthnViaApiFlowIndicator, AuthnViaApiFlowRe
 export const authnViaApi = (state: RootState): DeepReadonly<AuthnViaApi> => state.authn.authnViaApi
 export type AuthnViaDepot = RemoteData<AuthnViaDepotFlowIndicator, {}, StandardError<AuthnViaDepotFlowError>>
 export const authnViaDepot = (state: RootState): DeepReadonly<AuthnViaDepot> => state.authn.authnViaDepot
+export type AuthnOtpProvision = RemoteData<AuthnOtpProvisionFlowIndicator, {}, StandardError<AuthnOtpProvisionFlowError>>
+export const authnOtpProvision = (state: RootState): DeepReadonly<AuthnOtpProvision> => state.authn.authnOtpProvision

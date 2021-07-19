@@ -4,7 +4,7 @@
       <v-container fluid>
         <v-row no-gutters class="mt-12" justify="center">
           <v-col :cols="12" :sm="6" :md="4" :lg="3" :xl="2">
-            <v-card>
+            <v-card class="pb-2">
               <v-window :value="step">
                 <v-window-item>
                   <credentials :username="username" @username="setUsername"
@@ -13,12 +13,13 @@
                     @submit="submitCredentials" :authn-via-api="authnViaApi"
                     :authn-via-depot="authnViaDepot" :username-matches-depot="usernameMatchesDepot">
                   </credentials>
-                  <div class="pb-2 text-center">
+                  <div class="text-center">
                     <router-link to="/register">Register</router-link>
                   </div>
                 </v-window-item>
                 <v-window-item>
-                  OtpContext
+                  <otp :otp="otp" @otp="setOtp" @submit="submitOtp"
+                    :authn-otp-provision="authnOtpProvision"></otp>
                 </v-window-item>
               </v-window>
             </v-card>
@@ -48,9 +49,18 @@ import {
   AuthnViaDepotFlowError,
   remoteAuthnComplete,
   AuthnViaApiFlowResult,
-  OtpContext
+  OtpContext,
+  provideOtp,
+  authnOtpProvisionReset
 } from '@/redux/modules/authn/actions'
-import { authnViaApi, AuthnViaApi, authnViaDepot, AuthnViaDepot } from '@/redux/modules/authn/selectors'
+import {
+  authnViaApi,
+  AuthnViaApi,
+  authnViaDepot,
+  AuthnViaDepot,
+  authnOtpProvision,
+  AuthnOtpProvision
+} from '@/redux/modules/authn/selectors'
 import { activateDepot, clearDepot } from '@/redux/modules/depot/actions'
 import { depotUsername } from '@/redux/modules/depot/selectors'
 import { sessionUsername } from '@/redux/modules/session/selectors'
@@ -58,17 +68,20 @@ import { showToast } from '@/redux/modules/ui/toast/actions'
 import { data } from '@/redux/remote_data'
 import { RootAction } from '@/redux/root_action'
 import Credentials from '@/views/authentication/Credentials.vue'
+import Otp from '@/views/authentication/Otp.vue'
 
 export default Vue.extend({
   components: {
     credentials: Credentials,
+    otp: Otp,
     page: Page
   },
   data () {
     return {
       username: '',
       password: '',
-      persist: false
+      persist: false,
+      otp: ''
     }
   },
   created () {
@@ -143,6 +156,9 @@ export default Vue.extend({
         option.chain((result: DeepReadonly<AuthnViaApiFlowResult>) => option.getLeft(result.content)),
         option.getOrElse<DeepReadonly<OtpContext> | null>(() => null)
       )
+    },
+    authnOtpProvision (): DeepReadonly<AuthnOtpProvision> {
+      return authnOtpProvision(this.$data.$state)
     }
   },
   methods: {
@@ -177,11 +193,33 @@ export default Vue.extend({
           password: this.password
         }))
       }
+    },
+    setOtp (value: string) {
+      this.otp = value
+    },
+    submitOtp () {
+      const action = fn.pipe(
+        data(this.authnViaApi),
+        option.chain((apiData: DeepReadonly<AuthnViaApiFlowResult>) => fn.pipe(
+          option.getLeft(apiData.content),
+          option.map((otpContext: DeepReadonly<OtpContext>) => provideOtp({
+            encryptionKey: apiData.encryptionKey,
+            authnKey: otpContext.authnKey,
+            otp: this.otp,
+            yieldTrustedToken: false
+          }))
+        )),
+        option.getOrElse<ReturnType<typeof provideOtp> | ReturnType<typeof showToast>>(() => showToast({
+          message: '`authnViaApi` does not contain `OtpContext`'
+        }))
+      )
+      this.dispatch(action)
     }
   },
   beforeDestroy () {
     this.dispatch(authnViaApiReset())
     this.dispatch(authnViaDepotReset())
+    this.dispatch(authnOtpProvisionReset())
   }
 })
 </script>

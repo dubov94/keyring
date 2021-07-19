@@ -18,7 +18,8 @@ const MESSAGES: LocaleMessages = {
     PASSWORDS_DO_NOT_MATCH: 'Passwords do not match',
     USERNAME_CANNOT_BE_EMPTY: 'Username cannot be empty',
     USERNAME_IS_ALREADY_TAKEN: 'Username is already taken',
-    USERNAME_IS_REQUIRED: 'Username is required'
+    USERNAME_IS_REQUIRED: 'Username is required',
+    OTP_ATTEMPTS_EXHAUSTED: 'Please enter one of the recovery codes'
   }
 }
 
