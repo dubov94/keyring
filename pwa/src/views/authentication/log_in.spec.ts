@@ -23,6 +23,7 @@ describe('LogIn', () => {
   beforeEach(() => {
     const localVue = setUpLocalVue()
     localVue.use(VueRouter)
+    localVue.mixin(setUpTranslationMixin(fn.identity))
     store = createStore(reducer)
     actionQueue = new ActionQueue()
     $actions = new Subject()
@@ -41,7 +42,6 @@ describe('LogIn', () => {
         }
       },
       mixins: [
-        setUpTranslationMixin(fn.identity),
         setUpStateMixin(store, actionQueue)
       ]
     })

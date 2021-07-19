@@ -7,32 +7,12 @@
             <v-card>
               <v-window :value="step">
                 <v-window-item>
-                  <v-card-text>
-                    <v-form @keydown.native.enter.prevent="submit">
-                      <form-text-field type="text" label="Username" prepend-icon="person"
-                        :value="username" @input="setUsername"
-                        :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
-                        @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
-                        :autofocus="usernameIsEmpty" :disabled="usernameMatchesDepot"></form-text-field>
-                      <form-text-field type="password" label="Password" prepend-icon="lock"
-                        :value="password" @input="setPassword"
-                        :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
-                        @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
-                        :autofocus="!usernameIsEmpty"></form-text-field>
-                      <v-switch hide-details color="primary" label="Remember me"
-                        :input-value="persist" @change="setPersist" class="mt-2"></v-switch>
-                    </v-form>
-                  </v-card-text>
-                  <v-card-actions class="px-6">
-                    <v-btn block color="primary" @click="submit" :loading="hasIndicatorMessage">
-                      <span>Log in</span>
-                      <template #loader>
-                        <v-progress-circular indeterminate :size="23" :width="2">
-                        </v-progress-circular>
-                        <span class="ml-4">{{ indicatorMessage }}</span>
-                      </template>
-                    </v-btn>
-                  </v-card-actions>
+                  <credentials :username="username" @username="setUsername"
+                    :password="password" @password="setPassword"
+                    :persist="persist" @persist="setPersist"
+                    @submit="submitCredentials" :authn-via-api="authnViaApi"
+                    :authn-via-depot="authnViaDepot" :username-matches-depot="usernameMatchesDepot">
+                  </credentials>
                   <div class="pb-2 text-center">
                     <router-link to="/register">Register</router-link>
                   </div>
@@ -50,16 +30,17 @@
 </template>
 
 <script lang="ts">
-import Vue, { VueConstructor } from 'vue'
-import { required } from 'vuelidate/lib/validators'
+import { function as fn, option } from 'fp-ts'
+import { DeepReadonly } from 'ts-essentials'
+import { isActionOf } from 'typesafe-actions'
+import Vue from 'vue'
+import { Observable } from 'rxjs'
+import { takeUntil, filter } from 'rxjs/operators'
 import Page from '@/components/Page.vue'
-import { ServiceLogInResponseError, ServiceGetSaltResponseError } from '@/api/definitions'
-import { sessionUsername } from '@/redux/modules/session/selectors'
+import { isFailureOf, isActionSuccess, isSignalFailure } from '@/redux/flow_signal'
 import {
-  AuthnViaApiFlowIndicator,
   logInViaApi,
   authnViaApiReset,
-  AuthnViaDepotFlowIndicator,
   logInViaDepot,
   authnViaDepotReset,
   authnViaDepotSignal,
@@ -70,42 +51,23 @@ import {
   OtpContext
 } from '@/redux/modules/authn/actions'
 import { authnViaApi, AuthnViaApi, authnViaDepot, AuthnViaDepot } from '@/redux/modules/authn/selectors'
-import { isFailureOf, isActionSuccess, isSignalFailure } from '@/redux/flow_signal'
-import { DeepReadonly } from 'ts-essentials'
-import { showToast } from '@/redux/modules/ui/toast/actions'
-import { takeUntil, filter } from 'rxjs/operators'
-import { Observable } from 'rxjs'
-import { function as fn, option, map, eq, array } from 'fp-ts'
-import { error, data } from '@/redux/remote_data'
 import { activateDepot, clearDepot } from '@/redux/modules/depot/actions'
 import { depotUsername } from '@/redux/modules/depot/selectors'
-import { isActionOf } from 'typesafe-actions'
+import { sessionUsername } from '@/redux/modules/session/selectors'
+import { showToast } from '@/redux/modules/ui/toast/actions'
+import { data } from '@/redux/remote_data'
 import { RootAction } from '@/redux/root_action'
+import Credentials from '@/views/authentication/Credentials.vue'
 
-const INDICATOR_TO_MESSAGE = new Map<AuthnViaApiFlowIndicator | AuthnViaDepotFlowIndicator, string>([
-  [AuthnViaApiFlowIndicator.RETRIEVING_PARAMETRIZATION, 'Getting salt'],
-  [AuthnViaApiFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
-  [AuthnViaApiFlowIndicator.MAKING_REQUEST, 'Making request'],
-  [AuthnViaApiFlowIndicator.DECRYPTING_DATA, 'Decrypting data'],
-  [AuthnViaDepotFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES, 'Computing keys'],
-  [AuthnViaDepotFlowIndicator.DECRYPTING_DATA, 'Decrypting data']
-])
-
-interface Mixins {
-  frozen: boolean;
-  authnViaApi: DeepReadonly<AuthnViaApi>;
-  authnViaDepot: DeepReadonly<AuthnViaDepot>;
-}
-
-export default (Vue as VueConstructor<Vue & Mixins>).extend({
+export default Vue.extend({
   components: {
+    credentials: Credentials,
     page: Page
   },
   data () {
     return {
       username: '',
       password: '',
-      frozen: false,
       persist: false
     }
   },
@@ -155,35 +117,6 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       }))
     })
   },
-  validations: {
-    username: {
-      required
-    },
-    password: {},
-    forCredentials: {
-      valid () {
-        return fn.pipe(
-          [
-            fn.pipe(
-              error(this.authnViaApi),
-              option.filter(isFailureOf([
-                ServiceLogInResponseError.INVALIDCREDENTIALS,
-                ServiceGetSaltResponseError.NOTFOUND
-              ]))
-            ),
-            fn.pipe(
-              error(this.authnViaDepot),
-              option.filter(isFailureOf([AuthnViaDepotFlowError.INVALID_CREDENTIALS]))
-            )
-          ],
-          array.findFirst<option.Option<unknown>>(option.isSome),
-          option.map(() => !this.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
-      }
-    },
-    credentialsGroup: ['username', 'password']
-  },
   computed: {
     step () {
       let step = 0
@@ -192,8 +125,17 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       }
       return step
     },
+    depotUsername (): string | null {
+      return depotUsername(this.$data.$state)
+    },
+    usernameMatchesDepot (): boolean {
+      return this.username === this.depotUsername
+    },
     authnViaApi (): DeepReadonly<AuthnViaApi> {
       return authnViaApi(this.$data.$state)
+    },
+    authnViaDepot (): DeepReadonly<AuthnViaDepot> {
+      return authnViaDepot(this.$data.$state)
     },
     otpContext (): DeepReadonly<OtpContext> | null {
       return fn.pipe(
@@ -201,41 +143,6 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         option.chain((result: DeepReadonly<AuthnViaApiFlowResult>) => option.getLeft(result.content)),
         option.getOrElse<DeepReadonly<OtpContext> | null>(() => null)
       )
-    },
-    authnViaDepot (): DeepReadonly<AuthnViaDepot> {
-      return authnViaDepot(this.$data.$state)
-    },
-    depotUsername (): string | null {
-      return depotUsername(this.$data.$state)
-    },
-    usernameIsEmpty (): boolean {
-      return this.username === ''
-    },
-    usernameMatchesDepot (): boolean {
-      return this.username === this.depotUsername
-    },
-    usernameErrors () {
-      return {
-        [this.$t('USERNAME_IS_REQUIRED') as string]: !this.$v.username.required,
-        [this.$t('INVALID_USERNAME_OR_PASSWORD') as string]: !this.$v.forCredentials.valid
-      }
-    },
-    passwordErrors () {
-      return {
-        [this.$t('INVALID_USERNAME_OR_PASSWORD') as string]: !this.$v.forCredentials.valid
-      }
-    },
-    indicatorMessage (): string | null {
-      return fn.pipe(
-        [this.authnViaApi.indicator, this.authnViaDepot.indicator],
-        array.findFirst<option.Option<AuthnViaApiFlowIndicator | AuthnViaDepotFlowIndicator>>(option.isSome),
-        option.flatten,
-        option.chain((indicator) => map.lookup(eq.eqStrict)(indicator, INDICATOR_TO_MESSAGE)),
-        option.getOrElse<string | null>(() => null)
-      )
-    },
-    hasIndicatorMessage (): boolean {
-      return this.indicatorMessage !== null
     }
   },
   methods: {
@@ -244,11 +151,9 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     setUsername (value: string) {
       this.username = value
-      this.frozen = false
     },
     setPassword (value: string) {
       this.password = value
-      this.frozen = false
     },
     setPersist (value: boolean) {
       if (value) {
@@ -260,23 +165,17 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         this.persist = false
       }
     },
-    submit () {
-      if (!this.hasIndicatorMessage) {
-        this.$v.$touch()
-        if (!this.$v.$invalid) {
-          this.frozen = true
-          if (this.usernameMatchesDepot) {
-            this.dispatch(logInViaDepot({
-              username: this.username,
-              password: this.password
-            }))
-          } else {
-            this.dispatch(logInViaApi({
-              username: this.username,
-              password: this.password
-            }))
-          }
-        }
+    submitCredentials () {
+      if (this.usernameMatchesDepot) {
+        this.dispatch(logInViaDepot({
+          username: this.username,
+          password: this.password
+        }))
+      } else {
+        this.dispatch(logInViaApi({
+          username: this.username,
+          password: this.password
+        }))
       }
     }
   },

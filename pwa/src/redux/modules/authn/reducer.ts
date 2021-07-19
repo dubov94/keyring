@@ -2,8 +2,7 @@ import { createReducer } from '@reduxjs/toolkit'
 import {
   ServiceRegisterResponseError,
   ServiceGetSaltResponseError,
-  ServiceLogInResponseError,
-  ServiceProvideOtpResponseError
+  ServiceLogInResponseError
 } from '@/api/definitions'
 import { reducer, RemoteData, zero, identity, withNoResult } from '@/redux/remote_data'
 import {
