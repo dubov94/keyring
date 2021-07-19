@@ -3,11 +3,6 @@
     margin-top: 128px;
   }
 
-  .heading {
-    color: white;
-    text-align: center;
-  }
-
   .background {
     position: absolute;
     top: 0;
@@ -15,6 +10,13 @@
     bottom: 0;
     left: 0;
     z-index: -1;
+  }
+
+  .version {
+    position: fixed;
+    bottom: 8px;
+    left: 0;
+    right: 0;
   }
 </style>
 
@@ -26,11 +28,11 @@
     <v-main>
       <v-container fluid>
         <div class="article">
-          <h1 class="heading" :class="nameDynamicClasses">Key Ring</h1>
-          <h2 class="heading mt-4" :class="descriptionDynamicClasses">
+          <h1 class="text-center white--text" :class="nameDynamicClasses">Key Ring</h1>
+          <h2 class="text-center white--text mt-4" :class="descriptionDynamicClasses">
             An unobtrusive password manager 😋
           </h2>
-          <div class="mt-12 text-center">
+          <div class="text-center mt-12">
             <template v-if="!isAuthenticated">
               <v-btn class="mx-2" large outlined color="white" to="/log-in">Log in</v-btn>
               <v-btn class="mx-2" large outlined color="white" to="/register">Register</v-btn>
@@ -42,6 +44,7 @@
         </div>
       </v-container>
     </v-main>
+    <div class="version text-caption text-center white--text">{{ version }}</div>
   </page>
 </template>
 
@@ -58,6 +61,11 @@ interface Mixins {
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
     page: Page
+  },
+  data () {
+    return {
+      version: window.globals.version
+    }
   },
   computed: {
     isAuthenticated () {

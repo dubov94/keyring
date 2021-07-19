@@ -23,6 +23,17 @@
         </v-btn>
       </template>
       <v-list two-line class="py-0">
+        <v-list-item to="/settings">
+          <v-list-item-action>
+            <v-icon>fa-cog</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>
+              Settings
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-divider></v-divider>
         <v-list-item @click="logOut">
           <v-list-item-action>
             <v-icon>fa-sign-out-alt</v-icon>
