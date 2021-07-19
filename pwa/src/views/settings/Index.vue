@@ -1,26 +1,21 @@
+<style scoped>
+  .v-expansion-panels {
+    max-width: var(--max-content-width);
+    margin: 0 auto;
+  }
+</style>
+
 <template>
   <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch">
     <user-menu v-model="showMenu"></user-menu>
     <v-main>
-      <v-container fluid class="pa-7">
-        <v-row justify="center">
-          <v-col :cols="12" :sm="8" :md="6" :lg="4" :xl="3">
-            <change-username></change-username>
-          </v-col>
-          <v-col :cols="12" :sm="8" :md="6" :lg="4" :xl="3">
-            <change-master-key></change-master-key>
-          </v-col>
-          <v-col :cols="12" :sm="8" :md="6" :lg="4" :xl="3" v-if="showOtpSwitch">
-            <otp-switch></otp-switch>
-          </v-col>
-          <v-col :cols="12" :sm="8" :md="6" :lg="4" :xl="3">
-            <change-mail></change-mail>
-          </v-col>
-          <v-col :cols="12" :sm="8" :md="6" :lg="4" :xl="3">
-            <delete-account></delete-account>
-          </v-col>
-        </v-row>
-      </v-container>
+      <v-expansion-panels inset class="mt-4">
+        <change-username></change-username>
+        <change-master-key></change-master-key>
+        <otp-switch v-if="showOtpSwitch"></otp-switch>
+        <change-mail></change-mail>
+        <delete-account></delete-account>
+      </v-expansion-panels>
     </v-main>
   </page>
 </template>

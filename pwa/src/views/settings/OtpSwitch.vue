@@ -8,11 +8,11 @@
 </style>
 
 <template>
-  <v-card>
-    <v-toolbar color="primary" dark>
-      <v-toolbar-title>Two-factor authentication</v-toolbar-title>
-    </v-toolbar>
-    <v-card-text>
+  <v-expansion-panel>
+    <v-expansion-panel-header>
+      Two-factor authentication
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
       <div v-if="isOtpEnabled">
         <p class="text-center">Enter a second factor to disable.</p>
         <v-form @keydown.native.enter.prevent="deactivate">
@@ -57,8 +57,8 @@
           Enable
         </v-btn>
       </div>
-    </v-card-text>
-  </v-card>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">

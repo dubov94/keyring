@@ -1,19 +1,15 @@
 <style scoped>
-  .card-text {
-    padding: 0;
-  }
-
   .stepper, .stepper__header {
     box-shadow: none;
   }
 </style>
 
 <template>
-  <v-card>
-    <v-toolbar color="primary" dark style="z-index: 1;">
-      <v-toolbar-title>Change e-mail</v-toolbar-title>
-    </v-toolbar>
-    <v-card-text class="card-text">
+  <v-expansion-panel>
+    <v-expansion-panel-header>
+      Change e-mail
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
       <template v-if="showAccountMail">
         <div class="py-4 text-center">{{ accountMail }}</div>
         <v-divider></v-divider>
@@ -55,8 +51,8 @@
           </v-form>
         </v-window-item>
       </v-window>
-    </v-card-text>
-  </v-card>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">

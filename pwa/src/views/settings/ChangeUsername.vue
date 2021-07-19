@@ -1,9 +1,9 @@
 <template>
-  <v-card>
-    <v-toolbar color="primary" dark>
-      <v-toolbar-title>Change username</v-toolbar-title>
-    </v-toolbar>
-    <v-card-text>
+  <v-expansion-panel>
+    <v-expansion-panel-header>
+      Change username
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
       <v-form @keydown.native.enter.prevent="submit">
         <form-text-field type="text" label="New username" prepend-icon="person_outline"
           :value="username" @input="setUsername"
@@ -18,8 +18,8 @@
             @click="submit" :disabled="!canAccessApi">Submit</v-btn>
         </div>
       </v-form>
-    </v-card-text>
-  </v-card>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">

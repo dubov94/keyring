@@ -1,9 +1,9 @@
 <template>
-  <v-card>
-    <v-toolbar color="error" dark>
-      <v-toolbar-title>Delete account</v-toolbar-title>
-    </v-toolbar>
-    <v-card-text>
+  <v-expansion-panel>
+    <v-expansion-panel-header>
+      Delete account
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
       <v-form @keydown.native.enter.prevent="submit">
         <form-text-field type="password" label="Password" prepend-icon="lock"
           :value="password" @input="setPassword" :dirty="$v.password.$dirty" :errors="passwordErrors"
@@ -13,8 +13,8 @@
             @click="submit" :disabled="!canAccessApi">Submit</v-btn>
         </div>
       </v-form>
-    </v-card-text>
-  </v-card>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">

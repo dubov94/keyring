@@ -1,9 +1,9 @@
 <template>
-  <v-card>
-    <v-toolbar color="primary" dark>
-      <v-toolbar-title>Change password</v-toolbar-title>
-    </v-toolbar>
-    <v-card-text>
+  <v-expansion-panel>
+    <v-expansion-panel-header>
+      Change password
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
       <v-form @keydown.native.enter.prevent="submit">
         <form-text-field type="password" label="Current password" prepend-icon="lock"
           :value="current" @input="setCurrent"
@@ -29,8 +29,8 @@
           </v-btn>
         </div>
       </v-form>
-    </v-card-text>
-  </v-card>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">
