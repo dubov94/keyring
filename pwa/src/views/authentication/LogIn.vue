@@ -203,10 +203,15 @@ export default Vue.extend({
         option.chain((apiData: DeepReadonly<AuthnViaApiFlowResult>) => fn.pipe(
           option.getLeft(apiData.content),
           option.map((otpContext: DeepReadonly<OtpContext>) => provideOtp({
-            encryptionKey: apiData.encryptionKey,
+            credentialParams: {
+              username: apiData.username,
+              password: apiData.password,
+              parametrization: apiData.parametrization,
+              encryptionKey: apiData.encryptionKey
+            },
             authnKey: otpContext.authnKey,
             otp: this.otp,
-            yieldTrustedToken: false
+            yieldTrustedToken: this.persist
           }))
         )),
         option.getOrElse<ReturnType<typeof provideOtp> | ReturnType<typeof showToast>>(() => showToast({

@@ -25,7 +25,7 @@ import {
   logInViaDepotEpic,
   displayAuthnViaDepotExceptionsEpic,
   remoteCredentialsMismatchLocalEpic,
-  remoteAuthnCompleteEpic,
+  remoteAuthnCompleteOnCredentialsEpic,
   provideOtpEpic,
   displayAuthnOtpProvisionExceptionsEpic
 } from './epics'
@@ -34,6 +34,7 @@ import {
   authnOtpProvisionReset,
   authnOtpProvisionSignal,
   AuthnViaApiFlowIndicator,
+  AuthnViaApiParams,
   authnViaApiReset,
   authnViaApiSignal,
   AuthnViaDepotFlowError,
@@ -302,6 +303,12 @@ describe('provideOtpEpic', () => {
   it('emits provision sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const credentialParams: AuthnViaApiParams = {
+      username: 'username',
+      password: 'password',
+      parametrization: 'parametrization',
+      encryptionKey: 'encryptionKey'
+    }
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
     when(mockAuthenticationApi.provideOtp(deepEqual({
       authnKey: 'authnKey',
@@ -339,7 +346,7 @@ describe('provideOtpEpic', () => {
 
     const epicTracker = new EpicTracker(provideOtpEpic(action$, state$, {}))
     actionSubject.next(provideOtp({
-      encryptionKey: 'encryptionKey',
+      credentialParams,
       authnKey: 'authnKey',
       otp: 'otp',
       yieldTrustedToken: false
@@ -351,6 +358,7 @@ describe('provideOtpEpic', () => {
       authnOtpProvisionSignal(indicator(AuthnOtpProvisionFlowIndicator.MAKING_REQUEST)),
       authnOtpProvisionSignal(indicator(AuthnOtpProvisionFlowIndicator.DECRYPTING_DATA)),
       authnOtpProvisionSignal(success({
+        credentialParams,
         trustedToken: option.none,
         userData: {
           sessionKey: 'sessionKey',
@@ -496,7 +504,7 @@ describe('remoteCredentialsMismatchLocalEpic', () => {
   })
 })
 
-describe('remoteAuthnCompleteEpic', () => {
+describe('remoteAuthnCompleteOnCredentialsEpic', () => {
   const params = {
     username: 'username',
     password: 'password',
@@ -518,11 +526,11 @@ describe('remoteAuthnCompleteEpic', () => {
     authnViaApiSignal(success(flowResult)),
     backgroundAuthnSignal(success(flowResult))
   ].forEach((trigger) => {
-    it(`emits the action ${trigger.type}`, async () => {
+    it(`emits the action on ${trigger.type}`, async () => {
       const store: Store<RootState, RootAction> = createStore(reducer)
       const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-      const epicTracker = new EpicTracker(remoteAuthnCompleteEpic(action$, state$, {}))
+      const epicTracker = new EpicTracker(remoteAuthnCompleteOnCredentialsEpic(action$, state$, {}))
       actionSubject.next(trigger)
       actionSubject.complete()
       await epicTracker.waitForCompletion()

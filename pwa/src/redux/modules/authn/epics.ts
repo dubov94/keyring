@@ -44,12 +44,12 @@ import {
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { getAuthenticationApi } from '@/api/api_di'
 import { Epic } from 'redux-observable'
-import { cancel, exception, failure, indicator, isSignalFailure, errorToMessage, success, isActionSuccess2 } from '@/redux/flow_signal'
+import { cancel, exception, failure, indicator, isSignalFailure, errorToMessage, success, isActionSuccess2, isActionSuccess } from '@/redux/flow_signal'
 import { Key } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
 import { remoteCredentialsMismatchLocal } from '../user/account/actions'
-import { either, option } from 'fp-ts'
+import { either, function as fn, option } from 'fp-ts'
 
 export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf([register, registrationReset])),
@@ -199,7 +199,12 @@ export const logInViaApiEpic: Epic<RootAction, RootAction, RootState> = (action$
 export const displayAuthnViaApiExceptionsEpic = createDisplayExceptionsEpic(authnViaApiSignal)
 
 const otpProvision = <T extends TypeConstant>(
-  { encryptionKey, authnKey, otp, yieldTrustedToken }: { encryptionKey: string; authnKey: string; otp: string; yieldTrustedToken: boolean },
+  { credentialParams, authnKey, otp, yieldTrustedToken }: {
+    credentialParams: AuthnViaApiParams;
+    authnKey: string;
+    otp: string;
+    yieldTrustedToken: boolean;
+  },
   signalCreator: (payload: DeepReadonly<AuthnOtpProvisionSignal>) => PayloadAction<T, DeepReadonly<AuthnOtpProvisionSignal>> & RootAction
 ): Observable<RootAction> => {
   return concat(
@@ -210,8 +215,9 @@ const otpProvision = <T extends TypeConstant>(
           case ServiceProvideOtpResponseError.NONE:
             return concat(
               of(signalCreator(indicator(AuthnOtpProvisionFlowIndicator.DECRYPTING_DATA))),
-              decodeUserData(encryptionKey, response.userData!).pipe(
+              decodeUserData(credentialParams.encryptionKey, response.userData!).pipe(
                 switchMap((userData) => of(signalCreator(success({
+                  credentialParams,
                   trustedToken: option.fromNullable(response.trustedToken),
                   userData
                 }))))
@@ -297,19 +303,28 @@ export const remoteCredentialsMismatchLocalEpic: Epic<RootAction, RootAction, Ro
   concatMap(() => of(remoteCredentialsMismatchLocal()))
 )
 
-export const remoteAuthnCompleteEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+export const remoteAuthnCompleteOnCredentialsEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal])),
-  concatMap((action) => {
-    const { data } = action.payload
-    if (either.isRight(data.content)) {
-      return of(remoteAuthnComplete({
+  concatMap((action) => fn.pipe(
+    option.of(action.payload.data),
+    option.chain((data) => fn.pipe(
+      option.getRight(data.content),
+      option.map((content) => of(remoteAuthnComplete({
         username: data.username,
         password: data.password,
         parametrization: data.parametrization,
         encryptionKey: data.encryptionKey,
-        ...data.content.right
-      }))
-    }
-    return EMPTY
-  })
+        ...content
+      })))
+    )),
+    option.getOrElse<Observable<RootAction>>(() => EMPTY)
+  ))
+)
+
+export const remoteAuthnCompleteOnOtpEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+  filter(isActionSuccess(authnOtpProvisionSignal)),
+  concatMap((action) => of(remoteAuthnComplete({
+    ...action.payload.data.credentialParams,
+    ...action.payload.data.userData
+  })))
 )

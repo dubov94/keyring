@@ -64,6 +64,12 @@ describe('authnViaApi', () => {
 
 describe('authnOtpProvision', () => {
   const signalAction = authnOtpProvisionSignal(success({
+    credentialParams: {
+      username: 'username',
+      password: 'password',
+      parametrization: 'parametrization',
+      encryptionKey: 'encryptionKey'
+    },
     trustedToken: option.none,
     userData: {
       sessionKey: 'sessionKey',

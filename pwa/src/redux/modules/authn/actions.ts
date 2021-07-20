@@ -69,12 +69,13 @@ export enum AuthnOtpProvisionFlowIndicator {
   DECRYPTING_DATA = 'DECRYPTING_DATA',
 }
 export const provideOtp = createAction('authn/provideOtp')<DeepReadonly<{
-  encryptionKey: string;
+  credentialParams: AuthnViaApiParams;
   authnKey: string;
   otp: string;
   yieldTrustedToken: boolean;
 }>>()
 interface AuthnOtpProvisionFlowResult {
+  credentialParams: AuthnViaApiParams;
   trustedToken: option.Option<string>;
   userData: UserData;
 }
