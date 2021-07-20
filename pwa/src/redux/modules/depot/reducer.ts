@@ -12,7 +12,7 @@ type State = {
   salt: string | null;
   hash: string | null;
   vault: string | null;
-  vaultKey: string | null;
+  depotKey: string | null;
   encryptedOtpToken: string | null;
 }
 
@@ -21,7 +21,7 @@ const initialState = (): State => ({
   salt: null,
   hash: null,
   vault: null,
-  vaultKey: null,
+  depotKey: null,
   encryptedOtpToken: null
 })
 
@@ -40,7 +40,7 @@ export default createReducer<State>(
       state.encryptedOtpToken = action.payload.encryptedOtpToken
     })
     .addMatcher(isActionSuccess(authnViaDepotSignal), (state, action) => {
-      state.vaultKey = action.payload.data.vaultKey
+      state.depotKey = action.payload.data.depotKey
     })
     .addMatcher(isActionOf(newVault), (state, action) => {
       state.vault = action.payload
@@ -54,7 +54,7 @@ export default createReducer<State>(
       state.username = action.payload.username
       state.salt = action.payload.salt
       state.hash = action.payload.hash
-      state.vaultKey = action.payload.vaultKey
+      state.depotKey = action.payload.depotKey
     })
     .addMatcher(isActionOf(clearDepot), toInitialState)
     // As a reducer to ensure we clear the storage before synchronization is

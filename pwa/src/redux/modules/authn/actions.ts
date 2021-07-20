@@ -98,7 +98,7 @@ export interface AuthnViaDepotFlowResult {
   username: string;
   password: string;
   userKeys: Key[];
-  vaultKey: string;
+  depotKey: string;
 }
 export const logInViaDepot = createAction('authn/logInViaDepot')<DeepReadonly<{
   username: string;

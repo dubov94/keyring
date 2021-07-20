@@ -33,10 +33,10 @@ describe('authnViaDepotSignal', () => {
       username: 'username',
       password: 'password',
       userKeys: [],
-      vaultKey: 'vaultKey'
+      depotKey: 'depotKey'
     })))
 
-    expect(state.vaultKey).to.equal('vaultKey')
+    expect(state.depotKey).to.equal('depotKey')
   })
 })
 
@@ -55,7 +55,7 @@ describe('usernameChangeSignal', () => {
       salt: null,
       hash: null,
       vault: null,
-      vaultKey: null,
+      depotKey: null,
       encryptedOtpToken: null
     }, usernameChangeSignal(success({
       before: 'usernameA',
@@ -82,7 +82,7 @@ describe('clearDepot', () => {
       salt: 'salt',
       hash: 'hash',
       vault: 'vault',
-      vaultKey: 'vaultKey',
+      depotKey: 'depotKey',
       encryptedOtpToken: 'encryptedOtpToken'
     }, clearDepot())
 
@@ -111,7 +111,7 @@ describe('toInitialState', () => {
         salt: 'salt',
         hash: 'hash',
         vault: 'vault',
-        vaultKey: 'vaultKey',
+        depotKey: 'depotKey',
         encryptedOtpToken: 'encryptedOtpToken'
       }, trigger)
 

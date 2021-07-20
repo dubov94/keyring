@@ -101,7 +101,7 @@ describe('authnViaDepot', () => {
     username: 'username',
     password: 'password',
     userKeys: [],
-    vaultKey: 'vaultKey'
+    depotKey: 'depotKey'
   }))
 
   describe('authnViaDepotSignal', () => {

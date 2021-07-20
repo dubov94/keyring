@@ -19,6 +19,6 @@ export const depotActivationData = createAction('depot/activationData')<DeepRead
   username: string;
   salt: string;
   hash: string;
-  vaultKey: string;
+  depotKey: string;
 }>>()
 export const clearDepot = createAction('depot/clear')()

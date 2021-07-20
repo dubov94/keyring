@@ -712,7 +712,7 @@ describe('otpParamsAcceptanceEpic', () => {
       username: 'user',
       salt: 'salt',
       hash: 'hash',
-      vaultKey: 'vaultKey'
+      depotKey: 'depotKey'
     }))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)

@@ -268,7 +268,7 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
                       username: action.payload.username,
                       password: action.payload.password,
                       userKeys: <Key[]>JSON.parse(vault),
-                      vaultKey: encryptionKey
+                      depotKey: encryptionKey
                     }))))
                   )
                 )

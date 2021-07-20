@@ -16,7 +16,7 @@ import { authnViaDepotSignal } from '../authn/actions'
 
 describe('updateVaultEpic', () => {
   ;[
-    depotActivationData({ username: 'username', salt: 'salt', hash: 'hash', vaultKey: 'vaultKey' }),
+    depotActivationData({ username: 'username', salt: 'salt', hash: 'hash', depotKey: 'depotKey' }),
     userKeysUpdate([{ identifier: '0', value: 'value', tags: [] }])
   ].forEach((trigger) => {
     it(`emits a new vault on ${trigger.type}`, async () => {
@@ -30,13 +30,13 @@ describe('updateVaultEpic', () => {
         username: 'username',
         salt: 'salt',
         hash: 'hash',
-        vaultKey: 'vaultKey'
+        depotKey: 'depotKey'
       }))
       store.dispatch(emplace(userKeys))
       const { action$, actionSubject, state$ } = setUpEpicChannels(store)
       const mockSodiumClient = mock(SodiumClient)
       when(mockSodiumClient.encryptMessage(
-        'vaultKey', JSON.stringify(userKeys))).thenResolve('vault')
+        'depotKey', JSON.stringify(userKeys))).thenResolve('vault')
       container.register(SodiumClient, {
         useValue: instance(mockSodiumClient)
       })
@@ -58,7 +58,7 @@ describe('activateDepotEpic', () => {
     when(mockSodiumClient.generateNewParametrization()).thenResolve('parametrization')
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
       authDigest: 'authDigest',
-      encryptionKey: 'vaultKey'
+      encryptionKey: 'depotKey'
     })
     container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)
@@ -76,7 +76,7 @@ describe('activateDepotEpic', () => {
       username: 'username',
       salt: 'parametrization',
       hash: 'authDigest',
-      vaultKey: 'vaultKey'
+      depotKey: 'depotKey'
     })])
   })
 })
@@ -95,7 +95,7 @@ describe('masterKeyUpdateEpic', () => {
       username: 'username',
       salt: 'salt',
       hash: 'hash',
-      vaultKey: 'vaultKey'
+      depotKey: 'depotKey'
     }))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
@@ -133,7 +133,7 @@ describe('localRehashEpic', () => {
       username: 'username',
       password: 'password',
       userKeys: [],
-      vaultKey: 'vaultKey'
+      depotKey: 'depotKey'
     })))
     actionSubject.complete()
     await epicTracker.waitForCompletion()

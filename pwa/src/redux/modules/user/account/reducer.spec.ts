@@ -74,7 +74,7 @@ describe('authnViaDepotSignal', () => {
       username: 'username',
       password: 'password',
       userKeys: [],
-      vaultKey: 'vaultKey'
+      depotKey: 'depotKey'
     })))
 
     expect(state.isAuthenticated).to.be.true

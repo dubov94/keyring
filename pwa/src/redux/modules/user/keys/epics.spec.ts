@@ -231,7 +231,7 @@ describe('inheritKeysFromAuthnDataEpic', () => {
       username: 'username',
       password: 'password',
       userKeys,
-      vaultKey: 'vaultKey'
+      depotKey: 'depotKey'
     }))
   ].forEach((trigger) => {
     it(`emits \`emplace\` on ${trigger.type}`, async () => {

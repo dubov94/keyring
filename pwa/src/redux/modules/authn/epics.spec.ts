@@ -395,14 +395,14 @@ describe('logInViaDepotEpic', () => {
     const mockSodiumClient = mock(SodiumClient)
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
       authDigest: 'authDigest',
-      encryptionKey: 'vaultKey'
+      encryptionKey: 'depotKey'
     })
     const userKeys: Key[] = [{
       identifier: 'identifier',
       value: 'value',
       tags: ['tag']
     }]
-    when(mockSodiumClient.decryptMessage('vaultKey', 'vault')).thenResolve(JSON.stringify(userKeys))
+    when(mockSodiumClient.decryptMessage('depotKey', 'vault')).thenResolve(JSON.stringify(userKeys))
     container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)
     })
@@ -422,7 +422,7 @@ describe('logInViaDepotEpic', () => {
         username: 'username',
         password: 'password',
         userKeys: userKeys,
-        vaultKey: 'vaultKey'
+        depotKey: 'depotKey'
       }))
     ])
   })
@@ -464,7 +464,7 @@ describe('logInViaDepotEpic', () => {
     const mockSodiumClient = mock(SodiumClient)
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
       authDigest: 'random',
-      encryptionKey: 'vaultKey'
+      encryptionKey: 'depotKey'
     })
     container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)

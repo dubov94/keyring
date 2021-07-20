@@ -17,8 +17,8 @@ export const updateVaultEpic: Epic<RootAction, RootAction, RootState> = (action$
   filter(monoid.fold(disjunction)([isActionOf(depotActivationData), isActionOf(userKeysUpdate)])),
   withLatestFrom(state$),
   switchMap(([, state]) => {
-    return state.depot.vaultKey !== null ? from(getSodiumClient().encryptMessage(
-      state.depot.vaultKey!,
+    return state.depot.depotKey !== null ? from(getSodiumClient().encryptMessage(
+      state.depot.depotKey!,
       JSON.stringify(state.user.keys.userKeys)
     )).pipe(
       map((vault) => newVault(vault))
@@ -34,7 +34,7 @@ export const activateDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
         username: action.payload.username,
         salt: parametrization,
         hash: authDigest,
-        vaultKey: encryptionKey
+        depotKey: encryptionKey
       })))
     )
   })))

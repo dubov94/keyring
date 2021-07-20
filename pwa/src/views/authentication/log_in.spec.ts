@@ -132,7 +132,7 @@ describe('LogIn', () => {
       username: 'username',
       password: 'password',
       userKeys: [],
-      vaultKey: 'vaultKey'
+      depotKey: 'depotKey'
     })))
     await wrapper.vm.$nextTick()
 
