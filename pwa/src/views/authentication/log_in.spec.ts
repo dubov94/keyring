@@ -70,7 +70,8 @@ describe('LogIn', () => {
       username: 'username',
       salt: 'salt',
       hash: 'hash',
-      vault: 'vault'
+      vault: 'vault',
+      encryptedOtpToken: null
     }))
     await wrapper.vm.$nextTick()
     await getUsernameInput().setValue('username')

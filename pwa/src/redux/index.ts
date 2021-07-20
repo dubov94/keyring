@@ -66,22 +66,25 @@ store.dispatch(rehydrateDepot({
   username: LOCAL_STORAGE_ACCESSOR.get<string>('depot.username'),
   salt: LOCAL_STORAGE_ACCESSOR.get<string>('depot.salt'),
   hash: LOCAL_STORAGE_ACCESSOR.get<string>('depot.hash'),
-  vault: LOCAL_STORAGE_ACCESSOR.get<string>('depot.vault')
+  vault: LOCAL_STORAGE_ACCESSOR.get<string>('depot.vault'),
+  encryptedOtpToken: LOCAL_STORAGE_ACCESSOR.get<string>('depot.encrypted_otp_token')
 }))
 state$.pipe(
   map((state) => ({
     username: state.depot.username,
     salt: state.depot.salt,
     hash: state.depot.hash,
-    vault: state.depot.vault
+    vault: state.depot.vault,
+    encryptedOtpToken: state.depot.encryptedOtpToken
   })),
   distinctUntilChanged(isEqual),
   takeUntil(action$.pipe(filter(isActionOf(logOut))))
-).subscribe(({ username, salt, hash, vault }) => {
+).subscribe(({ username, salt, hash, vault, encryptedOtpToken }) => {
   LOCAL_STORAGE_ACCESSOR.set('depot.username', username)
   LOCAL_STORAGE_ACCESSOR.set('depot.salt', salt)
   LOCAL_STORAGE_ACCESSOR.set('depot.hash', hash)
   LOCAL_STORAGE_ACCESSOR.set('depot.vault', vault)
+  LOCAL_STORAGE_ACCESSOR.set('depot.encrypted_otp_token', encryptedOtpToken)
 })
 
 // Session maintenance.

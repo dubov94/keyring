@@ -6,6 +6,7 @@ export const rehydrateDepot = createAction('depot/rehydrate')<DeepReadonly<{
   salt: string | null;
   hash: string | null;
   vault: string | null;
+  encryptedOtpToken: string | null;
 }>>()
 
 export const newVault = createAction('depot/newVault')<string>()

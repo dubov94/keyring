@@ -388,7 +388,8 @@ describe('logInViaDepotEpic', () => {
       username: 'username',
       salt: 'parametrization',
       hash: 'authDigest',
-      vault: 'vault'
+      vault: 'vault',
+      encryptedOtpToken: null
     }))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
@@ -432,7 +433,8 @@ describe('logInViaDepotEpic', () => {
       username: 'username',
       salt: 'parametrization',
       hash: 'authDigest',
-      vault: 'vault'
+      vault: 'vault',
+      encryptedOtpToken: null
     }))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
@@ -455,7 +457,8 @@ describe('logInViaDepotEpic', () => {
       username: 'username',
       salt: 'parametrization',
       hash: 'authDigest',
-      vault: 'vault'
+      vault: 'vault',
+      encryptedOtpToken: null
     }))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)

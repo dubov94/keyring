@@ -15,13 +15,15 @@ describe('rehydrateDepot', () => {
       username: 'username',
       salt: 'salt',
       hash: 'hash',
-      vault: 'vault'
+      vault: 'vault',
+      encryptedOtpToken: 'encryptedOtpToken'
     }))
 
     expect(state.username).to.equal('username')
     expect(state.salt).to.equal('salt')
     expect(state.hash).to.equal('hash')
     expect(state.vault).to.equal('vault')
+    expect(state.encryptedOtpToken).to.equal('encryptedOtpToken')
   })
 })
 
@@ -53,7 +55,8 @@ describe('usernameChangeSignal', () => {
       salt: null,
       hash: null,
       vault: null,
-      vaultKey: null
+      vaultKey: null,
+      encryptedOtpToken: null
     }, usernameChangeSignal(success({
       before: 'usernameA',
       update: 'usernameB'
@@ -79,13 +82,15 @@ describe('clearDepot', () => {
       salt: 'salt',
       hash: 'hash',
       vault: 'vault',
-      vaultKey: 'vaultKey'
+      vaultKey: 'vaultKey',
+      encryptedOtpToken: 'encryptedOtpToken'
     }, clearDepot())
 
     expect(state.username).to.be.null
     expect(state.salt).to.be.null
     expect(state.hash).to.be.null
     expect(state.vault).to.be.null
+    expect(state.encryptedOtpToken).to.be.null
   })
 })
 
@@ -106,13 +111,15 @@ describe('toInitialState', () => {
         salt: 'salt',
         hash: 'hash',
         vault: 'vault',
-        vaultKey: 'vaultKey'
+        vaultKey: 'vaultKey',
+        encryptedOtpToken: 'encryptedOtpToken'
       }, trigger)
 
       expect(state.username).to.be.null
       expect(state.salt).to.be.null
       expect(state.hash).to.be.null
       expect(state.vault).to.be.null
+      expect(state.encryptedOtpToken).to.be.null
     })
   })
 })

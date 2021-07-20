@@ -13,6 +13,7 @@ type State = {
   hash: string | null;
   vault: string | null;
   vaultKey: string | null;
+  encryptedOtpToken: string | null;
 }
 
 const initialState = (): State => ({
@@ -20,7 +21,8 @@ const initialState = (): State => ({
   salt: null,
   hash: null,
   vault: null,
-  vaultKey: null
+  vaultKey: null,
+  encryptedOtpToken: null
 })
 
 const toInitialState = (state: State) => {
@@ -35,6 +37,7 @@ export default createReducer<State>(
       state.salt = action.payload.salt
       state.hash = action.payload.hash
       state.vault = action.payload.vault
+      state.encryptedOtpToken = action.payload.encryptedOtpToken
     })
     .addMatcher(isActionSuccess(authnViaDepotSignal), (state, action) => {
       state.vaultKey = action.payload.data.vaultKey

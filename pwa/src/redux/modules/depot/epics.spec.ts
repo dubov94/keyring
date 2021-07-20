@@ -118,7 +118,8 @@ describe('localRehashEpic', () => {
       username: 'username',
       salt: 'salt',
       hash: 'hash',
-      vault: 'vault'
+      vault: 'vault',
+      encryptedOtpToken: null
     }))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
