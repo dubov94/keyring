@@ -10,11 +10,46 @@
     <user-menu v-model="showMenu"></user-menu>
     <v-main>
       <v-expansion-panels inset class="mt-4">
-        <change-username></change-username>
-        <change-master-key></change-master-key>
-        <otp-switch v-if="showOtpSwitch"></otp-switch>
-        <change-mail></change-mail>
-        <delete-account></delete-account>
+        <v-expansion-panel>
+          <v-expansion-panel-header>
+            Change username
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <change-username></change-username>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header>
+            Change password
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <change-master-key></change-master-key>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header>
+            Two-factor authentication
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <otp-switch v-if="showOtpSwitch"></otp-switch>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header>
+            Change e-mail
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <change-mail></change-mail>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+        <v-expansion-panel>
+          <v-expansion-panel-header>
+            Delete account
+          </v-expansion-panel-header>
+          <v-expansion-panel-content>
+            <delete-account></delete-account>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
       </v-expansion-panels>
     </v-main>
   </page>

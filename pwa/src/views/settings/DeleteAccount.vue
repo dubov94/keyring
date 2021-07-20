@@ -1,20 +1,13 @@
 <template>
-  <v-expansion-panel>
-    <v-expansion-panel-header>
-      Delete account
-    </v-expansion-panel-header>
-    <v-expansion-panel-content>
-      <v-form @keydown.native.enter.prevent="submit">
-        <form-text-field type="password" label="Password" prepend-icon="lock"
-          :value="password" @input="setPassword" :dirty="$v.password.$dirty" :errors="passwordErrors"
-          @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
-        <div class="mx-4 mt-4">
-          <v-btn block color="error" :loading="inProgress"
-            @click="submit" :disabled="!canAccessApi">Submit</v-btn>
-        </div>
-      </v-form>
-    </v-expansion-panel-content>
-  </v-expansion-panel>
+  <v-form @keydown.native.enter.prevent="submit">
+    <form-text-field type="password" label="Password" prepend-icon="lock"
+      :value="password" @input="setPassword" :dirty="$v.password.$dirty" :errors="passwordErrors"
+      @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
+    <div class="mx-4 mt-4">
+      <v-btn block color="error" :loading="inProgress"
+        @click="submit" :disabled="!canAccessApi">Submit</v-btn>
+    </div>
+  </v-form>
 </template>
 
 <script lang="ts">
