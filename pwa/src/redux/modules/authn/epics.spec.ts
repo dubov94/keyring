@@ -539,7 +539,7 @@ describe('remoteAuthnCompleteOnCredentialsEpic', () => {
       await epicTracker.waitForCompletion()
 
       expect(await drainEpicActions(epicTracker)).to.deep.equal([
-        remoteAuthnComplete({ ...params, ...userData, isOtpEnabled: false })
+        remoteAuthnComplete({ ...params, ...userData, isOtpEnabled: false, otpToken: null })
       ])
     })
   })

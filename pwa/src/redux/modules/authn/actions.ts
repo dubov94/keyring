@@ -117,4 +117,5 @@ export const backgroundAuthnSignal = createAction('authn/backgroundAuthnSignal')
 
 export const remoteAuthnComplete = createAction('authn/remoteAuthnComplete')<DeepReadonly<AuthnViaApiParams & UserData & {
   isOtpEnabled: boolean;
+  otpToken: string | null;
 }>>()

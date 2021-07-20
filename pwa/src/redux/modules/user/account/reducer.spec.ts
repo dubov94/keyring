@@ -54,7 +54,8 @@ describe('remoteAuthnComplete', () => {
       mailVerificationRequired: false,
       mail: 'mail@example.com',
       userKeys: [],
-      isOtpEnabled: true
+      isOtpEnabled: true,
+      otpToken: null
     }))
 
     expect(state.isAuthenticated).to.be.true
