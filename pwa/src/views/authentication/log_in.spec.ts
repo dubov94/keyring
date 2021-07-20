@@ -111,7 +111,8 @@ describe('LogIn', () => {
       sessionKey: 'sessionKey',
       mailVerificationRequired: false,
       mail: 'mail@example.com',
-      userKeys: []
+      userKeys: [],
+      isOtpEnabled: false
     }))
     await wrapper.vm.$nextTick()
 

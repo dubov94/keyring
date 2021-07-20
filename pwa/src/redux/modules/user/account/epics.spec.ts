@@ -633,7 +633,8 @@ describe('remoteRehashEpic', () => {
       sessionKey: 'sessionKey',
       mailVerificationRequired: false,
       mail: 'mail@example.com',
-      userKeys: []
+      userKeys: [],
+      isOtpEnabled: false
     }))
     actionSubject.complete()
     await epicTracker.waitForCompletion()

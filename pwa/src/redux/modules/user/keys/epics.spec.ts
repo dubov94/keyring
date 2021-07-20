@@ -223,7 +223,8 @@ describe('inheritKeysFromAuthnDataEpic', () => {
       sessionKey: 'sessionKey',
       mailVerificationRequired: false,
       mail: 'mail@example.com',
-      userKeys
+      userKeys,
+      isOtpEnabled: false
     }),
     authnViaDepotSignal(success({
       username: 'username',

@@ -97,6 +97,7 @@ export default createReducer<{
       state.sessionKey = action.payload.sessionKey
       state.mailVerificationRequired = action.payload.mailVerificationRequired
       state.mail = action.payload.mail
+      state.isOtpEnabled = action.payload.isOtpEnabled
     })
     .addMatcher(isActionSuccess(authnViaDepotSignal), (state) => {
       state.isAuthenticated = true

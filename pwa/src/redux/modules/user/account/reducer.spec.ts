@@ -53,7 +53,8 @@ describe('remoteAuthnComplete', () => {
       sessionKey: 'sessionKey',
       mailVerificationRequired: false,
       mail: 'mail@example.com',
-      userKeys: []
+      userKeys: [],
+      isOtpEnabled: true
     }))
 
     expect(state.isAuthenticated).to.be.true
@@ -62,6 +63,7 @@ describe('remoteAuthnComplete', () => {
     expect(state.sessionKey).to.equal('sessionKey')
     expect(state.mailVerificationRequired).to.be.false
     expect(state.mail).to.equal('mail@example.com')
+    expect(state.isOtpEnabled).to.be.true
   })
 })
 

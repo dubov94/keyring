@@ -314,7 +314,8 @@ export const remoteAuthnCompleteOnCredentialsEpic: Epic<RootAction, RootAction, 
         password: data.password,
         parametrization: data.parametrization,
         encryptionKey: data.encryptionKey,
-        ...content
+        ...content,
+        isOtpEnabled: false
       })))
     )),
     option.getOrElse<Observable<RootAction>>(() => EMPTY)
@@ -325,6 +326,7 @@ export const remoteAuthnCompleteOnOtpEpic: Epic<RootAction, RootAction, RootStat
   filter(isActionSuccess(authnOtpProvisionSignal)),
   concatMap((action) => of(remoteAuthnComplete({
     ...action.payload.data.credentialParams,
-    ...action.payload.data.userData
+    ...action.payload.data.userData,
+    isOtpEnabled: true
   })))
 )
