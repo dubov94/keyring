@@ -60,6 +60,7 @@ export default createReducer<{
   usernameChange: RemoteData<UsernameChangeFlowIndicator, {}, StandardError<ServiceChangeUsernameResponseError>>;
   accountDeletion: RemoteData<AccountDeletionFlowIndicator, {}, StandardError<ServiceDeleteAccountResponseError>>;
   isOtpEnabled: boolean;
+  otpToken: string | null;
   otpParamsGeneration: RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>;
   otpParamsAcceptance: RemoteData<OtpParamsAcceptanceFlowIndicator, {}, StandardError<ServiceAcceptOtpParamsResponseError>>;
   otpReset: RemoteData<OtpResetFlowIndicator, {}, StandardError<ServiceResetOtpResponseError>>;
@@ -77,6 +78,7 @@ export default createReducer<{
     usernameChange: zero(),
     accountDeletion: zero(),
     isOtpEnabled: false,
+    otpToken: null,
     otpParamsGeneration: zero(),
     otpParamsAcceptance: zero(),
     otpReset: zero()
@@ -98,6 +100,7 @@ export default createReducer<{
       state.mailVerificationRequired = action.payload.mailVerificationRequired
       state.mail = action.payload.mail
       state.isOtpEnabled = action.payload.isOtpEnabled
+      state.otpToken = action.payload.otpToken
     })
     .addMatcher(isActionSuccess(authnViaDepotSignal), (state) => {
       state.isAuthenticated = true
