@@ -41,7 +41,7 @@ import {
   AuthnViaDepotFlowIndicator,
   authnViaDepotReset,
   authnViaDepotSignal,
-  backgroundAuthnSignal,
+  backgroundRemoteAuthnSignal,
   logInViaApi,
   logInViaDepot,
   provideOtp,
@@ -497,7 +497,7 @@ describe('remoteCredentialsMismatchLocalEpic', () => {
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
     const epicTracker = new EpicTracker(remoteCredentialsMismatchLocalEpic(action$, state$, {}))
-    actionSubject.next(backgroundAuthnSignal(failure(ServiceLogInResponseError.INVALIDCREDENTIALS)))
+    actionSubject.next(backgroundRemoteAuthnSignal(failure(ServiceLogInResponseError.INVALIDCREDENTIALS)))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
@@ -527,7 +527,7 @@ describe('remoteAuthnCompleteOnCredentialsEpic', () => {
 
   ;[
     authnViaApiSignal(success(flowResult)),
-    backgroundAuthnSignal(success(flowResult))
+    backgroundRemoteAuthnSignal(success(flowResult))
   ].forEach((trigger) => {
     it(`emits the action on ${trigger.type}`, async () => {
       const store: Store<RootState, RootAction> = createStore(reducer)

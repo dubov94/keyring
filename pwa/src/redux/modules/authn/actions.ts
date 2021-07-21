@@ -113,7 +113,7 @@ export const initiateBackgroundAuthn = createAction('authn/initiateBackgroundAut
   username: string;
   password: string;
 }>>()
-export const backgroundAuthnSignal = createAction('authn/backgroundAuthnSignal')<DeepReadonly<AuthnViaApiSignal>>()
+export const backgroundRemoteAuthnSignal = createAction('authn/backgroundRemoteAuthnSignal')<DeepReadonly<AuthnViaApiSignal>>()
 
 export const remoteAuthnComplete = createAction('authn/remoteAuthnComplete')<DeepReadonly<AuthnViaApiParams & UserData & {
   isOtpEnabled: boolean;

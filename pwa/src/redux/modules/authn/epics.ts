@@ -19,7 +19,7 @@ import {
   AuthnViaDepotFlowError,
   initiateBackgroundAuthn,
   AuthnViaApiSignal,
-  backgroundAuthnSignal,
+  backgroundRemoteAuthnSignal,
   remoteAuthnComplete,
   AuthnViaApiParams,
   authnOtpProvisionReset,
@@ -292,11 +292,11 @@ export const displayAuthnViaDepotExceptionsEpic = createDisplayExceptionsEpic(au
 
 export const backgroundAuthnEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(initiateBackgroundAuthn)),
-  switchMap((action) => apiAuthn(action.payload, backgroundAuthnSignal))
+  switchMap((action) => apiAuthn(action.payload, backgroundRemoteAuthnSignal))
 )
 
 export const remoteCredentialsMismatchLocalEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
-  filter(isActionOf(backgroundAuthnSignal)),
+  filter(isActionOf(backgroundRemoteAuthnSignal)),
   map((action) => action.payload),
   filter(isSignalFailure),
   filter((signal) => signal.error.value === ServiceLogInResponseError.INVALIDCREDENTIALS),
@@ -304,7 +304,7 @@ export const remoteCredentialsMismatchLocalEpic: Epic<RootAction, RootAction, Ro
 )
 
 export const remoteAuthnCompleteOnCredentialsEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
-  filter(isActionSuccess2([authnViaApiSignal, backgroundAuthnSignal])),
+  filter(isActionSuccess2([authnViaApiSignal, backgroundRemoteAuthnSignal])),
   concatMap((action) => fn.pipe(
     option.of(action.payload.data),
     option.chain((data) => fn.pipe(
