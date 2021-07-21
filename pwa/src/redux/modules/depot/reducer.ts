@@ -1,7 +1,7 @@
 import { isActionSuccess } from '@/redux/flow_signal'
 import { createReducer } from '@reduxjs/toolkit'
 import { isActionOf } from 'typesafe-actions'
-import { authnViaDepotSignal, registrationSignal } from '../authn/actions'
+import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '../authn/actions'
 import { accountDeletionSignal, localOtpTokenFailure, remoteCredentialsMismatchLocal, usernameChangeSignal } from '../user/account/actions'
 import { clearDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
 import { monoid } from 'fp-ts'
@@ -47,6 +47,11 @@ export default createReducer<State>(
     })
     .addMatcher(isActionOf(newEncryptedOtpToken), (state, action) => {
       state.encryptedOtpToken = action.payload
+    })
+    .addMatcher(isActionOf(remoteAuthnComplete), (state, action) => {
+      if (!action.payload.isOtpEnabled) {
+        state.encryptedOtpToken = null
+      }
     })
     .addMatcher(isActionSuccess(usernameChangeSignal), (state, action) => {
       if (state.username === action.payload.data.before) {

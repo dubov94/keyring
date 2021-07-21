@@ -1,6 +1,7 @@
 import { success } from '@/redux/flow_signal'
+import { reduce } from '@/redux/testing'
 import { expect } from 'chai'
-import { authnViaDepotSignal, registrationSignal } from '../authn/actions'
+import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '../authn/actions'
 import {
   accountDeletionSignal,
   localOtpTokenFailure,
@@ -54,6 +55,28 @@ describe('newEncryptedOtpToken', () => {
     const state = reducer(undefined, newEncryptedOtpToken('encryptedOtpToken'))
 
     expect(state.encryptedOtpToken).to.equal('encryptedOtpToken')
+  })
+})
+
+describe('remoteAuthnComplete', () => {
+  it('clears the encrypted OTP token', () => {
+    const state = reduce(reducer, undefined, [
+      newEncryptedOtpToken('encryptedOtpToken'),
+      remoteAuthnComplete({
+        username: 'username',
+        password: 'password',
+        parametrization: 'parametrization',
+        encryptionKey: 'encryptionKey',
+        sessionKey: 'sessionKey',
+        mailVerificationRequired: false,
+        mail: 'mail@example.com',
+        userKeys: [],
+        isOtpEnabled: false,
+        otpToken: null
+      })
+    ])
+
+    expect(state.encryptedOtpToken).to.be.null
   })
 })
 
