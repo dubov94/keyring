@@ -39,7 +39,8 @@ import {
   otpResetSignal,
   resetOtp,
   OtpResetFlowIndicator,
-  cancelOtpReset
+  cancelOtpReset,
+  localOtpTokenFailure
 } from './actions'
 import {
   acquireMailTokenEpic,
@@ -50,7 +51,6 @@ import {
   displayMailTokenReleaseExceptionsEpic,
   displayUsernameChangeExceptionsEpic,
   logOutOnDeletionSuccessEpic,
-  logOutOnCredentialsMismatchEpic,
   releaseMailTokenEpic,
   changeMasterKeyEpic,
   displayMasterKeyChangeExceptionsEpic,
@@ -59,7 +59,8 @@ import {
   otpParamsAcceptanceEpic,
   displayOtpParamsAcceptanceExceptionsEpic,
   displayOtpResetExceptionsEpic,
-  otpResetEpic
+  otpResetEpic,
+  logOutOnBackgroundAuthnFailureEpic
 } from './epics'
 import {
   AdministrationApi,
@@ -395,17 +396,22 @@ describe('logOutOnDeletionSuccessEpic', () => {
   })
 })
 
-describe('logOutOnCredentialsMismatchEpic', () => {
-  it('emits `logOut` action', async () => {
-    const store: Store<RootState, RootAction> = createStore(reducer)
-    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+describe('logOutOnBackgroundAuthnFailureEpic', () => {
+  ;[
+    remoteCredentialsMismatchLocal(),
+    localOtpTokenFailure()
+  ].forEach((trigger) => {
+    it(`emits \`logOut\` action on ${trigger.type}`, async () => {
+      const store: Store<RootState, RootAction> = createStore(reducer)
+      const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-    const epicTracker = new EpicTracker(logOutOnCredentialsMismatchEpic(action$, state$, {}))
-    actionSubject.next(remoteCredentialsMismatchLocal())
-    actionSubject.complete()
-    await epicTracker.waitForCompletion()
+      const epicTracker = new EpicTracker(logOutOnBackgroundAuthnFailureEpic(action$, state$, {}))
+      actionSubject.next(remoteCredentialsMismatchLocal())
+      actionSubject.complete()
+      await epicTracker.waitForCompletion()
 
-    expect(await drainEpicActions(epicTracker)).to.deep.equal([logOut()])
+      expect(await drainEpicActions(epicTracker)).to.deep.equal([logOut()])
+    })
   })
 })
 

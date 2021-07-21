@@ -49,7 +49,7 @@ import { cancel, exception, failure, indicator, isSignalFailure, errorToMessage,
 import { Key } from '@/redux/entities'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
-import { remoteCredentialsMismatchLocal } from '../user/account/actions'
+import { localOtpTokenFailure, remoteCredentialsMismatchLocal } from '../user/account/actions'
 import { either, function as fn, option } from 'fp-ts'
 import { isDepotActive } from '../depot/selectors'
 import { showToast } from '../ui/toast/actions'
@@ -340,6 +340,14 @@ export const remoteCredentialsMismatchLocalEpic: Epic<RootAction, RootAction, Ro
   filter(isSignalFailure),
   filter((signal) => signal.error.value === ServiceLogInResponseError.INVALIDCREDENTIALS),
   concatMap(() => of(remoteCredentialsMismatchLocal()))
+)
+
+export const localOtpTokenFailureEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+  filter(isActionOf(backgroundOtpProvisionSignal)),
+  map((action) => action.payload),
+  filter(isSignalFailure),
+  filter((signal) => signal.error.value.error === ServiceProvideOtpResponseError.INVALIDCODE),
+  concatMap(() => of(localOtpTokenFailure()))
 )
 
 export const remoteAuthnCompleteOnCredentialsEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(

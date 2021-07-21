@@ -3,6 +3,7 @@ import { expect } from 'chai'
 import { authnViaDepotSignal, registrationSignal } from '../authn/actions'
 import {
   accountDeletionSignal,
+  localOtpTokenFailure,
   remoteCredentialsMismatchLocal,
   usernameChangeSignal
 } from '../user/account/actions'
@@ -111,7 +112,8 @@ describe('toInitialState', () => {
       sessionKey: 'sessionKey'
     })),
     accountDeletionSignal(success({})),
-    remoteCredentialsMismatchLocal()
+    remoteCredentialsMismatchLocal(),
+    localOtpTokenFailure()
   ].forEach((trigger) => {
     it(`clears persisted data on ${trigger.type}`, () => {
       const state = reducer({
