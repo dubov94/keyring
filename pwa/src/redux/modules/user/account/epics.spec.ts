@@ -40,7 +40,8 @@ import {
   resetOtp,
   OtpResetFlowIndicator,
   cancelOtpReset,
-  localOtpTokenFailure
+  localOtpTokenFailure,
+  LogoutTrigger
 } from './actions'
 import {
   acquireMailTokenEpic,
@@ -392,7 +393,9 @@ describe('logOutOnDeletionSuccessEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(await drainEpicActions(epicTracker)).to.deep.equal([logOut()])
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      logOut(LogoutTrigger.USER_REQUEST)
+    ])
   })
 })
 
@@ -410,7 +413,9 @@ describe('logOutOnBackgroundAuthnFailureEpic', () => {
       actionSubject.complete()
       await epicTracker.waitForCompletion()
 
-      expect(await drainEpicActions(epicTracker)).to.deep.equal([logOut()])
+      expect(await drainEpicActions(epicTracker)).to.deep.equal([
+        logOut(LogoutTrigger.BACKGROUND_AUTHN_FAILURE)
+      ])
     })
   })
 })

@@ -56,7 +56,7 @@
 import Vue, { VueConstructor } from 'vue'
 import { sessionUsername } from '@/redux/modules/session/selectors'
 import { isAuthenticated } from '@/redux/modules/user/account/selectors'
-import { logOut } from '@/redux/modules/user/account/actions'
+import { logOut, LogoutTrigger } from '@/redux/modules/user/account/actions'
 
 interface Mixins {
   value: boolean;
@@ -80,7 +80,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.$emit('input', !this.value)
     },
     logOut () {
-      this.dispatch(logOut())
+      this.dispatch(logOut(LogoutTrigger.USER_REQUEST))
     }
   }
 })

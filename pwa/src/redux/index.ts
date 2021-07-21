@@ -15,7 +15,7 @@ import * as userKeysEpics from './modules/user/keys/epics'
 import * as userSecurityEpics from './modules/user/security/epics'
 import { concatMapTo, delay, distinctUntilChanged, filter, map, retryWhen, switchMap, takeUntil, tap } from 'rxjs/operators'
 import { isActionOf } from 'typesafe-actions'
-import { logOut } from './modules/user/account/actions'
+import { logOut, LogoutTrigger } from './modules/user/account/actions'
 import { getAdministrationApi } from '@/api/api_di'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 
@@ -50,16 +50,19 @@ store.subscribe(() => {
 
 // Persistance and rehydration.
 store.dispatch(rehydrateSession({
-  username: SESSION_STORAGE_ACCESSOR.get<string>('username')
+  username: SESSION_STORAGE_ACCESSOR.get<string>('username'),
+  logoutTrigger: SESSION_STORAGE_ACCESSOR.get<LogoutTrigger>('logout_trigger')
 }))
 state$.pipe(
   map((state) => ({
-    username: state.session.username
+    username: state.session.username,
+    logoutTrigger: state.session.logoutTrigger
   })),
   distinctUntilChanged(isEqual),
   takeUntil(action$.pipe(filter(isActionOf(logOut))))
-).subscribe(({ username }) => {
+).subscribe(({ username, logoutTrigger }) => {
   SESSION_STORAGE_ACCESSOR.set('username', username)
+  SESSION_STORAGE_ACCESSOR.set('logout_trigger', logoutTrigger)
 })
 
 store.dispatch(rehydrateDepot({
@@ -98,7 +101,7 @@ fromEvent(document, 'visibilitychange').pipe(switchMap(() => {
   return EMPTY
 })).subscribe(() => {
   if (state$.getValue().user.account.isAuthenticated) {
-    store.dispatch(logOut())
+    store.dispatch(logOut(LogoutTrigger.SESSION_EXPIRATION))
   }
 })
 

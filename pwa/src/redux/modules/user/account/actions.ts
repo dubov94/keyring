@@ -12,7 +12,12 @@ import {
 } from '@/api/definitions'
 import { option } from 'fp-ts'
 
-export const logOut = createAction('user/account/logOut')()
+export enum LogoutTrigger {
+  USER_REQUEST = 'USER_REQUEST',
+  SESSION_EXPIRATION = 'SESSION_EXPIRATION',
+  BACKGROUND_AUTHN_FAILURE = 'BACKGROUND_AUTHN_FAILURE'
+}
+export const logOut = createAction('user/account/logOut')<LogoutTrigger>()
 
 export enum MailTokenReleaseFlowIndicator {
   WORKING = 'WORKING'

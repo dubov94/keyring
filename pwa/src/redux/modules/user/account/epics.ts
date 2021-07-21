@@ -43,7 +43,8 @@ import {
   cancelOtpReset,
   otpResetSignal,
   OtpResetFlowIndicator,
-  localOtpTokenFailure
+  localOtpTokenFailure,
+  LogoutTrigger
 } from './actions'
 import {
   ServiceReleaseMailTokenResponse,
@@ -300,12 +301,12 @@ export const displayAccountDeletionExceptionsEpic = createDisplayExceptionsEpic(
 
 export const logOutOnDeletionSuccessEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionSuccess(accountDeletionSignal)),
-  concatMap(() => of(logOut()))
+  concatMap(() => of(logOut(LogoutTrigger.USER_REQUEST)))
 )
 
 export const logOutOnBackgroundAuthnFailureEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf([remoteCredentialsMismatchLocal, localOtpTokenFailure])),
-  concatMap(() => of(logOut()))
+  concatMap(() => of(logOut(LogoutTrigger.BACKGROUND_AUTHN_FAILURE)))
 )
 
 export const remoteRehashEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(

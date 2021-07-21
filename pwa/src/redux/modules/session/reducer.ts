@@ -2,11 +2,17 @@ import { isActionSuccess } from '@/redux/flow_signal'
 import { createReducer } from '@reduxjs/toolkit'
 import { isActionOf } from 'typesafe-actions'
 import { remoteAuthnComplete, authnViaDepotSignal, registrationSignal } from '../authn/actions'
-import { logOut, usernameChangeSignal } from '../user/account/actions'
+import { logOut, LogoutTrigger, usernameChangeSignal } from '../user/account/actions'
 import { rehydrateSession } from './actions'
 
-export default createReducer<{ username: string | null }>(
-  { username: null },
+export default createReducer<{
+  username: string | null;
+  logoutTrigger: LogoutTrigger | null;
+}>(
+  {
+    username: null,
+    logoutTrigger: null
+  },
   (builder) => builder
     .addMatcher(isActionSuccess(registrationSignal), (state, action) => {
       state.username = action.payload.data.username
@@ -22,6 +28,7 @@ export default createReducer<{ username: string | null }>(
     })
     .addMatcher(isActionOf(rehydrateSession), (state, action) => {
       state.username = action.payload.username
+      state.logoutTrigger = action.payload.logoutTrigger
     })
     .addMatcher(isActionOf(logOut), (state) => {
       state.username = null

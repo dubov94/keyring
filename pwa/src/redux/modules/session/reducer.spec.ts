@@ -1,7 +1,7 @@
 import { success } from '@/redux/flow_signal'
 import { expect } from 'chai'
 import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '../authn/actions'
-import { logOut, usernameChangeSignal } from '../user/account/actions'
+import { logOut, LogoutTrigger, usernameChangeSignal } from '../user/account/actions'
 import { rehydrateSession } from './actions'
 import reducer from './reducer'
 
@@ -60,20 +60,23 @@ describe('usernameChangeSignal', () => {
 })
 
 describe('rehydrateSession', () => {
-  it('updates the username', () => {
+  it('restores values', () => {
     const state = reducer(undefined, rehydrateSession({
-      username: 'username'
+      username: 'username',
+      logoutTrigger: LogoutTrigger.USER_REQUEST
     }))
 
     expect(state.username).to.equal('username')
+    expect(state.logoutTrigger).to.equal(LogoutTrigger.USER_REQUEST)
   })
 })
 
 describe('logOut', () => {
   it('clears the username', () => {
     const state = reducer({
-      username: 'username'
-    }, logOut())
+      username: 'username',
+      logoutTrigger: null
+    }, logOut(LogoutTrigger.USER_REQUEST))
 
     expect(state.username).to.be.null
   })
