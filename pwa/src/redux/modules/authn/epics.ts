@@ -290,7 +290,7 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
 
 export const displayAuthnViaDepotExceptionsEpic = createDisplayExceptionsEpic(authnViaDepotSignal)
 
-export const backgroundAuthnEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+export const backgroundRemoteAuthnEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(initiateBackgroundAuthn)),
   switchMap((action) => apiAuthn(action.payload, backgroundRemoteAuthnSignal))
 )
