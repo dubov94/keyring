@@ -28,9 +28,9 @@ export default createReducer<{
     })
     .addMatcher(isActionOf(rehydrateSession), (state, action) => {
       state.username = action.payload.username
-      state.logoutTrigger = action.payload.logoutTrigger
     })
-    .addMatcher(isActionOf(logOut), (state) => {
+    .addMatcher(isActionOf(logOut), (state, action) => {
       state.username = null
+      state.logoutTrigger = action.payload
     })
 )

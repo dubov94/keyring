@@ -9,6 +9,7 @@ import isEqual from 'lodash/isEqual'
 import { BehaviorSubject, defer, EMPTY, fromEvent, Subject, timer } from 'rxjs'
 import * as authnEpics from './modules/authn/epics'
 import * as depotEpics from './modules/depot/epics'
+import * as sessionEpics from './modules/session/epics'
 import * as uiToastEpics from './modules/ui/toast/epics'
 import * as userAccountEpics from './modules/user/account/epics'
 import * as userKeysEpics from './modules/user/keys/epics'
@@ -35,6 +36,7 @@ export const store = configureStore({
 epicMiddleware.run(combineEpics(
   ...Object.values(authnEpics),
   ...Object.values(depotEpics),
+  ...Object.values(sessionEpics),
   ...Object.values(uiToastEpics),
   ...Object.values(userAccountEpics),
   ...Object.values(userKeysEpics),
@@ -91,7 +93,7 @@ state$.pipe(
 })
 
 // Session maintenance.
-const SESSION_LIFETIME_IN_MILLIS = 10 * 60 * 1000
+const SESSION_LIFETIME_IN_MILLIS = 5 * 1000 // 10 * 60 * 1000
 
 fromEvent(document, 'visibilitychange').pipe(switchMap(() => {
   if (document.visibilityState !== 'visible') {

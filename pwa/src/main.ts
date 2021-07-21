@@ -27,6 +27,7 @@ import axios from 'axios'
 import { StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN, ZxcvbnService } from './cryptography/strength_test_service'
 import Qrc from 'qrcode'
 import { QrcEncoder, QRC_ENCODER_TOKEN } from './cryptography/qrc_encoder'
+import { injectionsSetUp } from './redux/actions'
 
 container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
   useValue: SodiumWorker<SodiumWorkerInterface>()
@@ -61,6 +62,8 @@ Vue.config.productionTip = false
 container.register<VueConstructor>(VUE_CONSTRUCTOR_TOKEN, {
   useValue: Vue
 })
+
+store.dispatch(injectionsSetUp())
 
 Vue.use(Vuetify)
 Vue.use(Vuelidate)

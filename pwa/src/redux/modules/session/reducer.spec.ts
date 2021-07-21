@@ -67,7 +67,7 @@ describe('rehydrateSession', () => {
     }))
 
     expect(state.username).to.equal('username')
-    expect(state.logoutTrigger).to.equal(LogoutTrigger.USER_REQUEST)
+    expect(state.logoutTrigger).to.be.null
   })
 })
 
