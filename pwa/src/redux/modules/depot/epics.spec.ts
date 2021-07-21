@@ -3,8 +3,8 @@ import { container } from 'tsyringe'
 import { emplace, userKeysUpdate } from '../user/keys/actions'
 import { mock, instance, when } from 'ts-mockito'
 import { SodiumClient } from '@/cryptography/sodium_client'
-import { activateDepotEpic, localRehashEpic, masterKeyUpdateEpic, updateVaultEpic } from './epics'
-import { activateDepot, depotActivationData, newVault, rehydrateDepot } from './actions'
+import { activateDepotEpic, localRehashEpic, masterKeyUpdateEpic, updateEncryptedOtpTokenEpic, updateVaultEpic } from './epics'
+import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
 import { RootAction } from '@/redux/root_action'
 import { expect } from 'chai'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
@@ -12,26 +12,28 @@ import { createStore, Store } from '@reduxjs/toolkit'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { MasterKeyChangeData, masterKeyChangeSignal } from '../user/account/actions'
 import { success } from '@/redux/flow_signal'
-import { authnViaDepotSignal } from '../authn/actions'
+import { authnViaDepotSignal, remoteAuthnComplete } from '../authn/actions'
 
 describe('updateVaultEpic', () => {
+  const depotActivationDataAction = depotActivationData({
+    username: 'username',
+    salt: 'salt',
+    hash: 'hash',
+    depotKey: 'depotKey'
+  })
+  const userKeys: Key[] = [{
+    identifier: '0',
+    value: 'value',
+    tags: []
+  }]
+
   ;[
-    depotActivationData({ username: 'username', salt: 'salt', hash: 'hash', depotKey: 'depotKey' }),
-    userKeysUpdate([{ identifier: '0', value: 'value', tags: [] }])
+    depotActivationDataAction,
+    userKeysUpdate(userKeys)
   ].forEach((trigger) => {
     it(`emits a new vault on ${trigger.type}`, async () => {
-      const userKeys: Key[] = [{
-        identifier: '0',
-        value: 'value',
-        tags: []
-      }]
       const store: Store<RootState, RootAction> = createStore(reducer)
-      store.dispatch(depotActivationData({
-        username: 'username',
-        salt: 'salt',
-        hash: 'hash',
-        depotKey: 'depotKey'
-      }))
+      store.dispatch(depotActivationDataAction)
       store.dispatch(emplace(userKeys))
       const { action$, actionSubject, state$ } = setUpEpicChannels(store)
       const mockSodiumClient = mock(SodiumClient)
@@ -47,6 +49,51 @@ describe('updateVaultEpic', () => {
       await epicTracker.waitForCompletion()
 
       expect(await drainEpicActions(epicTracker)).to.deep.equal([newVault('vault')])
+    })
+  })
+})
+
+describe('updateEncryptedOtpTokenEpic', () => {
+  const depotActivationDataAction = depotActivationData({
+    username: 'username',
+    salt: 'salt',
+    hash: 'hash',
+    depotKey: 'depotKey'
+  })
+  const remoteASuthnCompleteAction = remoteAuthnComplete({
+    username: 'username',
+    password: 'password',
+    parametrization: 'parametreization',
+    encryptionKey: 'encryptionKey',
+    sessionKey: 'sessionKey',
+    mailVerificationRequired: false,
+    mail: 'mail@example.com',
+    userKeys: [],
+    isOtpEnabled: true,
+    otpToken: 'otpToken'
+  })
+
+  ;[
+    depotActivationDataAction,
+    remoteASuthnCompleteAction
+  ].forEach((trigger) => {
+    it(`emits a new encrypted OTP token on ${trigger.type}`, async () => {
+      const store: Store<RootState, RootAction> = createStore(reducer)
+      store.dispatch(depotActivationDataAction)
+      store.dispatch(remoteASuthnCompleteAction)
+      const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+      const mockSodiumClient = mock(SodiumClient)
+      when(mockSodiumClient.encryptMessage('depotKey', 'otpToken')).thenResolve('encryptedOtpToken')
+      container.register(SodiumClient, {
+        useValue: instance(mockSodiumClient)
+      })
+
+      const epicTracker = new EpicTracker(updateEncryptedOtpTokenEpic(action$, state$, {}))
+      actionSubject.next(trigger)
+      actionSubject.complete()
+      await epicTracker.waitForCompletion()
+
+      expect(await drainEpicActions(epicTracker)).to.deep.equal([newEncryptedOtpToken('encryptedOtpToken')])
     })
   })
 })

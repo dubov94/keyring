@@ -6,7 +6,7 @@ import {
   remoteCredentialsMismatchLocal,
   usernameChangeSignal
 } from '../user/account/actions'
-import { clearDepot, newVault, rehydrateDepot } from './actions'
+import { clearDepot, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
 import reducer from './reducer'
 
 describe('rehydrateDepot', () => {
@@ -45,6 +45,14 @@ describe('newVault', () => {
     const state = reducer(undefined, newVault('vault'))
 
     expect(state.vault).to.equal('vault')
+  })
+})
+
+describe('newEncryptedOtpToken', () => {
+  it('sets the encrypted OTP token', () => {
+    const state = reducer(undefined, newEncryptedOtpToken('encryptedOtpToken'))
+
+    expect(state.encryptedOtpToken).to.equal('encryptedOtpToken')
   })
 })
 

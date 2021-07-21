@@ -4,26 +4,43 @@ import { Epic } from 'redux-observable'
 import { filter, map, switchMap, withLatestFrom } from 'rxjs/operators'
 import { isActionOf } from 'typesafe-actions'
 import { userKeysUpdate } from '../user/keys/actions'
-import { monoid } from 'fp-ts'
+import { function as fn, monoid, option } from 'fp-ts'
 import { disjunction } from '@/redux/predicates'
 import { isActionSuccess } from '@/redux/flow_signal'
-import { EMPTY, from, of } from 'rxjs'
+import { EMPTY, from, Observable, of } from 'rxjs'
 import { getSodiumClient } from '@/cryptography/sodium_client'
-import { activateDepot, depotActivationData, newVault } from './actions'
+import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault } from './actions'
 import { masterKeyChangeSignal } from '../user/account/actions'
-import { authnViaDepotSignal } from '../authn/actions'
+import { authnViaDepotSignal, remoteAuthnComplete } from '../authn/actions'
 
 export const updateVaultEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(monoid.fold(disjunction)([isActionOf(depotActivationData), isActionOf(userKeysUpdate)])),
   withLatestFrom(state$),
-  switchMap(([, state]) => {
-    return state.depot.depotKey !== null ? from(getSodiumClient().encryptMessage(
-      state.depot.depotKey!,
+  switchMap(([, state]) => fn.pipe(
+    option.fromNullable(state.depot.depotKey),
+    option.map((depotKey) => from(getSodiumClient().encryptMessage(
+      depotKey,
       JSON.stringify(state.user.keys.userKeys)
-    )).pipe(
-      map((vault) => newVault(vault))
-    ) : EMPTY
-  })
+    )).pipe(map((vault) => newVault(vault)))),
+    option.getOrElse<Observable<RootAction>>(() => EMPTY)
+  ))
+)
+
+export const updateEncryptedOtpTokenEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(monoid.fold(disjunction)([isActionOf(depotActivationData), isActionOf(remoteAuthnComplete)])),
+  withLatestFrom(state$),
+  switchMap(([, state]) => fn.pipe(
+    option.fromNullable(state.depot.depotKey),
+    option.map((depotKey) => fn.pipe(
+      option.fromNullable(state.user.account.otpToken),
+      option.map((otpToken) => from(getSodiumClient().encryptMessage(depotKey, otpToken))),
+      option.getOrElse<Observable<string | null>>(() => of(null))
+    )),
+    option.map((observable: Observable<string | null>) => observable.pipe(
+      map((value) => newEncryptedOtpToken(value))
+    )),
+    option.getOrElse<Observable<RootAction>>(() => EMPTY)
+  ))
 )
 
 export const activateDepotEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(

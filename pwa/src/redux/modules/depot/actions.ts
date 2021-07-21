@@ -10,6 +10,7 @@ export const rehydrateDepot = createAction('depot/rehydrate')<DeepReadonly<{
 }>>()
 
 export const newVault = createAction('depot/newVault')<string>()
+export const newEncryptedOtpToken = createAction('depot/newEncryptedOtpToken')<string | null>()
 
 export const activateDepot = createAction('depot/activate')<DeepReadonly<{
   username: string;

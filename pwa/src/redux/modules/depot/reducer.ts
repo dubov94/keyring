@@ -3,7 +3,7 @@ import { createReducer } from '@reduxjs/toolkit'
 import { isActionOf } from 'typesafe-actions'
 import { authnViaDepotSignal, registrationSignal } from '../authn/actions'
 import { accountDeletionSignal, remoteCredentialsMismatchLocal, usernameChangeSignal } from '../user/account/actions'
-import { clearDepot, depotActivationData, newVault, rehydrateDepot } from './actions'
+import { clearDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
 import { monoid } from 'fp-ts'
 import { disjunction } from '@/redux/predicates'
 
@@ -44,6 +44,9 @@ export default createReducer<State>(
     })
     .addMatcher(isActionOf(newVault), (state, action) => {
       state.vault = action.payload
+    })
+    .addMatcher(isActionOf(newEncryptedOtpToken), (state, action) => {
+      state.encryptedOtpToken = action.payload
     })
     .addMatcher(isActionSuccess(usernameChangeSignal), (state, action) => {
       if (state.username === action.payload.data.before) {
