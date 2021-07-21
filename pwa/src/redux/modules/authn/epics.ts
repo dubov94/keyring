@@ -27,7 +27,8 @@ import {
   AuthnOtpProvisionSignal,
   provideOtp,
   AuthnOtpProvisionFlowIndicator,
-  UserData
+  UserData,
+  backgroundOtpProvisionSignal
 } from './actions'
 import {
   ServiceRegisterResponse,
@@ -50,6 +51,8 @@ import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { DeepReadonly } from 'ts-essentials'
 import { remoteCredentialsMismatchLocal } from '../user/account/actions'
 import { either, function as fn, option } from 'fp-ts'
+import { isDepotActive } from '../depot/selectors'
+import { showToast } from '../ui/toast/actions'
 
 export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf([register, registrationReset])),
@@ -293,6 +296,42 @@ export const displayAuthnViaDepotExceptionsEpic = createDisplayExceptionsEpic(au
 export const backgroundRemoteAuthnEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(initiateBackgroundAuthn)),
   switchMap((action) => apiAuthn(action.payload, backgroundRemoteAuthnSignal))
+)
+
+export const backgroundOtpProvisionEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionSuccess(backgroundRemoteAuthnSignal)),
+  withLatestFrom(state$),
+  switchMap(([action, state]) => {
+    const { data } = action.payload
+    return fn.pipe(
+      option.getLeft(data.content),
+      option.chain((otpContext) => fn.pipe(
+        option.fromNullable(state.depot.depotKey),
+        option.map((depotKey) => fn.pipe(
+          option.fromNullable(state.depot.encryptedOtpToken),
+          option.map((encryptedOtpToken) => from(
+            getSodiumClient().decryptMessage(depotKey, encryptedOtpToken)
+          ).pipe(
+            switchMap((otpToken) => otpProvision({
+              credentialParams: {
+                username: data.username,
+                password: data.password,
+                parametrization: data.parametrization,
+                encryptionKey: data.encryptionKey
+              },
+              authnKey: otpContext.authnKey,
+              otp: otpToken,
+              yieldTrustedToken: isDepotActive(state)
+            }, backgroundOtpProvisionSignal))
+          )),
+          option.getOrElse<Observable<RootAction>>(() => of(showToast({
+            message: '`depot` lacks data for OTP provision'
+          })))
+        ))
+      )),
+      option.getOrElse<Observable<RootAction>>(() => EMPTY)
+    )
+  })
 )
 
 export const remoteCredentialsMismatchLocalEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(

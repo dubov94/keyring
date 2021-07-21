@@ -27,7 +27,8 @@ import {
   remoteCredentialsMismatchLocalEpic,
   remoteAuthnCompleteOnCredentialsEpic,
   provideOtpEpic,
-  displayAuthnOtpProvisionExceptionsEpic
+  displayAuthnOtpProvisionExceptionsEpic,
+  backgroundOtpProvisionEpic
 } from './epics'
 import {
   AuthnOtpProvisionFlowIndicator,
@@ -41,6 +42,7 @@ import {
   AuthnViaDepotFlowIndicator,
   authnViaDepotReset,
   authnViaDepotSignal,
+  backgroundOtpProvisionSignal,
   backgroundRemoteAuthnSignal,
   logInViaApi,
   logInViaDepot,
@@ -489,6 +491,81 @@ describe('logInViaDepotEpic', () => {
 
 describe('displayAuthnViaDepotExceptionsEpic', () => {
   it('emits toast data', testEpicException(displayAuthnViaDepotExceptionsEpic, authnViaDepotSignal))
+})
+
+describe('backgroundOtpProvisionEpic', () => {
+  it('emits provision sequence', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(rehydrateDepot({
+      username: 'username',
+      salt: 'salt',
+      hash: 'hash',
+      vault: 'vault',
+      encryptedOtpToken: 'encryptedOtpToken'
+    }))
+    store.dispatch(authnViaDepotSignal(success({
+      username: 'username',
+      password: 'password',
+      userKeys: [],
+      depotKey: 'depotKey'
+    })))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const credentialParams: AuthnViaApiParams = {
+      username: 'username',
+      password: 'password',
+      parametrization: 'parametrization',
+      encryptionKey: 'encryptionKey'
+    }
+    const mockSodiumClient = mock(SodiumClient)
+    when(mockSodiumClient.decryptMessage('depotKey', 'encryptedOtpToken')).thenResolve('otpToken')
+    container.register(SodiumClient, {
+      useValue: instance(mockSodiumClient)
+    })
+    const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
+    when(mockAuthenticationApi.provideOtp(deepEqual({
+      authnKey: 'authnKey',
+      otp: 'otpToken',
+      yieldTrustedToken: true
+    }))).thenResolve(<ServiceProvideOtpResponse>{
+      error: ServiceProvideOtpResponseError.NONE,
+      trustedToken: 'newOtpToken',
+      userData: {
+        sessionKey: 'sessionKey',
+        mailVerificationRequired: false,
+        mail: 'mail@example.com',
+        userKeys: []
+      }
+    })
+    container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
+      useValue: instance(mockAuthenticationApi)
+    })
+
+    const epicTracker = new EpicTracker(backgroundOtpProvisionEpic(action$, state$, {}))
+    actionSubject.next(backgroundRemoteAuthnSignal(success({
+      ...credentialParams,
+      content: either.left({
+        authnKey: 'authnKey',
+        attemptsLeft: 1
+      })
+    })))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      backgroundOtpProvisionSignal(indicator(AuthnOtpProvisionFlowIndicator.MAKING_REQUEST)),
+      backgroundOtpProvisionSignal(indicator(AuthnOtpProvisionFlowIndicator.DECRYPTING_DATA)),
+      backgroundOtpProvisionSignal(success({
+        credentialParams,
+        trustedToken: option.of('newOtpToken'),
+        userData: {
+          sessionKey: 'sessionKey',
+          mailVerificationRequired: false,
+          mail: 'mail@example.com',
+          userKeys: []
+        }
+      }))
+    ])
+  })
 })
 
 describe('remoteCredentialsMismatchLocalEpic', () => {
