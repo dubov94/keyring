@@ -363,7 +363,7 @@ export const remoteAuthnCompleteOnCredentialsEpic: Epic<RootAction, RootAction, 
 )
 
 export const remoteAuthnCompleteOnOtpEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
-  filter(isActionSuccess(authnOtpProvisionSignal)),
+  filter(isActionSuccess2([authnOtpProvisionSignal, backgroundOtpProvisionSignal])),
   concatMap((action) => of(remoteAuthnComplete({
     ...action.payload.data.credentialParams,
     ...action.payload.data.userData,
