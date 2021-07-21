@@ -52,7 +52,6 @@ import { DeepReadonly } from 'ts-essentials'
 import { localOtpTokenFailure, remoteCredentialsMismatchLocal } from '../user/account/actions'
 import { either, function as fn, option } from 'fp-ts'
 import { isDepotActive } from '../depot/selectors'
-import { showToast } from '../ui/toast/actions'
 
 export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf([register, registrationReset])),
@@ -324,9 +323,7 @@ export const backgroundOtpProvisionEpic: Epic<RootAction, RootAction, RootState>
               yieldTrustedToken: isDepotActive(state)
             }, backgroundOtpProvisionSignal))
           )),
-          option.getOrElse<Observable<RootAction>>(() => of(showToast({
-            message: '`depot` lacks data for OTP provision'
-          })))
+          option.getOrElse<Observable<RootAction>>(() => of(localOtpTokenFailure()))
         ))
       )),
       option.getOrElse<Observable<RootAction>>(() => EMPTY)
