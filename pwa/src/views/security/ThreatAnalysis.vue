@@ -16,12 +16,12 @@
           {{ isAnalysisOn ? 'Disable' : 'Enable'}}
         </v-btn>
       </v-col>
-      <v-col :cols="12" :md="10">
-        <duplicate-passwords v-if="isAnalysisOn" @edit="editKey">
+      <v-col :cols="12" :md="10" v-if="isAnalysisOn">
+        <duplicate-passwords @edit="editKey">
         </duplicate-passwords>
-        <compromised-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">
+        <compromised-passwords class="mt-6" @edit="editKey">
         </compromised-passwords>
-        <vulnerable-passwords v-if="isAnalysisOn" class="mt-6" @edit="editKey">
+        <vulnerable-passwords class="mt-6" @edit="editKey">
         </vulnerable-passwords>
       </v-col>
     </v-row>

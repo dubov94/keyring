@@ -9,7 +9,7 @@
   <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch">
     <user-menu v-model="showMenu"></user-menu>
     <v-main class="px-2">
-      <v-expansion-panels inset class="mt-4">
+      <v-expansion-panels inset class="my-4">
         <v-expansion-panel>
           <v-expansion-panel-header>
             Change username
