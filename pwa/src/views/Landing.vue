@@ -1,5 +1,5 @@
 <style scoped>
-  .article {
+  .mt-32 {
     margin-top: 128px;
   }
 
@@ -11,13 +11,6 @@
     left: 0;
     z-index: -1;
   }
-
-  .version {
-    position: fixed;
-    bottom: 8px;
-    left: 0;
-    right: 0;
-  }
 </style>
 
 <template>
@@ -28,7 +21,7 @@
     <v-main>
       <v-container fluid>
         <div class="article">
-          <h1 class="text-center white--text" :class="nameDynamicClasses">Key Ring</h1>
+          <h1 class="text-center white--text mt-32" :class="nameDynamicClasses">Key Ring</h1>
           <h2 class="text-center white--text mt-4" :class="descriptionDynamicClasses">
             An unobtrusive password manager 😋
           </h2>
@@ -41,10 +34,10 @@
               <v-btn large outlined color="white" to="/dashboard">Go to dashboard</v-btn>
             </template>
           </div>
+          <div class="text-caption text-center white--text mt-32">{{ version }}</div>
         </div>
       </v-container>
     </v-main>
-    <div class="version text-caption text-center white--text">{{ version }}</div>
   </page>
 </template>
 
