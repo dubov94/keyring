@@ -26,12 +26,12 @@
             <change-master-key></change-master-key>
           </v-expansion-panel-content>
         </v-expansion-panel>
-        <v-expansion-panel>
+        <v-expansion-panel v-if="showOtpSwitch">
           <v-expansion-panel-header>
             Two-factor authentication
           </v-expansion-panel-header>
           <v-expansion-panel-content>
-            <otp-switch v-if="showOtpSwitch"></otp-switch>
+            <otp-switch></otp-switch>
           </v-expansion-panel-content>
         </v-expansion-panel>
         <v-expansion-panel>
