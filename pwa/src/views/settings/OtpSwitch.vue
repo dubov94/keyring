@@ -28,7 +28,18 @@
         Scan the image with <a href="https://support.google.com/accounts/answer/1066447" rel="nopener noreferrer">
         Google Authenticator</a> or a similar application.
       </p>
-      <img class="qrc mb-4" :src="maybeOtpParams.qrcDataUrl"/>
+      <v-tabs v-model="seedView" centered>
+        <v-tab>Image</v-tab>
+        <v-tab>Text</v-tab>
+      </v-tabs>
+      <v-tabs-items v-model="seedView" class="py-8">
+        <v-tab-item>
+          <img class="qrc" :src="maybeOtpParams.qrcDataUrl"/>
+        </v-tab-item>
+        <v-tab-item>
+          <div class="text-h5 text-center">{{ maybeOtpParams.sharedSecret }}</div>
+        </v-tab-item>
+      </v-tabs-items>
       <p>Print out or save the recovery codes.</p>
       <div>
         <v-chip v-for="(item, index) in maybeOtpParams.scratchCodes" :key="index" class="mb-4 mr-4">
@@ -99,6 +110,7 @@ interface Mixins {
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   data () {
     return {
+      seedView: 0,
       activation: {
         otp: '',
         frozen: false
