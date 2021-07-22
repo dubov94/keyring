@@ -13,6 +13,7 @@ import io.vavr.control.Either;
 import java.util.*;
 import java.util.stream.Stream;
 import javax.inject.Inject;
+import org.apache.commons.validator.routines.EmailValidator;
 import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.aspects.Annotations.ValidateUser;
@@ -62,6 +63,10 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, AcquireMailTokenResponse> _acquireMailToken(
       AcquireMailTokenRequest request) {
+    String mail = request.getMail();
+    if (!EmailValidator.getInstance().isValid(mail)) {
+      return Either.left(new StatusException(Status.INVALID_ARGUMENT));
+    }
     long userIdentifier = sessionAccessor.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
@@ -72,7 +77,6 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())) {
       return Either.right(builder.setError(AcquireMailTokenResponse.Error.INVALID_DIGEST).build());
     }
-    String mail = request.getMail();
     String code = cryptography.generateUacs();
     accountOperationsInterface.createMailToken(userIdentifier, mail, code);
     mailClient.sendMailVerificationCode(mail, code);
@@ -197,6 +201,10 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, ChangeUsernameResponse> _changeUsername(
       ChangeUsernameRequest request) {
+    String username = request.getUsername();
+    if (username.trim().isEmpty()) {
+      return Either.left(new StatusException(Status.INVALID_ARGUMENT));
+    }
     long userIdentifier = sessionAccessor.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {

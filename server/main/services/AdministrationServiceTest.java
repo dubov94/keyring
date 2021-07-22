@@ -168,7 +168,11 @@ class AdministrationServiceTest {
   void acquireMailToken_digestsMismatch_repliesWithError() {
     when(mockCryptography.doesDigestMatchHash("digest", "random")).thenReturn(false);
     administrationService.acquireMailToken(
-        AcquireMailTokenRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
+        AcquireMailTokenRequest.newBuilder()
+            .setMail("mail@example.com")
+            .setDigest("random")
+            .build(),
+        mockStreamObserver);
 
     verify(mockStreamObserver)
         .onNext(
@@ -197,7 +201,8 @@ class AdministrationServiceTest {
   void changeUsername_digestsMismatch_repliesWithError() {
     when(mockCryptography.doesDigestMatchHash("random", "hash")).thenReturn(false);
     administrationService.changeUsername(
-        ChangeUsernameRequest.newBuilder().setDigest("random").build(), mockStreamObserver);
+        ChangeUsernameRequest.newBuilder().setUsername("username").setDigest("random").build(),
+        mockStreamObserver);
 
     verify(mockStreamObserver)
         .onNext(

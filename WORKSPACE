@@ -113,6 +113,7 @@ maven_install(
         "com.google.guava:guava:24.0-jre",
         "com.vladmihalcea:hibernate-types-52:2.11.1",
         "com.warrenstrange:googleauth:1.4.0",
+        "commons-validator:commons-validator:1.7",
         "io.grpc:grpc-netty-shaded:1.28.0",
         "io.grpc:grpc-protobuf:1.28.0",
         "io.grpc:grpc-stub:1.28.0",

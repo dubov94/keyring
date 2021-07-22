@@ -57,7 +57,8 @@ class AuthenticationServiceTest {
         .thenReturn(Optional.of(new User()));
 
     authenticationService.register(
-        RegisterRequest.newBuilder().setUsername("username").build(), mockStreamObserver);
+        RegisterRequest.newBuilder().setUsername("username").setMail("mail@example.com").build(),
+        mockStreamObserver);
 
     verify(mockStreamObserver)
         .onNext(RegisterResponse.newBuilder().setError(RegisterResponse.Error.NAME_TAKEN).build());

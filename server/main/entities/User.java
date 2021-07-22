@@ -18,7 +18,6 @@ public class User {
 
   @Enumerated private State state;
 
-  // Note that currently there are no server-side limitations.
   @Column(unique = true)
   private String username;
 

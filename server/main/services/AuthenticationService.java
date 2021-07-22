@@ -10,6 +10,7 @@ import io.vavr.control.Either;
 import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
+import org.apache.commons.validator.routines.EmailValidator;
 import server.main.Cryptography;
 import server.main.Environment;
 import server.main.MailClient;
@@ -53,15 +54,18 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.googleAuthenticator = googleAuthenticator;
   }
 
-  private RegisterResponse _register(RegisterRequest request) {
-    RegisterResponse.Builder builder = RegisterResponse.newBuilder();
+  private Either<StatusException, RegisterResponse> _register(RegisterRequest request) {
     String username = request.getUsername();
+    String mail = request.getMail();
+    if (username.trim().isEmpty() || !EmailValidator.getInstance().isValid(mail)) {
+      return Either.left(new StatusException(Status.INVALID_ARGUMENT));
+    }
+    RegisterResponse.Builder builder = RegisterResponse.newBuilder();
     if (accountOperationsInterface.getUserByName(username).isPresent()) {
-      return builder.setError(RegisterResponse.Error.NAME_TAKEN).build();
+      return Either.right(builder.setError(RegisterResponse.Error.NAME_TAKEN).build());
     }
     String salt = request.getSalt();
     String hash = cryptography.computeHash(request.getDigest());
-    String mail = request.getMail();
     String code = cryptography.generateUacs();
     User user = accountOperationsInterface.createUser(username, salt, hash, mail, code);
     String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
@@ -71,13 +75,18 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         agentAccessor.getIpAddress(),
         agentAccessor.getUserAgent());
     mailClient.sendMailVerificationCode(mail, code);
-    return builder.setSessionKey(sessionKey).build();
+    return Either.right(builder.setSessionKey(sessionKey).build());
   }
 
   @Override
   public void register(RegisterRequest request, StreamObserver<RegisterResponse> response) {
-    response.onNext(_register(request));
-    response.onCompleted();
+    Either<StatusException, RegisterResponse> result = _register(request);
+    if (result.isRight()) {
+      response.onNext(result.get());
+      response.onCompleted();
+    } else {
+      response.onError(result.getLeft());
+    }
   }
 
   private GetSaltResponse _getSalt(GetSaltRequest request) {
