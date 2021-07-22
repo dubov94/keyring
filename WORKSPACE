@@ -149,10 +149,10 @@ maven_install(
         "org.testcontainers:postgresql:1.15.3",
         "org.testcontainers:testcontainers:1.15.3",
     ],
+    override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
     repositories = [
         "https://jcenter.bintray.com/",
     ],
-    override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
 )
 
 # language_specific_dependencies.external_go_dependencies
@@ -212,8 +212,8 @@ http_archive(
 load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories")
 
 node_repositories(
-    package_json = ["//pwa:package.json"],
     node_version = "14.17.2",
+    package_json = ["//pwa:package.json"],
     yarn_version = "1.22.4",
 )
 
@@ -292,6 +292,14 @@ container_pull(
     registry = "index.docker.io",
     repository = "maxmindinc/geoipupdate",
     tag = "v4.3",
+)
+
+container_pull(
+    name = "io_docker_index_library_nginx",
+    digest = "sha256:3f13b4376446cf92b0cb9a5c46ba75d57c41f627c4edb8b635fa47386ea29e20",
+    registry = "index.docker.io",
+    repository = "library/nginx",
+    tag = "1.21",
 )
 
 # multirun_dependencies.external_multirun_dependencies

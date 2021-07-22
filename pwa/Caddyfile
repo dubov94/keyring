@@ -1,9 +1,0 @@
-:8080 {
-    root ./dist
-
-    rewrite {
-        to {path} /
-    }
-
-    gzip
-}

@@ -184,11 +184,11 @@ pkg_tar(
 
 container_image(
     name = "pwa",
-    base = "@io_docker_index_abiosoft_caddy//image",
+    base = "@io_docker_index_library_nginx//image",
     directory = "/root",
-    files = ["Caddyfile"],
+    files = ["nginx.conf"],
     ports = ["8080"],
-    symlinks = {"/etc/Caddyfile": "/root/Caddyfile"},
+    symlinks = {"/etc/nginx/nginx.conf": "/root/nginx.conf"},
     tars = [":pkg_tar"],
     workdir = "/root",
 )
