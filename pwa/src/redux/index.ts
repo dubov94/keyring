@@ -93,7 +93,7 @@ state$.pipe(
 })
 
 // Session maintenance.
-const SESSION_LIFETIME_IN_MILLIS = 5 * 1000 // 10 * 60 * 1000
+const SESSION_LIFETIME_IN_MILLIS = 10 * 60 * 1000
 
 fromEvent(document, 'visibilitychange').pipe(switchMap(() => {
   if (document.visibilityState !== 'visible') {
