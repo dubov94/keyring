@@ -96,6 +96,10 @@ vue_cli_launcher(
 )
 
 DEPENDENCIES = [
+    "@pwa_npm//@fontsource/material-icons",
+    "@pwa_npm//@fontsource/roboto",
+    "@pwa_npm//@fontsource/roboto-mono",
+    "@pwa_npm//@fortawesome/fontawesome-free",
     "@pwa_npm//@types/libsodium-wrappers",
     "@pwa_npm//@types/lodash",
     "@pwa_npm//@types/qrcode",

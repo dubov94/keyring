@@ -1,8 +1,18 @@
 import './register_service_worker'
+
+import '@fontsource/material-icons'
+import '@fontsource/roboto'
+import '@fontsource/roboto-mono'
+import '@fortawesome/fontawesome-free/css/all.css'
+
 // https://github.com/microsoft/tsyringe#installation
 import 'reflect-metadata'
 import { container } from 'tsyringe'
+
+import axios from 'axios'
+import Qrc from 'qrcode'
 import { Subject } from 'rxjs'
+import { takeUntil } from 'rxjs/operators'
 
 import Vue, { VueConstructor } from 'vue'
 import Vuelidate from 'vuelidate'
@@ -10,24 +20,21 @@ import Vuetify from 'vuetify/lib'
 import Application from './Application.vue'
 import FormTextField from './components/FormTextField.vue'
 
+import { ADMINISTRATION_API_TOKEN, AUTHENTICATION_API_TOKEN } from '@/api/api_di'
 import { AdministrationApi, AuthenticationApi } from '@/api/definitions'
 import { fetchFromApi } from '@/api/fetch'
-import { ADMINISTRATION_API_TOKEN, AUTHENTICATION_API_TOKEN } from '@/api/api_di'
-import { getVueI18n } from '@/i18n'
-import { Router } from '@/router'
 import { PwnedService, PWNED_SERVICE_TOKEN, HaveIBeenPwnedService } from '@/cryptography/pwned_service'
-import SodiumWorker from './cryptography/sodium.worker.ts'
+import { QrcEncoder, QRC_ENCODER_TOKEN } from '@/cryptography/qrc_encoder'
+import { sha1 } from '@/cryptography/sha1'
 import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from '@/cryptography/sodium_worker_interface'
+import SodiumWorker from './cryptography/sodium.worker.ts'
+import { StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN, ZxcvbnService } from '@/cryptography/strength_test_service'
+import { getVueI18n } from '@/i18n'
 import { store, state$, action$ } from '@/redux'
-import { takeUntil } from 'rxjs/operators'
+import { injectionsSetUp } from '@/redux/actions'
 import { AnyAction } from '@reduxjs/toolkit'
-import { VUE_CONSTRUCTOR_TOKEN } from './vue_di'
-import { sha1 } from './cryptography/sha1'
-import axios from 'axios'
-import { StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN, ZxcvbnService } from './cryptography/strength_test_service'
-import Qrc from 'qrcode'
-import { QrcEncoder, QRC_ENCODER_TOKEN } from './cryptography/qrc_encoder'
-import { injectionsSetUp } from './redux/actions'
+import { Router } from '@/router'
+import { VUE_CONSTRUCTOR_TOKEN } from '@/vue_di'
 
 container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
   useValue: SodiumWorker<SodiumWorkerInterface>()

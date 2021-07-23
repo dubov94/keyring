@@ -806,6 +806,26 @@
     source-map-support "0.5.9"
     tsutils "2.27.2"
 
+"@fontsource/material-icons@^4.5.0":
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/material-icons/-/material-icons-4.5.0.tgz#8b9e5d84a1f3fac973118c8283b000b352b44d7f"
+  integrity sha512-vFMpnkKwbtJLLHbUDI163QWX9Ox28A6i1vALfAKlpBh54yp8D0cu1/YGyrU5whvaXejLSBuyS7lRwr/TdRNmhA==
+
+"@fontsource/roboto-mono@^4.5.0":
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/roboto-mono/-/roboto-mono-4.5.0.tgz#27e44fbb1d86a9ef14501493a37eef1d73e60d02"
+  integrity sha512-/6Gm6fJjBHZiFNyvzIKGJkVuyifoc1aoTel+pkzdhxNh7yNhFyokCoChdbbqZEpGKpqs5uld74G5TJthUVFyjw==
+
+"@fontsource/roboto@^4.5.0":
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/roboto/-/roboto-4.5.0.tgz#d6f925668ba6af46707f1040c43aff498ba204bb"
+  integrity sha512-ja4XYw/9kNRFM5Ndk9vwzHWsdBMXczyBazFkTXJQ74QQBnT0BbSsHn0pF60AU0Iznig1Wt9x3rADfG8LANvMpw==
+
+"@fortawesome/fontawesome-free@^5.15.3":
+  version "5.15.3"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.15.3.tgz#c36ffa64a2a239bf948541a97b6ae8d729e09a9a"
+  integrity sha512-rFnSUN/QOtnOAgqFRooTA3H57JLDm0QEG/jPdk+tLQNL/eWd+Aok8g3qCI+Q1xuDPWpGW/i9JySpJVsq8Q0s9w==
+
 "@hapi/address@2.x.x":
   version "2.1.4"
   resolved "https://registry.npm.taobao.org/@hapi/address/download/@hapi/address-2.1.4.tgz#5d67ed43f3fd41a69d4b9ff7b56e7c0d1d0a81e5"
