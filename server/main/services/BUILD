@@ -69,7 +69,6 @@ java_library(
     deps = [
         "//proto:service_java_grpc",
         "//server/main:cryptography",
-        "//server/main:environment",
         "//server/main:mail_client",
         "//server/main/entities:key",
         "//server/main/entities:otp_token",
@@ -93,7 +92,6 @@ junit5_test(
     deps = [
         "//proto:service_java_grpc",
         "//server/main:cryptography",
-        "//server/main:environment",
         "//server/main:mail_client",
         "//server/main/entities:otp_token",
         "//server/main/entities:user",

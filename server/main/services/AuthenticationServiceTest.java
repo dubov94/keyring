@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import server.main.Cryptography;
-import server.main.Environment;
 import server.main.MailClient;
 import server.main.entities.OtpToken;
 import server.main.entities.User;
@@ -32,7 +31,6 @@ class AuthenticationServiceTest {
   @Mock private KeyValueClient mockKeyValueClient;
   @Mock private AgentAccessor mockAgentAccessor;
   @Mock private StreamObserver mockStreamObserver;
-  @Mock private Environment mockEnvironment;
   @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
 
   private AuthenticationService authenticationService;
@@ -47,7 +45,6 @@ class AuthenticationServiceTest {
             mockMailClient,
             mockKeyValueClient,
             mockAgentAccessor,
-            mockEnvironment,
             mockGoogleAuthenticator);
   }
 
@@ -187,7 +184,6 @@ class AuthenticationServiceTest {
                     .setSalt("salt")
                     .setHash("hash")));
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
-    when(mockEnvironment.isProduction()).thenReturn(false);
     when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
     when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
     when(mockAgentAccessor.getUserAgent()).thenReturn("Chrome/0.0.0");

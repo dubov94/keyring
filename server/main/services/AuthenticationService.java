@@ -12,7 +12,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 import org.apache.commons.validator.routines.EmailValidator;
 import server.main.Cryptography;
-import server.main.Environment;
 import server.main.MailClient;
 import server.main.entities.Key;
 import server.main.entities.OtpToken;
@@ -31,7 +30,6 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private Cryptography cryptography;
   private MailClient mailClient;
   private AgentAccessor agentAccessor;
-  private Environment environment;
   private IGoogleAuthenticator googleAuthenticator;
 
   @Inject
@@ -42,7 +40,6 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       MailClient mailClient,
       KeyValueClient keyValueClient,
       AgentAccessor agentAccessor,
-      Environment environment,
       IGoogleAuthenticator googleAuthenticator) {
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
@@ -50,7 +47,6 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.mailClient = mailClient;
     this.keyValueClient = keyValueClient;
     this.agentAccessor = agentAccessor;
-    this.environment = environment;
     this.googleAuthenticator = googleAuthenticator;
   }
 
@@ -136,7 +132,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         || Objects.equals(user.getState(), User.State.DELETED)) {
       return builder.setError(LogInResponse.Error.INVALID_CREDENTIALS).build();
     }
-    if (!environment.isProduction() && user.getOtpSharedSecret() != null) {
+    if (user.getOtpSharedSecret() != null) {
       String authnKey = keyValueClient.createAuthn(user.getIdentifier());
       return builder
           .setOtpContext(
