@@ -33,8 +33,10 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public User createUser(String username, String salt, String hash, String mail, String code) {
     User user =
         new User().setState(User.State.PENDING).setUsername(username).setSalt(salt).setHash(hash);
+    FeaturePrompts featurePrompts = new FeaturePrompts().setUser(user);
     MailToken mailToken = new MailToken().setUser(user).setMail(mail).setCode(code);
     entityManager.persist(user);
+    entityManager.persist(featurePrompts);
     entityManager.persist(mailToken);
     return user;
   }

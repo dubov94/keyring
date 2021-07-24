@@ -1,6 +1,9 @@
 java_library(
     name = "user",
-    srcs = ["User.java"],
+    srcs = [
+        "FeaturePrompts.java",
+        "User.java",
+    ],
     plugins = ["//bazel/java:hibernate_jpamodelgen"],
     visibility = ["//server:internal"],
     deps = [

@@ -13,6 +13,7 @@ final class Ddl {
     StandardServiceRegistry serviceRegistry =
         new StandardServiceRegistryBuilder().configure().build();
     MetadataSources metadataSources = new MetadataSources(serviceRegistry);
+    metadataSources.addAnnotatedClass(FeaturePrompts.class);
     metadataSources.addAnnotatedClass(Key.class);
     metadataSources.addAnnotatedClass(MailToken.class);
     metadataSources.addAnnotatedClass(OtpParams.class);
