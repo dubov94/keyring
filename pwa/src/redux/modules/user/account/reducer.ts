@@ -33,7 +33,8 @@ import {
   otpParamsAcceptanceReset,
   otpResetSignal,
   OtpResetFlowIndicator,
-  cancelOtpReset
+  cancelOtpReset,
+  featureAckSignal
 } from './actions'
 import {
   ServiceReleaseMailTokenResponseError,
@@ -204,5 +205,9 @@ export default createReducer<{
     })
     .addMatcher(isActionOf(cancelOtpReset), (state) => {
       state.otpReset = withNoResult(state.otpReset)
+    })
+    .addMatcher(isActionSuccess(featureAckSignal), (state, action) => {
+      state.featurePrompts = state.featurePrompts.filter(
+        (item) => item.featureType !== action.payload.data)
     })
 )

@@ -8,7 +8,8 @@ import {
   ServiceChangeUsernameResponseError,
   ServiceDeleteAccountResponseError,
   ServiceAcceptOtpParamsResponseError,
-  ServiceResetOtpResponseError
+  ServiceResetOtpResponseError,
+  ServiceFeatureType
 } from '@/api/definitions'
 import { option } from 'fp-ts'
 
@@ -133,3 +134,8 @@ export const otpResetSignal = createAction('user/account/otpResetSignal')<DeepRe
   FlowSignal<OtpResetFlowIndicator, {}, StandardError<ServiceResetOtpResponseError>>
 >>()
 export const cancelOtpReset = createAction('user/account/cancelOtpReset')()
+
+export const ackFeaturePrompt = createAction('user/account/ackFeaturePrompt')<ServiceFeatureType>()
+export const featureAckSignal = createAction('user/account/featureAckSignal')<DeepReadonly<
+  FlowSignal<void, ServiceFeatureType, StandardError<void>>
+>>()

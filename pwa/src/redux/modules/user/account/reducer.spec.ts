@@ -1,6 +1,6 @@
 import { ServiceFeatureType } from '@/api/definitions'
 import { success } from '@/redux/flow_signal'
-import { hasData } from '@/redux/remote_data'
+import { hasData, zero } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
 import { expect } from 'chai'
 import { option } from 'fp-ts'
@@ -9,6 +9,7 @@ import {
   accountDeletionReset,
   accountDeletionSignal,
   cancelOtpReset,
+  featureAckSignal,
   mailTokenAcquisitionReset,
   mailTokenAcquisitionSignal,
   mailTokenReleaseReset,
@@ -300,5 +301,31 @@ describe('otpReset', () => {
 
       expect(hasData(state.otpReset)).to.be.false
     })
+  })
+})
+
+describe('featureAckSignal', () => {
+  it('filters out prompts', () => {
+    const state = reducer({
+      isAuthenticated: false,
+      parametrization: null,
+      encryptionKey: null,
+      sessionKey: null,
+      featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
+      mailVerificationRequired: true,
+      mail: null,
+      mailTokenRelease: zero(),
+      mailTokenAcquisition: zero(),
+      masterKeyChange: zero(),
+      usernameChange: zero(),
+      accountDeletion: zero(),
+      isOtpEnabled: false,
+      otpToken: null,
+      otpParamsGeneration: zero(),
+      otpParamsAcceptance: zero(),
+      otpReset: zero()
+    }, featureAckSignal(success(ServiceFeatureType.UNKNOWN)))
+
+    expect(state.featurePrompts).to.be.empty
   })
 })

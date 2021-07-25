@@ -41,7 +41,9 @@ import {
   OtpResetFlowIndicator,
   cancelOtpReset,
   localOtpTokenFailure,
-  LogoutTrigger
+  LogoutTrigger,
+  ackFeaturePrompt,
+  featureAckSignal
 } from './actions'
 import {
   acquireMailTokenEpic,
@@ -61,7 +63,8 @@ import {
   displayOtpParamsAcceptanceExceptionsEpic,
   displayOtpResetExceptionsEpic,
   otpResetEpic,
-  logOutOnBackgroundAuthnFailureEpic
+  logOutOnBackgroundAuthnFailureEpic,
+  ackFeaturePromptEpic
 } from './epics'
 import {
   AdministrationApi,
@@ -79,7 +82,9 @@ import {
   ServiceAcceptOtpParamsResponse,
   ServiceAcceptOtpParamsResponseError,
   ServiceResetOtpResponse,
-  ServiceResetOtpResponseError
+  ServiceResetOtpResponseError,
+  ServiceFeatureType,
+  ServiceAckFeaturePromptResponse
 } from '@/api/definitions'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { container } from 'tsyringe'
@@ -846,6 +851,36 @@ describe('displayOtpResetExceptionsEpic', () => {
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       showToast({ message: 'exception' })
+    ])
+  })
+})
+
+describe('ackFeaturePromptEpic', () => {
+  it('emits acknowledgement sequence', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(registrationSignal(success({
+      username: 'user',
+      parametrization: 'parametrization',
+      sessionKey: 'sessionKey',
+      encryptionKey: 'encryptionKey'
+    })))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
+    when(mockAdministrationApi.ackFeaturePrompt(
+      deepEqual({ featureType: ServiceFeatureType.UNKNOWN }),
+      deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
+    )).thenResolve(<ServiceAckFeaturePromptResponse>{})
+    container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
+      useValue: instance(mockAdministrationApi)
+    })
+
+    const epicTracker = new EpicTracker(ackFeaturePromptEpic(action$, state$, {}))
+    actionSubject.next(ackFeaturePrompt(ServiceFeatureType.UNKNOWN))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      featureAckSignal(success(ServiceFeatureType.UNKNOWN))
     ])
   })
 })

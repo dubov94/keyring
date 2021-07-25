@@ -44,7 +44,9 @@ import {
   otpResetSignal,
   OtpResetFlowIndicator,
   localOtpTokenFailure,
-  LogoutTrigger
+  LogoutTrigger,
+  ackFeaturePrompt,
+  featureAckSignal
 } from './actions'
 import {
   ServiceReleaseMailTokenResponse,
@@ -423,3 +425,18 @@ export const otpResetEpic: Epic<RootAction, RootAction, RootState> = (action$, s
 )
 
 export const displayOtpResetExceptionsEpic = createDisplayExceptionsEpic(otpResetSignal)
+
+export const ackFeaturePromptEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionOf(ackFeaturePrompt)),
+  withLatestFrom(state$),
+  concatMap(([action, state]) => from(getAdministrationApi().ackFeaturePrompt({
+    featureType: action.payload
+  }, {
+    headers: {
+      [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
+    }
+  })).pipe(
+    switchMap(() => of(featureAckSignal(success(action.payload)))),
+    catchError((error) => of(featureAckSignal(exception(errorToMessage(error)))))
+  ))
+)
