@@ -2,11 +2,12 @@ package server.main.storage;
 
 import static java.util.stream.Collectors.toMap;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -16,11 +17,14 @@ import server.main.Chronometry;
 import server.main.aspects.Annotations.EntityController;
 import server.main.aspects.Annotations.LocalTransaction;
 import server.main.entities.*;
+import server.main.proto.service.FeatureType;
 import server.main.proto.service.IdentifiedKey;
 import server.main.proto.service.Password;
 
 public class AccountOperationsClient implements AccountOperationsInterface {
   private static final int INITIAL_SPARE_ATTEMPTS = 5;
+  private static final ImmutableMap<FeatureType, Consumer<FeaturePrompts>> FEATURE_PROMPT_ACKERS =
+      ImmutableMap.of();
 
   private Chronometry chronometry;
   @EntityController private EntityManager entityManager;
@@ -323,6 +327,22 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public FeaturePrompts getFeaturePrompts(long userId) {
-    return Preconditions.checkNotNull(entityManager.find(FeaturePrompts.class, userId));
+    FeaturePrompts featurePrompts = entityManager.find(FeaturePrompts.class, userId);
+    if (featurePrompts == null) {
+      throw new IllegalArgumentException();
+    }
+    return featurePrompts;
+  }
+
+  @Override
+  @LocalTransaction
+  public void ackFeaturePrompt(long userId, FeatureType featureType) {
+    FeaturePrompts featurePrompts = getFeaturePrompts(userId);
+    Consumer<FeaturePrompts> consumer = FEATURE_PROMPT_ACKERS.get(featureType);
+    if (consumer == null) {
+      throw new IllegalStateException();
+    }
+    consumer.accept(featurePrompts);
+    entityManager.persist(featurePrompts);
   }
 }

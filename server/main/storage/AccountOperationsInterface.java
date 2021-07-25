@@ -8,6 +8,7 @@ import server.main.entities.OtpParams;
 import server.main.entities.OtpToken;
 import server.main.entities.Session;
 import server.main.entities.User;
+import server.main.proto.service.FeatureType;
 import server.main.proto.service.IdentifiedKey;
 
 public interface AccountOperationsInterface {
@@ -52,4 +53,6 @@ public interface AccountOperationsInterface {
   void restoreOtpSpareAttempts(long userId);
 
   FeaturePrompts getFeaturePrompts(long userId);
+
+  void ackFeaturePrompt(long userId, FeatureType featureType);
 }

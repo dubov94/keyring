@@ -299,6 +299,13 @@ message ResetOtpResponse {
     Error error = 1;
 }
 
+message AckFeaturePromptRequest {
+    FeatureType feature_type = 1;
+}
+
+message AckFeaturePromptResponse {
+}
+
 service Administration {
     rpc AcquireMailToken (AcquireMailTokenRequest) returns (AcquireMailTokenResponse) {
         option (google.api.http) = {
@@ -375,6 +382,12 @@ service Administration {
     rpc ResetOtp (ResetOtpRequest) returns (ResetOtpResponse) {
         option (google.api.http) = {
             post: "/administration/reset-otp"
+            body: "*"
+        };
+    }
+    rpc AckFeaturePrompt (AckFeaturePromptRequest) returns (AckFeaturePromptResponse) {
+        option (google.api.http) = {
+            post: "/administration/ack-feature-prompt"
             body: "*"
         };
     }

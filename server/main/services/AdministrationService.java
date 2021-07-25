@@ -415,4 +415,14 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       response.onError(result.getLeft());
     }
   }
+
+  @Override
+  @ValidateUser
+  public void ackFeaturePrompt(
+      AckFeaturePromptRequest request, StreamObserver<AckFeaturePromptResponse> response) {
+    accountOperationsInterface.ackFeaturePrompt(
+        sessionAccessor.getUserIdentifier(), request.getFeatureType());
+    response.onNext(AckFeaturePromptResponse.getDefaultInstance());
+    response.onCompleted();
+  }
 }
