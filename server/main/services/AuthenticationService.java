@@ -2,6 +2,7 @@ package server.main.services;
 
 import static java.util.stream.Collectors.toList;
 
+import com.google.common.collect.ImmutableList;
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.Status;
 import io.grpc.StatusException;
@@ -9,10 +10,12 @@ import io.grpc.stub.StreamObserver;
 import io.vavr.control.Either;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import javax.inject.Inject;
 import org.apache.commons.validator.routines.EmailValidator;
 import server.main.Cryptography;
 import server.main.MailClient;
+import server.main.entities.FeaturePrompts;
 import server.main.entities.Key;
 import server.main.entities.OtpToken;
 import server.main.entities.User;
@@ -24,6 +27,9 @@ import server.main.storage.AccountOperationsInterface;
 import server.main.storage.KeyOperationsInterface;
 
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
+  private static final ImmutableList<Function<FeaturePrompts, Optional<FeaturePrompt>>>
+      FEATURE_PROMPT_MAPPERS = ImmutableList.of();
+
   private AccountOperationsInterface accountOperationsInterface;
   private KeyOperationsInterface keyOperationsInterface;
   private KeyValueClient keyValueClient;
@@ -100,7 +106,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     response.onCompleted();
   }
 
-  private UserData newUserData(User user) {
+  private UserData newSessionUserData(User user) {
     String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
     accountOperationsInterface.createSession(
         user.getIdentifier(),
@@ -109,6 +115,13 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         agentAccessor.getUserAgent());
     UserData.Builder userDataBuilder = UserData.newBuilder();
     userDataBuilder.setSessionKey(sessionKey);
+    FeaturePrompts featurePrompts =
+        accountOperationsInterface.getFeaturePrompts(user.getIdentifier());
+    userDataBuilder.addAllFeaturePrompts(
+        FEATURE_PROMPT_MAPPERS.stream()
+            .map(mapper -> mapper.apply(featurePrompts))
+            .flatMap(Optional::stream)
+            .collect(toList()));
     if (user.getMail() == null) {
       userDataBuilder.setMailVerificationRequired(true);
     } else {
@@ -141,7 +154,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
                   .setAttemptsLeft(user.getOtpSpareAttempts()))
           .build();
     }
-    return builder.setUserData(newUserData(user)).build();
+    return builder.setUserData(newSessionUserData(user)).build();
   }
 
   @Override
@@ -196,7 +209,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       accountOperationsInterface.createOtpToken(userId, otpToken);
       builder.setTrustedToken(otpToken);
     }
-    return Either.right(builder.setUserData(newUserData(user)).build());
+    return Either.right(builder.setUserData(newSessionUserData(user)).build());
   }
 
   @Override

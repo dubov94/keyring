@@ -78,6 +78,7 @@ java_library(
         "//server/main/keyvalue:user_pointer",
         "//server/main/storage:account_operations_interface",
         "//server/main/storage:key_operations_interface",
+        "@maven//:com_google_guava_guava",
         "@maven//:com_warrenstrange_googleauth",
         "@maven//:commons_validator_commons_validator",
         "@maven//:io_vavr_vavr",

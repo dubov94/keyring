@@ -2,6 +2,7 @@ package server.main.storage;
 
 import java.util.List;
 import java.util.Optional;
+import server.main.entities.FeaturePrompts;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
 import server.main.entities.OtpToken;
@@ -49,4 +50,6 @@ public interface AccountOperationsInterface {
   Optional<Integer> acquireOtpSpareAttempt(long userId);
 
   void restoreOtpSpareAttempts(long userId);
+
+  FeaturePrompts getFeaturePrompts(long userId);
 }

@@ -43,8 +43,17 @@ message LogInRequest {
     string digest = 2;
 }
 
+enum FeatureType {
+    UNKNOWN = 0;
+}
+
+message FeaturePrompt {
+    FeatureType feature_type = 1;
+}
+
 message UserData {
     string session_key = 1;
+    repeated FeaturePrompt feature_prompts = 5;
     repeated IdentifiedKey user_keys = 2;
     bool mail_verification_required = 3;
     string mail = 4;

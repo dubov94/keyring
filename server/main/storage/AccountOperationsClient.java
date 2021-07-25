@@ -2,6 +2,7 @@ package server.main.storage;
 
 import static java.util.stream.Collectors.toMap;
 
+import com.google.common.base.Preconditions;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -317,5 +318,11 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     }
     user.setOtpSpareAttempts(INITIAL_SPARE_ATTEMPTS);
     entityManager.persist(user);
+  }
+
+  @Override
+  @LocalTransaction
+  public FeaturePrompts getFeaturePrompts(long userId) {
+    return Preconditions.checkNotNull(entityManager.find(FeaturePrompts.class, userId));
   }
 }
