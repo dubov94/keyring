@@ -172,6 +172,7 @@ describe('logInViaApiEpic', () => {
       error: ServiceLogInResponseError.NONE,
       userData: {
         sessionKey: 'sessionKey',
+        featurePrompts: [],
         mailVerificationRequired: false,
         mail: 'mail@example.com',
         userKeys: [{
@@ -222,6 +223,7 @@ describe('logInViaApiEpic', () => {
         encryptionKey: 'encryptionKey',
         content: either.right({
           sessionKey: 'sessionKey',
+          featurePrompts: [],
           mailVerificationRequired: false,
           mail: 'mail@example.com',
           userKeys: [{
@@ -249,6 +251,7 @@ describe('logInViaApiEpic', () => {
       error: ServiceLogInResponseError.NONE,
       userData: {
         sessionKey: 'sessionKey',
+        featurePrompts: [],
         mailVerificationRequired: false,
         mail: 'mail@example.com',
         userKeys: []
@@ -286,6 +289,7 @@ describe('logInViaApiEpic', () => {
         encryptionKey: 'encryptionKey',
         content: either.right({
           sessionKey: 'sessionKey',
+          featurePrompts: [],
           mailVerificationRequired: false,
           mail: 'mail@example.com',
           userKeys: []
@@ -320,6 +324,7 @@ describe('provideOtpEpic', () => {
       error: ServiceProvideOtpResponseError.NONE,
       userData: {
         sessionKey: 'sessionKey',
+        featurePrompts: [],
         mailVerificationRequired: false,
         mail: 'mail@example.com',
         userKeys: [{
@@ -364,6 +369,7 @@ describe('provideOtpEpic', () => {
         trustedToken: option.none,
         userData: {
           sessionKey: 'sessionKey',
+          featurePrompts: [],
           mailVerificationRequired: false,
           mail: 'mail@example.com',
           userKeys: [{
@@ -531,6 +537,7 @@ describe('backgroundOtpProvisionEpic', () => {
       trustedToken: 'newOtpToken',
       userData: {
         sessionKey: 'sessionKey',
+        featurePrompts: [],
         mailVerificationRequired: false,
         mail: 'mail@example.com',
         userKeys: []
@@ -559,6 +566,7 @@ describe('backgroundOtpProvisionEpic', () => {
         trustedToken: option.of('newOtpToken'),
         userData: {
           sessionKey: 'sessionKey',
+          featurePrompts: [],
           mailVerificationRequired: false,
           mail: 'mail@example.com',
           userKeys: []
@@ -593,6 +601,7 @@ describe('remoteAuthnCompleteOnCredentialsEpic', () => {
   }
   const userData = {
     sessionKey: 'sessionKey',
+    featurePrompts: [],
     mailVerificationRequired: false,
     mail: 'mail@example.com',
     userKeys: []

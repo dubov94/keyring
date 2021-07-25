@@ -2,7 +2,8 @@ import {
   ServiceRegisterResponseError,
   ServiceGetSaltResponseError,
   ServiceLogInResponseError,
-  ServiceProvideOtpResponseError
+  ServiceProvideOtpResponseError,
+  ServiceFeaturePrompt
 } from '@/api/definitions'
 import { FlowSignal, StandardError } from '@/redux/flow_signal'
 import { Key } from '@/redux/entities'
@@ -49,6 +50,7 @@ export interface OtpContext {
 }
 export interface UserData {
   sessionKey: string;
+  featurePrompts: ServiceFeaturePrompt[];
   mailVerificationRequired: boolean;
   mail: string | null;
   userKeys: Key[];

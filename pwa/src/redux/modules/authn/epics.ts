@@ -114,6 +114,7 @@ const decodeUserData = (encryptionKey: string, userData: ServiceUserData): Obser
     defaultIfEmpty(<Key[]>[]),
     switchMap((userKeys) => of({
       sessionKey: userData.sessionKey!,
+      featurePrompts: userData.featurePrompts!,
       mailVerificationRequired: userData.mailVerificationRequired!,
       mail: userData.mail || null,
       userKeys

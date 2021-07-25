@@ -51,6 +51,7 @@ describe('remoteAuthnComplete', () => {
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
+      featurePrompts: [],
       mailVerificationRequired: false,
       mail: 'mail@example.com',
       userKeys: [],

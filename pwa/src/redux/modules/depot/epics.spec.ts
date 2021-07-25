@@ -60,12 +60,13 @@ describe('updateEncryptedOtpTokenEpic', () => {
     hash: 'hash',
     depotKey: 'depotKey'
   })
-  const remoteASuthnCompleteAction = remoteAuthnComplete({
+  const remoteAuthnCompleteAction = remoteAuthnComplete({
     username: 'username',
     password: 'password',
     parametrization: 'parametreization',
     encryptionKey: 'encryptionKey',
     sessionKey: 'sessionKey',
+    featurePrompts: [],
     mailVerificationRequired: false,
     mail: 'mail@example.com',
     userKeys: [],
@@ -75,12 +76,12 @@ describe('updateEncryptedOtpTokenEpic', () => {
 
   ;[
     depotActivationDataAction,
-    remoteASuthnCompleteAction
+    remoteAuthnCompleteAction
   ].forEach((trigger) => {
     it(`emits a new encrypted OTP token on ${trigger.type}`, async () => {
       const store: Store<RootState, RootAction> = createStore(reducer)
       store.dispatch(depotActivationDataAction)
-      store.dispatch(remoteASuthnCompleteAction)
+      store.dispatch(remoteAuthnCompleteAction)
       const { action$, actionSubject, state$ } = setUpEpicChannels(store)
       const mockSodiumClient = mock(SodiumClient)
       when(mockSodiumClient.encryptMessage('depotKey', 'otpToken')).thenResolve('encryptedOtpToken')
