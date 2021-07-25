@@ -20,7 +20,8 @@ import {
   ServiceAcquireMailTokenResponseError,
   ServiceDeleteAccountResponseError,
   ServiceAcceptOtpParamsResponseError,
-  ServiceResetOtpResponseError
+  ServiceResetOtpResponseError,
+  ServiceFeaturePrompt
 } from '@/api/definitions'
 
 export const isAuthenticated = (state: RootState): boolean => state.user.account.isAuthenticated
@@ -53,3 +54,5 @@ export const otpParamsAcceptance = (state: RootState): DeepReadonly<OtpParamsAcc
 
 export type OtpReset = RemoteData<OtpResetFlowIndicator, {}, StandardError<ServiceResetOtpResponseError>>
 export const otpReset = (state: RootState): DeepReadonly<OtpReset> => state.user.account.otpReset
+
+export const featurePrompts = (state: RootState): DeepReadonly<ServiceFeaturePrompt[]> => state.user.account.featurePrompts

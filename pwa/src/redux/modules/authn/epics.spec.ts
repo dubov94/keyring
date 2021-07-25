@@ -14,7 +14,8 @@ import {
   ServiceLogInResponse,
   ServiceLogInResponseError,
   ServiceProvideOtpResponse,
-  ServiceProvideOtpResponseError
+  ServiceProvideOtpResponseError,
+  ServiceFeatureType
 } from '@/api/definitions'
 import { AUTHENTICATION_API_TOKEN } from '@/api/api_di'
 import {
@@ -172,7 +173,7 @@ describe('logInViaApiEpic', () => {
       error: ServiceLogInResponseError.NONE,
       userData: {
         sessionKey: 'sessionKey',
-        featurePrompts: [],
+        featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
         mailVerificationRequired: false,
         mail: 'mail@example.com',
         userKeys: [{
@@ -223,7 +224,7 @@ describe('logInViaApiEpic', () => {
         encryptionKey: 'encryptionKey',
         content: either.right({
           sessionKey: 'sessionKey',
-          featurePrompts: [],
+          featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
           mailVerificationRequired: false,
           mail: 'mail@example.com',
           userKeys: [{

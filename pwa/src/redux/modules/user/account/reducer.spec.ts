@@ -1,3 +1,4 @@
+import { ServiceFeatureType } from '@/api/definitions'
 import { success } from '@/redux/flow_signal'
 import { hasData } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
@@ -51,7 +52,7 @@ describe('remoteAuthnComplete', () => {
       parametrization: 'parametrization',
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
-      featurePrompts: [],
+      featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
       mailVerificationRequired: false,
       mail: 'mail@example.com',
       userKeys: [],
@@ -63,6 +64,7 @@ describe('remoteAuthnComplete', () => {
     expect(state.parametrization).to.equal('parametrization')
     expect(state.encryptionKey).to.equal('encryptionKey')
     expect(state.sessionKey).to.equal('sessionKey')
+    expect(state.featurePrompts).to.deep.equal([{ featureType: ServiceFeatureType.UNKNOWN }])
     expect(state.mailVerificationRequired).to.be.false
     expect(state.mail).to.equal('mail@example.com')
     expect(state.isOtpEnabled).to.be.true

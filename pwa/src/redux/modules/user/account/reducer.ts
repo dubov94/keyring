@@ -42,7 +42,8 @@ import {
   ServiceChangeUsernameResponseError,
   ServiceDeleteAccountResponseError,
   ServiceAcceptOtpParamsResponseError,
-  ServiceResetOtpResponseError
+  ServiceResetOtpResponseError,
+  ServiceFeaturePrompt
 } from '@/api/definitions'
 import { DeepReadonly } from 'ts-essentials'
 import { castDraft } from 'immer'
@@ -52,6 +53,7 @@ export default createReducer<{
   parametrization: string | null;
   encryptionKey: string | null;
   sessionKey: string | null;
+  featurePrompts: ServiceFeaturePrompt[];
   mailVerificationRequired: boolean;
   mail: string | null;
   mailTokenRelease: RemoteData<MailTokenReleaseFlowIndicator, string, StandardError<ServiceReleaseMailTokenResponseError>>;
@@ -70,6 +72,7 @@ export default createReducer<{
     parametrization: null,
     encryptionKey: null,
     sessionKey: null,
+    featurePrompts: [],
     mailVerificationRequired: true,
     mail: null,
     mailTokenRelease: zero(),
@@ -97,6 +100,7 @@ export default createReducer<{
       state.parametrization = action.payload.parametrization
       state.encryptionKey = action.payload.encryptionKey
       state.sessionKey = action.payload.sessionKey
+      state.featurePrompts = castDraft(action.payload.featurePrompts)
       state.mailVerificationRequired = action.payload.mailVerificationRequired
       state.mail = action.payload.mail
       state.isOtpEnabled = action.payload.isOtpEnabled
