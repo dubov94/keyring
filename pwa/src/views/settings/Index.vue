@@ -26,9 +26,11 @@
             <change-master-key></change-master-key>
           </v-expansion-panel-content>
         </v-expansion-panel>
-        <v-expansion-panel v-if="showOtpSwitch">
+        <v-expansion-panel @change="ackOtpPrompt">
           <v-expansion-panel-header>
-            Two-factor authentication
+            <v-badge left dot color="warning" :value="otpPrompt" :offset-x="-2" :offset-y="-2">
+              Two-factor authentication
+            </v-badge>
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <otp-switch></otp-switch>
@@ -62,8 +64,11 @@ import ChangeMasterKey from './ChangeMasterKey.vue'
 import ChangeUsername from './ChangeUsername.vue'
 import DeleteAccount from './DeleteAccount.vue'
 import OtpSwitch from './OtpSwitch.vue'
+import { ServiceFeatureType } from '@/api/definitions'
 import Page from '@/components/Page.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
+import { ackFeaturePrompt } from '@/redux/modules/user/account/actions'
+import { featurePrompts } from '@/redux/modules/user/account/selectors'
 
 export default Vue.extend({
   components: {
@@ -77,13 +82,23 @@ export default Vue.extend({
   },
   data () {
     return {
-      showMenu: false,
-      showOtpSwitch: window.globals.mode !== 'production'
+      showMenu: false
+    }
+  },
+  computed: {
+    otpPrompt () {
+      return featurePrompts(this.$data.$state).some(
+        (fp) => fp.featureType === ServiceFeatureType.OTP)
     }
   },
   methods: {
     menuSwitch (value: boolean) {
       this.showMenu = value
+    },
+    ackOtpPrompt () {
+      if (this.otpPrompt) {
+        this.dispatch(ackFeaturePrompt(ServiceFeatureType.OTP))
+      }
     }
   }
 })
