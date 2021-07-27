@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import server.main.Cryptography;
 import server.main.MailClient;
+import server.main.entities.FeaturePrompts;
 import server.main.entities.OtpToken;
 import server.main.entities.User;
 import server.main.interceptors.AgentAccessor;
@@ -184,9 +185,10 @@ class AuthenticationServiceTest {
                     .setSalt("salt")
                     .setHash("hash")));
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
-    when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
     when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
     when(mockAgentAccessor.getUserAgent()).thenReturn("Chrome/0.0.0");
+    when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
+    when(mockAccountOperationsInterface.getFeaturePrompts(1L)).thenReturn(new FeaturePrompts());
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),
@@ -194,6 +196,7 @@ class AuthenticationServiceTest {
 
     verify(mockAccountOperationsInterface)
         .createSession(1L, "identifier", "127.0.0.1", "Chrome/0.0.0");
+    verify(mockAccountOperationsInterface).getFeaturePrompts(1L);
     verify(mockStreamObserver)
         .onNext(
             LogInResponse.newBuilder()
@@ -262,6 +265,7 @@ class AuthenticationServiceTest {
     when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
     when(mockAgentAccessor.getUserAgent()).thenReturn("Chrome/0.0.0");
     when(mockKeyValueClient.createSession(any())).thenReturn("session");
+    when(mockAccountOperationsInterface.getFeaturePrompts(1L)).thenReturn(new FeaturePrompts());
 
     authenticationService.provideOtp(
         ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
@@ -270,6 +274,7 @@ class AuthenticationServiceTest {
     verify(mockKeyValueClient).dropAuthn("authn");
     verify(mockAccountOperationsInterface)
         .createSession(1L, "session", "127.0.0.1", "Chrome/0.0.0");
+    verify(mockAccountOperationsInterface).getFeaturePrompts(1L);
     verify(mockStreamObserver)
         .onNext(
             ProvideOtpResponse.newBuilder()
@@ -313,6 +318,7 @@ class AuthenticationServiceTest {
     when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
     when(mockAgentAccessor.getUserAgent()).thenReturn("Chrome/0.0.0");
     when(mockKeyValueClient.createSession(any())).thenReturn("session");
+    when(mockAccountOperationsInterface.getFeaturePrompts(7L)).thenReturn(new FeaturePrompts());
 
     authenticationService.provideOtp(
         ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
@@ -321,6 +327,7 @@ class AuthenticationServiceTest {
     verify(mockAccountOperationsInterface).deleteOtpToken(42L);
     verify(mockKeyValueClient).dropAuthn("authn");
     verify(mockAccountOperationsInterface).restoreOtpSpareAttempts(1L);
+    verify(mockAccountOperationsInterface).getFeaturePrompts(7L);
     verify(mockStreamObserver)
         .onNext(
             ProvideOtpResponse.newBuilder()

@@ -28,7 +28,13 @@ import server.main.storage.KeyOperationsInterface;
 
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
   private static final ImmutableList<Function<FeaturePrompts, Optional<FeaturePrompt>>>
-      FEATURE_PROMPT_MAPPERS = ImmutableList.of();
+      FEATURE_PROMPT_MAPPERS =
+          ImmutableList.of(
+              featurePrompts ->
+                  featurePrompts.getOtp()
+                      ? Optional.of(
+                          FeaturePrompt.newBuilder().setFeatureType(FeatureType.OTP).build())
+                      : Optional.empty());
 
   private AccountOperationsInterface accountOperationsInterface;
   private KeyOperationsInterface keyOperationsInterface;

@@ -24,7 +24,7 @@ import server.main.proto.service.Password;
 public class AccountOperationsClient implements AccountOperationsInterface {
   private static final int INITIAL_SPARE_ATTEMPTS = 5;
   private static final ImmutableMap<FeatureType, Consumer<FeaturePrompts>> FEATURE_PROMPT_ACKERS =
-      ImmutableMap.of();
+      ImmutableMap.of(FeatureType.OTP, featurePrompts -> featurePrompts.setOtp(false));
 
   private Chronometry chronometry;
   @EntityController private EntityManager entityManager;

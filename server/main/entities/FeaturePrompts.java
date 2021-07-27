@@ -18,8 +18,19 @@ public class FeaturePrompts {
 
   @Version private long version;
 
+  @Column private boolean otp;
+
   public FeaturePrompts setUser(User user) {
     this.user = user;
+    return this;
+  }
+
+  public boolean getOtp() {
+    return otp;
+  }
+
+  public FeaturePrompts setOtp(boolean otp) {
+    this.otp = otp;
     return this;
   }
 }
