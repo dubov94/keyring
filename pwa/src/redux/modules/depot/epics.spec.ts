@@ -10,9 +10,10 @@ import { expect } from 'chai'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { MasterKeyChangeData, masterKeyChangeSignal } from '../user/account/actions'
+import { MasterKeyChangeData, masterKeyChangeSignal, otpParamsAcceptanceSignal, otpResetSignal } from '../user/account/actions'
 import { success } from '@/redux/flow_signal'
 import { authnViaDepotSignal, remoteAuthnComplete } from '../authn/actions'
+import { option } from 'fp-ts'
 
 describe('updateVaultEpic', () => {
   const depotActivationDataAction = depotActivationData({
@@ -76,7 +77,8 @@ describe('updateEncryptedOtpTokenEpic', () => {
 
   ;[
     depotActivationDataAction,
-    remoteAuthnCompleteAction
+    remoteAuthnCompleteAction,
+    otpParamsAcceptanceSignal(success(option.of('otpToken')))
   ].forEach((trigger) => {
     it(`emits a new encrypted OTP token on ${trigger.type}`, async () => {
       const store: Store<RootState, RootAction> = createStore(reducer)
@@ -96,6 +98,19 @@ describe('updateEncryptedOtpTokenEpic', () => {
 
       expect(await drainEpicActions(epicTracker)).to.deep.equal([newEncryptedOtpToken('encryptedOtpToken')])
     })
+  })
+
+  it('emits `null` on OTP reset', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(depotActivationDataAction)
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(updateEncryptedOtpTokenEpic(action$, state$, {}))
+    actionSubject.next(otpResetSignal(success({})))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([newEncryptedOtpToken(null)])
   })
 })
 

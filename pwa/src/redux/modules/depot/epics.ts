@@ -10,7 +10,7 @@ import { isActionSuccess } from '@/redux/flow_signal'
 import { EMPTY, from, Observable, of } from 'rxjs'
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault } from './actions'
-import { masterKeyChangeSignal } from '../user/account/actions'
+import { masterKeyChangeSignal, otpParamsAcceptanceSignal, otpResetSignal } from '../user/account/actions'
 import { authnViaDepotSignal, remoteAuthnComplete } from '../authn/actions'
 
 export const updateVaultEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
@@ -27,7 +27,12 @@ export const updateVaultEpic: Epic<RootAction, RootAction, RootState> = (action$
 )
 
 export const updateEncryptedOtpTokenEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
-  filter(monoid.fold(disjunction)([isActionOf(depotActivationData), isActionOf(remoteAuthnComplete)])),
+  filter(monoid.fold(disjunction)([
+    isActionOf(depotActivationData),
+    isActionOf(remoteAuthnComplete),
+    isActionSuccess(otpParamsAcceptanceSignal),
+    isActionSuccess(otpResetSignal)
+  ])),
   withLatestFrom(state$),
   switchMap(([, state]) => fn.pipe(
     option.fromNullable(state.depot.depotKey),

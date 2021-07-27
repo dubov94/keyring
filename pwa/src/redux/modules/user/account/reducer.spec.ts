@@ -259,10 +259,11 @@ describe('otpParamsAcceptance', () => {
       expect(hasData(state.otpParamsAcceptance)).to.be.true
     })
 
-    it('sets `isOtpEnabled` to true', () => {
+    it('sets the token', () => {
       const state = reducer(undefined, signalAction)
 
       expect(state.isOtpEnabled).to.be.true
+      expect(state.otpToken).to.equal('token')
     })
   })
 
@@ -292,6 +293,7 @@ describe('otpReset', () => {
       ])
 
       expect(state.isOtpEnabled).to.be.false
+      expect(state.otpToken).to.be.null
     })
   })
 

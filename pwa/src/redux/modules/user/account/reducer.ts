@@ -48,6 +48,7 @@ import {
 } from '@/api/definitions'
 import { DeepReadonly } from 'ts-essentials'
 import { castDraft } from 'immer'
+import { function as fn, option } from 'fp-ts'
 
 export default createReducer<{
   isAuthenticated: boolean;
@@ -187,8 +188,13 @@ export default createReducer<{
         identity<StandardError<ServiceAcceptOtpParamsResponseError>>()
       )(state.otpParamsAcceptance, action.payload)
     })
-    .addMatcher(isActionSuccess(otpParamsAcceptanceSignal), (state) => {
+    .addMatcher(isActionSuccess(otpParamsAcceptanceSignal), (state, action) => {
       state.isOtpEnabled = true
+      state.otpToken = fn.pipe(
+        action.payload.data,
+        option.map(fn.identity),
+        option.getOrElse<string | null>(() => null)
+      )
     })
     .addMatcher(isActionOf(otpParamsAcceptanceReset), (state) => {
       state.otpParamsAcceptance = withNoResult(state.otpParamsAcceptance)
@@ -202,6 +208,7 @@ export default createReducer<{
     })
     .addMatcher(isActionSuccess(otpResetSignal), (state) => {
       state.isOtpEnabled = false
+      state.otpToken = null
     })
     .addMatcher(isActionOf(cancelOtpReset), (state) => {
       state.otpReset = withNoResult(state.otpReset)
