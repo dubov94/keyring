@@ -10,7 +10,7 @@
 <template>
   <div>
     <div v-if="isOtpEnabled">
-      <p class="text-center">Enter a second factor to disable.</p>
+      <p>Enter the second factor to disable.</p>
       <v-form @keydown.native.enter.prevent="deactivate">
         <form-text-field type="text" class="mb-6" solo :invalid="!$v.deactivation.valid"
           :value="deactivation.otp" @input="setDeactivationOtp" :hide-details="true"
