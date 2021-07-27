@@ -59,10 +59,16 @@
         </div>
       </v-form>
     </div>
-    <div v-else class="text-center">
-      <v-btn color="primary" @click="generate" :disabled="!canAccessApi" :loading="otpParamsGenerationInProgress">
-        Enable
-      </v-btn>
+    <div v-else>
+      <p>
+        <a href="https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html" target="_blank" rel="noopener noreferrer">Two-factor authentication</a>
+        additionally protects your account by requesting a time-based smartphone-generated token for each authentication attempt unless 'Remember me' is switched on, making the device trusted.
+      </p>
+      <div class="mx-4">
+        <v-btn block color="primary" @click="generate" :disabled="!canAccessApi" :loading="otpParamsGenerationInProgress">
+          Enable
+        </v-btn>
+      </div>
     </div>
   </div>
 </template>
