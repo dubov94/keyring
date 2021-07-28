@@ -28,7 +28,8 @@ public interface AccountOperationsInterface {
 
   void changeUsername(long userIdentifier, String username);
 
-  void createSession(long userIdentifier, String key, String ipAddress, String userAgent);
+  void createSession(
+      long userIdentifier, String key, String ipAddress, String userAgent, String clientVersion);
 
   List<Session> readSessions(long userIdentifier);
 

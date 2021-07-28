@@ -149,7 +149,8 @@ class AccountOperationsClientTest {
     when(mockChronometry.currentTime()).thenReturn(instant);
     long userIdentifier = createActiveUser();
 
-    accountOperationsClient.createSession(userIdentifier, "key", "127.0.0.1", "Chrome/0.0.0");
+    accountOperationsClient.createSession(
+        userIdentifier, "key", "127.0.0.1", "Chrome/0.0.0", "version");
 
     List<Session> list = accountOperationsClient.readSessions(userIdentifier);
     assertEquals(1, list.size());
@@ -157,6 +158,7 @@ class AccountOperationsClientTest {
     assertEquals("key", session.getKey());
     assertEquals("127.0.0.1", session.getIpAddress());
     assertEquals("Chrome/0.0.0", session.getUserAgent());
+    assertEquals("version", session.getClientVersion());
     User user = accountOperationsClient.getUserByIdentifier(userIdentifier).get();
     assertEquals(instant, user.getLastSession());
   }

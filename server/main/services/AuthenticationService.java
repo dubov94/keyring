@@ -20,6 +20,7 @@ import server.main.entities.Key;
 import server.main.entities.OtpToken;
 import server.main.entities.User;
 import server.main.interceptors.AgentAccessor;
+import server.main.interceptors.VersionAccessor;
 import server.main.keyvalue.KeyValueClient;
 import server.main.keyvalue.UserPointer;
 import server.main.proto.service.*;
@@ -42,6 +43,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private Cryptography cryptography;
   private MailClient mailClient;
   private AgentAccessor agentAccessor;
+  private VersionAccessor versionAccessor;
   private IGoogleAuthenticator googleAuthenticator;
 
   @Inject
@@ -52,6 +54,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       MailClient mailClient,
       KeyValueClient keyValueClient,
       AgentAccessor agentAccessor,
+      VersionAccessor versionAccessor,
       IGoogleAuthenticator googleAuthenticator) {
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
@@ -59,6 +62,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.mailClient = mailClient;
     this.keyValueClient = keyValueClient;
     this.agentAccessor = agentAccessor;
+    this.versionAccessor = versionAccessor;
     this.googleAuthenticator = googleAuthenticator;
   }
 
@@ -81,7 +85,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         user.getIdentifier(),
         sessionKey,
         agentAccessor.getIpAddress(),
-        agentAccessor.getUserAgent());
+        agentAccessor.getUserAgent(),
+        versionAccessor.getVersion());
     mailClient.sendMailVerificationCode(mail, code);
     return Either.right(builder.setSessionKey(sessionKey).build());
   }
@@ -118,7 +123,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         user.getIdentifier(),
         sessionKey,
         agentAccessor.getIpAddress(),
-        agentAccessor.getUserAgent());
+        agentAccessor.getUserAgent(),
+        versionAccessor.getVersion());
     UserData.Builder userDataBuilder = UserData.newBuilder();
     userDataBuilder.setSessionKey(sessionKey);
     FeaturePrompts featurePrompts =

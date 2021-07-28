@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 import server.main.interceptors.AgentAccessor;
 import server.main.interceptors.AgentInterceptor;
 import server.main.interceptors.SessionAccessor;
+import server.main.interceptors.VersionAccessor;
 import server.main.interceptors.VersionInterceptor;
 
 @Module
@@ -30,19 +31,19 @@ class AppModule {
 
   @Provides
   @Singleton
-  static SessionAccessor provideSessionKeys() {
+  static SessionAccessor provideSessionAccessor() {
     return new SessionAccessor();
   }
 
   @Provides
   @Singleton
-  static AgentInterceptor provideUserMetadataInterceptor() {
+  static AgentInterceptor provideAgentInterceptor() {
     return new AgentInterceptor();
   }
 
   @Provides
   @Singleton
-  static AgentAccessor provideUserMetadataKeys() {
+  static AgentAccessor provideAgentAccessor() {
     return new AgentAccessor();
   }
 
@@ -56,6 +57,12 @@ class AppModule {
   @Singleton
   static VersionInterceptor provideVersionInterceptor() {
     return new VersionInterceptor();
+  }
+
+  @Provides
+  @Singleton
+  static VersionAccessor provideVersionAccessor() {
+    return new VersionAccessor();
   }
 
   @Provides

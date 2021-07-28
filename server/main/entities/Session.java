@@ -29,6 +29,9 @@ public class Session {
   @Column(name = "user_agent")
   private String userAgent;
 
+  @Column(name = "client_version")
+  private String clientVersion;
+
   public Session setUser(User user) {
     this.user = user;
     return this;
@@ -67,6 +70,15 @@ public class Session {
 
   public Session setUserAgent(String userAgent) {
     this.userAgent = userAgent;
+    return this;
+  }
+
+  public String getClientVersion() {
+    return clientVersion;
+  }
+
+  public Session setClientVersion(String clientVersion) {
+    this.clientVersion = clientVersion;
     return this;
   }
 }

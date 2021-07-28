@@ -153,7 +153,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @LocalTransaction
-  public void createSession(long userIdentifier, String key, String ipAddress, String userAgent) {
+  public void createSession(
+      long userIdentifier, String key, String ipAddress, String userAgent, String clientVersion) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
     if (maybeUser.isPresent()) {
       User user = maybeUser.get();
@@ -164,7 +165,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
               .setUser(entityManager.getReference(User.class, userIdentifier))
               .setKey(key)
               .setIpAddress(ipAddress)
-              .setUserAgent(userAgent);
+              .setUserAgent(userAgent)
+              .setClientVersion(clientVersion);
       entityManager.persist(session);
     } else {
       throw new IllegalArgumentException();

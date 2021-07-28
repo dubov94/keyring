@@ -61,6 +61,7 @@ java_library(
         "//server/main/interceptors:agent_accessor",
         "//server/main/interceptors:agent_interceptor",
         "//server/main/interceptors:session_accessor",
+        "//server/main/interceptors:version_accessor",
         "//server/main/interceptors:version_interceptor",
         "@maven//:com_google_code_gson_gson",
         "@maven//:com_google_dagger_dagger",

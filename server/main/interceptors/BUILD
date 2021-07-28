@@ -47,6 +47,7 @@ java_library(
 java_library(
     name = "version_accessor",
     srcs = ["VersionAccessor.java"],
+    visibility = ["//server:internal"],
     deps = [
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_context",
