@@ -49,7 +49,7 @@ import { from, of, Subject } from 'rxjs'
 import { concatMap, filter, map, takeUntil } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
 import { isActionOf } from 'typesafe-actions'
-import Vue from 'vue'
+import Vue, { VueConstructor } from 'vue'
 import Editor from '@/components/Editor.vue'
 import Page from '@/components/Page.vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
@@ -65,8 +65,12 @@ enum UpdateType {
   MATCH = 'MATCH'
 }
 
-export default Vue.extend({
-  props: ['cardsPerPage'],
+interface Mixins {
+  scrollAndMatch: () => void;
+}
+
+export default (Vue as VueConstructor<Vue & Mixins>).extend({
+  props: ['debounceMillis'],
   components: {
     editor: Editor,
     page: Page,
@@ -90,9 +94,6 @@ export default Vue.extend({
     }
   },
   computed: {
-    userKeys (): DeepReadonly<Key[]> {
-      return userKeys(this.$data.$state)
-    },
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
     },
@@ -104,6 +105,11 @@ export default Vue.extend({
     }
   },
   methods: {
+    userKeys (): DeepReadonly<Key[]> {
+      const r = userKeys(this.$data.$state)
+      console.log(JSON.stringify(r))
+      return r
+    },
     menuSwitch (value: boolean) {
       this.showMenu = value
     },
@@ -118,16 +124,19 @@ export default Vue.extend({
       this.showEditor = false
       this.editorParams = { identifier: null, reveal: false }
     },
-    scrollAndMatchDebounced: debounce(function (this: { updateQueue$: Subject<UpdateType> }) {
-      this.updateQueue$.next(UpdateType.SCROLL)
-      this.updateQueue$.next(UpdateType.MATCH)
-    }, 200),
     setQuery (value: string) {
       this.query = value
-      this.scrollAndMatchDebounced()
+      this.scrollAndMatch()
     }
   },
   created () {
+    this.scrollAndMatch = () => {
+      this.updateQueue$.next(UpdateType.SCROLL)
+      this.updateQueue$.next(UpdateType.MATCH)
+    }
+    if (this.debounceMillis !== null) {
+      this.scrollAndMatch = debounce(this.scrollAndMatch, this.debounceMillis)
+    }
     this.updateQueue$.pipe(
       concatMap((updateType) => {
         switch (updateType) {
@@ -137,7 +146,7 @@ export default Vue.extend({
             )
           case UpdateType.MATCH: {
             const prefix = this.query.trim().toLowerCase()
-            this.matchedCards = this.userKeys.filter(key =>
+            this.matchedCards = this.userKeys().filter(key =>
               key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
             return of(updateType)
           }
@@ -161,7 +170,7 @@ export default Vue.extend({
     })
   },
   mounted () {
-    if (this.userKeys.length > 0) {
+    if (this.userKeys().length > 0) {
       ;(this.$refs.search as HTMLInputElement).focus()
     }
   }
