@@ -25,16 +25,12 @@
   <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch"
     :toolbar-is-extended="toolbarIsExtended">
     <v-text-field :slot="toolbarSearchSlot" solo-inverted flat ref="search" hide-details
-      v-model="query" prepend-inner-icon="search" label="Search" class="search">
+      :value="query" @input="setQuery" prepend-inner-icon="search" label="Search" class="search">
     </v-text-field>
     <user-menu v-model="showMenu"></user-menu>
     <v-main>
-      <div class="mt-3 text-center">
-        <v-pagination v-model="pageNumber" :length="pageCount"
-          :total-visible="paginationVisibleCount" circle></v-pagination>
-      </div>
-      <v-container fluid>
-        <password-masonry :user-keys="visibleCards" @edit="openEditor">
+      <v-container fluid class="mt-3">
+        <password-masonry :user-keys="matchedCards" @edit="openEditor">
         </password-masonry>
       </v-container>
       <div class="dial">
@@ -48,18 +44,26 @@
 </template>
 
 <script lang="ts">
+import debounce from 'lodash/debounce'
+import { from, of, Subject } from 'rxjs'
+import { concatMap, filter, map, takeUntil } from 'rxjs/operators'
+import { DeepReadonly } from 'ts-essentials'
+import { isActionOf } from 'typesafe-actions'
 import Vue from 'vue'
 import Editor from '@/components/Editor.vue'
 import Page from '@/components/Page.vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
-import { userKeys } from '@/redux/modules/user/keys/selectors'
 import { Key } from '@/redux/entities'
-import { DeepReadonly } from 'ts-essentials'
-import { takeUntil, filter } from 'rxjs/operators'
 import { isActionSuccess } from '@/redux/flow_signal'
-import { creationSignal } from '@/redux/modules/user/keys/actions'
 import { canAccessApi } from '@/redux/modules/user/account/selectors'
+import { creationSignal, userKeysUpdate } from '@/redux/modules/user/keys/actions'
+import { userKeys } from '@/redux/modules/user/keys/selectors'
+
+enum UpdateType {
+  SCROLL = 'SCROLL',
+  MATCH = 'MATCH'
+}
 
 export default Vue.extend({
   props: ['cardsPerPage'],
@@ -72,8 +76,9 @@ export default Vue.extend({
   data () {
     return {
       showMenu: false,
-      pageNumber: 1,
       query: '',
+      updateQueue$: new Subject<UpdateType>(),
+      matchedCards: [] as DeepReadonly<Key>[],
       showEditor: false,
       editorParams: {
         identifier: null,
@@ -90,31 +95,6 @@ export default Vue.extend({
     },
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
-    },
-    pageCount (): number {
-      return Math.max(Math.floor(
-        (this.matchingCards.length + this.cardsPerPage - 1) / this.cardsPerPage), 1)
-    },
-    paginationVisibleCount (): number {
-      return this.$vuetify.breakpoint.smAndUp ? 7 : 5
-    },
-    normalizedQuery (): string {
-      return this.query.trim().toLowerCase()
-    },
-    matchingCards (): DeepReadonly<Key[]> {
-      const prefix = this.normalizedQuery
-      if (prefix === '') {
-        return this.userKeys
-      }
-      return this.userKeys.filter(key =>
-        key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
-    },
-    visibleCards (): DeepReadonly<Key[]> {
-      const startIndex = (this.pageNumber - 1) * this.cardsPerPage
-      return this.matchingCards.slice(startIndex, startIndex + this.cardsPerPage)
-    },
-    cardsCount (): number {
-      return this.matchingCards.length
     },
     toolbarIsExtended (): boolean {
       return this.$vuetify.breakpoint.xsOnly
@@ -138,30 +118,46 @@ export default Vue.extend({
       this.showEditor = false
       this.editorParams = { identifier: null, reveal: false }
     },
-    clearQuery () {
-      this.query = ''
-    },
-    resetNavigation () {
-      this.pageNumber = 1
-    }
-  },
-  watch: {
-    cardsCount () {
-      if (this.pageNumber > this.pageCount) {
-        this.pageNumber = this.pageCount
-      }
-    },
-    normalizedQuery () {
-      this.resetNavigation()
+    scrollAndMatchDebounced: debounce(function (this: { updateQueue$: Subject<UpdateType> }) {
+      this.updateQueue$.next(UpdateType.SCROLL)
+      this.updateQueue$.next(UpdateType.MATCH)
+    }, 200),
+    setQuery (value: string) {
+      this.query = value
+      this.scrollAndMatchDebounced()
     }
   },
   created () {
+    this.updateQueue$.pipe(
+      concatMap((updateType) => {
+        switch (updateType) {
+          case UpdateType.SCROLL:
+            return from(this.$vuetify.goTo(0)).pipe(
+              map(() => updateType)
+            )
+          case UpdateType.MATCH: {
+            const prefix = this.query.trim().toLowerCase()
+            this.matchedCards = this.userKeys.filter(key =>
+              key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
+            return of(updateType)
+          }
+        }
+      }),
+      takeUntil(this.$data.$destruction)
+    ).subscribe()
+    this.updateQueue$.next(UpdateType.MATCH)
     this.$data.$actions.pipe(
       filter(isActionSuccess(creationSignal)),
       takeUntil(this.$data.$destruction)
     ).subscribe(() => {
-      this.clearQuery()
-      this.resetNavigation()
+      this.query = ''
+      this.updateQueue$.next(UpdateType.SCROLL)
+    })
+    this.$data.$actions.pipe(
+      filter(isActionOf(userKeysUpdate)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.updateQueue$.next(UpdateType.MATCH)
     })
   },
   mounted () {

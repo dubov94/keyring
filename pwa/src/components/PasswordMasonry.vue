@@ -1,9 +1,11 @@
 <template>
   <v-row align="center">
     <v-col v-for="item in userKeys" :key="item.identifier" :cols="12" :md="6" :lg="4">
-      <password :identifier="item.identifier" :value="item.value" :tags="item.tags"
-        :score="item.score" @edit="handleEditKey(item.identifier, $event)">
-      </password>
+      <v-lazy :min-height="64">
+        <password :identifier="item.identifier" :value="item.value" :tags="item.tags"
+          :score="item.score" @edit="handleEditKey(item.identifier, $event)">
+        </password>
+      </v-lazy>
     </v-col>
   </v-row>
 </template>
