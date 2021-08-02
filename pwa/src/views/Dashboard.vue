@@ -29,7 +29,14 @@
     </v-text-field>
     <user-menu v-model="showMenu"></user-menu>
     <v-main>
-      <v-container fluid class="mt-3">
+      <v-container fluid>
+        <v-row>
+          <v-col :cols="12">
+            <v-alert :value="otpPrompt" @input="ackOtpPrompt" type="info" outlined dismissible border="left" class="mb-0">
+              You can enable two-factor authentication in <router-link to="/settings">settings</router-link> now.
+            </v-alert>
+          </v-col>
+        </v-row>
         <password-masonry :user-keys="matchedCards" @edit="openEditor">
         </password-masonry>
       </v-container>
@@ -50,13 +57,15 @@ import { concatMap, filter, map, takeUntil } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
 import { isActionOf } from 'typesafe-actions'
 import Vue, { VueConstructor } from 'vue'
+import { ServiceFeatureType } from '@/api/definitions'
 import Editor from '@/components/Editor.vue'
 import Page from '@/components/Page.vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
 import { Key } from '@/redux/entities'
 import { isActionSuccess } from '@/redux/flow_signal'
-import { canAccessApi } from '@/redux/modules/user/account/selectors'
+import { ackFeaturePrompt } from '@/redux/modules/user/account/actions'
+import { canAccessApi, featurePrompts } from '@/redux/modules/user/account/selectors'
 import { creationSignal, userKeysUpdate } from '@/redux/modules/user/keys/actions'
 import { userKeys } from '@/redux/modules/user/keys/selectors'
 
@@ -97,6 +106,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
     },
+    featurePrompts () {
+      return featurePrompts(this.$data.$state)
+    },
+    otpPrompt (): boolean {
+      return this.featurePrompts.findIndex(
+        (fp) => fp.featureType === ServiceFeatureType.OTP) === 0
+    },
     toolbarIsExtended (): boolean {
       return this.$vuetify.breakpoint.xsOnly
     },
@@ -106,12 +122,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   methods: {
     userKeys (): DeepReadonly<Key[]> {
-      const r = userKeys(this.$data.$state)
-      console.log(JSON.stringify(r))
-      return r
+      return userKeys(this.$data.$state)
     },
     menuSwitch (value: boolean) {
       this.showMenu = value
+    },
+    ackOtpPrompt () {
+      this.dispatch(ackFeaturePrompt(ServiceFeatureType.OTP))
     },
     addKey () {
       this.showEditor = true

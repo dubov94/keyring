@@ -1,4 +1,4 @@
-<template>
+  <template>
   <v-app-bar app color="primary" dark :height="64" :extension-height="64">
     <v-app-bar-nav-icon v-if="hasMenu" @click="toggle">
     </v-app-bar-nav-icon>
@@ -19,17 +19,13 @@
       <template #activator="{ on }">
         <v-btn v-on="on" text>
           {{ username }}
-          <v-badge dot color="warning" :value="otpPrompt" :offset-x="-2" :offset-y="-2">
-            <v-icon right>account_circle</v-icon>
-          </v-badge>
+          <v-icon right>account_circle</v-icon>
         </v-btn>
       </template>
       <v-list two-line class="py-0">
         <v-list-item to="/settings">
           <v-list-item-action>
-            <v-badge dot color="warning" :value="otpPrompt">
-              <v-icon>fa-cog</v-icon>
-            </v-badge>
+            <v-icon>fa-cog</v-icon>
           </v-list-item-action>
             <v-list-item-content>
               <v-list-item-title>
@@ -58,9 +54,8 @@
 
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
-import { ServiceFeatureType } from '@/api/definitions'
 import { sessionUsername } from '@/redux/modules/session/selectors'
-import { isAuthenticated, featurePrompts } from '@/redux/modules/user/account/selectors'
+import { isAuthenticated } from '@/redux/modules/user/account/selectors'
 import { logOut, LogoutTrigger } from '@/redux/modules/user/account/actions'
 
 interface Mixins {
@@ -78,10 +73,6 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     homeTarget (): string {
       return this.isAuthenticated ? '/dashboard' : '/'
-    },
-    otpPrompt () {
-      return featurePrompts(this.$data.$state).some(
-        (fp) => fp.featureType === ServiceFeatureType.OTP)
     }
   },
   methods: {
