@@ -46,6 +46,7 @@ message LogInRequest {
 enum FeatureType {
     UNKNOWN = 0;
     OTP = 1;
+    FUZZY_SEARCH = 2;
 }
 
 message FeaturePrompt {

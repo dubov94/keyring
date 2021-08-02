@@ -32,8 +32,13 @@
       <v-container fluid>
         <v-row>
           <v-col :cols="12">
-            <v-alert :value="otpPrompt" @input="ackOtpPrompt" type="info" outlined dismissible border="left" class="mb-0">
+            <v-alert :value="otpPrompt" @input="ackOtpPrompt"
+              type="info" outlined dismissible border="left" class="mb-0">
               You can enable two-factor authentication in <router-link to="/settings">settings</router-link> now.
+            </v-alert>
+            <v-alert :value="fuzzySearchPrompt" @input="ackFuzzySearchPrompt"
+              type="info" outlined dismissible border="left" class="mb-0">
+              Search is no longer prefix-based &mdash; one can type 'vidi' to find an entry tagged as 'Veni, vidi, vici'.
             </v-alert>
           </v-col>
         </v-row>
@@ -115,6 +120,10 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       return this.featurePrompts.findIndex(
         (fp) => fp.featureType === ServiceFeatureType.OTP) === 0
     },
+    fuzzySearchPrompt (): boolean {
+      return this.featurePrompts.findIndex(
+        (fp) => fp.featureType === ServiceFeatureType.FUZZYSEARCH) === 0
+    },
     toolbarIsExtended (): boolean {
       return this.$vuetify.breakpoint.xsOnly
     },
@@ -131,6 +140,9 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     ackOtpPrompt () {
       this.dispatch(ackFeaturePrompt(ServiceFeatureType.OTP))
+    },
+    ackFuzzySearchPrompt () {
+      this.dispatch(ackFeaturePrompt(ServiceFeatureType.FUZZYSEARCH))
     },
     addKey () {
       this.showEditor = true

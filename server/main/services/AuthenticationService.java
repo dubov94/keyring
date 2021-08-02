@@ -28,13 +28,20 @@ import server.main.storage.AccountOperationsInterface;
 import server.main.storage.KeyOperationsInterface;
 
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
+  private static FeaturePrompt datalessFeaturePrompt(FeatureType featureType) {
+    return FeaturePrompt.newBuilder().setFeatureType(featureType).build();
+  }
+
   private static final ImmutableList<Function<FeaturePrompts, Optional<FeaturePrompt>>>
       FEATURE_PROMPT_MAPPERS =
           ImmutableList.of(
               featurePrompts ->
                   featurePrompts.getOtp()
-                      ? Optional.of(
-                          FeaturePrompt.newBuilder().setFeatureType(FeatureType.OTP).build())
+                      ? Optional.of(datalessFeaturePrompt(FeatureType.OTP))
+                      : Optional.empty(),
+              featurePrompts ->
+                  featurePrompts.getFuzzySearch()
+                      ? Optional.of(datalessFeaturePrompt(FeatureType.FUZZY_SEARCH))
                       : Optional.empty());
 
   private AccountOperationsInterface accountOperationsInterface;

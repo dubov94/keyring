@@ -20,6 +20,9 @@ public class FeaturePrompts {
 
   @Column private boolean otp;
 
+  @Column(name = "fuzzy_search")
+  private boolean fuzzySearch;
+
   public FeaturePrompts setUser(User user) {
     this.user = user;
     return this;
@@ -31,6 +34,15 @@ public class FeaturePrompts {
 
   public FeaturePrompts setOtp(boolean otp) {
     this.otp = otp;
+    return this;
+  }
+
+  public boolean getFuzzySearch() {
+    return fuzzySearch;
+  }
+
+  public FeaturePrompts setFuzzySearch(boolean fuzzySearch) {
+    this.fuzzySearch = fuzzySearch;
     return this;
   }
 }
