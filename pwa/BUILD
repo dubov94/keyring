@@ -120,6 +120,7 @@ DEPENDENCIES = [
     "@pwa_npm//eslint-plugin-vue",
     "@pwa_npm//eslint-plugin-vuetify",
     "@pwa_npm//fp-ts",
+    "@pwa_npm//fuse.js",
     "@pwa_npm//libsodium-wrappers",
     "@pwa_npm//lodash",
     # For `ts_swagger_api`.

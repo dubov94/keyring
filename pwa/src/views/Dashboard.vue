@@ -51,6 +51,8 @@
 </template>
 
 <script lang="ts">
+import Fuse from 'fuse.js'
+import { function as fn } from 'fp-ts'
 import debounce from 'lodash/debounce'
 import { from, of, Subject } from 'rxjs'
 import { concatMap, filter, map, takeUntil } from 'rxjs/operators'
@@ -162,9 +164,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
               map(() => updateType)
             )
           case UpdateType.MATCH: {
-            const prefix = this.query.trim().toLowerCase()
-            this.matchedCards = this.userKeys().filter(key =>
-              key.tags.some(tag => tag.toLowerCase().startsWith(prefix)))
+            const query = this.query.trim()
+            if (query === '') {
+              this.matchedCards = this.userKeys().map(fn.identity)
+            } else {
+              const fuse = new Fuse(this.userKeys(), { keys: ['tags'] })
+              this.matchedCards = fuse.search(query).map((result) => result.item)
+            }
             return of(updateType)
           }
         }
