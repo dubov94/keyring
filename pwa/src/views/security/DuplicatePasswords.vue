@@ -82,10 +82,18 @@ export default Vue.extend({
     }
   },
   watch: {
-    groupCount (newValue) {
-      // Since one cannot add keys from this page, we do not have to worry
-      // about potentially changing `groupNumber` to stay on the same group.
-      this.groupNumber = Math.max(Math.min(this.groupNumber, newValue), 1)
+    duplicateGroups (newValue: DeepReadonly<DuplicateGroups>, oldValue: DeepReadonly<DuplicateGroups>) {
+      this.groupNumber = fn.pipe(
+        option.Do,
+        option.bind('newMatrix', () => data(newValue)),
+        option.bind('oldMatrix', () => data(oldValue)),
+        option.map(({ newMatrix, oldMatrix }) => fn.pipe(
+          newMatrix as Writable<Writable<string[]>[]>,
+          array.findIndex(array.every((id) => oldMatrix[this.groupNumber - 1].includes(id))),
+          option.fold(() => Math.max(Math.min(this.groupNumber, newMatrix.length), 1), (index) => index + 1)
+        )),
+        option.getOrElse(() => 1)
+      )
     }
   }
 })
