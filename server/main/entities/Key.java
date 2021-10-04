@@ -1,17 +1,21 @@
 package server.main.entities;
 
-import static java.util.stream.Collectors.toList;
-
-import java.util.ArrayList;
+import com.google.common.collect.ImmutableList;
+import com.vladmihalcea.hibernate.type.array.StringArrayType;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import javax.persistence.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 import server.main.proto.service.IdentifiedKey;
 import server.main.proto.service.Password;
 
 @Entity
 @Table(name = "keys")
+@TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class Key {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,13 +29,9 @@ public class Key {
 
   @Column private String value;
 
-  @OneToMany(
-      mappedBy = "key",
-      fetch = FetchType.EAGER,
-      cascade = CascadeType.ALL,
-      orphanRemoval = true)
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  private List<Tag> tags;
+  @Type(type = "string-array")
+  @Column(columnDefinition = "text[]")
+  private String[] labels;
 
   public long getIdentifier() {
     return identifier;
@@ -55,41 +55,30 @@ public class Key {
     return this;
   }
 
-  public List<Tag> getTags() {
-    return tags;
+  public List<String> getTags() {
+    return Optional.ofNullable(labels)
+        .map((array) -> Arrays.asList(array))
+        .orElseGet(() -> ImmutableList.of());
   }
 
-  public Key setTags(List<Tag> tags) {
-    if (this.tags == null) {
-      this.tags = new ArrayList<>();
-    } else {
-      this.tags.clear();
-    }
-    tags.forEach(tag -> this.tags.add(tag.setKey(this)));
+  public Key setTags(List<String> tags) {
+    this.labels = tags.stream().toArray(String[]::new);
     return this;
   }
 
   public Key mergeFromPassword(Password password) {
     setValue(password.getValue());
-    setTags(
-        password.getTagsList().stream().map(label -> new Tag().setValue(label)).collect(toList()));
+    setTags(password.getTagsList());
     return this;
   }
 
   public Password toPassword() {
-    return Password.newBuilder()
-        .setValue(getValue())
-        .addAllTags(getTags().stream().map(Tag::getValue).collect(toList()))
-        .build();
+    return Password.newBuilder().setValue(getValue()).addAllTags(getTags()).build();
   }
 
   public IdentifiedKey toIdentifiedKey() {
     return IdentifiedKey.newBuilder()
-        .setPassword(
-            Password.newBuilder()
-                .setValue(getValue())
-                .addAllTags(getTags().stream().map(Tag::getValue).collect(toList()))
-                .build())
+        .setPassword(Password.newBuilder().setValue(getValue()).addAllTags(getTags()).build())
         .setIdentifier(getIdentifier())
         .build();
   }

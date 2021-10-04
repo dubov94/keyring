@@ -15,15 +15,14 @@ java_library(
 
 java_library(
     name = "key",
-    srcs = [
-        "Key.java",
-        "Tag.java",
-    ],
+    srcs = ["Key.java"],
     plugins = ["//bazel/java:hibernate_jpamodelgen"],
     visibility = ["//server:internal"],
     deps = [
         ":user",
         "//proto:service_java_grpc",
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_vladmihalcea_hibernate_types_52",
         "@maven//:javax_annotation_javax_annotation_api",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_hibernate_hibernate_core",

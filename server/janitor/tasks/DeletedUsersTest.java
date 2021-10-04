@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.main.aspects.StorageManagerAspect;
 import server.main.entities.Key;
-import server.main.entities.Tag;
 import server.main.entities.User;
 
 final class DeletedUsersTest {
@@ -36,13 +35,11 @@ final class DeletedUsersTest {
   void activeUser_keeps() {
     User user = new User().setState(User.State.ACTIVE).setUsername(createUniqueUsername());
     persistEntity(user);
-    Tag tag = new Tag().setValue("tag");
-    Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of(tag));
+    Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of("tag"));
     persistEntity(key);
 
     deletedUsers.run();
 
-    assertTrue(isEntityInStorage(tag));
     assertTrue(isEntityInStorage(key));
     assertTrue(isEntityInStorage(user));
   }
@@ -51,13 +48,11 @@ final class DeletedUsersTest {
   void deletedUser_removes() {
     User user = new User().setState(User.State.DELETED).setUsername(createUniqueUsername());
     persistEntity(user);
-    Tag tag = new Tag().setValue("tag");
-    Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of(tag));
+    Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of("tag"));
     persistEntity(key);
 
     deletedUsers.run();
 
-    assertFalse(isEntityInStorage(tag));
     assertFalse(isEntityInStorage(key));
     assertFalse(isEntityInStorage(user));
   }
