@@ -26,7 +26,8 @@ public class OtpToken {
   @Column(name = "is_initial")
   private boolean isInitial;
 
-  @Column private String value;
+  @Column(columnDefinition = "text")
+  private String value;
 
   public long getId() {
     return id;

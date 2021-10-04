@@ -27,7 +27,7 @@ public class OtpParams {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private User user;
 
-  @Column(name = "shared_secret")
+  @Column(name = "shared_secret", columnDefinition = "text")
   private String sharedSecret;
 
   @Type(type = "string-array")

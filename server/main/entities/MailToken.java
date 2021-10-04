@@ -1,17 +1,16 @@
 package server.main.entities;
 
+import com.google.common.base.Preconditions;
+import java.sql.Timestamp;
+import javax.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import javax.persistence.*;
-import java.sql.Timestamp;
-
 @Entity
 @Table(
-  name = "mail_tokens",
-  uniqueConstraints = {@UniqueConstraint(columnNames = {"user_identifier", "code"})}
-)
+    name = "mail_tokens",
+    uniqueConstraints = {@UniqueConstraint(columnNames = {"user_identifier", "code"})})
 public class MailToken {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,9 +22,11 @@ public class MailToken {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private User user;
 
-  @Column private String code;
+  @Column(columnDefinition = "text")
+  private String code;
 
-  @Column private String mail;
+  @Column(columnDefinition = "text")
+  private String mail;
 
   public long getIdentifier() {
     return identifier;
@@ -50,6 +51,7 @@ public class MailToken {
   }
 
   public MailToken setCode(String code) {
+    Preconditions.checkArgument(code.length() <= 16);
     this.code = code;
     return this;
   }
@@ -59,6 +61,7 @@ public class MailToken {
   }
 
   public MailToken setMail(String mail) {
+    Validators.checkMailLength(mail);
     this.mail = mail;
     return this;
   }

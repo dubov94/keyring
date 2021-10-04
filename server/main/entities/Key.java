@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import javax.persistence.*;
+import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
@@ -27,7 +28,8 @@ public class Key {
 
   @Version private long version;
 
-  @Column private String value;
+  @Column(columnDefinition = "text")
+  private String value;
 
   @Type(type = "string-array")
   @Column(columnDefinition = "text[]")
@@ -51,6 +53,7 @@ public class Key {
   }
 
   public Key setValue(String value) {
+    Validators.checkStringSize(4 * FileUtils.ONE_KB, value);
     this.value = value;
     return this;
   }
@@ -62,6 +65,7 @@ public class Key {
   }
 
   public Key setTags(List<String> tags) {
+    tags.forEach((tag) -> Validators.checkStringSize(FileUtils.ONE_KB, tag));
     this.labels = tags.stream().toArray(String[]::new);
     return this;
   }

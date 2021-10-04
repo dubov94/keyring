@@ -1,8 +1,10 @@
 package server.main.entities;
 
+import com.google.common.base.Preconditions;
 import java.sql.Timestamp;
 import java.time.Instant;
 import javax.persistence.*;
+import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
@@ -18,20 +20,23 @@ public class User {
 
   @Enumerated private State state;
 
-  @Column(unique = true)
+  @Column(columnDefinition = "text", unique = true)
   private String username;
 
-  @Column private String salt;
+  @Column(columnDefinition = "text")
+  private String salt;
 
-  @Column private String hash;
+  @Column(columnDefinition = "text")
+  private String hash;
 
-  @Column(name = "otp_shared_secret")
+  @Column(name = "otp_shared_secret", columnDefinition = "text")
   private String otpSharedSecret;
 
   @Column(name = "otp_spare_attempts", columnDefinition = "int4 default 0")
   private int otpSpareAttempts;
 
-  @Column private String mail;
+  @Column(columnDefinition = "text")
+  private String mail;
 
   @Column(name = "last_session")
   private Timestamp lastSession;
@@ -59,6 +64,7 @@ public class User {
   }
 
   public User setUsername(String username) {
+    Preconditions.checkArgument(username.length() <= 256);
     this.username = username;
     return this;
   }
@@ -68,6 +74,7 @@ public class User {
   }
 
   public User setSalt(String salt) {
+    Validators.checkStringSize(FileUtils.ONE_KB, salt);
     this.salt = salt;
     return this;
   }
@@ -77,6 +84,7 @@ public class User {
   }
 
   public User setHash(String hash) {
+    Validators.checkStringSize(FileUtils.ONE_KB, hash);
     this.hash = hash;
     return this;
   }
@@ -111,6 +119,7 @@ public class User {
   }
 
   public User setMail(String mail) {
+    Validators.checkMailLength(mail);
     this.mail = mail;
     return this;
   }
