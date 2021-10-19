@@ -165,7 +165,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     entityManager.persist(user);
     Session session =
         new Session()
-            .setUser(entityManager.getReference(User.class, userIdentifier))
+            .setUser(user)
             .setKey(key)
             .setIpAddress(ipAddress)
             .setUserAgent(userAgent)
@@ -237,6 +237,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public void createOtpToken(long userId, String otpToken) {
+    // To prevent `resetOtp` from getting stale tokens.
     Optional<User> maybeUser = getUserByIdentifier(userId, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
