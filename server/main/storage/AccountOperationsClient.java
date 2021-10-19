@@ -75,21 +75,21 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public void releaseMailToken(long tokenIdentifier) {
     Optional<MailToken> maybeMailToken =
         Optional.ofNullable(entityManager.find(MailToken.class, tokenIdentifier));
-    if (maybeMailToken.isPresent()) {
-      MailToken mailToken = maybeMailToken.get();
-      Optional<User> maybeUser = Optional.ofNullable(mailToken.getUser());
-      if (maybeUser.isPresent()) {
-        User user = maybeUser.get();
-        user.setMail(mailToken.getMail());
-        if (user.isActivated()) {
-          user.setState(User.State.ACTIVE);
-        }
-        entityManager.persist(user);
-        entityManager.remove(mailToken);
-        return;
-      }
+    if (!maybeMailToken.isPresent()) {
+      throw new IllegalArgumentException();
     }
-    throw new IllegalArgumentException();
+    MailToken mailToken = maybeMailToken.get();
+    Optional<User> maybeUser = Optional.ofNullable(mailToken.getUser());
+    if (!maybeUser.isPresent()) {
+      throw new IllegalArgumentException();
+    }
+    User user = maybeUser.get();
+    user.setMail(mailToken.getMail());
+    if (user.isActivated()) {
+      user.setState(User.State.ACTIVE);
+    }
+    entityManager.persist(user);
+    entityManager.remove(mailToken);
   }
 
   @Override
@@ -118,27 +118,25 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public void changeMasterKey(
       long userIdentifier, String salt, String hash, List<IdentifiedKey> protos) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
-    if (maybeUser.isPresent()) {
-      User user = maybeUser.get();
-      user.setSalt(salt);
-      user.setHash(hash);
-      entityManager.persist(user);
-      List<Key> entities = Queries.findByUser(entityManager, Key.class, Key_.user, userIdentifier);
-      Map<Long, Password> keyIdentifierToProto =
-          protos.stream().collect(toMap(IdentifiedKey::getIdentifier, IdentifiedKey::getPassword));
-      for (Key entity : entities) {
-        Optional<Password> maybeProto =
-            Optional.ofNullable(keyIdentifierToProto.get(entity.getIdentifier()));
-        if (!maybeProto.isPresent()) {
-          throw new IllegalArgumentException();
-        } else {
-          Password proto = maybeProto.get();
-          entity.mergeFromPassword(proto);
-          entityManager.persist(entity);
-        }
-      }
-    } else {
+    if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
+    }
+    User user = maybeUser.get();
+    user.setSalt(salt);
+    user.setHash(hash);
+    entityManager.persist(user);
+    List<Key> entities = Queries.findByUser(entityManager, Key.class, Key_.user, userIdentifier);
+    Map<Long, Password> keyIdentifierToProto =
+        protos.stream().collect(toMap(IdentifiedKey::getIdentifier, IdentifiedKey::getPassword));
+    for (Key entity : entities) {
+      Optional<Password> maybeProto =
+          Optional.ofNullable(keyIdentifierToProto.get(entity.getIdentifier()));
+      if (!maybeProto.isPresent()) {
+        throw new IllegalArgumentException();
+      }
+      Password proto = maybeProto.get();
+      entity.mergeFromPassword(proto);
+      entityManager.persist(entity);
     }
   }
 
@@ -146,13 +144,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @LocalTransaction
   public void changeUsername(long userIdentifier, String username) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
-    if (maybeUser.isPresent()) {
-      User user = maybeUser.get();
-      user.setUsername(username);
-      entityManager.persist(user);
-    } else {
+    if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
+    User user = maybeUser.get();
+    user.setUsername(username);
+    entityManager.persist(user);
   }
 
   @Override
@@ -160,21 +157,20 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public void createSession(
       long userIdentifier, String key, String ipAddress, String userAgent, String clientVersion) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
-    if (maybeUser.isPresent()) {
-      User user = maybeUser.get();
-      user.setLastSession(chronometry.currentTime());
-      entityManager.persist(user);
-      Session session =
-          new Session()
-              .setUser(entityManager.getReference(User.class, userIdentifier))
-              .setKey(key)
-              .setIpAddress(ipAddress)
-              .setUserAgent(userAgent)
-              .setClientVersion(clientVersion);
-      entityManager.persist(session);
-    } else {
+    if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
+    User user = maybeUser.get();
+    user.setLastSession(chronometry.currentTime());
+    entityManager.persist(user);
+    Session session =
+        new Session()
+            .setUser(entityManager.getReference(User.class, userIdentifier))
+            .setKey(key)
+            .setIpAddress(ipAddress)
+            .setUserAgent(userAgent)
+            .setClientVersion(clientVersion);
+    entityManager.persist(session);
   }
 
   @Override
@@ -187,27 +183,21 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @LocalTransaction
   public void markAccountAsDeleted(long userIdentifier) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
-    if (maybeUser.isPresent()) {
-      User user = maybeUser.get();
-      user.setState(User.State.DELETED);
-      entityManager.persist(user);
-    } else {
+    if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
+    User user = maybeUser.get();
+    user.setState(User.State.DELETED);
+    entityManager.persist(user);
   }
 
   @Override
   @LocalTransaction
   public OtpParams createOtpParams(
       long userIdentifier, String sharedSecret, List<String> scratchCodes) {
-    Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
-    if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
-    }
-    User user = maybeUser.get();
     OtpParams otpParams =
         new OtpParams()
-            .setUser(user)
+            .setUser(entityManager.getReference(User.class, userIdentifier))
             .setOtpSharedSecret(sharedSecret)
             .setScratchCodes(scratchCodes);
     entityManager.persist(otpParams);
@@ -333,11 +323,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public FeaturePrompts getFeaturePrompts(long userId) {
-    FeaturePrompts featurePrompts = entityManager.find(FeaturePrompts.class, userId);
-    if (featurePrompts == null) {
+    Optional<FeaturePrompts> maybeFeaturePrompts =
+        Optional.ofNullable(entityManager.find(FeaturePrompts.class, userId));
+    if (!maybeFeaturePrompts.isPresent()) {
       throw new IllegalArgumentException();
     }
-    return featurePrompts;
+    return maybeFeaturePrompts.get();
   }
 
   @Override
