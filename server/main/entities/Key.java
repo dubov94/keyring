@@ -42,6 +42,7 @@ public class Key {
   private boolean isShadow;
 
   @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Key parent;
 
   public long getIdentifier() {
