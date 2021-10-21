@@ -237,7 +237,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public void createOtpToken(long userId, String otpToken) {
-    // To prevent `resetOtp` from getting stale tokens.
+    // Prevents dirty `otpSharedSecret` and `resetOtp` from getting stale tokens.
     Optional<User> maybeUser = getUserByIdentifier(userId, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();

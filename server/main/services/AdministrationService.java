@@ -128,7 +128,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void createKey(CreateKeyRequest request, StreamObserver<CreateKeyResponse> response) {
     long identifier =
         keyOperationsInterface
-            .createKey(sessionAccessor.getUserIdentifier(), request.getPassword())
+            .createKey(
+                sessionAccessor.getUserIdentifier(), request.getPassword(), request.getAttrs())
             .getIdentifier();
     response.onNext(CreateKeyResponse.newBuilder().setIdentifier(identifier).build());
     response.onCompleted();

@@ -9,6 +9,7 @@ import server.main.aspects.Annotations.LocalTransaction;
 import server.main.entities.Key;
 import server.main.entities.Key_;
 import server.main.entities.User;
+import server.main.proto.service.KeyAttrs;
 import server.main.proto.service.KeyPatch;
 import server.main.proto.service.Password;
 
@@ -17,16 +18,26 @@ public class KeyOperationsClient implements KeyOperationsInterface {
 
   @Override
   @LocalTransaction
-  public Key createKey(long userIdentifier, Password proto) {
-    // To prevent `changeMasterKey` from getting stale sets.
+  public Key createKey(long userIdentifier, Password content, KeyAttrs attrs) {
+    long attrsParent = attrs.getParent();
+    if (!attrs.getIsShadow() && attrsParent != 0) {
+      throw new IllegalArgumentException();
+    }
     Optional<User> maybeUser =
         Optional.ofNullable(
             entityManager.find(
+                // To prevent `changeMasterKey` from getting stale sets.
                 User.class, userIdentifier, LockModeType.OPTIMISTIC_FORCE_INCREMENT));
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
-    Key entity = new Key().mergeFromPassword(proto).setUser(maybeUser.get());
+    Key entity = new Key().mergeFromPassword(content).setUser(maybeUser.get());
+    if (attrs.getIsShadow()) {
+      entity.setIsShadow(true);
+    }
+    if (attrsParent != 0) {
+      entity.setParent(entityManager.find(Key.class, attrsParent));
+    }
     entityManager.persist(entity);
     return entity;
   }

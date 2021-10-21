@@ -179,6 +179,7 @@ message KeyPatch {
 
 message CreateKeyRequest {
     Password password = 1;
+    KeyAttrs attrs = 2;
 }
 
 message CreateKeyResponse {

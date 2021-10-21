@@ -123,6 +123,7 @@ woven_junit5_test(
         "//server/main/entities:key",
         "//server/main/storage:account_operations_client",
         "//server/main/storage:key_operations_client",
+        "//server/main/storage:storage_exception",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_aspectj_aspectjrt",

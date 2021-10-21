@@ -12,6 +12,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
+import server.main.proto.service.KeyAttrs;
 import server.main.proto.service.KeyProto;
 import server.main.proto.service.Password;
 
@@ -78,6 +79,24 @@ public class Key {
     return this;
   }
 
+  public boolean getIsShadow() {
+    return isShadow;
+  }
+
+  public Key setIsShadow(boolean isShadow) {
+    this.isShadow = isShadow;
+    return this;
+  }
+
+  public Key getParent() {
+    return parent;
+  }
+
+  public Key setParent(Key parent) {
+    this.parent = parent;
+    return this;
+  }
+
   public Key mergeFromPassword(Password password) {
     setValue(password.getValue());
     setTags(password.getTagsList());
@@ -90,8 +109,12 @@ public class Key {
 
   public KeyProto toKeyProto() {
     return KeyProto.newBuilder()
-        .setPassword(Password.newBuilder().setValue(getValue()).addAllTags(getTags()).build())
         .setIdentifier(getIdentifier())
+        .setPassword(Password.newBuilder().setValue(getValue()).addAllTags(getTags()))
+        .setAttrs(
+            KeyAttrs.newBuilder()
+                .setIsShadow(getIsShadow())
+                .setParent(Optional.ofNullable(getParent()).map(Key::getIdentifier).orElse(0L)))
         .build();
   }
 }

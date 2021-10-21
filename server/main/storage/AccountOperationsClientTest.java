@@ -24,6 +24,7 @@ import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
 import server.main.entities.Session;
 import server.main.entities.User;
+import server.main.proto.service.KeyAttrs;
 import server.main.proto.service.KeyPatch;
 import server.main.proto.service.Password;
 
@@ -111,7 +112,10 @@ class AccountOperationsClientTest {
     long userIdentifier = createActiveUser();
     long keyIdentifier =
         keyOperationsClient
-            .createKey(userIdentifier, Password.newBuilder().setValue("").addTags("").build())
+            .createKey(
+                userIdentifier,
+                Password.newBuilder().setValue("").addTags("").build(),
+                KeyAttrs.getDefaultInstance())
             .getIdentifier();
 
     Password password = Password.newBuilder().setValue("value").addTags("tag").build();
@@ -136,7 +140,8 @@ class AccountOperationsClientTest {
   @Test
   void changeMasterKey_lacksKeyUpdates_throwsException() {
     long userIdentifier = createActiveUser();
-    keyOperationsClient.createKey(userIdentifier, Password.getDefaultInstance());
+    keyOperationsClient.createKey(
+        userIdentifier, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance());
 
     assertThrows(
         StorageException.class,
