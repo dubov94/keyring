@@ -110,7 +110,7 @@ public class Key {
   public KeyProto toKeyProto() {
     return KeyProto.newBuilder()
         .setIdentifier(getIdentifier())
-        .setPassword(Password.newBuilder().setValue(getValue()).addAllTags(getTags()))
+        .setPassword(toPassword())
         .setAttrs(
             KeyAttrs.newBuilder()
                 .setIsShadow(getIsShadow())

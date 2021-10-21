@@ -3,10 +3,7 @@ load("//server:aspectj.bzl", "woven_junit5_test")
 java_library(
     name = "queries",
     srcs = ["Queries.java"],
-    deps = [
-        "//server/main/entities:user",
-        "@maven//:javax_persistence_javax_persistence_api",
-    ],
+    deps = ["@maven//:javax_persistence_javax_persistence_api"],
 )
 
 java_library(
@@ -85,6 +82,7 @@ java_library(
     deps = [
         "//proto:service_java_grpc",
         "//server/main/entities:key",
+        "@maven//:io_vavr_vavr",
     ],
 )
 
@@ -98,6 +96,8 @@ java_library(
         "//server/main/aspects:annotations",
         "//server/main/entities:key",
         "//server/main/entities:user",
+        "@maven//:com_google_guava_guava",
+        "@maven//:io_vavr_vavr",
         "@maven//:javax_persistence_javax_persistence_api",
     ],
 )
@@ -125,6 +125,7 @@ woven_junit5_test(
         "//server/main/storage:key_operations_client",
         "//server/main/storage:storage_exception",
         "@maven//:com_google_guava_guava",
+        "@maven//:io_vavr_vavr",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_aspectj_aspectjrt",
     ],

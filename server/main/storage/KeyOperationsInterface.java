@@ -1,5 +1,6 @@
 package server.main.storage;
 
+import io.vavr.Tuple2;
 import java.util.List;
 import server.main.entities.Key;
 import server.main.proto.service.KeyAttrs;
@@ -14,4 +15,6 @@ public interface KeyOperationsInterface {
   void updateKey(long userIdentifier, KeyPatch proto);
 
   void deleteKey(long userIdentifier, long keyIdentifier);
+
+  Tuple2<Key, List<Key>> promoteShadow(long userId, long shadowId);
 }

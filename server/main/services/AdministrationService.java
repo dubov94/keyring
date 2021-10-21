@@ -9,6 +9,7 @@ import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
+import io.vavr.Tuple2;
 import io.vavr.control.Either;
 import java.util.*;
 import java.util.stream.Stream;
@@ -159,6 +160,21 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void deleteKey(DeleteKeyRequest request, StreamObserver<DeleteKeyResponse> response) {
     keyOperationsInterface.deleteKey(sessionAccessor.getUserIdentifier(), request.getIdentifier());
     response.onNext(DeleteKeyResponse.getDefaultInstance());
+    response.onCompleted();
+  }
+
+  @Override
+  @ValidateUser
+  public void promoteShadow(
+      PromoteShadowRequest request, StreamObserver<PromoteShadowResponse> response) {
+    Tuple2<Key, List<Key>> promotion =
+        keyOperationsInterface.promoteShadow(
+            sessionAccessor.getUserIdentifier(), request.getIdentifier());
+    response.onNext(
+        PromoteShadowResponse.newBuilder()
+            .setParent(promotion._1.getIdentifier())
+            .addAllDeletedShadows(promotion._2.stream().map(Key::getIdentifier).collect(toList()))
+            .build());
     response.onCompleted();
   }
 

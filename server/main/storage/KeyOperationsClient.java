@@ -1,5 +1,8 @@
 package server.main.storage;
 
+import com.google.common.collect.ImmutableList;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import java.util.List;
 import java.util.Optional;
 import javax.persistence.EntityManager;
@@ -36,7 +39,9 @@ public class KeyOperationsClient implements KeyOperationsInterface {
       entity.setIsShadow(true);
     }
     if (attrsParent != 0) {
-      entity.setParent(entityManager.find(Key.class, attrsParent));
+      entity.setParent(
+          // To prevent `promoteShadow` from getting stale shadows.
+          entityManager.find(Key.class, attrsParent, LockModeType.OPTIMISTIC_FORCE_INCREMENT));
     }
     entityManager.persist(entity);
     return entity;
@@ -45,7 +50,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   @Override
   @LocalTransaction
   public List<Key> readKeys(long userIdentifier) {
-    return Queries.findByUser(entityManager, Key.class, Key_.user, userIdentifier);
+    return Queries.findManyToOne(entityManager, Key.class, Key_.user, userIdentifier);
   }
 
   @Override
@@ -76,5 +81,32 @@ public class KeyOperationsClient implements KeyOperationsInterface {
       throw new IllegalArgumentException();
     }
     entityManager.remove(entity);
+  }
+
+  @Override
+  @LocalTransaction
+  public Tuple2<Key, List<Key>> promoteShadow(long userId, long shadowId) {
+    Optional<Key> maybeShadow = Optional.ofNullable(entityManager.find(Key.class, shadowId));
+    if (!maybeShadow.isPresent()) {
+      throw new IllegalArgumentException();
+    }
+    Key shadow = maybeShadow.get();
+    if (shadow.getUser().getIdentifier() != userId) {
+      throw new IllegalArgumentException();
+    }
+    Password password = shadow.toPassword();
+    Optional<Key> maybeParent = Optional.ofNullable(shadow.getParent());
+    if (!maybeParent.isPresent()) {
+      Key newParent = createKey(userId, password, KeyAttrs.getDefaultInstance());
+      entityManager.remove(shadow);
+      return Tuple.of(newParent, ImmutableList.of(shadow));
+    }
+    Key parent = maybeParent.get();
+    parent.mergeFromPassword(password);
+    entityManager.persist(parent);
+    List<Key> allShadows =
+        Queries.findManyToOne(entityManager, Key.class, Key_.parent, parent.getIdentifier());
+    allShadows.forEach((item) -> entityManager.remove(item));
+    return Tuple.of(parent, allShadows);
   }
 }

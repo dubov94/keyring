@@ -64,7 +64,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public Optional<MailToken> getMailToken(long userIdentifier, String token) {
-    return Queries.findByUser(entityManager, MailToken.class, MailToken_.user, userIdentifier)
+    return Queries.findManyToOne(entityManager, MailToken.class, MailToken_.user, userIdentifier)
         .stream()
         .filter(mailToken -> Objects.equals(mailToken.getCode(), token))
         .findFirst();
@@ -125,7 +125,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     user.setSalt(salt);
     user.setHash(hash);
     entityManager.persist(user);
-    List<Key> entities = Queries.findByUser(entityManager, Key.class, Key_.user, userIdentifier);
+    List<Key> entities = Queries.findManyToOne(entityManager, Key.class, Key_.user, userIdentifier);
     Map<Long, Password> keyIdentifierToProto =
         protos.stream().collect(toMap(KeyPatch::getIdentifier, KeyPatch::getPassword));
     for (Key entity : entities) {
@@ -176,7 +176,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public List<Session> readSessions(long userIdentifier) {
-    return Queries.findByUser(entityManager, Session.class, Session_.user, userIdentifier);
+    return Queries.findManyToOne(entityManager, Session.class, Session_.user, userIdentifier);
   }
 
   @Override
@@ -207,7 +207,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public Optional<OtpParams> getOtpParams(long userId, long otpParamsId) {
-    return Queries.findByUser(entityManager, OtpParams.class, OtpParams_.user, userId).stream()
+    return Queries.findManyToOne(entityManager, OtpParams.class, OtpParams_.user, userId).stream()
         .filter(otpParams -> Objects.equals(otpParams.getId(), otpParamsId))
         .findFirst();
   }
@@ -252,7 +252,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public Optional<OtpToken> getOtpToken(long userId, String value, boolean mustBeInitial) {
-    return Queries.findByUser(entityManager, OtpToken.class, OtpToken_.user, userId).stream()
+    return Queries.findManyToOne(entityManager, OtpToken.class, OtpToken_.user, userId).stream()
         .filter(
             otpParams ->
                 Objects.equals(otpParams.getValue(), value)
@@ -283,7 +283,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     user.setOtpSpareAttempts(0);
     entityManager.persist(user);
     List<OtpToken> otpTokens =
-        Queries.findByUser(entityManager, OtpToken.class, OtpToken_.user, userId);
+        Queries.findManyToOne(entityManager, OtpToken.class, OtpToken_.user, userId);
     for (OtpToken otpToken : otpTokens) {
       entityManager.remove(otpToken);
     }

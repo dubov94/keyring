@@ -207,6 +207,15 @@ message DeleteKeyRequest {
 message DeleteKeyResponse {
 }
 
+message PromoteShadowRequest {
+    int64 identifier = 1;
+}
+
+message PromoteShadowResponse {
+    int64 parent = 1;
+    repeated int64 deleted_shadows = 2;
+}
+
 message ChangeMasterKeyRequest {
     message Renewal {
         string salt = 1;
@@ -357,6 +366,12 @@ service Administration {
     rpc DeleteKey (DeleteKeyRequest) returns (DeleteKeyResponse) {
         option (google.api.http) = {
             post: "/administration/delete-key"
+            body: "*"
+        };
+    }
+    rpc PromoteShadow (PromoteShadowRequest) returns (PromoteShadowResponse) {
+        option (google.api.http) = {
+            post: "/administration/promote-shadow"
             body: "*"
         };
     }
