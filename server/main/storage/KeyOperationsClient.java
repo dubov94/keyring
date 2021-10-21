@@ -9,7 +9,7 @@ import server.main.aspects.Annotations.LocalTransaction;
 import server.main.entities.Key;
 import server.main.entities.Key_;
 import server.main.entities.User;
-import server.main.proto.service.IdentifiedKey;
+import server.main.proto.service.KeyPatch;
 import server.main.proto.service.Password;
 
 public class KeyOperationsClient implements KeyOperationsInterface {
@@ -39,7 +39,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
 
   @Override
   @LocalTransaction
-  public void updateKey(long userIdentifier, IdentifiedKey proto) {
+  public void updateKey(long userIdentifier, KeyPatch proto) {
     Optional<Key> maybeEntity =
         Optional.ofNullable(entityManager.find(Key.class, proto.getIdentifier()));
     if (!maybeEntity.isPresent()) {

@@ -148,7 +148,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
     userDataBuilder.addAllUserKeys(
         keyOperationsInterface.readKeys(user.getIdentifier()).stream()
-            .map(Key::toIdentifiedKey)
+            .map(Key::toKeyProto)
             .collect(toList()));
     return userDataBuilder.build();
   }

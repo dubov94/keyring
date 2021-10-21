@@ -18,7 +18,7 @@ import server.main.aspects.Annotations.EntityController;
 import server.main.aspects.Annotations.LocalTransaction;
 import server.main.entities.*;
 import server.main.proto.service.FeatureType;
-import server.main.proto.service.IdentifiedKey;
+import server.main.proto.service.KeyPatch;
 import server.main.proto.service.Password;
 
 public class AccountOperationsClient implements AccountOperationsInterface {
@@ -116,7 +116,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @LocalTransaction
   public void changeMasterKey(
-      long userIdentifier, String salt, String hash, List<IdentifiedKey> protos) {
+      long userIdentifier, String salt, String hash, List<KeyPatch> protos) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
@@ -127,7 +127,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     entityManager.persist(user);
     List<Key> entities = Queries.findByUser(entityManager, Key.class, Key_.user, userIdentifier);
     Map<Long, Password> keyIdentifierToProto =
-        protos.stream().collect(toMap(IdentifiedKey::getIdentifier, IdentifiedKey::getPassword));
+        protos.stream().collect(toMap(KeyPatch::getIdentifier, KeyPatch::getPassword));
     for (Key entity : entities) {
       Optional<Password> maybeProto =
           Optional.ofNullable(keyIdentifierToProto.get(entity.getIdentifier()));

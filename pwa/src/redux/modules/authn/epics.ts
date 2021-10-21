@@ -37,7 +37,7 @@ import {
   ServiceGetSaltResponseError,
   ServiceLogInResponse,
   ServiceLogInResponseError,
-  ServiceIdentifiedKey,
+  ServiceKeyProto,
   ServiceProvideOtpResponse,
   ServiceProvideOtpResponseError,
   ServiceUserData
@@ -103,7 +103,7 @@ export const displayRegistrationExceptionsEpic = createDisplayExceptionsEpic(reg
 
 const decodeUserData = (encryptionKey: string, userData: ServiceUserData): Observable<UserData> => {
   return forkJoin(userData.userKeys!.map(
-    async (item: ServiceIdentifiedKey): Promise<Key> => ({
+    async (item: ServiceKeyProto): Promise<Key> => ({
       identifier: item.identifier!,
       ...(await getSodiumClient().decryptPassword(encryptionKey, {
         value: item.password!.value!,

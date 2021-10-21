@@ -7,11 +7,12 @@ import java.util.List;
 import java.util.Optional;
 import javax.persistence.*;
 import org.apache.commons.io.FileUtils;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
-import server.main.proto.service.IdentifiedKey;
+import server.main.proto.service.KeyProto;
 import server.main.proto.service.Password;
 
 @Entity
@@ -34,6 +35,13 @@ public class Key {
   @Type(type = "string-array")
   @Column(columnDefinition = "text[]")
   private String[] labels;
+
+  @Column(name = "is_shadow")
+  @ColumnDefault("false")
+  private boolean isShadow;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  private Key parent;
 
   public long getIdentifier() {
     return identifier;
@@ -80,8 +88,8 @@ public class Key {
     return Password.newBuilder().setValue(getValue()).addAllTags(getTags()).build();
   }
 
-  public IdentifiedKey toIdentifiedKey() {
-    return IdentifiedKey.newBuilder()
+  public KeyProto toKeyProto() {
+    return KeyProto.newBuilder()
         .setPassword(Password.newBuilder().setValue(getValue()).addAllTags(getTags()).build())
         .setIdentifier(getIdentifier())
         .build();

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import server.main.Chronometry;
 import server.main.aspects.StorageManagerAspect;
 import server.main.entities.Key;
-import server.main.proto.service.IdentifiedKey;
+import server.main.proto.service.KeyPatch;
 import server.main.proto.service.Password;
 
 class KeyOperationsClientTest {
@@ -68,7 +68,7 @@ class KeyOperationsClientTest {
 
     keyOperationsClient.updateKey(
         userIdentifier,
-        IdentifiedKey.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build());
+        KeyPatch.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build());
 
     List<Password> passwords =
         keyOperationsClient.readKeys(userIdentifier).stream()

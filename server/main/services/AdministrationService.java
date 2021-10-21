@@ -137,9 +137,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @Override
   @ValidateUser
   public void readKeys(ReadKeysRequest request, StreamObserver<ReadKeysResponse> response) {
-    List<IdentifiedKey> keys =
+    List<KeyProto> keys =
         keyOperationsInterface.readKeys(sessionAccessor.getUserIdentifier()).stream()
-            .map(Key::toIdentifiedKey)
+            .map(Key::toKeyProto)
             .collect(toList());
     response.onNext(ReadKeysResponse.newBuilder().addAllKeys(keys).build());
     response.onCompleted();

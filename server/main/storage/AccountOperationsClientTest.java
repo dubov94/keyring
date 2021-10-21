@@ -24,7 +24,7 @@ import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
 import server.main.entities.Session;
 import server.main.entities.User;
-import server.main.proto.service.IdentifiedKey;
+import server.main.proto.service.KeyPatch;
 import server.main.proto.service.Password;
 
 @ExtendWith(MockitoExtension.class)
@@ -120,7 +120,7 @@ class AccountOperationsClientTest {
         "salt",
         "hash",
         ImmutableList.of(
-            IdentifiedKey.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build()));
+            KeyPatch.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build()));
 
     User user = accountOperationsClient.getUserByIdentifier(userIdentifier).get();
     assertEquals("salt", user.getSalt());

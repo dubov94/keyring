@@ -9,7 +9,7 @@ import server.main.entities.OtpToken;
 import server.main.entities.Session;
 import server.main.entities.User;
 import server.main.proto.service.FeatureType;
-import server.main.proto.service.IdentifiedKey;
+import server.main.proto.service.KeyPatch;
 
 public interface AccountOperationsInterface {
   User createUser(String username, String salt, String hash, String mail, String code);
@@ -24,7 +24,7 @@ public interface AccountOperationsInterface {
 
   Optional<User> getUserByIdentifier(long identifier);
 
-  void changeMasterKey(long userIdentifier, String salt, String hash, List<IdentifiedKey> protos);
+  void changeMasterKey(long userIdentifier, String salt, String hash, List<KeyPatch> protos);
 
   void changeUsername(long userIdentifier, String username);
 

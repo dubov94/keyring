@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import javax.persistence.*;
 import org.apache.commons.io.FileUtils;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
@@ -32,7 +33,8 @@ public class User {
   @Column(name = "otp_shared_secret", columnDefinition = "text")
   private String otpSharedSecret;
 
-  @Column(name = "otp_spare_attempts", columnDefinition = "int4 default 0")
+  @Column(name = "otp_spare_attempts")
+  @ColumnDefault("0")
   private int otpSpareAttempts;
 
   @Column(columnDefinition = "text")

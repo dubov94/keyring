@@ -56,7 +56,7 @@ message FeaturePrompt {
 message UserData {
     string session_key = 1;
     repeated FeaturePrompt feature_prompts = 5;
-    repeated IdentifiedKey user_keys = 2;
+    repeated KeyProto user_keys = 2;
     bool mail_verification_required = 3;
     string mail = 4;
 }
@@ -161,7 +161,18 @@ message Password {
     repeated string tags = 2;
 }
 
-message IdentifiedKey {
+message KeyAttrs {
+    bool is_shadow = 1;
+    int64 parent = 2;
+}
+
+message KeyProto {
+    int64 identifier = 1;
+    Password password = 2;
+    KeyAttrs attrs = 3;
+}
+
+message KeyPatch {
     int64 identifier = 1;
     Password password = 2;
 }
@@ -178,11 +189,11 @@ message ReadKeysRequest {
 }
 
 message ReadKeysResponse {
-    repeated IdentifiedKey keys = 1;
+    repeated KeyProto keys = 1;
 }
 
 message UpdateKeyRequest {
-    IdentifiedKey key = 1;
+    KeyPatch key = 1;
 }
 
 message UpdateKeyResponse {
@@ -199,7 +210,7 @@ message ChangeMasterKeyRequest {
     message Renewal {
         string salt = 1;
         string digest = 2;
-        repeated IdentifiedKey keys = 3;
+        repeated KeyPatch keys = 3;
     }
 
     string current_digest = 1;

@@ -135,7 +135,7 @@ class AdministrationServiceTest {
 
   @Test
   void changeMasterKey_digestsMatch_repliesWithDefault() {
-    IdentifiedKey identifiedKey = IdentifiedKey.newBuilder().setIdentifier(0L).build();
+    KeyPatch keyPatch = KeyPatch.newBuilder().setIdentifier(0L).build();
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.computeHash("suffix")).thenReturn("xiffus");
     when(mockAccountOperationsInterface.readSessions(7L))
@@ -151,13 +151,13 @@ class AdministrationServiceTest {
                 ChangeMasterKeyRequest.Renewal.newBuilder()
                     .setSalt("prefix")
                     .setDigest("suffix")
-                    .addKeys(identifiedKey)
+                    .addKeys(keyPatch)
                     .build())
             .build(),
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface)
-        .changeMasterKey(7L, "prefix", "xiffus", ImmutableList.of(identifiedKey));
+        .changeMasterKey(7L, "prefix", "xiffus", ImmutableList.of(keyPatch));
     verify(mockKeyValueClient).dropSessions(ImmutableList.of("random", "session"));
     verify(mockStreamObserver)
         .onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey("identifier").build());
