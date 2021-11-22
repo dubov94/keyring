@@ -24,14 +24,14 @@ public class ValidateUserAspect {
   }
 
   @Around("@annotation(validateUser) && execution(* *(..))")
-  public void around(ValidateUser validateUser, ProceedingJoinPoint proceedingJoinPoint)
+  public void executeUserValidation(ValidateUser validateUser, ProceedingJoinPoint joinPoint)
       throws Throwable {
     Optional<User> user =
         accountOperationsInterface.getUserByIdentifier(sessionAccessor.getUserIdentifier());
     if (user.isPresent() && Arrays.asList(validateUser.states()).contains(user.get().getState())) {
-      proceedingJoinPoint.proceed();
+      joinPoint.proceed();
     } else {
-      StreamObserver streamObserver = (StreamObserver) proceedingJoinPoint.getArgs()[1];
+      StreamObserver streamObserver = (StreamObserver) joinPoint.getArgs()[1];
       streamObserver.onError(Status.UNAUTHENTICATED.asException());
     }
   }

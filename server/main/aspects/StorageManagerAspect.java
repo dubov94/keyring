@@ -1,17 +1,17 @@
 package server.main.aspects;
 
-import server.main.aspects.Annotations.EntityController;
-import server.main.aspects.Annotations.LocalTransaction;
-import server.main.storage.StorageException;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import server.main.aspects.Annotations.EntityController;
+import server.main.aspects.Annotations.LocalTransaction;
+import server.main.storage.StorageException;
 
 @Aspect
 public class StorageManagerAspect {
@@ -24,14 +24,14 @@ public class StorageManagerAspect {
     threadLocalEntityManager = new ThreadLocal<>();
   }
 
-  @Around("@annotation(entityController) && get(* *)")
-  public EntityManager get(EntityController entityController) {
+  @Pointcut("@annotation(entityController) && get(* *)")
+  public EntityManager getEntityController(EntityController entityController) {
     return threadLocalEntityManager.get();
   }
 
   @Around("@annotation(localTransaction) && execution(* *(..))")
-  public Object around(LocalTransaction localTransaction, ProceedingJoinPoint proceedingJoinPoint)
-      throws Throwable {
+  public Object executeLocalTransaction(
+      LocalTransaction localTransaction, ProceedingJoinPoint joinPoint) throws Throwable {
     if (threadLocalEntityManager.get() == null) {
       threadLocalEntityManager.set(entityManagerFactory.createEntityManager());
       EntityTransaction entityTransaction = null;
@@ -39,7 +39,7 @@ public class StorageManagerAspect {
       try {
         entityTransaction = threadLocalEntityManager.get().getTransaction();
         entityTransaction.begin();
-        value = proceedingJoinPoint.proceed();
+        value = joinPoint.proceed();
         entityTransaction.commit();
       } catch (Throwable throwable) {
         try {
@@ -56,7 +56,7 @@ public class StorageManagerAspect {
       }
       return value;
     } else {
-      return proceedingJoinPoint.proceed();
+      return joinPoint.proceed();
     }
   }
 }
