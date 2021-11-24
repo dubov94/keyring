@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import server.main.aspects.Annotations.EntityController;
 import server.main.aspects.Annotations.LocalTransaction;
+import server.main.aspects.Annotations.LockEntity;
 import server.main.entities.Key;
 import server.main.entities.Key_;
 import server.main.entities.User;
@@ -19,32 +20,41 @@ import server.main.proto.service.Password;
 public class KeyOperationsClient implements KeyOperationsInterface {
   @EntityController private EntityManager entityManager;
 
+  @LockEntity(name = "user")
+  private Key _spawnKey(User user, Password content, KeyAttrs attrs) {
+    Key newKey = new Key().mergeFromPassword(content).setUser(user);
+    if (attrs.getIsShadow()) {
+      newKey.setIsShadow(true);
+    }
+    long attrsParent = attrs.getParent();
+    if (attrsParent != 0) {
+      Key parent =
+          entityManager.find(Key.class, attrsParent, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+      if (parent == null) {
+        throw new IllegalArgumentException(
+            String.format("Referenced parent %d does not exist", attrsParent));
+      }
+      if (parent.getUser().getIdentifier() != user.getIdentifier()) {
+        throw new IllegalArgumentException(
+            String.format("Parent %d does not belong to the user", attrsParent));
+      }
+      newKey.setParent(parent);
+    }
+    entityManager.persist(newKey);
+    return newKey;
+  }
+
   @Override
   @LocalTransaction
   public Key createKey(long userIdentifier, Password content, KeyAttrs attrs) {
-    long attrsParent = attrs.getParent();
-    if (!attrs.getIsShadow() && attrsParent != 0) {
+    if (!attrs.getIsShadow() && attrs.getParent() != 0) {
       throw new IllegalArgumentException();
     }
-    Optional<User> maybeUser =
-        Optional.ofNullable(
-            entityManager.find(
-                // To prevent `changeMasterKey` from getting stale sets.
-                User.class, userIdentifier, LockModeType.OPTIMISTIC_FORCE_INCREMENT));
+    Optional<User> maybeUser = Optional.ofNullable(entityManager.find(User.class, userIdentifier));
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
-    Key entity = new Key().mergeFromPassword(content).setUser(maybeUser.get());
-    if (attrs.getIsShadow()) {
-      entity.setIsShadow(true);
-    }
-    if (attrsParent != 0) {
-      entity.setParent(
-          // To prevent `promoteShadow` from getting stale shadows.
-          entityManager.find(Key.class, attrsParent, LockModeType.OPTIMISTIC_FORCE_INCREMENT));
-    }
-    entityManager.persist(entity);
-    return entity;
+    return _spawnKey(maybeUser.get(), content, attrs);
   }
 
   @Override
@@ -53,34 +63,44 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     return Queries.findManyToOne(entityManager, Key.class, Key_.user, userIdentifier);
   }
 
+  @LockEntity(name = "key")
+  private void _updateKey(Key key, KeyPatch patch) {
+    key.mergeFromPassword(patch.getPassword());
+    entityManager.persist(key);
+  }
+
   @Override
   @LocalTransaction
-  public void updateKey(long userIdentifier, KeyPatch proto) {
-    Optional<Key> maybeEntity =
-        Optional.ofNullable(entityManager.find(Key.class, proto.getIdentifier()));
-    if (!maybeEntity.isPresent()) {
+  public void updateKey(long userIdentifier, KeyPatch patch) {
+    Optional<Key> maybeKey =
+        Optional.ofNullable(entityManager.find(Key.class, patch.getIdentifier()));
+    if (!maybeKey.isPresent()) {
       throw new IllegalArgumentException();
     }
-    Key entity = maybeEntity.get();
-    if (entity.getUser().getIdentifier() != userIdentifier) {
+    Key key = maybeKey.get();
+    if (key.getUser().getIdentifier() != userIdentifier) {
       throw new IllegalArgumentException();
     }
-    entity.mergeFromPassword(proto.getPassword());
-    entityManager.persist(entity);
+    _updateKey(key, patch);
+  }
+
+  @LockEntity(name = "key")
+  private void _deleteKey(Key key) {
+    entityManager.remove(key);
   }
 
   @Override
   @LocalTransaction
   public void deleteKey(long userIdentifier, long keyIdentifier) {
-    Optional<Key> maybeEntity = Optional.ofNullable(entityManager.find(Key.class, keyIdentifier));
-    if (!maybeEntity.isPresent()) {
+    Optional<Key> maybeKey = Optional.ofNullable(entityManager.find(Key.class, keyIdentifier));
+    if (!maybeKey.isPresent()) {
       throw new IllegalArgumentException();
     }
-    Key entity = maybeEntity.get();
-    if (entity.getUser().getIdentifier() != userIdentifier) {
+    Key key = maybeKey.get();
+    if (key.getUser().getIdentifier() != userIdentifier) {
       throw new IllegalArgumentException();
     }
-    entityManager.remove(entity);
+    _deleteKey(key);
   }
 
   @Override

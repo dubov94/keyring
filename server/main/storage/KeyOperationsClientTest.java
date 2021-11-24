@@ -86,7 +86,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
-  void createKey_unexpectedParent_throws() {
+  void createKey_nonShadowWithParent_throws() {
     long userId = createUniqueUser();
 
     assertThrows(
@@ -94,6 +94,29 @@ class KeyOperationsClientTest {
         () ->
             keyOperationsClient.createKey(
                 userId, Password.getDefaultInstance(), KeyAttrs.newBuilder().setParent(1).build()));
+  }
+
+  @Test
+  void createKey_foreignParent_throws() {
+    long userA = createUniqueUser();
+    long userB = createUniqueUser();
+    long foreignParentId =
+        keyOperationsClient
+            .createKey(userB, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
+            .getIdentifier();
+
+    StorageException thrown =
+        assertThrows(
+            StorageException.class,
+            () ->
+                keyOperationsClient.createKey(
+                    userA,
+                    Password.getDefaultInstance(),
+                    KeyAttrs.newBuilder().setIsShadow(true).setParent(foreignParentId).build()));
+    assertTrue(
+        thrown
+            .getMessage()
+            .contains(String.format("Parent %d does not belong to", foreignParentId)));
   }
 
   @Test
