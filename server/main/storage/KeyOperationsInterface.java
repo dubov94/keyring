@@ -16,5 +16,5 @@ public interface KeyOperationsInterface {
 
   void deleteKey(long userIdentifier, long keyIdentifier);
 
-  Tuple2<Key, List<Key>> promoteShadow(long userId, long shadowId);
+  Tuple2<Key, List<Key>> electShadow(long userId, long shadowId);
 }

@@ -159,7 +159,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
-  void promoteShadow_createParent() {
+  void electShadow_createParent() {
     long userId = createUniqueUser();
     Password password =
         Password.newBuilder().setValue("foo").addAllTags(ImmutableList.of("bar")).build();
@@ -168,19 +168,19 @@ class KeyOperationsClientTest {
             .createKey(userId, password, KeyAttrs.newBuilder().setIsShadow(true).build())
             .getIdentifier();
 
-    Tuple2<Key, List<Key>> promotion = keyOperationsClient.promoteShadow(userId, shadowId);
+    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(userId, shadowId);
 
     List<Key> allKeys = keyOperationsClient.readKeys(userId);
-    Optional<Key> maybeParent = getKeyFromList(allKeys, promotion._1.getIdentifier());
+    Optional<Key> maybeParent = getKeyFromList(allKeys, election._1.getIdentifier());
     assertTrue(maybeParent.isPresent());
     assertEquals(password, maybeParent.get().toPassword());
     assertFalse(getKeyFromList(allKeys, shadowId).isPresent());
-    assertEquals(1, promotion._2.size());
-    assertEquals(shadowId, promotion._2.get(0).getIdentifier());
+    assertEquals(1, election._2.size());
+    assertEquals(shadowId, election._2.get(0).getIdentifier());
   }
 
   @Test
-  void promoteShadow_updateParent() {
+  void electShadow_updateParent() {
     long userId = createUniqueUser();
     long parentId =
         keyOperationsClient
@@ -194,19 +194,19 @@ class KeyOperationsClientTest {
                 userId, update, KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
             .getIdentifier();
 
-    Tuple2<Key, List<Key>> promotion = keyOperationsClient.promoteShadow(userId, shadowId);
+    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(userId, shadowId);
 
     List<Key> allKeys = keyOperationsClient.readKeys(userId);
     Optional<Key> maybeParent = getKeyFromList(allKeys, parentId);
     assertTrue(maybeParent.isPresent());
     assertEquals(update, maybeParent.get().toPassword());
     assertFalse(getKeyFromList(allKeys, shadowId).isPresent());
-    assertEquals(1, promotion._2.size());
-    assertEquals(shadowId, promotion._2.get(0).getIdentifier());
+    assertEquals(1, election._2.size());
+    assertEquals(shadowId, election._2.get(0).getIdentifier());
   }
 
   @Test
-  void promotShadow_deletesAllShadows() {
+  void electShadow_nonShadow_deletesDependants() {
     long userId = createUniqueUser();
     long parentId =
         keyOperationsClient
@@ -227,9 +227,9 @@ class KeyOperationsClientTest {
                 KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
             .getIdentifier();
 
-    Tuple2<Key, List<Key>> promotion = keyOperationsClient.promoteShadow(userId, fstShadowId);
+    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(userId, parentId);
 
-    assertEquals(2, promotion._2.size());
+    assertEquals(2, election._2.size());
     List<Key> allKeys = keyOperationsClient.readKeys(userId);
     assertFalse(getKeyFromList(allKeys, fstShadowId).isPresent());
     assertFalse(getKeyFromList(allKeys, sndShadowId).isPresent());

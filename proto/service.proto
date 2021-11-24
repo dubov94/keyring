@@ -207,11 +207,11 @@ message DeleteKeyRequest {
 message DeleteKeyResponse {
 }
 
-message PromoteShadowRequest {
+message ElectShadowRequest {
     int64 identifier = 1;
 }
 
-message PromoteShadowResponse {
+message ElectShadowResponse {
     int64 parent = 1;
     repeated int64 deleted_shadows = 2;
 }
@@ -369,9 +369,9 @@ service Administration {
             body: "*"
         };
     }
-    rpc PromoteShadow (PromoteShadowRequest) returns (PromoteShadowResponse) {
+    rpc ElectShadow (ElectShadowRequest) returns (ElectShadowResponse) {
         option (google.api.http) = {
-            post: "/administration/promote-shadow"
+            post: "/administration/elect-shadow"
             body: "*"
         };
     }

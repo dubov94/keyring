@@ -165,15 +165,15 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   @Override
   @ValidateUser
-  public void promoteShadow(
-      PromoteShadowRequest request, StreamObserver<PromoteShadowResponse> response) {
-    Tuple2<Key, List<Key>> promotion =
-        keyOperationsInterface.promoteShadow(
+  public void electShadow(
+      ElectShadowRequest request, StreamObserver<ElectShadowResponse> response) {
+    Tuple2<Key, List<Key>> election =
+        keyOperationsInterface.electShadow(
             sessionAccessor.getUserIdentifier(), request.getIdentifier());
     response.onNext(
-        PromoteShadowResponse.newBuilder()
-            .setParent(promotion._1.getIdentifier())
-            .addAllDeletedShadows(promotion._2.stream().map(Key::getIdentifier).collect(toList()))
+        ElectShadowResponse.newBuilder()
+            .setParent(election._1.getIdentifier())
+            .addAllDeletedShadows(election._2.stream().map(Key::getIdentifier).collect(toList()))
             .build());
     response.onCompleted();
   }

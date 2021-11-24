@@ -117,7 +117,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     user.setSalt(salt);
     user.setHash(hash);
     entityManager.persist(user);
-    // Key creation is guarded by also locking on `User`.
+    // Key creation is guarded by `User` lock.
     List<Key> keys =
         Queries.findManyToOne(entityManager, Key.class, Key_.user, user.getIdentifier());
     Map<Long, Password> keyIdToPatch =
@@ -301,7 +301,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     user.setOtpSharedSecret(null);
     user.setOtpSpareAttempts(0);
     entityManager.persist(user);
-    // Token creation is guarded by also locking on `User`.
+    // Token creation is guarded by `User` lock.
     List<OtpToken> otpTokens =
         Queries.findManyToOne(entityManager, OtpToken.class, OtpToken_.user, user.getIdentifier());
     for (OtpToken otpToken : otpTokens) {

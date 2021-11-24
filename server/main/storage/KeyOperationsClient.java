@@ -103,30 +103,46 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     _deleteKey(key);
   }
 
+  @LockEntity(name = "parent")
+  private void _updateParent(Key parent, Password patch) {
+    parent.mergeFromPassword(patch);
+    entityManager.persist(parent);
+  }
+
+  @LockEntity(name = "target")
+  private Tuple2<Key, List<Key>> _electShadow(long userId, Key target) {
+    Key root = null;
+    if (target.getIsShadow()) {
+      Optional<Key> maybeParent = Optional.ofNullable(target.getParent());
+      Password password = target.toPassword();
+      if (!maybeParent.isPresent()) {
+        Key newParent = createKey(userId, password, KeyAttrs.getDefaultInstance());
+        entityManager.remove(target);
+        return Tuple.of(newParent, ImmutableList.of(target));
+      }
+      root = maybeParent.get();
+      _updateParent(root, password);
+    } else {
+      root = target;
+    }
+    // Shadow creation is guarded by `root` lock.
+    List<Key> allShadows =
+        Queries.findManyToOne(entityManager, Key.class, Key_.parent, root.getIdentifier());
+    allShadows.forEach((item) -> entityManager.remove(item));
+    return Tuple.of(target, allShadows);
+  }
+
   @Override
   @LocalTransaction
-  public Tuple2<Key, List<Key>> promoteShadow(long userId, long shadowId) {
-    Optional<Key> maybeShadow = Optional.ofNullable(entityManager.find(Key.class, shadowId));
-    if (!maybeShadow.isPresent()) {
+  public Tuple2<Key, List<Key>> electShadow(long userId, long shadowId) {
+    Optional<Key> maybeTarget = Optional.ofNullable(entityManager.find(Key.class, shadowId));
+    if (!maybeTarget.isPresent()) {
       throw new IllegalArgumentException();
     }
-    Key shadow = maybeShadow.get();
-    if (shadow.getUser().getIdentifier() != userId) {
+    Key target = maybeTarget.get();
+    if (target.getUser().getIdentifier() != userId) {
       throw new IllegalArgumentException();
     }
-    Password password = shadow.toPassword();
-    Optional<Key> maybeParent = Optional.ofNullable(shadow.getParent());
-    if (!maybeParent.isPresent()) {
-      Key newParent = createKey(userId, password, KeyAttrs.getDefaultInstance());
-      entityManager.remove(shadow);
-      return Tuple.of(newParent, ImmutableList.of(shadow));
-    }
-    Key parent = maybeParent.get();
-    parent.mergeFromPassword(password);
-    entityManager.persist(parent);
-    List<Key> allShadows =
-        Queries.findManyToOne(entityManager, Key.class, Key_.parent, parent.getIdentifier());
-    allShadows.forEach((item) -> entityManager.remove(item));
-    return Tuple.of(parent, allShadows);
+    return _electShadow(userId, target);
   }
 }
