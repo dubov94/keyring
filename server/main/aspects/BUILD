@@ -24,7 +24,9 @@ junit5_test(
     srcs = ["StorageManagerAspectTest.java"],
     test_package = "server.main.aspects",
     deps = [
+        ":annotations",
         "//server/main/aspects:storage_manager_aspect",
+        "//server/main/entities:user",
         "//server/main/storage:storage_exception",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",

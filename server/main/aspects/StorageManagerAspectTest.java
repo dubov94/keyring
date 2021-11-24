@@ -4,15 +4,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+import java.lang.annotation.Annotation;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.LockModeType;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import server.main.aspects.Annotations.LockEntity;
+import server.main.entities.User;
 import server.main.storage.StorageException;
 
 @ExtendWith(MockitoExtension.class)
@@ -20,7 +26,9 @@ class StorageManagerAspectTest {
   @Mock private EntityManagerFactory mockEntityManagerFactory;
   @Mock private EntityManager mockEntityManager;
   @Mock private EntityTransaction mockEntityTransaction;
-  @Mock private ProceedingJoinPoint mockProceedingJoinPoint;
+  @Mock private ProceedingJoinPoint mockLocalTransactionJoinPoint;
+  @Mock private JoinPoint mockLockEntityJoinPoint;
+  @Mock private MethodSignature mockLockEntityMethodSignature;
 
   private StorageManagerAspect storageManagerAspect;
 
@@ -30,11 +38,12 @@ class StorageManagerAspectTest {
     storageManagerAspect.initialize(mockEntityManagerFactory);
     when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
     when(mockEntityManager.getTransaction()).thenReturn(mockEntityTransaction);
+    when(mockLockEntityJoinPoint.getSignature()).thenReturn(mockLockEntityMethodSignature);
   }
 
   @Test
   void getEntityController_oneThreadSetsEntityManager_anotherThreadSeesNull() throws Throwable {
-    when(mockProceedingJoinPoint.proceed())
+    when(mockLocalTransactionJoinPoint.proceed())
         .then(
             (Void) -> {
               assertEquals(mockEntityManager, storageManagerAspect.getEntityController(null));
@@ -46,9 +55,9 @@ class StorageManagerAspectTest {
               return null;
             });
 
-    storageManagerAspect.executeLocalTransaction(null, mockProceedingJoinPoint);
+    storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint);
 
-    verify(mockProceedingJoinPoint).proceed();
+    verify(mockLocalTransactionJoinPoint).proceed();
   }
 
   @Test
@@ -60,7 +69,7 @@ class StorageManagerAspectTest {
               assertEquals(mockEntityManager, storageManagerAspect.getEntityController(null));
               return null;
             });
-    when(mockProceedingJoinPoint.proceed())
+    when(mockLocalTransactionJoinPoint.proceed())
         .then(
             (Void) -> {
               assertEquals(mockEntityManager, storageManagerAspect.getEntityController(null));
@@ -68,20 +77,20 @@ class StorageManagerAspectTest {
               return null;
             });
 
-    storageManagerAspect.executeLocalTransaction(null, mockProceedingJoinPoint);
+    storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint);
 
-    verify(mockProceedingJoinPoint).proceed();
+    verify(mockLocalTransactionJoinPoint).proceed();
   }
 
   @Test
   void executeLocalTransaction_joinPointThrows_rollbacksClosesAndRemovesReference()
       throws Throwable {
-    when(mockProceedingJoinPoint.proceed()).thenThrow(new RuntimeException());
+    when(mockLocalTransactionJoinPoint.proceed()).thenThrow(new RuntimeException());
     when(mockEntityTransaction.isActive()).thenReturn(true);
 
     assertThrows(
         StorageException.class,
-        () -> storageManagerAspect.executeLocalTransaction(null, mockProceedingJoinPoint));
+        () -> storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
 
     verify(mockEntityTransaction).rollback();
     verify(mockEntityManager).close();
@@ -94,7 +103,7 @@ class StorageManagerAspectTest {
 
     assertThrows(
         StorageException.class,
-        () -> storageManagerAspect.executeLocalTransaction(null, mockProceedingJoinPoint));
+        () -> storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
   }
 
   @Test
@@ -104,7 +113,7 @@ class StorageManagerAspectTest {
 
     assertThrows(
         StorageException.class,
-        () -> storageManagerAspect.executeLocalTransaction(null, mockProceedingJoinPoint));
+        () -> storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
 
     verify(mockEntityTransaction, never()).rollback();
   }
@@ -116,7 +125,7 @@ class StorageManagerAspectTest {
 
     assertThrows(
         StorageException.class,
-        () -> storageManagerAspect.executeLocalTransaction(null, mockProceedingJoinPoint));
+        () -> storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
   }
 
   @Test
@@ -127,13 +136,48 @@ class StorageManagerAspectTest {
 
     assertThrows(
         StorageException.class,
-        () -> storageManagerAspect.executeLocalTransaction(null, mockProceedingJoinPoint));
+        () -> storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
   }
 
   @Test
   void executeLocalTransaction_joinPointReturnsValue_propagatesValueBack() throws Throwable {
-    when(mockProceedingJoinPoint.proceed()).thenReturn(0);
+    when(mockLocalTransactionJoinPoint.proceed()).thenReturn(0);
 
-    assertEquals(0, storageManagerAspect.executeLocalTransaction(null, mockProceedingJoinPoint));
+    assertEquals(
+        0, storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
+  }
+
+  @Test
+  void executeLockEntity_locksMatchingArgument() throws Throwable {
+    User user = new User().setUsername("username");
+    when(mockLockEntityMethodSignature.getParameterNames())
+        .thenReturn(new String[] {"abc", "argument", "xyz"});
+    when(mockLockEntityJoinPoint.getArgs()).thenReturn(new Object[] {null, user, null});
+    when(mockLocalTransactionJoinPoint.proceed())
+        .then(
+            (Void) -> {
+              storageManagerAspect.executeLockEntity(
+                  createLockEntityAnnotation(), mockLockEntityJoinPoint);
+              return null;
+            });
+
+    storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint);
+
+    verify(mockLocalTransactionJoinPoint).proceed();
+    verify(mockEntityManager).lock(user, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+  }
+
+  private LockEntity createLockEntityAnnotation() {
+    return new LockEntity() {
+      @Override
+      public Class<? extends Annotation> annotationType() {
+        return LockEntity.class;
+      }
+
+      @Override
+      public String name() {
+        return "argument";
+      }
+    };
   }
 }

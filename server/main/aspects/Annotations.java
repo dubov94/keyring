@@ -1,11 +1,10 @@
 package server.main.aspects;
 
-import server.main.entities.User;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import server.main.entities.User;
 
 public class Annotations {
   @Retention(RetentionPolicy.RUNTIME)
@@ -21,4 +20,10 @@ public class Annotations {
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface LocalTransaction {}
+
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.METHOD)
+  public @interface LockEntity {
+    String name();
+  }
 }

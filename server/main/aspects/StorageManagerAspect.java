@@ -1,16 +1,22 @@
 package server.main.aspects;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.LockModeType;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.annotation.Before;
+import org.aspectj.lang.reflect.MethodSignature;
 import server.main.aspects.Annotations.EntityController;
 import server.main.aspects.Annotations.LocalTransaction;
+import server.main.aspects.Annotations.LockEntity;
 import server.main.storage.StorageException;
 
 @Aspect
@@ -24,7 +30,7 @@ public class StorageManagerAspect {
     threadLocalEntityManager = new ThreadLocal<>();
   }
 
-  @Pointcut("@annotation(entityController) && get(* *)")
+  @Around("@annotation(entityController) && get(* *)")
   public EntityManager getEntityController(EntityController entityController) {
     return threadLocalEntityManager.get();
   }
@@ -58,5 +64,19 @@ public class StorageManagerAspect {
     } else {
       return joinPoint.proceed();
     }
+  }
+
+  @Before("@annotation(lockEntity) && execution(* *(..))")
+  public void executeLockEntity(LockEntity lockEntity, JoinPoint joinPoint) throws Throwable {
+    MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+    List<String> parameterNames = Arrays.asList(methodSignature.getParameterNames());
+    String name = lockEntity.name();
+    int index = parameterNames.indexOf(name);
+    if (index == -1) {
+      throw new IllegalStateException(String.format("Parameter `%s` does not exist", name));
+    }
+    threadLocalEntityManager
+        .get()
+        .lock(joinPoint.getArgs()[index], LockModeType.OPTIMISTIC_FORCE_INCREMENT);
   }
 }
