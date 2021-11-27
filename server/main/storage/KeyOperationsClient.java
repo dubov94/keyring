@@ -104,32 +104,31 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   }
 
   @LockEntity(name = "parent")
-  private void _updateParent(Key parent, Password patch) {
-    parent.mergeFromPassword(patch);
-    entityManager.persist(parent);
+  private List<Key> _deleteShadows(Key parent) {
+    // Shadow creation is guarded by `parent` lock.
+    List<Key> shadows =
+        Queries.findManyToOne(entityManager, Key.class, Key_.parent, parent.getIdentifier());
+    shadows.forEach((item) -> entityManager.remove(item));
+    return shadows;
   }
 
   @LockEntity(name = "target")
   private Tuple2<Key, List<Key>> _electShadow(long userId, Key target) {
-    Key root = null;
-    if (target.getIsShadow()) {
-      Optional<Key> maybeParent = Optional.ofNullable(target.getParent());
-      Password password = target.toPassword();
-      if (!maybeParent.isPresent()) {
-        Key newParent = createKey(userId, password, KeyAttrs.getDefaultInstance());
-        entityManager.remove(target);
-        return Tuple.of(newParent, ImmutableList.of(target));
-      }
-      root = maybeParent.get();
-      _updateParent(root, password);
-    } else {
-      root = target;
+    if (!target.getIsShadow()) {
+      return Tuple.of(target, _deleteShadows(target));
     }
-    // Shadow creation is guarded by `root` lock.
-    List<Key> allShadows =
-        Queries.findManyToOne(entityManager, Key.class, Key_.parent, root.getIdentifier());
-    allShadows.forEach((item) -> entityManager.remove(item));
-    return Tuple.of(target, allShadows);
+    Optional<Key> maybeParent = Optional.ofNullable(target.getParent());
+    Password password = target.toPassword();
+    if (!maybeParent.isPresent()) {
+      Key newParent = createKey(userId, password, KeyAttrs.getDefaultInstance());
+      entityManager.remove(target);
+      return Tuple.of(newParent, ImmutableList.of(target));
+    }
+    Key parent = maybeParent.get();
+    // Implicitly causes version increment.
+    parent.mergeFromPassword(password);
+    entityManager.persist(parent);
+    return Tuple.of(parent, _deleteShadows(parent));
   }
 
   @Override
