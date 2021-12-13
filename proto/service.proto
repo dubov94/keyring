@@ -170,6 +170,7 @@ message KeyProto {
     int64 identifier = 1;
     Password password = 2;
     KeyAttrs attrs = 3;
+    int64 creation_time_in_millis = 4;
 }
 
 message KeyPatch {

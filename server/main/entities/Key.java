@@ -2,12 +2,14 @@ package server.main.entities;
 
 import com.google.common.collect.ImmutableList;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import javax.persistence.*;
 import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
@@ -23,6 +25,10 @@ public class Key {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
+
+  @Column(name = "creation_timestamp")
+  @CreationTimestamp
+  private Timestamp creationTimestamp;
 
   @ManyToOne
   @OnDelete(action = OnDeleteAction.CASCADE)
@@ -47,6 +53,10 @@ public class Key {
 
   public long getIdentifier() {
     return identifier;
+  }
+
+  public Optional<Timestamp> getCreationTimestamp() {
+    return Optional.ofNullable(creationTimestamp);
   }
 
   public User getUser() {
@@ -109,13 +119,18 @@ public class Key {
   }
 
   public KeyProto toKeyProto() {
-    return KeyProto.newBuilder()
-        .setIdentifier(getIdentifier())
-        .setPassword(toPassword())
-        .setAttrs(
-            KeyAttrs.newBuilder()
-                .setIsShadow(getIsShadow())
-                .setParent(Optional.ofNullable(getParent()).map(Key::getIdentifier).orElse(0L)))
-        .build();
+    KeyProto.Builder builder = KeyProto.newBuilder();
+    builder.setIdentifier(getIdentifier());
+    getCreationTimestamp()
+        .ifPresent(
+            (timestamp) -> {
+              builder.setCreationTimeInMillis(timestamp.getTime());
+            });
+    builder.setPassword(toPassword());
+    builder.setAttrs(
+        KeyAttrs.newBuilder()
+            .setIsShadow(getIsShadow())
+            .setParent(Optional.ofNullable(getParent()).map(Key::getIdentifier).orElse(0L)));
+    return builder.build();
   }
 }
