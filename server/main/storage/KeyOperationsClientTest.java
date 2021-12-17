@@ -120,6 +120,27 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  void createKey_shadowForShadow_throws() {
+    long userId = createUniqueUser();
+    Password parent = Password.newBuilder().setValue("parent").build();
+    long parentId =
+        keyOperationsClient
+            .createKey(userId, parent, KeyAttrs.newBuilder().setIsShadow(true).build())
+            .getIdentifier();
+
+    StorageException thrown =
+        assertThrows(
+            StorageException.class,
+            () ->
+                keyOperationsClient.createKey(
+                    userId,
+                    Password.getDefaultInstance(),
+                    KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build()));
+
+    assertTrue(thrown.getMessage().contains(String.format("for %d as it's also a shadow", parentId)));
+  }
+
+  @Test
   void updateKey() {
     long userIdentifier = createUniqueUser();
     long keyIdentifier =

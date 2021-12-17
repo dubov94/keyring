@@ -38,6 +38,10 @@ public class KeyOperationsClient implements KeyOperationsInterface {
         throw new IllegalArgumentException(
             String.format("Parent %d does not belong to the user", attrsParent));
       }
+      if (parent.getIsShadow()) {
+        throw new IllegalArgumentException(
+          String.format("Cannot create a shadow for %d as it's also a shadow", attrsParent));
+      }
       newKey.setParent(parent);
     }
     entityManager.persist(newKey);
