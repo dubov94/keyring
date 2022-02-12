@@ -12,11 +12,11 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  .dialog {
-    overflow: visible;
-  }
-
   :root {
     --max-content-width: 1264px;
+  }
+
+  .flex-1 {
+    flex: 1;
   }
 </style>

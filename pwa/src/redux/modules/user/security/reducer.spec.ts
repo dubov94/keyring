@@ -7,10 +7,10 @@ import {
   disableAnalysis,
   duplicateGroupsSearchSignal,
   enableAnalysis,
-  exposedUserKeyIdsSearchSignal,
+  exposedCliqueIdsSearchSignal,
   recentSessionsRetrievalReset,
   recentSessionsRetrievalSignal,
-  vulnerableKeysSearchSignal
+  vulnerableCliquesSearchSignal
 } from './actions'
 import reducer from './reducer'
 
@@ -66,25 +66,25 @@ describe('disableAnalysis', () => {
     expect(hasData(state.duplicateGroups)).to.be.false
   })
 
-  it('clears `exposedUserKeyIds`', () => {
+  it('clears `exposedCliqueIds`', () => {
     const state = reduce(reducer, undefined, [
-      exposedUserKeyIdsSearchSignal(success(['0'])),
+      exposedCliqueIdsSearchSignal(success(['0'])),
       disableAnalysis()
     ])
 
-    expect(hasData(state.exposedUserKeyIds)).to.be.false
+    expect(hasData(state.exposedCliqueIds)).to.be.false
   })
 
-  it('clears `vulnerableKeys`', () => {
+  it('clears `vulnerableCliques`', () => {
     const state = reduce(reducer, undefined, [
-      vulnerableKeysSearchSignal(success([{
-        identifier: '0',
+      vulnerableCliquesSearchSignal(success([{
+        name: 'clique',
         score: { value: 0, color: Color.RED }
       }])),
       disableAnalysis()
     ])
 
-    expect(hasData(state.vulnerableKeys)).to.be.false
+    expect(hasData(state.vulnerableCliques)).to.be.false
   })
 })
 
@@ -96,21 +96,21 @@ describe('duplicateGroupsSearchSignal', () => {
   })
 })
 
-describe('exposedUserKeyIdsSearchSignal', () => {
+describe('exposedCliqueIdsSearchSignal', () => {
   it('updates the result', () => {
-    const state = reducer(undefined, exposedUserKeyIdsSearchSignal(success(['0'])))
+    const state = reducer(undefined, exposedCliqueIdsSearchSignal(success(['0'])))
 
-    expect(hasData(state.exposedUserKeyIds)).to.be.true
+    expect(hasData(state.exposedCliqueIds)).to.be.true
   })
 })
 
-describe('vulnerableKeysSearchSignal', () => {
+describe('vulnerableCliquesSearchSignal', () => {
   it('updates the result', () => {
-    const state = reducer(undefined, vulnerableKeysSearchSignal(success([{
-      identifier: '0',
+    const state = reducer(undefined, vulnerableCliquesSearchSignal(success([{
+      name: 'clique',
       score: { value: 0, color: Color.RED }
     }])))
 
-    expect(hasData(state.vulnerableKeys)).to.be.true
+    expect(hasData(state.vulnerableCliques)).to.be.true
   })
 })

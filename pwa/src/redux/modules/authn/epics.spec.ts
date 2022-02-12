@@ -1,10 +1,11 @@
-import { RootAction } from '@/redux/root_action'
-import { reducer, RootState } from '@/redux/root_reducer'
-import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { SodiumClient } from '@/cryptography/sodium_client'
 import { createStore, Store } from '@reduxjs/toolkit'
+import { expect } from 'chai'
+import { either, option } from 'fp-ts'
+import { Epic } from 'redux-observable'
 import { deepEqual, instance, mock, when } from 'ts-mockito'
 import { container } from 'tsyringe'
+import { PayloadAction, TypeConstant } from 'typesafe-actions'
+import { AUTHENTICATION_API_TOKEN } from '@/api/api_di'
 import {
   AuthenticationApi,
   ServiceRegisterResponse,
@@ -17,20 +18,16 @@ import {
   ServiceProvideOtpResponseError,
   ServiceFeatureType
 } from '@/api/definitions'
-import { AUTHENTICATION_API_TOKEN } from '@/api/api_di'
-import {
-  displayRegistrationExceptionsEpic,
-  logInViaApiEpic,
-  registrationEpic,
-  displayAuthnViaApiExceptionsEpic,
-  logInViaDepotEpic,
-  displayAuthnViaDepotExceptionsEpic,
-  remoteCredentialsMismatchLocalEpic,
-  remoteAuthnCompleteOnCredentialsEpic,
-  provideOtpEpic,
-  displayAuthnOtpProvisionExceptionsEpic,
-  backgroundOtpProvisionEpic
-} from './epics'
+import { SodiumClient } from '@/cryptography/sodium_client'
+import { Key } from '@/redux/entities'
+import { cancel, exception, failure, FlowSignal, indicator, StandardError, success } from '@/redux/flow_signal'
+import { rehydrateDepot } from '@/redux/modules/depot/actions'
+import { showToast } from '@/redux/modules/ui/toast/actions'
+import { remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
+import { RootAction } from '@/redux/root_action'
+import { reducer, RootState } from '@/redux/root_reducer'
+import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
+import { createKeyProto, createUserKey } from '@/redux/testing/entities'
 import {
   AuthnOtpProvisionFlowIndicator,
   authnOtpProvisionReset,
@@ -54,15 +51,19 @@ import {
   registrationSignal,
   remoteAuthnComplete
 } from './actions'
-import { expect } from 'chai'
-import { cancel, exception, failure, FlowSignal, indicator, StandardError, success } from '@/redux/flow_signal'
-import { showToast } from '../ui/toast/actions'
-import { rehydrateDepot } from '../depot/actions'
-import { Key } from '@/redux/entities'
-import { remoteCredentialsMismatchLocal } from '../user/account/actions'
-import { either, option } from 'fp-ts'
-import { Epic } from 'redux-observable'
-import { PayloadAction, TypeConstant } from 'typesafe-actions'
+import {
+  displayRegistrationExceptionsEpic,
+  logInViaApiEpic,
+  registrationEpic,
+  displayAuthnViaApiExceptionsEpic,
+  logInViaDepotEpic,
+  displayAuthnViaDepotExceptionsEpic,
+  remoteCredentialsMismatchLocalEpic,
+  remoteAuthnCompleteOnCredentialsEpic,
+  provideOtpEpic,
+  displayAuthnOtpProvisionExceptionsEpic,
+  backgroundOtpProvisionEpic
+} from './epics'
 
 const testEpicCancellation = <T extends TypeConstant, I, S, E>(
   epic: Epic<RootAction, RootAction, RootState>,
@@ -176,13 +177,13 @@ describe('logInViaApiEpic', () => {
         featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
         mailVerificationRequired: false,
         mail: 'mail@example.com',
-        userKeys: [{
+        userKeys: [createKeyProto({
           identifier: 'identifier',
           password: {
             value: '$value',
             tags: ['$tag']
           }
-        }]
+        })]
       }
     })
     container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
@@ -227,11 +228,11 @@ describe('logInViaApiEpic', () => {
           featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
           mailVerificationRequired: false,
           mail: 'mail@example.com',
-          userKeys: [{
+          userKeys: [createUserKey({
             identifier: 'identifier',
             value: 'value',
             tags: ['tag']
-          }]
+          })]
         })
       }))
     ])
@@ -328,13 +329,13 @@ describe('provideOtpEpic', () => {
         featurePrompts: [],
         mailVerificationRequired: false,
         mail: 'mail@example.com',
-        userKeys: [{
+        userKeys: [createKeyProto({
           identifier: 'identifier',
           password: {
             value: '$value',
             tags: ['$tag']
           }
-        }]
+        })]
       }
     })
     container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
@@ -373,11 +374,11 @@ describe('provideOtpEpic', () => {
           featurePrompts: [],
           mailVerificationRequired: false,
           mail: 'mail@example.com',
-          userKeys: [{
+          userKeys: [createUserKey({
             identifier: 'identifier',
             value: 'value',
             tags: ['tag']
-          }]
+          })]
         }
       }))
     ])
@@ -406,11 +407,11 @@ describe('logInViaDepotEpic', () => {
       authDigest: 'authDigest',
       encryptionKey: 'depotKey'
     })
-    const userKeys: Key[] = [{
+    const userKeys: Key[] = [createUserKey({
       identifier: 'identifier',
       value: 'value',
       tags: ['tag']
-    }]
+    })]
     when(mockSodiumClient.decryptMessage('depotKey', 'vault')).thenResolve(JSON.stringify(userKeys))
     container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)

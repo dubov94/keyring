@@ -1,10 +1,41 @@
+import { createStore, Store } from '@reduxjs/toolkit'
+import { expect } from 'chai'
+import { option } from 'fp-ts'
+import { deepEqual, instance, mock, when } from 'ts-mockito'
+import { container } from 'tsyringe'
+import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
+import {
+  AdministrationApi,
+  ServiceReleaseMailTokenResponse,
+  ServiceReleaseMailTokenResponseError,
+  ServiceAcquireMailTokenResponse,
+  ServiceAcquireMailTokenResponseError,
+  ServiceChangeUsernameResponse,
+  ServiceChangeUsernameResponseError,
+  ServiceDeleteAccountResponse,
+  ServiceDeleteAccountResponseError,
+  ServiceChangeMasterKeyResponse,
+  ServiceChangeMasterKeyResponseError,
+  ServiceGenerateOtpParamsResponse,
+  ServiceAcceptOtpParamsResponse,
+  ServiceAcceptOtpParamsResponseError,
+  ServiceResetOtpResponse,
+  ServiceResetOtpResponseError,
+  ServiceFeatureType,
+  ServiceAckFeaturePromptResponse
+} from '@/api/definitions'
+import { QrcEncoder, QRC_ENCODER_TOKEN } from '@/cryptography/qrc_encoder'
+import { SodiumClient } from '@/cryptography/sodium_client'
+import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { cancel, exception, indicator, success } from '@/redux/flow_signal'
+import { registrationSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
+import { depotActivationData } from '@/redux/modules/depot/actions'
+import { showToast } from '@/redux/modules/ui/toast/actions'
+import { emplace } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createStore, Store } from '@reduxjs/toolkit'
-import { expect } from 'chai'
-import { deepEqual, instance, mock, when } from 'ts-mockito'
+import { createUserKey } from '@/redux/testing/entities'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,
@@ -66,36 +97,6 @@ import {
   logOutOnBackgroundAuthnFailureEpic,
   ackFeaturePromptEpic
 } from './epics'
-import {
-  AdministrationApi,
-  ServiceReleaseMailTokenResponse,
-  ServiceReleaseMailTokenResponseError,
-  ServiceAcquireMailTokenResponse,
-  ServiceAcquireMailTokenResponseError,
-  ServiceChangeUsernameResponse,
-  ServiceChangeUsernameResponseError,
-  ServiceDeleteAccountResponse,
-  ServiceDeleteAccountResponseError,
-  ServiceChangeMasterKeyResponse,
-  ServiceChangeMasterKeyResponseError,
-  ServiceGenerateOtpParamsResponse,
-  ServiceAcceptOtpParamsResponse,
-  ServiceAcceptOtpParamsResponseError,
-  ServiceResetOtpResponse,
-  ServiceResetOtpResponseError,
-  ServiceFeatureType,
-  ServiceAckFeaturePromptResponse
-} from '@/api/definitions'
-import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { container } from 'tsyringe'
-import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
-import { registrationSignal, remoteAuthnComplete } from '../../authn/actions'
-import { showToast } from '../../ui/toast/actions'
-import { SodiumClient } from '@/cryptography/sodium_client'
-import { emplace } from '../keys/actions'
-import { QrcEncoder, QRC_ENCODER_TOKEN } from '@/cryptography/qrc_encoder'
-import { option } from 'fp-ts'
-import { depotActivationData } from '../../depot/actions'
 
 describe('releaseMailTokenEpic', () => {
   it('emits release sequence', async () => {
@@ -434,11 +435,11 @@ describe('changeMasterKeyEpic', () => {
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey'
     })))
-    store.dispatch(emplace([{
+    store.dispatch(emplace([createUserKey({
       identifier: 'identifier',
       value: 'value',
       tags: ['tag']
-    }]))
+    })]))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'passwordA')).thenResolve({

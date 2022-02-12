@@ -1,74 +1,71 @@
 <template>
-  <v-card>
-    <v-card-title>
+  <v-expansion-panel>
+    <v-expansion-panel-header disable-icon-rotate>
+      Compromised passwords
+      <template v-if="!inProgress">({{ keyCount }})</template>
+      <template v-slot:actions>
+        <v-progress-circular v-if="inProgress" color="primary"
+          indeterminate :size="24" :width="2">
+        </v-progress-circular>
+        <v-icon v-else-if="keyCount === 0" color="success">
+          check
+        </v-icon>
+        <v-icon v-else-if="keyCount > 0" color="error">
+          error
+        </v-icon>
+      </template>
+    </v-expansion-panel-header>
+    <v-expansion-panel-content v-if="keyCount > 0">
       <v-container fluid>
-        <v-row justify="space-between" align="center">
-          <h4>
-            Compromised passwords &mdash;
-            <span v-if="keyCount < 0">⚠️</span>
-            <span v-else-if="keyCount === 0" class="success--text">0</span>
-            <span v-else class="error--text">{{ keyCount }}</span>
-          </h4>
-          <v-progress-circular v-show="inProgress" indeterminate
-            :size="24" :width="2" color="primary">
-          </v-progress-circular>
-        </v-row>
-      </v-container>
-    </v-card-title>
-    <v-divider v-if="keyCount > 0"></v-divider>
-    <v-card-text v-if="keyCount > 0">
-      <v-container fluid>
-        <password-masonry :user-keys="exposedKeys" @edit="editKey">
+        <password-masonry :cliques="exposedCliques" :idToScore="idToScore">
         </password-masonry>
       </v-container>
-    </v-card-text>
-  </v-card>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">
+import { function as fn, option, readonlyArray } from 'fp-ts'
+import { DeepReadonly } from 'ts-essentials'
 import Vue from 'vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
-import { userKeys } from '@/redux/modules/user/keys/selectors'
-import { Key } from '@/redux/entities'
-import { function as fn, option, array } from 'fp-ts'
-import { ExposedUserKeyIds, exposedUserKeyIds } from '@/redux/modules/user/security/selectors'
+import { Color } from '@/cryptography/strength_test_service'
+import { cliques, Clique, peelClique } from '@/redux/modules/user/keys/selectors'
+import { ExposedCliqueIds, exposedCliqueIds } from '@/redux/modules/user/security/selectors'
 import { data, hasIndicator } from '@/redux/remote_data'
-import { DeepReadonly, Writable } from 'ts-essentials'
 
 export default Vue.extend({
   components: {
     passwordMasonry: PasswordMasonry
   },
   computed: {
-    userKeys (): DeepReadonly<Key[]> {
-      return userKeys(this.$data.$state)
+    cliques (): DeepReadonly<Clique[]> {
+      return cliques(this.$data.$state).map(peelClique)
     },
-    exposedUserKeyIds (): DeepReadonly<ExposedUserKeyIds> {
-      return exposedUserKeyIds(this.$data.$state)
+    exposedCliqueIds (): DeepReadonly<ExposedCliqueIds> {
+      return exposedCliqueIds(this.$data.$state)
     },
-    exposedKeys (): DeepReadonly<Key[]> {
+    exposedCliques (): DeepReadonly<Clique[]> {
       return fn.pipe(
-        data(this.exposedUserKeyIds) as option.Option<Writable<string[]>>,
-        option.map(array.filterMap<string, DeepReadonly<Key>>((identifier) => {
-          return array.findFirst<DeepReadonly<Key>>((key) => key.identifier === identifier)([...this.userKeys])
+        data(this.exposedCliqueIds),
+        option.map(readonlyArray.filterMap<string, DeepReadonly<Clique>>((name) => {
+          return readonlyArray.findFirst<DeepReadonly<Clique>>((clique) => clique.name === name)(this.cliques)
         })),
-        option.getOrElse<DeepReadonly<Key[]>>(() => [])
+        option.getOrElse<DeepReadonly<Clique[]>>(() => [])
       )
+    },
+    idToScore (): DeepReadonly<{ [key: string]: Color }> {
+      return Object.fromEntries(this.exposedCliques.map((clique) => [clique.name, Color.RED]))
     },
     keyCount (): number {
       return fn.pipe(
-        data(this.exposedUserKeyIds),
+        data(this.exposedCliqueIds),
         option.map((value) => value.length),
-        option.getOrElse(() => -1)
+        option.getOrElse(() => 0)
       )
     },
     inProgress (): boolean {
-      return hasIndicator(this.exposedUserKeyIds)
-    }
-  },
-  methods: {
-    editKey ({ identifier, reveal }: { identifier: string; reveal: boolean }) {
-      this.$emit('edit', { identifier, reveal })
+      return hasIndicator(this.exposedCliqueIds)
     }
   }
 })

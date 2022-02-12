@@ -1,29 +1,36 @@
 <template>
-  <v-form @keydown.native.enter.prevent="submit">
-    <form-text-field type="password" label="Current password" prepend-icon="lock"
-      :value="current" @input="setCurrent"
-      :dirty="$v.current.$dirty" :errors="currentErrors"
-      @touch="$v.current.$touch()" @reset="$v.current.$reset()"></form-text-field>
-    <form-text-field type="password" label="New password" prepend-icon="lock_open"
-      :value="renewal" @input="setRenewal"
-      :dirty="$v.renewal.$dirty" :errors="renewalErrors"
-      @touch="$v.renewal.$touch()" @reset="$v.renewal.$reset()"></form-text-field>
-    <form-text-field type="password" label="Repeat new password" prepend-icon="repeat"
-      :value="repeat" @input="setRepeat"
-      :dirty="$v.repeat.$dirty" :errors="repeatErrors"
-      @touch="$v.repeat.$touch()" @reset="$v.repeat.$reset()"></form-text-field>
-    <div class="mx-4 mt-4">
-      <v-btn block color="primary" :loading="hasIndicatorMessage"
-        @click="submit" :disabled="!canAccessApi">
-        <span>Submit</span>
-        <template #loader>
-          <v-progress-circular indeterminate :size="23" :width="2">
-          </v-progress-circular>
-          <span class="ml-4">{{ indicatorMessage }}</span>
-        </template>
-      </v-btn>
-    </div>
-  </v-form>
+  <v-expansion-panel>
+    <v-expansion-panel-header>
+      Change password
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
+      <v-form @keydown.native.enter.prevent="submit">
+        <form-text-field type="password" label="Current password" prepend-icon="lock"
+          :value="current" @input="setCurrent"
+          :dirty="$v.current.$dirty" :errors="currentErrors"
+          @touch="$v.current.$touch()" @reset="$v.current.$reset()"></form-text-field>
+        <form-text-field type="password" label="New password" prepend-icon="lock_open"
+          :value="renewal" @input="setRenewal"
+          :dirty="$v.renewal.$dirty" :errors="renewalErrors"
+          @touch="$v.renewal.$touch()" @reset="$v.renewal.$reset()"></form-text-field>
+        <form-text-field type="password" label="Repeat new password" prepend-icon="repeat"
+          :value="repeat" @input="setRepeat"
+          :dirty="$v.repeat.$dirty" :errors="repeatErrors"
+          @touch="$v.repeat.$touch()" @reset="$v.repeat.$reset()"></form-text-field>
+        <div class="mx-4 mt-4">
+          <v-btn block color="primary" :loading="hasIndicatorMessage"
+            @click="submit" :disabled="!canAccessApi">
+            <span>Submit</span>
+            <template #loader>
+              <v-progress-circular indeterminate :size="23" :width="2">
+              </v-progress-circular>
+              <span class="ml-4">{{ indicatorMessage }}</span>
+            </template>
+          </v-btn>
+        </div>
+      </v-form>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">

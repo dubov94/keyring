@@ -1,6 +1,6 @@
-import { createAction } from 'typesafe-actions'
+import { option } from 'fp-ts'
 import { DeepReadonly } from 'ts-essentials'
-import { FlowSignal, StandardError } from '@/redux/flow_signal'
+import { createAction } from 'typesafe-actions'
 import {
   ServiceReleaseMailTokenResponseError,
   ServiceAcquireMailTokenResponseError,
@@ -11,7 +11,7 @@ import {
   ServiceResetOtpResponseError,
   ServiceFeatureType
 } from '@/api/definitions'
-import { option } from 'fp-ts'
+import { FlowSignal, StandardError } from '@/redux/flow_signal'
 
 export enum LogoutTrigger {
   USER_REQUEST = 'USER_REQUEST',
@@ -108,7 +108,7 @@ export interface OtpParams {
 }
 export const generateOtpParams = createAction('user/account/generateOtpParams')()
 export const otpParamsGenerationSignal = createAction('user/account/otpParamsGenerationSignal')<DeepReadonly<
-  FlowSignal<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>
+  FlowSignal<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<never>>
 >>()
 export const otpParamsGenerationReset = createAction('user/account/otpParamsGenerationReset')()
 
@@ -137,5 +137,5 @@ export const cancelOtpReset = createAction('user/account/cancelOtpReset')()
 
 export const ackFeaturePrompt = createAction('user/account/ackFeaturePrompt')<ServiceFeatureType>()
 export const featureAckSignal = createAction('user/account/featureAckSignal')<DeepReadonly<
-  FlowSignal<void, ServiceFeatureType, StandardError<void>>
+  FlowSignal<never, ServiceFeatureType, StandardError<never>>
 >>()

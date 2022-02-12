@@ -1,14 +1,18 @@
+import { createStore, Store } from '@reduxjs/toolkit'
+import { shallowMount, Wrapper } from '@vue/test-utils'
+import { expect } from 'chai'
+import { container } from 'tsyringe'
+import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import { ActionQueue, setUpLocalVue, setUpStateMixin, setUpVuetify } from '@/components/testing'
+import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
 import { success } from '@/redux/flow_signal'
 import { deletionSignal, emplace } from '@/redux/modules/user/keys/actions'
 import { duplicateGroupsSearchSignal } from '@/redux/modules/user/security/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { createStore, Store } from '@reduxjs/toolkit'
-import { shallowMount, Wrapper } from '@vue/test-utils'
+import { createUserKey, createClique } from '@/redux/testing/entities'
+import { SequentialFakeUidService } from '@/redux/testing/services'
 import DuplicatePasswords from './DuplicatePasswords.vue'
-import PasswordMasonry from '@/components/PasswordMasonry.vue'
-import { expect } from 'chai'
 
 describe('DuplicatePasswords', () => {
   let store: Store<RootState, RootAction>
@@ -16,6 +20,9 @@ describe('DuplicatePasswords', () => {
   let wrapper: Wrapper<Vue>
 
   beforeEach(() => {
+    container.register<UidService>(UID_SERVICE_TOKEN, {
+      useValue: new SequentialFakeUidService()
+    })
     const localVue = setUpLocalVue()
     store = createStore(reducer)
     actionQueue = new ActionQueue()
@@ -29,30 +36,34 @@ describe('DuplicatePasswords', () => {
   })
 
   it('displays the first duplicate group', async () => {
-    store.dispatch(emplace([
-      { identifier: '1', value: 'a', tags: [] },
-      { identifier: '2', value: 'a', tags: [] }
-    ]))
-    store.dispatch(duplicateGroupsSearchSignal(success([['1', '2']])))
+    const userKeys = [
+      createUserKey({ identifier: '1', value: 'a' }),
+      createUserKey({ identifier: '2', value: 'a' })
+    ]
+    store.dispatch(emplace(userKeys))
+    store.dispatch(duplicateGroupsSearchSignal(success([
+      ['uid-1', 'uid-2']
+    ])))
     await wrapper.vm.$nextTick()
 
     const masonry = wrapper.findComponent(PasswordMasonry)
-    expect(masonry.props().userKeys).to.deep.equal([
-      { identifier: '1', value: 'a', tags: [] },
-      { identifier: '2', value: 'a', tags: [] }
+    expect(masonry.props().cliques).to.deep.equal([
+      createClique({ name: 'uid-1', parent: userKeys[0] }),
+      createClique({ name: 'uid-2', parent: userKeys[1] })
     ])
   })
 
   it('switches between duplicate groups', async () => {
-    store.dispatch(emplace([
-      { identifier: '1', value: 'a', tags: [] },
-      { identifier: '2', value: 'a', tags: [] },
-      { identifier: '3', value: 'b', tags: [] },
-      { identifier: '4', value: 'b', tags: [] }
-    ]))
+    const userKeys = [
+      createUserKey({ identifier: '1', value: 'a' }),
+      createUserKey({ identifier: '2', value: 'a' }),
+      createUserKey({ identifier: '3', value: 'b' }),
+      createUserKey({ identifier: '4', value: 'b' })
+    ]
+    store.dispatch(emplace(userKeys))
     store.dispatch(duplicateGroupsSearchSignal(success([
-      ['1', '2'],
-      ['3', '4']
+      ['uid-1', 'uid-2'],
+      ['uid-3', 'uid-4']
     ])))
     await wrapper.vm.$nextTick()
     const pagination = wrapper.findComponent({ name: 'v-pagination' })
@@ -60,45 +71,31 @@ describe('DuplicatePasswords', () => {
     await wrapper.vm.$nextTick()
 
     const masonry = wrapper.findComponent(PasswordMasonry)
-    expect(masonry.props().userKeys).to.deep.equal([
-      { identifier: '3', value: 'b', tags: [] },
-      { identifier: '4', value: 'b', tags: [] }
-    ])
-  })
-
-  it('propagates key editing request', async () => {
-    store.dispatch(emplace([
-      { identifier: '1', value: 'a', tags: [] },
-      { identifier: '2', value: 'a', tags: [] }
-    ]))
-    store.dispatch(duplicateGroupsSearchSignal(success([['1', '2']])))
-    await wrapper.vm.$nextTick()
-    const masonry = wrapper.findComponent(PasswordMasonry)
-    masonry.vm.$emit('edit', { identifier: '1', reveal: false })
-    await wrapper.vm.$nextTick()
-
-    expect(wrapper.emitted().edit![0]).to.deep.equal([
-      { identifier: '1', reveal: false }
+    expect(masonry.props().cliques).to.deep.equal([
+      createClique({ name: 'uid-3', parent: userKeys[2] }),
+      createClique({ name: 'uid-4', parent: userKeys[3] })
     ])
   })
 
   it('decreases the group number when the last group disappears', async () => {
     store.dispatch(emplace([
-      { identifier: '1', value: 'a', tags: [] },
-      { identifier: '2', value: 'a', tags: [] },
-      { identifier: '3', value: 'b', tags: [] },
-      { identifier: '4', value: 'b', tags: [] }
+      createUserKey({ identifier: '1', value: 'a' }),
+      createUserKey({ identifier: '2', value: 'a' }),
+      createUserKey({ identifier: '3', value: 'b' }),
+      createUserKey({ identifier: '4', value: 'b' })
     ]))
     store.dispatch(duplicateGroupsSearchSignal(success([
-      ['1', '2'],
-      ['3', '4']
+      ['uid-1', 'uid-2'],
+      ['uid-3', 'uid-4']
     ])))
     await wrapper.vm.$nextTick()
     const pagination = wrapper.findComponent({ name: 'v-pagination' })
     pagination.vm.$emit('input', 2)
     await wrapper.vm.$nextTick()
-    store.dispatch(deletionSignal(success('4')))
-    store.dispatch(duplicateGroupsSearchSignal(success([['1', '2']])))
+    store.dispatch(deletionSignal(success('4'), { uid: 'random' }))
+    store.dispatch(duplicateGroupsSearchSignal(success([
+      ['uid-1', 'uid-2']
+    ])))
     await wrapper.vm.$nextTick()
 
     expect(pagination.props().value).to.equal(1)

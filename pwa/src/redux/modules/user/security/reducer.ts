@@ -1,43 +1,43 @@
-import { identity, reducer, RemoteData, withNoResult, zero } from '@/redux/remote_data'
 import { createReducer } from '@reduxjs/toolkit'
+import { castDraft } from 'immer'
+import { DeepReadonly } from 'ts-essentials'
 import { isActionOf } from 'typesafe-actions'
+import { Session } from '@/redux/entities'
+import { StandardError } from '@/redux/flow_signal'
+import { identity, reducer, RemoteData, withNoResult, zero } from '@/redux/remote_data'
 import {
   disableAnalysis,
   duplicateGroupsSearchSignal,
   enableAnalysis,
-  ExposedUserKeyIdsSearchFlowIndicator,
-  exposedUserKeyIdsSearchSignal,
+  ExposedCliqueIdsSearchFlowIndicator,
+  exposedCliqueIdsSearchSignal,
   RecentSessionsRetrievalFlowIndicator,
   recentSessionsRetrievalReset,
   recentSessionsRetrievalSignal,
-  ScoredKey,
-  vulnerableKeysSearchSignal
+  ScoredClique,
+  vulnerableCliquesSearchSignal
 } from './actions'
-import { Session } from '@/redux/entities'
-import { StandardError } from '@/redux/flow_signal'
-import { DeepReadonly } from 'ts-essentials'
-import { castDraft } from 'immer'
 
 export default createReducer<{
-  recentSessions: RemoteData<RecentSessionsRetrievalFlowIndicator, Session[], StandardError<void>>;
+  recentSessions: RemoteData<RecentSessionsRetrievalFlowIndicator, Session[], StandardError<never>>;
   isAnalysisOn: boolean;
-  duplicateGroups: RemoteData<void, string[][], void>;
-  exposedUserKeyIds: RemoteData<ExposedUserKeyIdsSearchFlowIndicator, string[], StandardError<void>>;
-  vulnerableKeys: RemoteData<void, ScoredKey[], void>;
+  duplicateGroups: RemoteData<never, string[][], never>;
+  exposedCliqueIds: RemoteData<ExposedCliqueIdsSearchFlowIndicator, string[], StandardError<never>>;
+  vulnerableCliques: RemoteData<never, ScoredClique[], never>;
 }>(
   {
     recentSessions: zero(),
     isAnalysisOn: false,
     duplicateGroups: zero(),
-    exposedUserKeyIds: zero(),
-    vulnerableKeys: zero()
+    exposedCliqueIds: zero(),
+    vulnerableCliques: zero()
   },
   (builder) => builder
     .addMatcher(isActionOf(recentSessionsRetrievalSignal), (state, action) => {
       state.recentSessions = castDraft(reducer(
         identity<RecentSessionsRetrievalFlowIndicator>(),
         identity<DeepReadonly<Session[]>>(),
-        identity<StandardError<void>>()
+        identity<StandardError<never>>()
       )(state.recentSessions, action.payload))
     })
     .addMatcher(isActionOf(recentSessionsRetrievalReset), (state) => {
@@ -51,32 +51,32 @@ export default createReducer<{
     })
     .addMatcher(isActionOf(duplicateGroupsSearchSignal), (state, action) => {
       state.duplicateGroups = castDraft(reducer(
-        identity<void>(),
+        identity<never>(),
         identity<DeepReadonly<string[][]>>(),
-        identity<void>()
+        identity<never>()
       )(state.duplicateGroups, action.payload))
     })
     .addMatcher(isActionOf(disableAnalysis), (state) => {
       state.duplicateGroups = withNoResult(state.duplicateGroups)
     })
-    .addMatcher(isActionOf(exposedUserKeyIdsSearchSignal), (state, action) => {
-      state.exposedUserKeyIds = castDraft(reducer(
-        identity<ExposedUserKeyIdsSearchFlowIndicator>(),
+    .addMatcher(isActionOf(exposedCliqueIdsSearchSignal), (state, action) => {
+      state.exposedCliqueIds = castDraft(reducer(
+        identity<ExposedCliqueIdsSearchFlowIndicator>(),
         identity<DeepReadonly<string[]>>(),
-        identity<StandardError<void>>()
-      )(state.exposedUserKeyIds, action.payload))
+        identity<StandardError<never>>()
+      )(state.exposedCliqueIds, action.payload))
     })
     .addMatcher(isActionOf(disableAnalysis), (state) => {
-      state.exposedUserKeyIds = withNoResult(state.exposedUserKeyIds)
+      state.exposedCliqueIds = withNoResult(state.exposedCliqueIds)
     })
-    .addMatcher(isActionOf(vulnerableKeysSearchSignal), (state, action) => {
-      state.vulnerableKeys = castDraft(reducer(
-        identity<void>(),
-        identity<DeepReadonly<ScoredKey[]>>(),
-        identity<void>()
-      )(state.vulnerableKeys, action.payload))
+    .addMatcher(isActionOf(vulnerableCliquesSearchSignal), (state, action) => {
+      state.vulnerableCliques = castDraft(reducer(
+        identity<never>(),
+        identity<DeepReadonly<ScoredClique[]>>(),
+        identity<never>()
+      )(state.vulnerableCliques, action.payload))
     })
     .addMatcher(isActionOf(disableAnalysis), (state) => {
-      state.vulnerableKeys = withNoResult(state.vulnerableKeys)
+      state.vulnerableCliques = withNoResult(state.vulnerableCliques)
     })
 )

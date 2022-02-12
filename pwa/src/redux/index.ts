@@ -1,24 +1,25 @@
 import { AnyAction, configureStore } from '@reduxjs/toolkit'
-import { combineEpics, createEpicMiddleware, Epic } from 'redux-observable'
-import { RootAction } from './root_action'
-import { reducer, RootState } from './root_reducer'
-import { LOCAL_STORAGE_ACCESSOR, SESSION_STORAGE_ACCESSOR } from './storages'
-import { rehydrateSession } from './modules/session/actions'
-import { rehydrateDepot } from './modules/depot/actions'
+import { retryBackoff } from 'backoff-rxjs'
 import isEqual from 'lodash/isEqual'
+import { combineEpics, createEpicMiddleware, Epic } from 'redux-observable'
 import { BehaviorSubject, defer, EMPTY, fromEvent, Subject, timer } from 'rxjs'
+import { concatMapTo, distinctUntilChanged, exhaustMap, filter, map, switchMap, takeUntil, tap } from 'rxjs/operators'
+import { isActionOf } from 'typesafe-actions'
+import { getAdministrationApi } from '@/api/api_di'
+import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import * as authnEpics from './modules/authn/epics'
+import { rehydrateDepot } from './modules/depot/actions'
 import * as depotEpics from './modules/depot/epics'
+import { rehydrateSession } from './modules/session/actions'
 import * as sessionEpics from './modules/session/epics'
 import * as uiToastEpics from './modules/ui/toast/epics'
+import { logOut, LogoutTrigger } from './modules/user/account/actions'
 import * as userAccountEpics from './modules/user/account/epics'
 import * as userKeysEpics from './modules/user/keys/epics'
 import * as userSecurityEpics from './modules/user/security/epics'
-import { concatMapTo, delay, distinctUntilChanged, filter, map, retryWhen, switchMap, takeUntil, tap } from 'rxjs/operators'
-import { isActionOf } from 'typesafe-actions'
-import { logOut, LogoutTrigger } from './modules/user/account/actions'
-import { getAdministrationApi } from '@/api/api_di'
-import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
+import { RootAction } from './root_action'
+import { reducer, RootState } from './root_reducer'
+import { LOCAL_STORAGE_ACCESSOR, SESSION_STORAGE_ACCESSOR } from './storages'
 
 // Stream of actions for use in components.
 export const action$ = new Subject<AnyAction>()
@@ -26,6 +27,7 @@ const actionsObservableEpic: Epic<RootAction, RootAction, RootState> = (actionsO
   tap(action$),
   concatMapTo(EMPTY)
 )
+Object.freeze(action$)
 
 // Store initialization.
 const epicMiddleware = createEpicMiddleware<RootAction, RootAction, RootState>()
@@ -113,11 +115,11 @@ state$.pipe(
   switchMap((sessionKey) => {
     const halfLifetime = SESSION_LIFETIME_IN_MILLIS / 2
     return sessionKey === null ? EMPTY : timer(halfLifetime, halfLifetime).pipe(
-      switchMap(() => defer(() => getAdministrationApi().keepAlive({}, {
+      exhaustMap(() => defer(() => getAdministrationApi().keepAlive({}, {
         headers: {
           [SESSION_TOKEN_HEADER_NAME]: sessionKey
         }
-      })).pipe(retryWhen(errors => errors.pipe(delay(3 * 1000)))))
+      })).pipe(retryBackoff({ initialInterval: 2 * 1000 })))
     )
   })
 ).subscribe()

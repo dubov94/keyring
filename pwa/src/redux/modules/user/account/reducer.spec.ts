@@ -1,10 +1,10 @@
-import { ServiceFeatureType } from '@/api/definitions'
-import { success } from '@/redux/flow_signal'
-import { hasData, zero } from '@/redux/remote_data'
-import { reduce } from '@/redux/testing'
 import { expect } from 'chai'
 import { option } from 'fp-ts'
-import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '../../authn/actions'
+import { ServiceFeatureType } from '@/api/definitions'
+import { success } from '@/redux/flow_signal'
+import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
+import { hasData, zero } from '@/redux/remote_data'
+import { reduce } from '@/redux/testing'
 import {
   accountDeletionReset,
   accountDeletionSignal,

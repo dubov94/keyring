@@ -127,12 +127,17 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @Override
   @ValidateUser
   public void createKey(CreateKeyRequest request, StreamObserver<CreateKeyResponse> response) {
-    long identifier =
-        keyOperationsInterface
-            .createKey(
-                sessionAccessor.getUserIdentifier(), request.getPassword(), request.getAttrs())
-            .getIdentifier();
-    response.onNext(CreateKeyResponse.newBuilder().setIdentifier(identifier).build());
+    Key key =
+        keyOperationsInterface.createKey(
+            sessionAccessor.getUserIdentifier(), request.getPassword(), request.getAttrs());
+    CreateKeyResponse.Builder builder = CreateKeyResponse.newBuilder();
+    builder.setIdentifier(key.getIdentifier());
+    key.getCreationTimestamp()
+        .ifPresent(
+            (timestamp) -> {
+              builder.setCreationTimeInMillis(timestamp.getTime());
+            });
+    response.onNext(builder.build());
     response.onCompleted();
   }
 

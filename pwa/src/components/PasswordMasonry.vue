@@ -1,37 +1,110 @@
+<style scoped>
+  .bricks-enter {
+    opacity: 0;
+  }
+
+  .bricks-enter-active, .bricks-move {
+    transition: opacity 0.5s, transform 0.5s;
+  }
+
+  .bricks-leave-active {
+    display: none;
+  }
+</style>
+
 <template>
-  <v-row align="center">
-    <v-col v-for="item in userKeys" :key="item.identifier" :cols="12" :md="6" :lg="4">
-      <v-lazy :min-height="64">
-        <password :identifier="item.identifier" :value="item.value" :tags="item.tags"
-          :score="item.score" @edit="handleEditKey(item.identifier, $event)">
+  <v-row>
+    <transition-group name="bricks" tag="div" class="flex-1" :style="listStyles">
+      <v-lazy :min-height="128" v-for="(item, index) in items" :key="item.name" class="pa-3" :style="{
+          'break-after': (index >= cellsInFull
+            ? (index - cellsInFull + 1) % (height - 1) === 0
+            : (index + 1) % height === 0) ? 'column' : 'auto',
+          'break-inside': 'avoid'
+        }">
+        <password :debounce-millis="200" :clique="item" :scoreColor="idToScore[item.name]"
+          @save="finalize(item.name, true)" @delete="finalize(item.name, false)"
+          @cancel="finalize(item.name)" :init-edit="additions.includes(item.name)">
         </password>
       </v-lazy>
-    </v-col>
+    </transition-group>
   </v-row>
 </template>
 
 <script lang="ts">
+import { function as fn, array, option } from 'fp-ts'
+import { DeepReadonly } from 'ts-essentials'
 import Vue, { PropType } from 'vue'
-import Password from './Password.vue'
-import { Key } from '@/redux/entities'
-import { Score } from '@/cryptography/strength_test_service'
-
-export interface ScoredKey extends Key {
-  score?: Score;
-}
+import { Color } from '@/cryptography/strength_test_service'
+import { Clique, createEmptyClique } from '@/redux/modules/user/keys/selectors'
+import PasswordComponent from './Password.vue'
 
 export default Vue.extend({
   components: {
-    password: Password
+    password: PasswordComponent
   },
   props: {
-    userKeys: {
-      type: Array as PropType<ScoredKey[]>
+    additions: {
+      type: Array as PropType<string[]>,
+      default: () => []
+    },
+    cliques: {
+      type: Array as PropType<DeepReadonly<Clique>[]>,
+      default: () => []
+    },
+    idToScore: {
+      type: Object as PropType<{ [key: string]: Color }>,
+      default: () => ({})
+    }
+  },
+  computed: {
+    items (): DeepReadonly<Clique[]> {
+      const source = [
+        ...this.additions.map((addition) => fn.pipe(
+          this.cliques,
+          array.findFirst((clique: DeepReadonly<Clique>) => clique.name === addition),
+          option.getOrElse(() => createEmptyClique(addition))
+        )),
+        ...this.cliques.filter((clique) => !this.additions.includes(clique.name))
+      ]
+      const result: DeepReadonly<Clique>[] = []
+      for (let bucket = 0; bucket < this.columnCount; ++bucket) {
+        for (let index = bucket; index < source.length; index += this.columnCount) {
+          result.push(source[index])
+        }
+      }
+      return result
+    },
+    columnCount (): number {
+      if (this.$vuetify.breakpoint.lgAndUp) {
+        return 3
+      }
+      if (this.$vuetify.breakpoint.mdOnly) {
+        return 2
+      }
+      return 1
+    },
+    height (): number {
+      return Math.ceil(this.items.length / this.columnCount)
+    },
+    fullColumns (): number {
+      const mod = this.items.length % this.columnCount
+      return mod === 0 ? this.columnCount : mod
+    },
+    cellsInFull (): number {
+      return this.fullColumns * this.height
+    },
+    listStyles (): { [key: string]: string | number } {
+      return {
+        columns: this.columnCount,
+        columnGap: '0'
+      }
     }
   },
   methods: {
-    handleEditKey (identifier: string, { reveal }: { reveal: boolean }) {
-      this.$emit('edit', { identifier, reveal })
+    finalize (cliqueName: string, attach: boolean) {
+      if (this.additions.includes(cliqueName)) {
+        this.$emit('addition', cliqueName, attach)
+      }
     }
   }
 })

@@ -1,11 +1,11 @@
-import { isActionSuccess } from '@/redux/flow_signal'
 import { createReducer } from '@reduxjs/toolkit'
+import { monoid, predicate } from 'fp-ts'
 import { isActionOf } from 'typesafe-actions'
-import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '../authn/actions'
-import { accountDeletionSignal, localOtpTokenFailure, remoteCredentialsMismatchLocal, usernameChangeSignal } from '../user/account/actions'
+import { isActionSuccess } from '@/redux/flow_signal'
+import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
+import { accountDeletionSignal, localOtpTokenFailure, remoteCredentialsMismatchLocal, usernameChangeSignal } from '@/redux/modules/user/account/actions'
+import { RootAction } from '@/redux/root_action'
 import { clearDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
-import { monoid } from 'fp-ts'
-import { disjunction } from '@/redux/predicates'
 
 type State = {
   username: string | null;
@@ -68,7 +68,7 @@ export default createReducer<State>(
     // As a reducer to ensure we clear the storage before synchronization is
     // cut off.
     .addMatcher(
-      monoid.fold(disjunction)([
+      monoid.concatAll(predicate.getMonoidAny<RootAction>())([
         isActionSuccess(registrationSignal),
         isActionSuccess(accountDeletionSignal),
         isActionOf(remoteCredentialsMismatchLocal),

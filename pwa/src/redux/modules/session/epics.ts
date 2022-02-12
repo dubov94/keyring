@@ -1,14 +1,14 @@
-import { RootAction } from '@/redux/root_action'
-import { RootState } from '@/redux/root_reducer'
+import { function as fn, option } from 'fp-ts'
 import { Epic } from 'redux-observable'
+import { EMPTY, Observable, of } from 'rxjs'
 import { switchMap, filter, take } from 'rxjs/operators'
 import { isActionOf } from 'typesafe-actions'
-import { rehydrateSession } from './actions'
-import { function as fn, option } from 'fp-ts'
-import { EMPTY, Observable, of } from 'rxjs'
-import { showToast } from '../ui/toast/actions'
-import { LogoutTrigger } from '../user/account/actions'
 import { injectionsSetUp } from '@/redux/actions'
+import { showToast } from '@/redux/modules/ui/toast/actions'
+import { LogoutTrigger } from '@/redux/modules/user/account/actions'
+import { RootAction } from '@/redux/root_action'
+import { RootState } from '@/redux/root_reducer'
+import { rehydrateSession } from './actions'
 
 export const displayLogoutTriggerEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(rehydrateSession)),

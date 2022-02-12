@@ -85,8 +85,15 @@ export const getValue = (wrapper: Wrapper<Vue>) => {
   return (<HTMLInputElement>wrapper.element).value
 }
 
-export const tickUntilExists = async (getter: (wrapper: Wrapper<Vue>) => Wrapper<Vue>, wrapper: Wrapper<Vue>) => {
-  while (!getter(wrapper).exists()) {
-    await wrapper.vm.$nextTick()
+export const tickUntilTrue = async (condition: () => boolean) => {
+  while (!condition()) {
+    await Vue.nextTick()
   }
 }
+
+export const setUpExpansionPanelProviders = () => ({
+  expansionPanels: {
+    register: () => {},
+    unregister: () => {}
+  }
+})

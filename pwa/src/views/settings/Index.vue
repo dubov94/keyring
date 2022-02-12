@@ -10,48 +10,11 @@
     <user-menu v-model="showMenu"></user-menu>
     <v-main class="px-2">
       <v-expansion-panels inset class="my-4">
-        <v-expansion-panel>
-          <v-expansion-panel-header>
-            Change username
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <change-username></change-username>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-        <v-expansion-panel>
-          <v-expansion-panel-header>
-            Change password
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <change-master-key></change-master-key>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-        <v-expansion-panel @change="ackOtpPrompt">
-          <v-expansion-panel-header>
-            <v-badge left dot color="warning" :value="otpPrompt" :offset-x="-2" :offset-y="-2">
-              Two-factor authentication
-            </v-badge>
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <otp-switch></otp-switch>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-        <v-expansion-panel>
-          <v-expansion-panel-header>
-            Change e-mail
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <change-mail></change-mail>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-        <v-expansion-panel>
-          <v-expansion-panel-header>
-            Delete account
-          </v-expansion-panel-header>
-          <v-expansion-panel-content>
-            <delete-account></delete-account>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
+        <change-username></change-username>
+        <change-master-key></change-master-key>
+        <otp-switch></otp-switch>
+        <change-mail></change-mail>
+        <delete-account></delete-account>
       </v-expansion-panels>
     </v-main>
   </page>
@@ -64,11 +27,8 @@ import ChangeMasterKey from './ChangeMasterKey.vue'
 import ChangeUsername from './ChangeUsername.vue'
 import DeleteAccount from './DeleteAccount.vue'
 import OtpSwitch from './OtpSwitch.vue'
-import { ServiceFeatureType } from '@/api/definitions'
 import Page from '@/components/Page.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
-import { ackFeaturePrompt } from '@/redux/modules/user/account/actions'
-import { featurePrompts } from '@/redux/modules/user/account/selectors'
 
 export default Vue.extend({
   components: {
@@ -85,20 +45,9 @@ export default Vue.extend({
       showMenu: false
     }
   },
-  computed: {
-    otpPrompt () {
-      return featurePrompts(this.$data.$state).some(
-        (fp) => fp.featureType === ServiceFeatureType.OTP)
-    }
-  },
   methods: {
     menuSwitch (value: boolean) {
       this.showMenu = value
-    },
-    ackOtpPrompt () {
-      if (this.otpPrompt) {
-        this.dispatch(ackFeaturePrompt(ServiceFeatureType.OTP))
-      }
     }
   }
 })

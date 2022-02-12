@@ -185,6 +185,7 @@ message CreateKeyRequest {
 
 message CreateKeyResponse {
     int64 identifier = 1;
+    int64 creation_time_in_millis = 2;
 }
 
 message ReadKeysRequest {

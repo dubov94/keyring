@@ -1,33 +1,35 @@
-import { RootAction } from '@/redux/root_action'
-import { RootState } from '@/redux/root_reducer'
+import { function as fn, monoid, option, predicate } from 'fp-ts'
 import { Epic } from 'redux-observable'
+import { EMPTY, from, Observable, of } from 'rxjs'
 import { filter, map, switchMap, withLatestFrom } from 'rxjs/operators'
 import { isActionOf } from 'typesafe-actions'
-import { userKeysUpdate } from '../user/keys/actions'
-import { function as fn, monoid, option } from 'fp-ts'
-import { disjunction } from '@/redux/predicates'
-import { isActionSuccess } from '@/redux/flow_signal'
-import { EMPTY, from, Observable, of } from 'rxjs'
 import { getSodiumClient } from '@/cryptography/sodium_client'
+import { isActionSuccess } from '@/redux/flow_signal'
+import { authnViaDepotSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
+import { masterKeyChangeSignal, otpParamsAcceptanceSignal, otpResetSignal } from '@/redux/modules/user/account/actions'
+import { userKeysUpdate } from '@/redux/modules/user/keys/actions'
+import { RootAction } from '@/redux/root_action'
+import { RootState } from '@/redux/root_reducer'
 import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault } from './actions'
-import { masterKeyChangeSignal, otpParamsAcceptanceSignal, otpResetSignal } from '../user/account/actions'
-import { authnViaDepotSignal, remoteAuthnComplete } from '../authn/actions'
 
 export const updateVaultEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
-  filter(monoid.fold(disjunction)([isActionOf(depotActivationData), isActionOf(userKeysUpdate)])),
+  filter(monoid.concatAll(predicate.getMonoidAny<RootAction>())([
+    isActionOf(depotActivationData),
+    isActionOf(userKeysUpdate)
+  ])),
   withLatestFrom(state$),
   switchMap(([, state]) => fn.pipe(
     option.fromNullable(state.depot.depotKey),
     option.map((depotKey) => from(getSodiumClient().encryptMessage(
       depotKey,
-      JSON.stringify(state.user.keys.userKeys)
+      JSON.stringify(state.user.keys.userKeys.filter((userKey) => !userKey.attrs.isShadow))
     )).pipe(map((vault) => newVault(vault)))),
     option.getOrElse<Observable<RootAction>>(() => EMPTY)
   ))
 )
 
 export const updateEncryptedOtpTokenEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
-  filter(monoid.fold(disjunction)([
+  filter(monoid.concatAll(predicate.getMonoidAny<RootAction>())([
     isActionOf(depotActivationData),
     isActionOf(remoteAuthnComplete),
     isActionSuccess(otpParamsAcceptanceSignal),

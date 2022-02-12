@@ -1,11 +1,37 @@
-import { getAdministrationApi } from '@/api/api_di'
-import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success } from '@/redux/flow_signal'
-import { RootAction } from '@/redux/root_action'
-import { RootState } from '@/redux/root_reducer'
+import { option } from 'fp-ts'
 import { Epic } from 'redux-observable'
 import { asapScheduler, concat, EMPTY, forkJoin, from, Observable, of } from 'rxjs'
-import { filter, withLatestFrom, switchMap, catchError, defaultIfEmpty, concatMap } from 'rxjs/operators'
+import { filter, withLatestFrom, switchMap, catchError, defaultIfEmpty, mapTo, mergeMap, concatMap } from 'rxjs/operators'
+import { DeepReadonly } from 'ts-essentials'
 import { isActionOf, PayloadAction, TypeConstant } from 'typesafe-actions'
+import { getAdministrationApi } from '@/api/api_di'
+import {
+  ServiceReleaseMailTokenResponse,
+  ServiceReleaseMailTokenResponseError,
+  ServiceAcquireMailTokenResponse,
+  ServiceAcquireMailTokenResponseError,
+  ServiceChangeMasterKeyResponse,
+  ServiceChangeMasterKeyResponseError,
+  ServiceChangeUsernameResponse,
+  ServiceChangeUsernameResponseError,
+  ServiceDeleteAccountResponse,
+  ServiceDeleteAccountResponseError,
+  ServiceGenerateOtpParamsResponse,
+  ServiceAcceptOtpParamsResponse,
+  ServiceAcceptOtpParamsResponseError,
+  ServiceResetOtpResponse,
+  ServiceResetOtpResponseError
+} from '@/api/definitions'
+import { getQrcEncoder } from '@/cryptography/qrc_encoder'
+import { getSodiumClient } from '@/cryptography/sodium_client'
+import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
+import { Password } from '@/redux/entities'
+import { createDisplayExceptionsEpic } from '@/redux/exceptions'
+import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success } from '@/redux/flow_signal'
+import { remoteAuthnComplete } from '@/redux/modules/authn/actions'
+import { isDepotActive } from '@/redux/modules/depot/selectors'
+import { RootAction } from '@/redux/root_action'
+import { RootState } from '@/redux/root_reducer'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,
@@ -48,32 +74,6 @@ import {
   ackFeaturePrompt,
   featureAckSignal
 } from './actions'
-import {
-  ServiceReleaseMailTokenResponse,
-  ServiceReleaseMailTokenResponseError,
-  ServiceAcquireMailTokenResponse,
-  ServiceAcquireMailTokenResponseError,
-  ServiceChangeMasterKeyResponse,
-  ServiceChangeMasterKeyResponseError,
-  ServiceChangeUsernameResponse,
-  ServiceChangeUsernameResponseError,
-  ServiceDeleteAccountResponse,
-  ServiceDeleteAccountResponseError,
-  ServiceGenerateOtpParamsResponse,
-  ServiceAcceptOtpParamsResponse,
-  ServiceAcceptOtpParamsResponseError,
-  ServiceResetOtpResponse,
-  ServiceResetOtpResponseError
-} from '@/api/definitions'
-import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { getSodiumClient } from '@/cryptography/sodium_client'
-import { Password } from '@/redux/entities'
-import { createDisplayExceptionsEpic } from '@/redux/exceptions'
-import { DeepReadonly } from 'ts-essentials'
-import { remoteAuthnComplete } from '../../authn/actions'
-import { getQrcEncoder } from '@/cryptography/qrc_encoder'
-import { isDepotActive } from '../../depot/selectors'
-import { option } from 'fp-ts'
 
 export const logOutEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(logOut)),
@@ -303,12 +303,12 @@ export const displayAccountDeletionExceptionsEpic = createDisplayExceptionsEpic(
 
 export const logOutOnDeletionSuccessEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionSuccess(accountDeletionSignal)),
-  concatMap(() => of(logOut(LogoutTrigger.USER_REQUEST)))
+  mapTo(logOut(LogoutTrigger.USER_REQUEST))
 )
 
 export const logOutOnBackgroundAuthnFailureEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf([remoteCredentialsMismatchLocal, localOtpTokenFailure])),
-  concatMap(() => of(logOut(LogoutTrigger.BACKGROUND_AUTHN_FAILURE)))
+  mapTo(logOut(LogoutTrigger.BACKGROUND_AUTHN_FAILURE))
 )
 
 export const remoteRehashEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
@@ -429,14 +429,14 @@ export const displayOtpResetExceptionsEpic = createDisplayExceptionsEpic(otpRese
 export const ackFeaturePromptEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf(ackFeaturePrompt)),
   withLatestFrom(state$),
-  concatMap(([action, state]) => from(getAdministrationApi().ackFeaturePrompt({
+  mergeMap(([action, state]) => from(getAdministrationApi().ackFeaturePrompt({
     featureType: action.payload
   }, {
     headers: {
       [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
     }
   })).pipe(
-    switchMap(() => of(featureAckSignal(success(action.payload)))),
+    mapTo(featureAckSignal(success(action.payload))),
     catchError((error) => of(featureAckSignal(exception(errorToMessage(error)))))
   ))
 )

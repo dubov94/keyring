@@ -1,18 +1,25 @@
 <template>
-  <v-form @keydown.native.enter.prevent="submit">
-    <form-text-field type="text" label="New username" prepend-icon="person_outline"
-      :value="username" @input="setUsername"
-      :dirty="$v.username.$dirty" :errors="usernameErrors"
-      @touch="$v.username.$touch()" @reset="$v.username.$reset()"></form-text-field>
-    <form-text-field type="password" label="Password" prepend-icon="lock"
-      :value="password" @input="setPassword"
-      :dirty="$v.password.$dirty" :errors="passwordErrors"
-      @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
-    <div class="mx-4 mt-4">
-      <v-btn block color="primary" :loading="inProgress"
-        @click="submit" :disabled="!canAccessApi">Submit</v-btn>
-    </div>
-  </v-form>
+  <v-expansion-panel>
+    <v-expansion-panel-header>
+      Change username
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
+      <v-form @keydown.native.enter.prevent="submit">
+        <form-text-field type="text" label="New username" prepend-icon="person_outline"
+          :value="username" @input="setUsername"
+          :dirty="$v.username.$dirty" :errors="usernameErrors"
+          @touch="$v.username.$touch()" @reset="$v.username.$reset()"></form-text-field>
+        <form-text-field type="password" label="Password" prepend-icon="lock"
+          :value="password" @input="setPassword"
+          :dirty="$v.password.$dirty" :errors="passwordErrors"
+          @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
+        <div class="mx-4 mt-4">
+          <v-btn block color="primary" :loading="inProgress"
+            @click="submit" :disabled="!canAccessApi">Submit</v-btn>
+        </div>
+      </v-form>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">

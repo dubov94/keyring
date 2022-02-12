@@ -1,43 +1,40 @@
 <template>
-  <v-card>
-    <v-card-title>
-      <v-container fluid>
-        <v-row justify="space-between" align="center">
-          <h4>
-            Duplicate groups &mdash;
-            <span v-if="groupCount < 0">⚠️</span>
-            <span class="success--text" v-else-if="groupCount === 0">0</span>
-            <span class="warning--text" v-else>{{ groupCount }}</span>
-          </h4>
-          <v-progress-circular v-show="inProgress" indeterminate
-            :size="24" :width="2" color="primary">
-          </v-progress-circular>
-        </v-row>
-      </v-container>
-    </v-card-title>
-    <v-divider v-if="groupCount > 0"></v-divider>
-    <v-card-text v-if="groupCount > 0">
+  <v-expansion-panel>
+    <v-expansion-panel-header disable-icon-rotate>
+      Duplicate groups
+      <template v-if="!inProgress">({{ groupCount }})</template>
+      <template v-slot:actions>
+        <v-progress-circular v-if="inProgress" color="primary"
+          indeterminate :size="24" :width="2">
+        </v-progress-circular>
+        <v-icon v-else-if="groupCount === 0" color="success">
+          check
+        </v-icon>
+        <v-icon v-else-if="groupCount > 0" color="error">
+          error
+        </v-icon>
+      </template>
+    </v-expansion-panel-header>
+    <v-expansion-panel-content v-if="groupCount > 0">
       <div class="text-center">
         <v-pagination v-model="groupNumber" :length="groupCount" circle
           :total-visible="$vuetify.breakpoint.smAndUp ? 7 : 5"></v-pagination>
       </div>
       <v-container fluid>
-        <password-masonry :user-keys="groupCards" @edit="editKey">
-        </password-masonry>
+        <password-masonry :cliques="groupCards"></password-masonry>
       </v-container>
-    </v-card-text>
-  </v-card>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">
+import { option, function as fn, readonlyArray } from 'fp-ts'
+import { DeepReadonly } from 'ts-essentials'
 import Vue from 'vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
+import { cliques, Clique, peelClique } from '@/redux/modules/user/keys/selectors'
 import { DuplicateGroups, duplicateGroups } from '@/redux/modules/user/security/selectors'
 import { hasIndicator, data } from '@/redux/remote_data'
-import { option, function as fn, array } from 'fp-ts'
-import { Key } from '@/redux/entities'
-import { userKeys } from '@/redux/modules/user/keys/selectors'
-import { DeepReadonly, Writable } from 'ts-essentials'
 
 export default Vue.extend({
   components: {
@@ -52,8 +49,8 @@ export default Vue.extend({
     duplicateGroups (): DeepReadonly<DuplicateGroups> {
       return duplicateGroups(this.$data.$state)
     },
-    userKeys (): DeepReadonly<Key[]> {
-      return userKeys(this.$data.$state)
+    cliques (): DeepReadonly<Clique[]> {
+      return cliques(this.$data.$state).map(peelClique)
     },
     inProgress (): boolean {
       return hasIndicator(this.duplicateGroups)
@@ -62,23 +59,18 @@ export default Vue.extend({
       return fn.pipe(
         data(this.duplicateGroups),
         option.map((value) => value.length),
-        option.getOrElse(() => -1)
+        option.getOrElse(() => 0)
       )
     },
-    groupCards (): DeepReadonly<Key[]> {
+    groupCards (): DeepReadonly<Clique[]> {
       return fn.pipe(
-        data(this.duplicateGroups) as option.Option<Writable<Writable<string[]>[]>>,
-        option.chain(array.lookup(this.groupNumber - 1)),
-        option.map(array.filterMap<string, DeepReadonly<Key>>((identifier) => {
-          return array.findFirst<DeepReadonly<Key>>((key) => key.identifier === identifier)([...this.userKeys])
+        data(this.duplicateGroups),
+        option.chain(readonlyArray.lookup(this.groupNumber - 1)),
+        option.map(readonlyArray.filterMap<string, DeepReadonly<Clique>>((name) => {
+          return readonlyArray.findFirst<DeepReadonly<Clique>>((clique) => clique.name === name)(this.cliques)
         })),
-        option.getOrElse<DeepReadonly<Key[]>>(() => [])
+        option.getOrElse<DeepReadonly<Clique[]>>(() => [])
       )
-    }
-  },
-  methods: {
-    editKey ({ identifier, reveal }: { identifier: string; reveal: boolean }) {
-      this.$emit('edit', { identifier, reveal })
     }
   },
   watch: {
@@ -88,8 +80,8 @@ export default Vue.extend({
         option.bind('newMatrix', () => data(newValue)),
         option.bind('oldMatrix', () => data(oldValue)),
         option.map(({ newMatrix, oldMatrix }) => fn.pipe(
-          newMatrix as Writable<Writable<string[]>[]>,
-          array.findIndex(array.every((id) => oldMatrix[this.groupNumber - 1].includes(id))),
+          newMatrix as DeepReadonly<string[][]>,
+          readonlyArray.findIndex(readonlyArray.every((id) => oldMatrix[this.groupNumber - 1].includes(id))),
           option.fold(() => Math.max(Math.min(this.groupNumber, newMatrix.length), 1), (index) => index + 1)
         )),
         option.getOrElse(() => 1)

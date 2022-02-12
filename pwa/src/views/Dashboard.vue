@@ -42,53 +42,45 @@
             </v-alert>
           </v-col>
         </v-row>
-        <password-masonry :user-keys="matchedCards" @edit="openEditor">
+        <password-masonry :additions="newCliques" :cliques="matchedItems" @addition="evolveAddition">
         </password-masonry>
       </v-container>
       <div class="dial">
         <v-btn fab color="error" @click="addKey" :disabled="!canAccessApi">
-          <v-icon small>fa-plus</v-icon>
+          <v-icon small>add</v-icon>
         </v-btn>
       </div>
     </v-main>
-    <editor v-if="showEditor" :params="editorParams" @close="closeEditor"></editor>
   </page>
 </template>
 
 <script lang="ts">
+import { array, function as fn, option, readonlyArray } from 'fp-ts'
 import Fuse from 'fuse.js'
-import { function as fn } from 'fp-ts'
 import debounce from 'lodash/debounce'
 import { from, of, Subject } from 'rxjs'
-import { concatMap, filter, map, takeUntil } from 'rxjs/operators'
+import { concatMap, filter, takeUntil, mapTo } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
 import { isActionOf } from 'typesafe-actions'
 import Vue, { VueConstructor } from 'vue'
 import { ServiceFeatureType } from '@/api/definitions'
-import Editor from '@/components/Editor.vue'
 import Page from '@/components/Page.vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
-import { Key } from '@/redux/entities'
-import { isActionSuccess } from '@/redux/flow_signal'
+import { getUidService } from '@/cryptography/uid_service'
 import { ackFeaturePrompt } from '@/redux/modules/user/account/actions'
 import { canAccessApi, featurePrompts } from '@/redux/modules/user/account/selectors'
-import { creationSignal, userKeysUpdate } from '@/redux/modules/user/keys/actions'
-import { userKeys } from '@/redux/modules/user/keys/selectors'
+import { userKeysUpdate } from '@/redux/modules/user/keys/actions'
+import { Clique, cliques, getCliqueRepr } from '@/redux/modules/user/keys/selectors'
 
 enum UpdateType {
   SCROLL = 'SCROLL',
   MATCH = 'MATCH'
 }
 
-interface Mixins {
-  scrollAndMatch: () => void;
-}
-
-export default (Vue as VueConstructor<Vue & Mixins>).extend({
+export default (Vue as VueConstructor<Vue>).extend({
   props: ['debounceMillis'],
   components: {
-    editor: Editor,
     page: Page,
     passwordMasonry: PasswordMasonry,
     userMenu: UserMenu
@@ -98,20 +90,25 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       showMenu: false,
       query: '',
       updateQueue$: new Subject<UpdateType>(),
-      matchedCards: [] as DeepReadonly<Key>[],
-      showEditor: false,
-      editorParams: {
-        identifier: null,
-        reveal: false
-      } as DeepReadonly<{
-        identifier: string | null;
-        reveal: boolean;
-      }>
+      newCliques: [] as string[],
+      matchedCliques: [] as string[]
     }
   },
   computed: {
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
+    },
+    cliques (): DeepReadonly<Clique[]> {
+      return cliques(this.$data.$state)
+    },
+    matchedItems (): DeepReadonly<Clique[]> {
+      return fn.pipe(
+        this.matchedCliques,
+        array.map((matchedClique) => readonlyArray.findFirst(
+          (clique: DeepReadonly<Clique>) => clique.name === matchedClique
+        )(this.cliques)),
+        array.compact
+      )
     },
     featurePrompts () {
       return featurePrompts(this.$data.$state)
@@ -132,9 +129,6 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   methods: {
-    userKeys (): DeepReadonly<Key[]> {
-      return userKeys(this.$data.$state)
-    },
     menuSwitch (value: boolean) {
       this.showMenu = value
     },
@@ -145,26 +139,26 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.dispatch(ackFeaturePrompt(ServiceFeatureType.FUZZYSEARCH))
     },
     addKey () {
-      this.showEditor = true
+      this.newCliques.unshift(getUidService().v4())
+      this.updateQueue$.next(UpdateType.SCROLL)
     },
-    openEditor (editorParams: DeepReadonly<{ identifier: string; reveal: boolean }>) {
-      this.editorParams = editorParams
-      this.showEditor = true
-    },
-    closeEditor () {
-      this.showEditor = false
-      this.editorParams = { identifier: null, reveal: false }
+    scrollAndMatch () {
+      this.updateQueue$.next(UpdateType.SCROLL)
+      this.updateQueue$.next(UpdateType.MATCH)
     },
     setQuery (value: string) {
       this.query = value
       this.scrollAndMatch()
+    },
+    evolveAddition (clique: string, attach: boolean) {
+      this.newCliques = this.newCliques.filter(
+        (newClique) => newClique !== clique)
+      if (attach) {
+        this.setQuery('')
+      }
     }
   },
   created () {
-    this.scrollAndMatch = () => {
-      this.updateQueue$.next(UpdateType.SCROLL)
-      this.updateQueue$.next(UpdateType.MATCH)
-    }
     if (this.debounceMillis !== null) {
       this.scrollAndMatch = debounce(this.scrollAndMatch, this.debounceMillis)
     }
@@ -173,15 +167,22 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         switch (updateType) {
           case UpdateType.SCROLL:
             return from(this.$vuetify.goTo(0)).pipe(
-              map(() => updateType)
+              mapTo(updateType)
             )
           case UpdateType.MATCH: {
             const query = this.query.trim()
             if (query === '') {
-              this.matchedCards = this.userKeys().map(fn.identity)
+              this.matchedCliques = this.cliques.map((item) => item.name)
             } else {
-              const fuse = new Fuse(this.userKeys(), { keys: ['tags'] })
-              this.matchedCards = fuse.search(query).map((result) => result.item)
+              const candidates = array.compact(
+                this.cliques.map((clique: DeepReadonly<Clique>) => fn.pipe(
+                  getCliqueRepr(clique),
+                  option.map((repr) => ({ name: clique.name, repr }))
+                ))
+              )
+              const fuse = new Fuse(candidates, { keys: ['repr.tags'] })
+              this.matchedCliques = fuse.search(query).map(
+                (result) => result.item.name)
             }
             return of(updateType)
           }
@@ -191,13 +192,6 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     ).subscribe()
     this.updateQueue$.next(UpdateType.MATCH)
     this.$data.$actions.pipe(
-      filter(isActionSuccess(creationSignal)),
-      takeUntil(this.$data.$destruction)
-    ).subscribe(() => {
-      this.query = ''
-      this.updateQueue$.next(UpdateType.SCROLL)
-    })
-    this.$data.$actions.pipe(
       filter(isActionOf(userKeysUpdate)),
       takeUntil(this.$data.$destruction)
     ).subscribe(() => {
@@ -205,7 +199,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     })
   },
   mounted () {
-    if (this.userKeys().length > 0) {
+    if (this.matchedCliques.length > 0) {
       ;(this.$refs.search as HTMLInputElement).focus()
     }
   }

@@ -1,85 +1,82 @@
 <template>
-  <v-card>
-    <v-card-title>
+  <v-expansion-panel>
+    <v-expansion-panel-header disable-icon-rotate>
+      Vulnerable passwords
+      <template v-if="!inProgress">({{ keyCount }})</template>
+      <template v-slot:actions>
+        <v-progress-circular v-if="inProgress" color="primary"
+          indeterminate :size="24" :width="2">
+        </v-progress-circular>
+        <v-icon v-if="keyCount === 0" color="success">
+          check
+        </v-icon>
+        <v-icon v-if="keyCount > 0" color="error">
+          error
+        </v-icon>
+      </template>
+    </v-expansion-panel-header>
+    <v-expansion-panel-content v-if="keyCount > 0">
       <v-container fluid>
-        <v-row justify="space-between" align="center">
-          <h4>
-            Vulnerable passwords &mdash;
-            <span v-if="keyCount < 0">⚠️</span>
-            <span v-else-if="keyCount === 0" class="success--text">0</span>
-            <span v-else class="error--text">{{ keyCount }}</span>
-          </h4>
-          <v-progress-circular v-show="inProgress" indeterminate
-            :size="24" :width="2" color="primary">
-          </v-progress-circular>
-        </v-row>
-      </v-container>
-    </v-card-title>
-    <v-divider v-if="keyCount > 0"></v-divider>
-    <v-card-text v-if="keyCount > 0">
-      <v-container fluid>
-        <password-masonry :user-keys="scoredKeys" @edit="editKey">
+        <password-masonry :cliques="scoredCliques" :idToScore="idToScore">
         </password-masonry>
       </v-container>
-    </v-card-text>
-  </v-card>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">
+import { option, function as fn, readonlyArray, record, semigroup } from 'fp-ts'
+import { DeepReadonly } from 'ts-essentials'
 import Vue from 'vue'
-import PasswordMasonry, { ScoredKey as MasonryKey } from '@/components/PasswordMasonry.vue'
-import { ScoredKey } from '@/redux/modules/user/security/actions'
-import { VulnerableKeys, vulnerableKeys } from '@/redux/modules/user/security/selectors'
+import PasswordMasonry from '@/components/PasswordMasonry.vue'
+import { Color } from '@/cryptography/strength_test_service'
+import { cliques, Clique, peelClique } from '@/redux/modules/user/keys/selectors'
+import { ScoredClique } from '@/redux/modules/user/security/actions'
+import { VulnerableCliques, vulnerableCliques } from '@/redux/modules/user/security/selectors'
 import { hasIndicator, data } from '@/redux/remote_data'
-import { option, function as fn, array } from 'fp-ts'
-import { Key } from '@/redux/entities'
-import { userKeys } from '@/redux/modules/user/keys/selectors'
-import { DeepReadonly, Writable } from 'ts-essentials'
 
 export default Vue.extend({
   components: {
     passwordMasonry: PasswordMasonry
   },
-  data () {
-    return {
-      groupNumber: 1
-    }
-  },
   computed: {
-    vulnerableKeys (): DeepReadonly<VulnerableKeys> {
-      return vulnerableKeys(this.$data.$state)
+    vulnerableCliques (): DeepReadonly<VulnerableCliques> {
+      return vulnerableCliques(this.$data.$state)
     },
-    userKeys (): DeepReadonly<Key[]> {
-      return userKeys(this.$data.$state)
+    cliques (): DeepReadonly<Clique[]> {
+      return cliques(this.$data.$state).map(peelClique)
     },
     inProgress (): boolean {
-      return hasIndicator(this.vulnerableKeys)
+      return hasIndicator(this.vulnerableCliques)
     },
-    scoredKeys (): DeepReadonly<MasonryKey[]> {
+    scoredCliques (): DeepReadonly<Clique[]> {
       return fn.pipe(
-        data(this.vulnerableKeys) as option.Option<Writable<ScoredKey[]>>,
-        option.map(array.filterMap<
-          DeepReadonly<ScoredKey>,
-          DeepReadonly<MasonryKey>
-        >(({ identifier, score }) => fn.pipe(
-          [...this.userKeys],
-          array.findFirst<DeepReadonly<Key>>((key) => key.identifier === identifier),
-          option.map<DeepReadonly<Key>, DeepReadonly<MasonryKey>>((key) => ({ ...key, score }))
-        ))),
-        option.getOrElse<DeepReadonly<MasonryKey[]>>(() => [])
+        data(this.vulnerableCliques),
+        option.map(readonlyArray.filterMap<DeepReadonly<ScoredClique>, DeepReadonly<Clique>>(({ name }) => {
+          return readonlyArray.findFirst<DeepReadonly<Clique>>((clique) => clique.name === name)(this.cliques)
+        })),
+        option.getOrElse<DeepReadonly<Clique[]>>(() => [])
+      )
+    },
+    idToScore (): DeepReadonly<{ [key: string]: Color }> {
+      return fn.pipe(
+        data(this.vulnerableCliques),
+        option.map((items: DeepReadonly<ScoredClique[]>) => record.fromFoldableMap(
+          semigroup.last<DeepReadonly<Color>>(),
+          readonlyArray.Foldable
+        )(
+          items,
+          (scoredClique) => [scoredClique.name, scoredClique.score.color]
+        )),
+        option.getOrElse<DeepReadonly<{ [key: string]: Color }>>(() => ({}))
       )
     },
     keyCount (): number {
       return fn.pipe(
-        data(this.vulnerableKeys),
+        data(this.vulnerableCliques),
         option.map((value) => value.length),
         option.getOrElse(() => -1)
       )
-    }
-  },
-  methods: {
-    editKey ({ identifier, reveal }: { identifier: string; reveal: boolean }) {
-      this.$emit('edit', { identifier, reveal })
     }
   }
 })

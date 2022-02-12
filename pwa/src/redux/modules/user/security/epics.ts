@@ -1,37 +1,38 @@
-import { getAdministrationApi } from '@/api/api_di'
-import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { cancel, exception, indicator, errorToMessage, success } from '@/redux/flow_signal'
-import { RootAction } from '@/redux/root_action'
-import { RootState } from '@/redux/root_reducer'
+import { function as fn, readonlyArray, option } from 'fp-ts'
 import { Epic } from 'redux-observable'
 import { concat, EMPTY, forkJoin, from, Observable, of } from 'rxjs'
 import { catchError, defaultIfEmpty, filter, map, switchMap, withLatestFrom } from 'rxjs/operators'
+import { DeepReadonly } from 'ts-essentials'
+import { container } from 'tsyringe'
 import { isActionOf } from 'typesafe-actions'
-import {
-  disableAnalysis,
-  duplicateGroupsSearchSignal,
-  enableAnalysis,
-  ExposedUserKeyIdsSearchFlowIndicator,
-  exposedUserKeyIdsSearchSignal,
-  fetchRecentSessions,
-  RecentSessionsRetrievalFlowIndicator,
-  recentSessionsRetrievalReset,
-  recentSessionsRetrievalSignal,
-  ScoredKey,
-  vulnerableKeysSearchSignal
-} from './actions'
+import { getAdministrationApi } from '@/api/api_di'
 import {
   GetRecentSessionsResponseSession,
   ServiceGetRecentSessionsResponse
 } from '@/api/definitions'
-import { Session, Key } from '@/redux/entities'
-import { userKeysUpdate } from '../keys/actions'
 import { PwnedService, PWNED_SERVICE_TOKEN } from '@/cryptography/pwned_service'
-import { container } from 'tsyringe'
-import { function as fn, array, option } from 'fp-ts'
-import { DeepReadonly } from 'ts-essentials'
-import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { Color, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
+import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
+import { Session, Password } from '@/redux/entities'
+import { createDisplayExceptionsEpic } from '@/redux/exceptions'
+import { cancel, exception, indicator, errorToMessage, success } from '@/redux/flow_signal'
+import { extractPassword, userKeysUpdate } from '@/redux/modules/user/keys/actions'
+import { RootAction } from '@/redux/root_action'
+import { RootState } from '@/redux/root_reducer'
+import {
+  disableAnalysis,
+  duplicateGroupsSearchSignal,
+  enableAnalysis,
+  ExposedCliqueIdsSearchFlowIndicator,
+  exposedCliqueIdsSearchSignal,
+  fetchRecentSessions,
+  RecentSessionsRetrievalFlowIndicator,
+  recentSessionsRetrievalReset,
+  recentSessionsRetrievalSignal,
+  ScoredClique,
+  vulnerableCliquesSearchSignal
+} from './actions'
+import { Clique, cliques, getCliqueRoot } from '../keys/selectors'
 
 const convertMessageToSession = (message: GetRecentSessionsResponseSession): Session => ({
   // `int64`.
@@ -67,15 +68,26 @@ export const fetchRecentSessionsEpic: Epic<RootAction, RootAction, RootState> = 
 
 export const displayRecentSessionsRetrivalExceptionsEpic = createDisplayExceptionsEpic(recentSessionsRetrievalSignal)
 
-const omitEmptyKeys = (userKeys: Key[]) => userKeys.filter(({ value }) => value !== '')
+const mapCliquesToPasswords = (
+  items: DeepReadonly<Clique[]>
+): DeepReadonly<{ cliqueId: string; password: Password }[]> => fn.pipe(
+  items,
+  readonlyArray.filterMap((item) => fn.pipe(
+    getCliqueRoot(item),
+    option.chain((root) => root.value === '' ? option.none : option.some({
+      cliqueId: item.name,
+      password: extractPassword(root)
+    }))
+  ))
+)
 
-const getDuplicateGroups = (userKeys: Key[]): Observable<string[][]> => {
+const getDuplicateGroups = (items: DeepReadonly<Clique[]>): Observable<string[][]> => {
   const passwordToIds = new Map<string, string[]>()
-  omitEmptyKeys(userKeys).forEach(({ identifier, value }) => {
-    if (!passwordToIds.has(value)) {
-      passwordToIds.set(value, [])
+  mapCliquesToPasswords(items).forEach(({ cliqueId, password }) => {
+    if (!passwordToIds.has(password.value)) {
+      passwordToIds.set(password.value, [])
     }
-    passwordToIds.get(value)!.push(identifier)
+    passwordToIds.get(password.value)!.push(cliqueId)
   })
   const duplicateGroups: string[][] = []
   for (const group of passwordToIds.values()) {
@@ -90,13 +102,15 @@ export const duplicateGroupsSearchEpic: Epic<RootAction, RootAction, RootState> 
   filter(isActionOf([enableAnalysis, disableAnalysis])),
   switchMap((action) => {
     if (isActionOf(enableAnalysis, action)) {
-      const toSignal = (data: Observable<DeepReadonly<string[][]>>) => data.pipe(map(fn.flow(success, duplicateGroupsSearchSignal)))
+      const toSignal = (data: Observable<DeepReadonly<string[][]>>) => {
+        return data.pipe(map(fn.flow(success, duplicateGroupsSearchSignal)))
+      }
       return concat(
-        toSignal(getDuplicateGroups(state$.value.user.keys.userKeys)),
+        toSignal(getDuplicateGroups(cliques(state$.value))),
         action$.pipe(
           filter(isActionOf(userKeysUpdate)),
           withLatestFrom(state$),
-          switchMap(([, state]) => toSignal(getDuplicateGroups(state.user.keys.userKeys)))
+          switchMap(([, state]) => toSignal(getDuplicateGroups(cliques(state))))
         )
       )
     } else if (isActionOf(disableAnalysis, action)) {
@@ -106,72 +120,74 @@ export const duplicateGroupsSearchEpic: Epic<RootAction, RootAction, RootState> 
   })
 )
 
-const getExposedUserKeyIds = (userKeys: Key[]): Observable<string[]> => {
+const getExposedCliqueIds = (items: DeepReadonly<Clique[]>): Observable<DeepReadonly<string[]>> => {
   const pwnedService = container.resolve<PwnedService>(PWNED_SERVICE_TOKEN)
-  return forkJoin(omitEmptyKeys(userKeys).map(async ({ identifier, value }) => ({
-    identifier,
-    pwned: await pwnedService.checkKey(value)
+  return forkJoin(mapCliquesToPasswords(items).map(async ({ cliqueId, password }) => ({
+    cliqueId,
+    pwned: await pwnedService.checkKey(password.value)
   }))).pipe(
-    defaultIfEmpty(<{ identifier: string; pwned: boolean }[]>[]),
-    map(array.filterMap(({ identifier, pwned }) => pwned ? option.of(identifier) : option.zero()))
+    defaultIfEmpty(<{ cliqueId: string; pwned: boolean }[]>[]),
+    map(readonlyArray.filterMap(({ cliqueId, pwned }) => pwned ? option.of(cliqueId) : option.zero()))
   )
 }
 
-export const exposedUserKeyIdsSearchEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+export const exposedCliqueIdsSearchEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf([enableAnalysis, disableAnalysis])),
   switchMap((action) => {
     if (isActionOf(enableAnalysis, action)) {
-      const toSignal = (data: Observable<DeepReadonly<string[]>>) => data.pipe(map(fn.flow(success, exposedUserKeyIdsSearchSignal)))
-      const request = (userKeys: Key[]): Observable<RootAction> => concat(
-        of(exposedUserKeyIdsSearchSignal(indicator(ExposedUserKeyIdsSearchFlowIndicator.WORKING))),
-        toSignal(getExposedUserKeyIds(userKeys))
+      const toSignal = (data: Observable<DeepReadonly<string[]>>) => data.pipe(map(fn.flow(success, exposedCliqueIdsSearchSignal)))
+      const request = (items: DeepReadonly<Clique[]>): Observable<RootAction> => concat(
+        of(exposedCliqueIdsSearchSignal(indicator(ExposedCliqueIdsSearchFlowIndicator.WORKING))),
+        toSignal(getExposedCliqueIds(items))
       )
       return concat(
-        request(state$.value.user.keys.userKeys),
+        request(cliques(state$.value)),
         action$.pipe(
           filter(isActionOf(userKeysUpdate)),
           withLatestFrom(state$),
-          switchMap(([, state]) => request(state.user.keys.userKeys))
+          switchMap(([, state]) => request(cliques(state)))
         )
       ).pipe(
-        catchError((error) => of(exposedUserKeyIdsSearchSignal(exception(errorToMessage(error)))))
+        catchError((error) => of(exposedCliqueIdsSearchSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(disableAnalysis, action)) {
-      return of(exposedUserKeyIdsSearchSignal(cancel()))
+      return of(exposedCliqueIdsSearchSignal(cancel()))
     }
     return EMPTY
   })
 )
 
-export const displayExposedUserKeyIdsSearchExceptionsEpic = createDisplayExceptionsEpic(exposedUserKeyIdsSearchSignal)
+export const displayExposedCliqueIdsSearchExceptionsEpic = createDisplayExceptionsEpic(exposedCliqueIdsSearchSignal)
 
-const getVulnerableKeys = (userKeys: Key[]): Observable<ScoredKey[]> => {
+const getVulnerableCliques = (items: DeepReadonly<Clique[]>): Observable<DeepReadonly<ScoredClique[]>> => {
   const strengthTestService = container.resolve<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN)
   return of(fn.pipe(
-    omitEmptyKeys(userKeys),
-    array.map((item: Key) => <ScoredKey>({
-      identifier: item.identifier,
-      score: strengthTestService.score(item.value, item.tags)
+    mapCliquesToPasswords(items),
+    readonlyArray.map(({ cliqueId, password }) => <ScoredClique>({
+      name: cliqueId,
+      score: strengthTestService.score(password.value, password.tags as string[])
     })),
-    array.filter((value) => value.score.color !== Color.GREEN)
+    readonlyArray.filter((value) => value.score.color !== Color.GREEN)
   ))
 }
 
-export const vulnerableKeysSearchEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+export const vulnerableCliquesSearchEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf([enableAnalysis, disableAnalysis])),
   switchMap((action) => {
     if (isActionOf(enableAnalysis, action)) {
-      const toSignal = (data: Observable<DeepReadonly<ScoredKey[]>>) => data.pipe(map(fn.flow(success, vulnerableKeysSearchSignal)))
+      const toSignal = (data: Observable<DeepReadonly<ScoredClique[]>>) => {
+        return data.pipe(map(fn.flow(success, vulnerableCliquesSearchSignal)))
+      }
       return concat(
-        toSignal(getVulnerableKeys(state$.value.user.keys.userKeys)),
+        toSignal(getVulnerableCliques(cliques(state$.value))),
         action$.pipe(
           filter(isActionOf(userKeysUpdate)),
           withLatestFrom(state$),
-          switchMap(([, state]) => toSignal(getVulnerableKeys(state.user.keys.userKeys)))
+          switchMap(([, state]) => toSignal(getVulnerableCliques(cliques(state))))
         )
       )
     } else if (isActionOf(disableAnalysis, action)) {
-      return of(vulnerableKeysSearchSignal(cancel()))
+      return of(vulnerableCliquesSearchSignal(cancel()))
     }
     return EMPTY
   })

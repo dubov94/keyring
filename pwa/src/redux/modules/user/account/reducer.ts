@@ -1,12 +1,25 @@
-import { isActionSuccess, isActionSuccess2, StandardError } from '@/redux/flow_signal'
-import { identity, reducer, RemoteData, withNoResult, zero } from '@/redux/remote_data'
 import { createReducer } from '@reduxjs/toolkit'
+import { function as fn, option } from 'fp-ts'
+import { castDraft } from 'immer'
+import { DeepReadonly } from 'ts-essentials'
 import { isActionOf } from 'typesafe-actions'
+import {
+  ServiceReleaseMailTokenResponseError,
+  ServiceAcquireMailTokenResponseError,
+  ServiceChangeMasterKeyResponseError,
+  ServiceChangeUsernameResponseError,
+  ServiceDeleteAccountResponseError,
+  ServiceAcceptOtpParamsResponseError,
+  ServiceResetOtpResponseError,
+  ServiceFeaturePrompt
+} from '@/api/definitions'
+import { isActionSuccess, isActionSuccess2, StandardError } from '@/redux/flow_signal'
 import {
   authnViaDepotSignal,
   registrationSignal,
   remoteAuthnComplete
-} from '../../authn/actions'
+} from '@/redux/modules/authn/actions'
+import { identity, reducer, RemoteData, withNoResult, zero } from '@/redux/remote_data'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,
@@ -36,19 +49,6 @@ import {
   cancelOtpReset,
   featureAckSignal
 } from './actions'
-import {
-  ServiceReleaseMailTokenResponseError,
-  ServiceAcquireMailTokenResponseError,
-  ServiceChangeMasterKeyResponseError,
-  ServiceChangeUsernameResponseError,
-  ServiceDeleteAccountResponseError,
-  ServiceAcceptOtpParamsResponseError,
-  ServiceResetOtpResponseError,
-  ServiceFeaturePrompt
-} from '@/api/definitions'
-import { DeepReadonly } from 'ts-essentials'
-import { castDraft } from 'immer'
-import { function as fn, option } from 'fp-ts'
 
 export default createReducer<{
   isAuthenticated: boolean;
@@ -65,7 +65,7 @@ export default createReducer<{
   accountDeletion: RemoteData<AccountDeletionFlowIndicator, {}, StandardError<ServiceDeleteAccountResponseError>>;
   isOtpEnabled: boolean;
   otpToken: string | null;
-  otpParamsGeneration: RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>;
+  otpParamsGeneration: RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<never>>;
   otpParamsAcceptance: RemoteData<OtpParamsAcceptanceFlowIndicator, {}, StandardError<ServiceAcceptOtpParamsResponseError>>;
   otpReset: RemoteData<OtpResetFlowIndicator, {}, StandardError<ServiceResetOtpResponseError>>;
 }>(
@@ -175,7 +175,7 @@ export default createReducer<{
       state.otpParamsGeneration = castDraft(reducer(
         identity<OtpParamsGenerationFlowIndicator>(),
         identity<DeepReadonly<OtpParams>>(),
-        identity<StandardError<{}>>()
+        identity<StandardError<never>>()
       )(state.otpParamsGeneration, action.payload))
     })
     .addMatcher(isActionOf(otpParamsGenerationReset), (state) => {

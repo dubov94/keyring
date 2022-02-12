@@ -3,16 +3,17 @@ import './register_service_worker'
 import '@fontsource/material-icons'
 import '@fontsource/roboto'
 import '@fontsource/roboto-mono'
-import '@fortawesome/fontawesome-free/css/all.css'
 
 // https://github.com/microsoft/tsyringe#installation
 import 'reflect-metadata'
 import { container } from 'tsyringe'
 
+import { AnyAction } from '@reduxjs/toolkit'
 import axios from 'axios'
 import Qrc from 'qrcode'
 import { Subject } from 'rxjs'
 import { takeUntil } from 'rxjs/operators'
+import { v4 } from 'uuid'
 
 import Vue, { VueConstructor } from 'vue'
 import Vuelidate from 'vuelidate'
@@ -29,10 +30,10 @@ import { sha1 } from '@/cryptography/sha1'
 import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from '@/cryptography/sodium_worker_interface'
 import SodiumWorker from './cryptography/sodium.worker.ts'
 import { StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN, ZxcvbnService } from '@/cryptography/strength_test_service'
+import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
 import { getVueI18n } from '@/i18n'
 import { store, state$, action$ } from '@/redux'
 import { injectionsSetUp } from '@/redux/actions'
-import { AnyAction } from '@reduxjs/toolkit'
 import { Router } from '@/router'
 import { VUE_CONSTRUCTOR_TOKEN } from '@/vue_di'
 
@@ -64,6 +65,10 @@ container.register<QrcEncoder>(QRC_ENCODER_TOKEN, {
   useValue: { encode: Qrc.toDataURL }
 })
 
+container.register<UidService>(UID_SERVICE_TOKEN, {
+  useValue: { v4 }
+})
+
 Vue.config.productionTip = false
 
 container.register<VueConstructor>(VUE_CONSTRUCTOR_TOKEN, {
@@ -88,8 +93,10 @@ Vue.component('form-text-field', FormTextField)
 
 Vue.mixin({
   data () {
+    const subject = new Subject<void>()
+    Object.freeze(subject)
     return {
-      $destruction: new Subject<void>()
+      $destruction: subject
     }
   },
   beforeDestroy () {
@@ -100,7 +107,7 @@ Vue.mixin({
 Vue.mixin({
   data () {
     return {
-      $state: store.getState(),
+      $state: state$.getValue(),
       $actions: action$
     }
   },

@@ -3,7 +3,8 @@
     :prepend-icon="prependIcon" :autofocus="autofocus" ref="input" :solo="solo"
     :error-messages="errorMessages" @blur="touch" @keydown.native.enter="touch"
     @focus="reset" @input="input" :append-icon="appendIcon" :error="error"
-    :aria-label="label" :hide-details="hideDetails || false" autocomplete="off">
+    :aria-label="label" :hide-details="hideDetails || false" autocomplete="off"
+    v-on="extraListeners">
   </v-text-field>
 </template>
 
@@ -11,6 +12,7 @@
 export default {
   props: [
     'appendIcon',
+    'appendEvent',
     'autofocus',
     'disabled',
     'dirty',
@@ -19,6 +21,7 @@ export default {
     'errors',
     'label',
     'prependIcon',
+    'prependEvent',
     'solo',
     'type',
     'value'
@@ -42,9 +45,9 @@ export default {
         this.$emit('reset')
       }
     },
-    input (value) {
+    input (event) {
       this.reset()
-      this.$emit('input', value)
+      this.$emit('input', event)
     },
     focus () {
       this.$refs.input.focus()
@@ -63,6 +66,16 @@ export default {
     error () {
       return this.dirtyInternal && (
         this.invalid || this.errorMessages.length > 0)
+    },
+    extraListeners () {
+      const nameToListener = {}
+      if (this.appendEvent) {
+        nameToListener['click:append'] = (event) => this.$emit('click:append', event)
+      }
+      if (this.prependEvent) {
+        nameToListener['click:prepend'] = (event) => this.$emit('click:prepend', event)
+      }
+      return nameToListener
     }
   },
   watch: {

@@ -1,7 +1,17 @@
+import { DeepReadonly } from 'ts-essentials'
+import {
+  ServiceReleaseMailTokenResponseError,
+  ServiceChangeUsernameResponseError,
+  ServiceChangeMasterKeyResponseError,
+  ServiceAcquireMailTokenResponseError,
+  ServiceDeleteAccountResponseError,
+  ServiceAcceptOtpParamsResponseError,
+  ServiceResetOtpResponseError,
+  ServiceFeaturePrompt
+} from '@/api/definitions'
 import { StandardError } from '@/redux/flow_signal'
 import { RemoteData } from '@/redux/remote_data'
 import { RootState } from '@/redux/root_reducer'
-import { DeepReadonly } from 'ts-essentials'
 import {
   AccountDeletionFlowIndicator,
   MailTokenAcquisitionFlowIndicator,
@@ -13,16 +23,6 @@ import {
   OtpResetFlowIndicator,
   UsernameChangeFlowIndicator
 } from './actions'
-import {
-  ServiceReleaseMailTokenResponseError,
-  ServiceChangeUsernameResponseError,
-  ServiceChangeMasterKeyResponseError,
-  ServiceAcquireMailTokenResponseError,
-  ServiceDeleteAccountResponseError,
-  ServiceAcceptOtpParamsResponseError,
-  ServiceResetOtpResponseError,
-  ServiceFeaturePrompt
-} from '@/api/definitions'
 
 export const isAuthenticated = (state: RootState): boolean => state.user.account.isAuthenticated
 export const canAccessApi = (state: RootState): boolean => state.user.account.sessionKey !== null
@@ -46,7 +46,7 @@ export const accountDeletion = (state: RootState): DeepReadonly<AccountDeletion>
 
 export const isOtpEnabled = (state: RootState): boolean => state.user.account.isOtpEnabled
 
-export type OtpParamsGeneration = RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<{}>>
+export type OtpParamsGeneration = RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<never>>
 export const otpParamsGeneration = (state: RootState): DeepReadonly<OtpParamsGeneration> => state.user.account.otpParamsGeneration
 
 export type OtpParamsAcceptance = RemoteData<OtpParamsAcceptanceFlowIndicator, {}, StandardError<ServiceAcceptOtpParamsResponseError>>

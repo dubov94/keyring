@@ -8,84 +8,91 @@
 </style>
 
 <template>
-  <div>
-    <div v-if="isOtpEnabled">
-      <p>Enter the second factor to disable.</p>
-      <v-form @keydown.native.enter.prevent="deactivate">
-        <form-text-field type="text" class="mb-6" solo :invalid="!$v.deactivation.valid"
-          :value="deactivation.otp" @input="setDeactivationOtp" :hide-details="true"
-          :dirty="$v.deactivation.$dirty" :append-icon="deactivationOtpIcon"
-          @touch="$v.deactivation.$touch()" @reset="$v.deactivation.$reset()"></form-text-field>
+  <v-expansion-panel @change="ackOtpPrompt">
+    <v-expansion-panel-header>
+      <v-badge left dot color="warning" :value="otpPrompt" :offset-x="-2" :offset-y="-2">
+        Two-factor authentication
+      </v-badge>
+    </v-expansion-panel-header>
+    <v-expansion-panel-content>
+      <div v-if="isOtpEnabled">
+        <p>Enter the second factor to disable.</p>
+        <v-form @keydown.native.enter.prevent="deactivate">
+          <form-text-field type="text" class="mb-6" solo :invalid="!$v.deactivation.valid"
+            :value="deactivation.otp" @input="setDeactivationOtp" :hide-details="true"
+            :dirty="$v.deactivation.$dirty" :append-icon="deactivationOtpIcon"
+            @touch="$v.deactivation.$touch()" @reset="$v.deactivation.$reset()"></form-text-field>
+          <div class="mx-4">
+            <v-btn block color="primary" @click="deactivate" :disabled="!canAccessApi" :loading="otpResetInProgress">
+              Disable
+            </v-btn>
+          </div>
+        </v-form>
+      </div>
+      <div v-else-if="maybeOtpParams">
+        <p>
+          Scan the image with <a href="https://support.google.com/accounts/answer/1066447" rel="nopener noreferrer">
+          Google Authenticator</a> or a similar application.
+        </p>
+        <v-tabs v-model="seedView" centered>
+          <v-tab>Image</v-tab>
+          <v-tab>Text</v-tab>
+        </v-tabs>
+        <v-tabs-items v-model="seedView" class="py-8">
+          <v-tab-item>
+            <img class="qrc" :src="maybeOtpParams.qrcDataUrl"/>
+          </v-tab-item>
+          <v-tab-item>
+            <div class="text-h5 text-center">{{ maybeOtpParams.sharedSecret }}</div>
+          </v-tab-item>
+        </v-tabs-items>
+        <p>Print out or save the recovery codes.</p>
+        <div>
+          <v-chip v-for="(item, index) in maybeOtpParams.scratchCodes" :key="index" class="mb-4 mr-4">
+            {{ item }}
+          </v-chip>
+        </div>
+        <p>Enter a one-time six-digit code from the application to confirm.</p>
+        <v-form @keydown.native.enter.prevent="activate">
+          <form-text-field type="text" class="mb-6" solo :invalid="!$v.activation.valid"
+            :value="activation.otp" @input="setActivationOtp" :hide-details="true"
+            :dirty="$v.activation.$dirty" :append-icon="activationOtpIcon"
+            @touch="$v.activation.$touch()" @reset="$v.activation.$reset()"></form-text-field>
+          <div class="mx-4">
+            <v-btn block color="primary" @click="activate" :disabled="!canAccessApi" :loading="otpParamsAcceptanceInProgress">
+              Activate
+            </v-btn>
+          </div>
+        </v-form>
+      </div>
+      <div v-else>
+        <p>
+          <a href="https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html" target="_blank" rel="noopener noreferrer">Two-factor authentication</a>
+          additionally protects your account by requesting a time-based smartphone-generated token for each authentication attempt unless 'Remember me' is switched on, making the device trusted.
+        </p>
         <div class="mx-4">
-          <v-btn block color="primary" @click="deactivate" :disabled="!canAccessApi" :loading="otpResetInProgress">
-            Disable
+          <v-btn block color="primary" @click="generate" :disabled="!canAccessApi" :loading="otpParamsGenerationInProgress">
+            Enable
           </v-btn>
         </div>
-      </v-form>
-    </div>
-    <div v-else-if="maybeOtpParams">
-      <p>
-        Scan the image with <a href="https://support.google.com/accounts/answer/1066447" rel="nopener noreferrer">
-        Google Authenticator</a> or a similar application.
-      </p>
-      <v-tabs v-model="seedView" centered>
-        <v-tab>Image</v-tab>
-        <v-tab>Text</v-tab>
-      </v-tabs>
-      <v-tabs-items v-model="seedView" class="py-8">
-        <v-tab-item>
-          <img class="qrc" :src="maybeOtpParams.qrcDataUrl"/>
-        </v-tab-item>
-        <v-tab-item>
-          <div class="text-h5 text-center">{{ maybeOtpParams.sharedSecret }}</div>
-        </v-tab-item>
-      </v-tabs-items>
-      <p>Print out or save the recovery codes.</p>
-      <div>
-        <v-chip v-for="(item, index) in maybeOtpParams.scratchCodes" :key="index" class="mb-4 mr-4">
-          {{ item }}
-        </v-chip>
       </div>
-      <p>Enter a one-time six-digit code from the application to confirm.</p>
-      <v-form @keydown.native.enter.prevent="activate">
-        <form-text-field type="text" class="mb-6" solo :invalid="!$v.activation.valid"
-          :value="activation.otp" @input="setActivationOtp" :hide-details="true"
-          :dirty="$v.activation.$dirty" :append-icon="activationOtpIcon"
-          @touch="$v.activation.$touch()" @reset="$v.activation.$reset()"></form-text-field>
-        <div class="mx-4">
-          <v-btn block color="primary" @click="activate" :disabled="!canAccessApi" :loading="otpParamsAcceptanceInProgress">
-            Activate
-          </v-btn>
-        </div>
-      </v-form>
-    </div>
-    <div v-else>
-      <p>
-        <a href="https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html" target="_blank" rel="noopener noreferrer">Two-factor authentication</a>
-        additionally protects your account by requesting a time-based smartphone-generated token for each authentication attempt unless 'Remember me' is switched on, making the device trusted.
-      </p>
-      <div class="mx-4">
-        <v-btn block color="primary" @click="generate" :disabled="!canAccessApi" :loading="otpParamsGenerationInProgress">
-          Enable
-        </v-btn>
-      </div>
-    </div>
-  </div>
+    </v-expansion-panel-content>
+  </v-expansion-panel>
 </template>
 
 <script lang="ts">
+import { option, function as fn } from 'fp-ts'
+import { filter, takeUntil } from 'rxjs/operators'
+import { DeepReadonly } from 'ts-essentials'
 import Vue, { VueConstructor } from 'vue'
 import {
-  isOtpEnabled,
-  canAccessApi,
-  OtpParamsGeneration,
-  otpParamsGeneration,
-  OtpParamsAcceptance,
-  otpParamsAcceptance,
-  OtpReset,
-  otpReset
-} from '@/redux/modules/user/account/selectors'
+  ServiceFeatureType,
+  ServiceAcceptOtpParamsResponseError,
+  ServiceResetOtpResponseError
+} from '@/api/definitions'
+import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
 import {
+  ackFeaturePrompt,
   generateOtpParams,
   otpParamsGenerationReset,
   OtpParams,
@@ -96,15 +103,18 @@ import {
   otpResetSignal,
   cancelOtpReset
 } from '@/redux/modules/user/account/actions'
-import { DeepReadonly } from 'ts-essentials'
-import { hasIndicator, data, error } from '@/redux/remote_data'
-import { option, function as fn } from 'fp-ts'
-import { filter, takeUntil } from 'rxjs/operators'
-import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
 import {
-  ServiceAcceptOtpParamsResponseError,
-  ServiceResetOtpResponseError
-} from '@/api/definitions'
+  isOtpEnabled,
+  canAccessApi,
+  featurePrompts,
+  OtpParamsGeneration,
+  otpParamsGeneration,
+  OtpParamsAcceptance,
+  otpParamsAcceptance,
+  OtpReset,
+  otpReset
+} from '@/redux/modules/user/account/selectors'
+import { hasIndicator, data, error } from '@/redux/remote_data'
 
 interface Mixins {
   activation: { frozen: boolean };
@@ -154,6 +164,10 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   computed: {
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
+    },
+    otpPrompt () {
+      return featurePrompts(this.$data.$state).some(
+        (fp) => fp.featureType === ServiceFeatureType.OTP)
     },
     isOtpEnabled (): boolean {
       return isOtpEnabled(this.$data.$state)
@@ -210,6 +224,11 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   methods: {
     generate () {
       this.dispatch(generateOtpParams())
+    },
+    ackOtpPrompt () {
+      if (this.otpPrompt) {
+        this.dispatch(ackFeaturePrompt(ServiceFeatureType.OTP))
+      }
     },
     setActivationOtp (value: string) {
       this.activation.otp = value

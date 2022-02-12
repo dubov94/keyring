@@ -1,86 +1,167 @@
+import { expect } from 'chai'
+import { container } from 'tsyringe'
+import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
 import { success } from '@/redux/flow_signal'
 import { reduce } from '@/redux/testing'
-import { expect } from 'chai'
+import { createUserKey } from '@/redux/testing/entities'
+import { SequentialFakeUidService } from '@/redux/testing/services'
 import {
-  create,
   creationSignal,
-  delete_,
   deletionSignal,
   emplace,
-  update,
+  NIL_KEY_ID,
+  shadowElectionSignal,
   updationSignal
 } from './actions'
 import reducer from './reducer'
 
-describe('semaphore', () => {
-  ;[
-    create({ value: 'value', tags: ['tag'] }),
-    update({ identifier: 'identifier', value: 'value', tags: ['tag'] }),
-    delete_('identifier')
-  ].forEach((trigger) => {
-    it(`increases on ${trigger.type}`, () => {
-      const state = reducer(undefined, trigger)
-
-      expect(state.semaphore).to.equal(1)
-    })
-  })
-
-  ;[
-    creationSignal(success({ identifier: 'identifier', value: 'value', tags: ['tag'] })),
-    updationSignal(success({ identifier: 'identifier', value: 'value', tags: ['tag'] })),
-    deletionSignal(success('identifier'))
-  ].forEach((trigger) => {
-    it(`decreases on ${trigger.type}`, () => {
-      const state = reducer(undefined, trigger)
-
-      expect(state.semaphore).to.equal(-1)
-    })
-  })
-})
-
 describe('emplace', () => {
-  it('sorts and sets the keys', () => {
-    const a = { identifier: '0', value: 'b', tags: ['a', 'b'] }
-    const b = { identifier: '1', value: 'a', tags: ['a', 'c'] }
-    const c = { identifier: '2', value: 'a', tags: ['a', 'b', 'd'] }
-    const d = { identifier: '3', value: 'a', tags: ['a', 'b'] }
-    const state = reducer(undefined, emplace([a, b, c, d]))
+  beforeEach(() => {
+    container.register<UidService>(UID_SERVICE_TOKEN, {
+      useValue: new SequentialFakeUidService()
+    })
+  })
 
-    expect(state.userKeys).to.deep.equal([d, a, c, b])
+  it('sets the keys', () => {
+    const userKeys = [
+      createUserKey({ identifier: '1', value: 'x', tags: ['a', 'b'] }),
+      createUserKey({ identifier: '2', value: 'y', tags: ['c', 'd'] })
+    ]
+    const state = reducer(undefined, emplace(userKeys))
+
+    expect(state.userKeys).to.deep.equal(userKeys)
+  })
+
+  it('inherits cliques', () => {
+    const replacement = createUserKey({ identifier: '1', value: 'after' })
+    const state = reduce(reducer, undefined, [
+      emplace([createUserKey({ identifier: '1', value: 'before' })]),
+      emplace([replacement])
+    ])
+
+    expect(state.userKeys).to.deep.equal([replacement])
+    expect(state.idToClique).to.deep.equal({ 1: 'uid-1' })
   })
 })
 
 describe('creationSignal', () => {
-  it('prepends the new key', () => {
-    const a = { identifier: '0', value: 'a', tags: [] }
-    const b = { identifier: '0', value: 'b', tags: [] }
-    const state = reduce(reducer, undefined, [
-      emplace([a]),
-      creationSignal(success(b))
-    ])
+  it('installs a new key', () => {
+    const addition = createUserKey({ identifier: '1', value: 'a' })
+    const state = reducer(undefined, creationSignal(
+      success(addition), { uid: 'random', clique: 'clique' }
+    ))
 
-    expect(state.userKeys).to.deep.equal([b, a])
+    expect(state.userKeys).to.deep.equal([addition])
+    expect(state.idToClique).to.deep.equal({ 1: 'clique' })
   })
 })
 
 describe('updationSignal', () => {
+  beforeEach(() => {
+    container.register<UidService>(UID_SERVICE_TOKEN, {
+      useValue: new SequentialFakeUidService()
+    })
+  })
+
   it('updates an existing key', () => {
+    const replacement = createUserKey({ identifier: '1', value: 'y', tags: ['t'] })
     const state = reduce(reducer, undefined, [
-      emplace([{ identifier: '0', value: 'x', tags: [] }]),
-      updationSignal(success({ identifier: '0', value: 'y', tags: ['t'] }))
+      emplace([createUserKey({ identifier: '1', value: 'x' })]),
+      updationSignal(success(replacement), { uid: 'random' })
     ])
 
-    expect(state.userKeys).to.deep.equal([{ identifier: '0', value: 'y', tags: ['t'] }])
+    expect(state.userKeys).to.deep.equal([replacement])
   })
 })
 
 describe('deletionSignal', () => {
-  it('deletes an existing key', () => {
+  beforeEach(() => {
+    container.register<UidService>(UID_SERVICE_TOKEN, {
+      useValue: new SequentialFakeUidService()
+    })
+  })
+
+  it('deletes the key and its shadows', () => {
     const state = reduce(reducer, undefined, [
-      emplace([{ identifier: '0', value: '', tags: [] }]),
-      deletionSignal(success('0'))
+      emplace([
+        createUserKey({ identifier: '1' }),
+        createUserKey({ identifier: '2', attrs: { isShadow: true, parent: '1' } })
+      ]),
+      deletionSignal(success('1'), { uid: 'random' })
     ])
 
     expect(state.userKeys).to.be.empty
+    expect(state.idToClique).to.be.empty
+  })
+})
+
+describe('shadowElectionSignal', () => {
+  beforeEach(() => {
+    container.register<UidService>(UID_SERVICE_TOKEN, {
+      useValue: new SequentialFakeUidService()
+    })
+  })
+
+  it('applies shadow metamorphosis', () => {
+    const result = createUserKey({ identifier: '2' })
+    const state = reduce(reducer, undefined, [
+      emplace([
+        createUserKey({
+          identifier: '1',
+          attrs: { isShadow: true, parent: NIL_KEY_ID }
+        })
+      ]),
+      shadowElectionSignal(success({
+        origin: '1',
+        result,
+        obsolete: ['1']
+      }), { uid: 'random' })
+    ])
+
+    expect(state.userKeys).to.deep.equal([result])
+    expect(state.idToClique).to.deep.equal({ 2: 'uid-1' })
+  })
+
+  it('applies shadow merge', () => {
+    const result = createUserKey({ identifier: '1', value: 'after' })
+    const state = reduce(reducer, undefined, [
+      emplace([
+        createUserKey({ identifier: '1', value: 'before' }),
+        createUserKey({
+          identifier: '2',
+          attrs: { isShadow: true, parent: '1' },
+          value: 'after'
+        })
+      ]),
+      shadowElectionSignal(success({
+        origin: '2',
+        result,
+        obsolete: ['2']
+      }), { uid: 'random' })
+    ])
+
+    expect(state.userKeys).to.deep.equal([result])
+    expect(state.idToClique).to.deep.equal({ 1: 'uid-1' })
+  })
+
+  it('applies shadow purge', () => {
+    const result = createUserKey({ identifier: '1' })
+    const state = reduce(reducer, undefined, [
+      emplace([
+        result,
+        createUserKey({
+          identifier: '2',
+          attrs: { isShadow: true, parent: '2' }
+        })
+      ]),
+      shadowElectionSignal(success({
+        origin: '1',
+        result,
+        obsolete: ['2']
+      }), { uid: 'random' })
+    ])
+
+    expect(state.userKeys).to.deep.equal([result])
+    expect(state.idToClique).to.deep.equal({ 1: 'uid-1' })
   })
 })

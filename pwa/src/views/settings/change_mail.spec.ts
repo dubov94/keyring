@@ -1,16 +1,17 @@
-import { ActionQueue, setUpLocalVue, setUpTranslationMixin, setUpStateMixin, getValue, drainActionQueue, setUpVuetify, tickUntilExists } from '@/components/testing'
-import { success } from '@/redux/flow_signal'
-import { registrationSignal } from '@/redux/modules/authn/actions'
-import { acquireMailToken, mailTokenAcquisitionReset, mailTokenAcquisitionSignal, mailTokenReleaseReset, mailTokenReleaseSignal, releaseMailToken } from '@/redux/modules/user/account/actions'
-import { RootAction } from '@/redux/root_action'
-import { reducer, RootState } from '@/redux/root_reducer'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { mount, Wrapper } from '@vue/test-utils'
 import { expect } from 'chai'
-import { EMPTY, Subject } from 'rxjs'
 import { function as fn } from 'fp-ts'
-import ChangeMail from './ChangeMail.vue'
+import { EMPTY, Subject } from 'rxjs'
+import { ActionQueue, setUpLocalVue, setUpTranslationMixin, setUpStateMixin, getValue, drainActionQueue, setUpVuetify, tickUntilTrue, setUpExpansionPanelProviders } from '@/components/testing'
+import { success } from '@/redux/flow_signal'
+import { registrationSignal } from '@/redux/modules/authn/actions'
 import { showToast } from '@/redux/modules/ui/toast/actions'
+import { acquireMailToken, mailTokenAcquisitionReset, mailTokenAcquisitionSignal, mailTokenReleaseReset, mailTokenReleaseSignal, releaseMailToken } from '@/redux/modules/user/account/actions'
+import { RootAction } from '@/redux/root_action'
+import { reducer, RootState } from '@/redux/root_reducer'
+import { createRegistrationFlowResult } from '@/redux/testing/entities'
+import ChangeMail from './ChangeMail.vue'
 
 describe('ChangeMail', () => {
   let store: Store<RootState, RootAction>
@@ -18,20 +19,21 @@ describe('ChangeMail', () => {
   let wrapper: Wrapper<Vue>
   let $actions: Subject<RootAction>
 
-  beforeEach(() => {
+  const getPanelButton = () => wrapper.findAll('button').filter(
+    (button) => button.text() === 'Change e-mail')
+
+  beforeEach(async () => {
     const localVue = setUpLocalVue()
     store = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     actionQueue = new ActionQueue()
     $actions = new Subject()
     wrapper = mount(ChangeMail, {
       localVue,
       vuetify: setUpVuetify(),
+      provide: {
+        ...setUpExpansionPanelProviders()
+      },
       data () {
         return {
           $actions,
@@ -43,6 +45,7 @@ describe('ChangeMail', () => {
         setUpStateMixin(store, actionQueue)
       ]
     })
+    await getPanelButton().trigger('click')
   })
 
   const getNewMailInput = () => wrapper.find('[aria-label="New e-mail"]')
@@ -68,7 +71,7 @@ describe('ChangeMail', () => {
 
   it('dispatches mail release action', async () => {
     store.dispatch(mailTokenAcquisitionSignal(success('mail@example.com')))
-    await tickUntilExists(getCodeInput, wrapper)
+    await tickUntilTrue(() => getCodeInput().exists())
     await getCodeInput().setValue('123456')
     await getSubmitButton().trigger('click')
 
@@ -91,7 +94,7 @@ describe('ChangeMail', () => {
     await getPasswordInput().setValue('password')
     await getNextButton().trigger('click')
     store.dispatch(mailTokenAcquisitionSignal(success('mail@example.com')))
-    await tickUntilExists(getCodeInput, wrapper)
+    await tickUntilTrue(() => getCodeInput().exists())
     await getCodeInput().setValue('123456')
     await getSubmitButton().trigger('click')
     store.dispatch(mailTokenReleaseSignal(success('mail@example.com')))

@@ -1,5 +1,12 @@
 import { AnyAction } from '@reduxjs/toolkit'
-import { isActionOf, PayloadAction, PayloadActionCreator, TypeConstant } from 'typesafe-actions'
+import {
+  isActionOf,
+  PayloadAction,
+  PayloadActionCreator,
+  PayloadMetaAction,
+  PayloadMetaActionCreator,
+  TypeConstant
+} from 'typesafe-actions'
 
 export enum FlowSignalKind {
   INDICATOR = 'INDICATOR',
@@ -112,37 +119,43 @@ export const isSignalFinale = (signal: FlowSignal<unknown, unknown, unknown>) =>
   return isKindFinale(signal.kind)
 }
 
-export const isActionSuccess = <T extends TypeConstant, I, S, E>(
+// https://github.com/microsoft/TypeScript/blob/main/doc/spec-ARCHIVED.md#411-arrow-functions
+export function isActionSuccess<T extends TypeConstant, I, S, E>(
   actionCreator: PayloadActionCreator<T, FlowSignal<I, S, E>>
-) => (action: AnyAction): action is PayloadAction<T, FlowSuccess<S>> => {
-    return isActionOf(actionCreator, action) && isSignalSuccess(action.payload)
-  }
+): (action: AnyAction) => action is PayloadAction<T, FlowSuccess<S>>
+export function isActionSuccess<T extends TypeConstant, I, S, E, M>(
+  actionCreator: PayloadMetaActionCreator<T, FlowSignal<I, S, E>, M>
+): (action: AnyAction) => action is PayloadMetaAction<T, FlowSuccess<S>, M>
+export function isActionSuccess (actionCreator: any) {
+  return (action: AnyAction) => isActionOf(actionCreator, action) && isSignalSuccess(action.payload)
+}
 
 export const isActionSuccess2 = <
   T1 extends TypeConstant, I1, S1, E1,
   T2 extends TypeConstant, I2, S2, E2,
->(
+  >(
     actionCreators: [
-    PayloadActionCreator<T1, FlowSignal<I1, S1, E1>>,
-    PayloadActionCreator<T2, FlowSignal<I2, S2, E2>>
-  ]
+      PayloadActionCreator<T1, FlowSignal<I1, S1, E1>>,
+      PayloadActionCreator<T2, FlowSignal<I2, S2, E2>>
+    ]
   ) => (action: AnyAction): action is PayloadAction<T1, FlowSuccess<S1>>
-  | PayloadAction<T2, FlowSuccess<S2>> => {
+    | PayloadAction<T2, FlowSuccess<S2>> => {
     return isActionOf(actionCreators, action) && isSignalSuccess(action.payload)
   }
 
-export const isActionSuccess3 = <
-  T1 extends TypeConstant, I1, S1, E1,
-  T2 extends TypeConstant, I2, S2, E2,
-  T3 extends TypeConstant, I3, S3, E3,
->(
-    actionCreators: [
-    PayloadActionCreator<T1, FlowSignal<I1, S1, E1>>,
-    PayloadActionCreator<T2, FlowSignal<I2, S2, E2>>,
-    PayloadActionCreator<T2, FlowSignal<I3, S3, E3>>
-  ]
-  ) => (action: AnyAction): action is PayloadAction<T1, FlowSuccess<S1>>
-  | PayloadAction<T2, FlowSuccess<S2>>
-  | PayloadAction<T3, FlowSuccess<S3>> => {
-    return isActionOf(actionCreators, action) && isSignalSuccess(action.payload)
+export const mapper = <I1, S1, E1, I2, S2, E2>(
+  indicatorMapper: (indicator: I1) => I2,
+  successMapper: (success: S1) => S2,
+  errorMapper: (error: E1) => E2
+) => (signal: FlowSignal<I1, S1, E1>): FlowSignal<I2, S2, E2> => {
+    switch (signal.kind) {
+      case FlowSignalKind.INDICATOR:
+        return indicator(indicatorMapper(signal.value))
+      case FlowSignalKind.SUCCESS:
+        return success(successMapper(signal.data))
+      case FlowSignalKind.ERROR:
+        return { kind: FlowSignalKind.ERROR, error: errorMapper(signal.error) }
+      case FlowSignalKind.CANCEL:
+        return cancel()
+    }
   }

@@ -1,13 +1,13 @@
+import { createStore, Store } from '@reduxjs/toolkit'
+import { expect } from 'chai'
+import { array, function as fn } from 'fp-ts'
 import { injectionsSetUp } from '@/redux/actions'
+import { LogoutTrigger } from '@/redux/modules/user/account/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createStore, Store } from '@reduxjs/toolkit'
-import { expect } from 'chai'
-import { LogoutTrigger } from '../user/account/actions'
 import { rehydrateSession } from './actions'
 import { displayLogoutTriggerEpic } from './epics'
-import { array, function as fn } from 'fp-ts'
 
 describe('displayLogoutTriggerEpic', () => {
   it('shows a toast', async () => {

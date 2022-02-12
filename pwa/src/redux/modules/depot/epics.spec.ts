@@ -1,19 +1,20 @@
-import { Key } from '@/redux/entities'
-import { container } from 'tsyringe'
-import { emplace, userKeysUpdate } from '../user/keys/actions'
-import { mock, instance, when } from 'ts-mockito'
-import { SodiumClient } from '@/cryptography/sodium_client'
-import { activateDepotEpic, localRehashEpic, masterKeyUpdateEpic, updateEncryptedOtpTokenEpic, updateVaultEpic } from './epics'
-import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
-import { RootAction } from '@/redux/root_action'
-import { expect } from 'chai'
-import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import { createStore, Store } from '@reduxjs/toolkit'
-import { reducer, RootState } from '@/redux/root_reducer'
-import { MasterKeyChangeData, masterKeyChangeSignal, otpParamsAcceptanceSignal, otpResetSignal } from '../user/account/actions'
-import { success } from '@/redux/flow_signal'
-import { authnViaDepotSignal, remoteAuthnComplete } from '../authn/actions'
+import { expect } from 'chai'
 import { option } from 'fp-ts'
+import { mock, instance, when } from 'ts-mockito'
+import { container } from 'tsyringe'
+import { SodiumClient } from '@/cryptography/sodium_client'
+import { Key } from '@/redux/entities'
+import { success } from '@/redux/flow_signal'
+import { authnViaDepotSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
+import { MasterKeyChangeData, masterKeyChangeSignal, otpParamsAcceptanceSignal, otpResetSignal } from '@/redux/modules/user/account/actions'
+import { emplace, userKeysUpdate } from '@/redux/modules/user/keys/actions'
+import { RootAction } from '@/redux/root_action'
+import { reducer, RootState } from '@/redux/root_reducer'
+import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
+import { createUserKey } from '@/redux/testing/entities'
+import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
+import { activateDepotEpic, localRehashEpic, masterKeyUpdateEpic, updateEncryptedOtpTokenEpic, updateVaultEpic } from './epics'
 
 describe('updateVaultEpic', () => {
   const depotActivationDataAction = depotActivationData({
@@ -22,11 +23,16 @@ describe('updateVaultEpic', () => {
     hash: 'hash',
     depotKey: 'depotKey'
   })
-  const userKeys: Key[] = [{
-    identifier: '0',
-    value: 'value',
-    tags: []
-  }]
+  const userKeys: Key[] = [
+    createUserKey({
+      identifier: '1',
+      attrs: { isShadow: true }
+    }),
+    createUserKey({
+      identifier: '2',
+      value: 'value'
+    })
+  ]
 
   ;[
     depotActivationDataAction,
@@ -39,7 +45,7 @@ describe('updateVaultEpic', () => {
       const { action$, actionSubject, state$ } = setUpEpicChannels(store)
       const mockSodiumClient = mock(SodiumClient)
       when(mockSodiumClient.encryptMessage(
-        'depotKey', JSON.stringify(userKeys))).thenResolve('vault')
+        'depotKey', JSON.stringify([userKeys[1]]))).thenResolve('vault')
       container.register(SodiumClient, {
         useValue: instance(mockSodiumClient)
       })

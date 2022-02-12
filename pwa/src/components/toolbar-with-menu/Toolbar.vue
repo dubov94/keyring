@@ -25,7 +25,7 @@
       <v-list two-line class="py-0">
         <v-list-item to="/settings">
           <v-list-item-action>
-            <v-icon>fa-cog</v-icon>
+            <v-icon>settings</v-icon>
           </v-list-item-action>
             <v-list-item-content>
               <v-list-item-title>
@@ -36,7 +36,7 @@
         <v-divider></v-divider>
         <v-list-item @click="logOut">
           <v-list-item-action>
-            <v-icon>fa-sign-out-alt</v-icon>
+            <v-icon>logout</v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>

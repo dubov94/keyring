@@ -1,13 +1,13 @@
-import { success } from '@/redux/flow_signal'
-import { reduce } from '@/redux/testing'
 import { expect } from 'chai'
-import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '../authn/actions'
+import { success } from '@/redux/flow_signal'
+import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
 import {
   accountDeletionSignal,
   localOtpTokenFailure,
   remoteCredentialsMismatchLocal,
   usernameChangeSignal
-} from '../user/account/actions'
+} from '@/redux/modules/user/account/actions'
+import { reduce } from '@/redux/testing'
 import { clearDepot, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
 import reducer from './reducer'
 

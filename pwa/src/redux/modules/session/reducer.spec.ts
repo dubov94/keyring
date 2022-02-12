@@ -1,7 +1,7 @@
-import { success } from '@/redux/flow_signal'
 import { expect } from 'chai'
-import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '../authn/actions'
-import { logOut, LogoutTrigger, usernameChangeSignal } from '../user/account/actions'
+import { success } from '@/redux/flow_signal'
+import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
+import { logOut, LogoutTrigger, usernameChangeSignal } from '@/redux/modules/user/account/actions'
 import { rehydrateSession } from './actions'
 import reducer from './reducer'
 

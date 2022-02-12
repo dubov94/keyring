@@ -1,8 +1,8 @@
-import { isActionSuccess } from '@/redux/flow_signal'
 import { createReducer } from '@reduxjs/toolkit'
 import { isActionOf } from 'typesafe-actions'
-import { remoteAuthnComplete, authnViaDepotSignal, registrationSignal } from '../authn/actions'
-import { logOut, LogoutTrigger, usernameChangeSignal } from '../user/account/actions'
+import { isActionSuccess } from '@/redux/flow_signal'
+import { remoteAuthnComplete, authnViaDepotSignal, registrationSignal } from '@/redux/modules/authn/actions'
+import { logOut, LogoutTrigger, usernameChangeSignal } from '@/redux/modules/user/account/actions'
 import { rehydrateSession } from './actions'
 
 export default createReducer<{

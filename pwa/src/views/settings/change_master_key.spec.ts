@@ -1,16 +1,18 @@
-import { ActionQueue, drainActionQueue, getValue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin, setUpVuetify } from '@/components/testing'
-import { success } from '@/redux/flow_signal'
-import { registrationSignal } from '@/redux/modules/authn/actions'
-import { RootAction } from '@/redux/root_action'
-import { reducer, RootState } from '@/redux/root_reducer'
+
 import { createStore, Store } from '@reduxjs/toolkit'
 import { mount, Wrapper } from '@vue/test-utils'
-import { EMPTY, Subject } from 'rxjs'
-import ChangeMasterKey from './ChangeMasterKey.vue'
-import { function as fn } from 'fp-ts'
 import { expect } from 'chai'
-import { changeMasterKey, masterKeyChangeReset, masterKeyChangeSignal } from '@/redux/modules/user/account/actions'
+import { function as fn } from 'fp-ts'
+import { EMPTY, Subject } from 'rxjs'
+import { ActionQueue, drainActionQueue, getValue, setUpExpansionPanelProviders, setUpLocalVue, setUpStateMixin, setUpTranslationMixin, setUpVuetify } from '@/components/testing'
+import { success } from '@/redux/flow_signal'
+import { registrationSignal } from '@/redux/modules/authn/actions'
 import { showToast } from '@/redux/modules/ui/toast/actions'
+import { changeMasterKey, masterKeyChangeReset, masterKeyChangeSignal } from '@/redux/modules/user/account/actions'
+import { RootAction } from '@/redux/root_action'
+import { reducer, RootState } from '@/redux/root_reducer'
+import { createRegistrationFlowResult } from '@/redux/testing/entities'
+import ChangeMasterKey from './ChangeMasterKey.vue'
 
 describe('ChangeMasterKey', () => {
   let store: Store<RootState, RootAction>
@@ -18,20 +20,21 @@ describe('ChangeMasterKey', () => {
   let wrapper: Wrapper<Vue>
   let $actions: Subject<RootAction>
 
-  beforeEach(() => {
+  const getPanelButton = () => wrapper.findAll('button').filter(
+    (button) => button.text() === 'Change password')
+
+  beforeEach(async () => {
     const localVue = setUpLocalVue()
     store = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     actionQueue = new ActionQueue()
     $actions = new Subject()
     wrapper = mount(ChangeMasterKey, {
       localVue,
       vuetify: setUpVuetify(),
+      provide: {
+        ...setUpExpansionPanelProviders()
+      },
       data () {
         return {
           $actions,
@@ -43,12 +46,14 @@ describe('ChangeMasterKey', () => {
         setUpStateMixin(store, actionQueue)
       ]
     })
+    await getPanelButton().trigger('click')
   })
 
   const getCurrentPasswordInput = () => wrapper.find('[aria-label="Current password"]')
   const getNewPasswordInput = () => wrapper.find('[aria-label="New password"]')
   const getRepeatNewPasswordInput = () => wrapper.find('[aria-label="Repeat new password"]')
-  const getSubmitButton = () => wrapper.find('button')
+  const getSubmitButton = () => wrapper.findAll('button').filter(
+    (button) => button.text() === 'Submit')
 
   it('dispatches master key change action', async () => {
     await getCurrentPasswordInput().setValue('abc')
