@@ -1,7 +1,7 @@
 import merge from 'lodash/merge'
 import { DeepPartial } from 'ts-essentials'
 import { ServiceKeyProto } from '@/api/definitions'
-import { Key } from '@/redux/entities'
+import { Key } from '@/redux/domain'
 import { RegistrationFlowResult } from '@/redux/modules/authn/actions'
 import { NIL_KEY_ID } from '@/redux/modules/user/keys/actions'
 import { Clique } from '@/redux/modules/user/keys/selectors'

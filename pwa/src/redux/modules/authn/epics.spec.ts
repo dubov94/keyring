@@ -19,7 +19,7 @@ import {
   ServiceFeatureType
 } from '@/api/definitions'
 import { SodiumClient } from '@/cryptography/sodium_client'
-import { Key } from '@/redux/entities'
+import { Key } from '@/redux/domain'
 import { cancel, exception, failure, FlowSignal, indicator, StandardError, success } from '@/redux/flow_signal'
 import { rehydrateDepot } from '@/redux/modules/depot/actions'
 import { showToast } from '@/redux/modules/ui/toast/actions'
@@ -27,7 +27,7 @@ import { remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/act
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createKeyProto, createUserKey } from '@/redux/testing/entities'
+import { createKeyProto, createUserKey } from '@/redux/testing/domain'
 import {
   AuthnOtpProvisionFlowIndicator,
   authnOtpProvisionReset,

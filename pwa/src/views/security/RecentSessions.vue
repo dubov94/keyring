@@ -29,7 +29,7 @@ import { recentSessions, RecentSessions } from '@/redux/modules/user/security/se
 import { fetchRecentSessions, recentSessionsRetrievalReset } from '@/redux/modules/user/security/actions'
 import { hasIndicator, data } from '@/redux/remote_data'
 import { function as fn, option } from 'fp-ts'
-import { Session } from '@/redux/entities'
+import { Session } from '@/redux/domain'
 import { DeepReadonly } from 'ts-essentials'
 
 interface Item {

@@ -3,7 +3,7 @@ import { option } from 'fp-ts'
 import { castDraft } from 'immer'
 import { DeepReadonly } from 'ts-essentials'
 import { isActionOf } from 'typesafe-actions'
-import { Key } from '@/redux/entities'
+import { Key } from '@/redux/domain'
 import { FlowSignalKind, isActionSuccess } from '@/redux/flow_signal'
 import {
   acquireCliqueLock,

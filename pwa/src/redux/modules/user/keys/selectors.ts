@@ -4,7 +4,7 @@ import groupBy from 'lodash/groupBy'
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import { DeepReadonly } from 'ts-essentials'
-import { Key } from '@/redux/entities'
+import { Key } from '@/redux/domain'
 import { RootState } from '@/redux/root_reducer'
 
 const userKeys = (state: RootState): DeepReadonly<Key[]> => state.user.keys.userKeys

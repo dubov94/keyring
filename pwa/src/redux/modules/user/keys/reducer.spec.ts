@@ -3,7 +3,7 @@ import { container } from 'tsyringe'
 import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
 import { success } from '@/redux/flow_signal'
 import { reduce } from '@/redux/testing'
-import { createUserKey } from '@/redux/testing/entities'
+import { createUserKey } from '@/redux/testing/domain'
 import { SequentialFakeUidService } from '@/redux/testing/services'
 import {
   creationSignal,

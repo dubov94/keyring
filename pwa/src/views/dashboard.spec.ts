@@ -15,7 +15,7 @@ import { emplace, userKeysUpdate } from '@/redux/modules/user/keys/actions'
 import { Clique } from '@/redux/modules/user/keys/selectors'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { createClique, createRegistrationFlowResult, createUserKey } from '@/redux/testing/entities'
+import { createClique, createRegistrationFlowResult, createUserKey } from '@/redux/testing/domain'
 import { SequentialFakeUidService } from '@/redux/testing/services'
 import Dashboard from './Dashboard.vue'
 

@@ -1,5 +1,5 @@
 import { DeepReadonly } from 'ts-essentials'
-import { Session } from '@/redux/entities'
+import { Session } from '@/redux/domain'
 import { StandardError } from '@/redux/flow_signal'
 import { RemoteData } from '@/redux/remote_data'
 import { RootState } from '@/redux/root_reducer'

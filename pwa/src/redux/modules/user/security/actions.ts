@@ -1,7 +1,7 @@
 import { DeepReadonly } from 'ts-essentials'
 import { createAction } from 'typesafe-actions'
 import { Score } from '@/cryptography/strength_test_service'
-import { Session } from '@/redux/entities'
+import { Session } from '@/redux/domain'
 import { FlowSignal, StandardError } from '@/redux/flow_signal'
 
 export enum RecentSessionsRetrievalFlowIndicator {

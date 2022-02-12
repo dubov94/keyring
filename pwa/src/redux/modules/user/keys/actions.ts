@@ -1,6 +1,6 @@
 import { DeepReadonly } from 'ts-essentials'
 import { createAction } from 'typesafe-actions'
-import { Key, Password, WithKeyAttrs, WithKeyId } from '@/redux/entities'
+import { Key, Password, WithKeyAttrs, WithKeyId } from '@/redux/domain'
 import { StandardError, FlowSignal } from '@/redux/flow_signal'
 
 export const extractPassword = <T extends DeepReadonly<Password>>(object: T): DeepReadonly<Password> => ({

@@ -13,7 +13,7 @@ import {
 import { PwnedService, PWNED_SERVICE_TOKEN } from '@/cryptography/pwned_service'
 import { Color, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { Session, Password } from '@/redux/entities'
+import { Session, Password } from '@/redux/domain'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { cancel, exception, indicator, errorToMessage, success } from '@/redux/flow_signal'
 import { extractPassword, userKeysUpdate } from '@/redux/modules/user/keys/actions'

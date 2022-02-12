@@ -2,7 +2,7 @@ import { createReducer } from '@reduxjs/toolkit'
 import { castDraft } from 'immer'
 import { DeepReadonly } from 'ts-essentials'
 import { isActionOf } from 'typesafe-actions'
-import { Session } from '@/redux/entities'
+import { Session } from '@/redux/domain'
 import { StandardError } from '@/redux/flow_signal'
 import { identity, reducer, RemoteData, withNoResult, zero } from '@/redux/remote_data'
 import {

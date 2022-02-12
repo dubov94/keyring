@@ -35,7 +35,7 @@ import { emplace } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createUserKey } from '@/redux/testing/entities'
+import { createUserKey } from '@/redux/testing/domain'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,

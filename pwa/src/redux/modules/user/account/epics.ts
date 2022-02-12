@@ -25,7 +25,7 @@ import {
 import { getQrcEncoder } from '@/cryptography/qrc_encoder'
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { Password } from '@/redux/entities'
+import { Password } from '@/redux/domain'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success } from '@/redux/flow_signal'
 import { remoteAuthnComplete } from '@/redux/modules/authn/actions'

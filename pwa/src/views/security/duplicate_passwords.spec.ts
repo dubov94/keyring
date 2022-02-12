@@ -10,7 +10,7 @@ import { deletionSignal, emplace } from '@/redux/modules/user/keys/actions'
 import { duplicateGroupsSearchSignal } from '@/redux/modules/user/security/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { createUserKey, createClique } from '@/redux/testing/entities'
+import { createUserKey, createClique } from '@/redux/testing/domain'
 import { SequentialFakeUidService } from '@/redux/testing/services'
 import DuplicatePasswords from './DuplicatePasswords.vue'
 

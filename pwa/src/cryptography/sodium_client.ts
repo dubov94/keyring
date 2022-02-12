@@ -1,6 +1,6 @@
 import { container, inject, injectable } from 'tsyringe'
 import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from './sodium_worker_interface'
-import { Password } from '@/redux/entities'
+import { Password } from '@/redux/domain'
 import { DeepReadonly } from 'ts-essentials'
 import { parseArgon2Parametrization, recommendedArgon2Settings, serializeArgon2Parametrization } from './argon2'
 import isEqual from 'lodash/isEqual'

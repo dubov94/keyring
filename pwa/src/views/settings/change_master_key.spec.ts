@@ -11,7 +11,7 @@ import { showToast } from '@/redux/modules/ui/toast/actions'
 import { changeMasterKey, masterKeyChangeReset, masterKeyChangeSignal } from '@/redux/modules/user/account/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { createRegistrationFlowResult } from '@/redux/testing/entities'
+import { createRegistrationFlowResult } from '@/redux/testing/domain'
 import ChangeMasterKey from './ChangeMasterKey.vue'
 
 describe('ChangeMasterKey', () => {

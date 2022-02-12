@@ -6,7 +6,7 @@ import {
   ServiceFeaturePrompt
 } from '@/api/definitions'
 import { FlowSignal, StandardError } from '@/redux/flow_signal'
-import { Key } from '@/redux/entities'
+import { Key } from '@/redux/domain'
 import { DeepReadonly } from 'ts-essentials'
 import { createAction } from 'typesafe-actions'
 import { either, option } from 'fp-ts'

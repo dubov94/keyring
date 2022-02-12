@@ -11,7 +11,7 @@ import { emplace } from '@/redux/modules/user/keys/actions'
 import { vulnerableCliquesSearchSignal } from '@/redux/modules/user/security/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { createClique, createUserKey } from '@/redux/testing/entities'
+import { createClique, createUserKey } from '@/redux/testing/domain'
 import { SequentialFakeUidService } from '@/redux/testing/services'
 import VulnerablePasswords from './VulnerablePasswords.vue'
 

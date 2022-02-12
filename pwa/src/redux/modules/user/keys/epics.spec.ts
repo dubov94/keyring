@@ -13,7 +13,7 @@ import {
 import { SodiumClient } from '@/cryptography/sodium_client'
 import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { Key } from '@/redux/entities'
+import { Key } from '@/redux/domain'
 import { indicator, success } from '@/redux/flow_signal'
 import {
   authnViaDepotSignal,
@@ -23,7 +23,7 @@ import {
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createRegistrationFlowResult, createUserKey } from '@/redux/testing/entities'
+import { createRegistrationFlowResult, createUserKey } from '@/redux/testing/domain'
 import { SequentialFakeUidService } from '@/redux/testing/services'
 import {
   cancelShadow,

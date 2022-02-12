@@ -18,7 +18,7 @@ import {
   ServiceUserData
 } from '@/api/definitions'
 import { getSodiumClient } from '@/cryptography/sodium_client'
-import { Key } from '@/redux/entities'
+import { Key } from '@/redux/domain'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import {
   cancel,
