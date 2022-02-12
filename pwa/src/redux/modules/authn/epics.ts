@@ -2,7 +2,7 @@ import { either, function as fn, option } from 'fp-ts'
 import { Epic } from 'redux-observable'
 import { concat, EMPTY, forkJoin, from, Observable, of } from 'rxjs'
 import { catchError, concatMap, defaultIfEmpty, filter, map, mapTo, switchMap, withLatestFrom } from 'rxjs/operators'
-import { DeepReadonly } from 'ts-essentials'
+import { DeepReadonly, DeepPartial } from 'ts-essentials'
 import { isActionOf, PayloadAction, TypeConstant } from 'typesafe-actions'
 import { getAuthenticationApi } from '@/api/api_di'
 import {
@@ -33,6 +33,7 @@ import {
 } from '@/redux/flow_signal'
 import { isDepotActive } from '@/redux/modules/depot/selectors'
 import { localOtpTokenFailure, remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
+import { NIL_KEY_ID } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
 import {
@@ -285,7 +286,16 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
                     switchMap((vault) => of(authnViaDepotSignal(success({
                       username: action.payload.username,
                       password: action.payload.password,
-                      userKeys: <Key[]>JSON.parse(vault),
+                      userKeys: (<DeepPartial<Key>[]>JSON.parse(vault)).map((keyPartial): Key => ({
+                        identifier: keyPartial.identifier!,
+                        value: keyPartial.value!,
+                        tags: keyPartial.tags!,
+                        attrs: {
+                          isShadow: keyPartial.attrs?.isShadow || false,
+                          parent: keyPartial.attrs?.parent || NIL_KEY_ID
+                        },
+                        creationTimeInMillis: keyPartial.creationTimeInMillis || 0
+                      })),
                       depotKey: encryptionKey
                     }))))
                   )
