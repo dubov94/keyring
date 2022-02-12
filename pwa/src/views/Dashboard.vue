@@ -38,8 +38,17 @@
             </v-alert>
             <v-alert :value="fuzzySearchPrompt" @input="ackFuzzySearchPrompt"
               type="info" outlined dismissible border="left" class="mb-0">
-              Search is no longer prefix-based &mdash; one can type 'vidi' to find an entry tagged as 'Veni, vidi, vici'.
+              Search is no longer prefix-based &mdash; one can type 'vidi' to find an entry labelled as 'Veni, vidi, vici'.
             </v-alert>
+          </v-col>
+        </v-row>
+        <v-row v-if="newCliques.length + cliques.length === 0">
+          <v-col :cols="12" class="text-center">
+            <div class="mt-6"><v-icon :size="128">celebration</v-icon></div>
+            <div class="text-h3 mt-12">Welcome!</div>
+            <p class="mt-6">
+              To create a password, click on the pencil button in the bottom right corner.
+            </p>
           </v-col>
         </v-row>
         <password-masonry :additions="newCliques" :cliques="matchedItems" @addition="evolveAddition">
@@ -47,7 +56,7 @@
       </v-container>
       <div class="dial">
         <v-btn fab color="error" @click="addKey" :disabled="!canAccessApi">
-          <v-icon small>add</v-icon>
+          <v-icon>edit</v-icon>
         </v-btn>
       </div>
     </v-main>
