@@ -1,4 +1,4 @@
-import { monoid, function as fn, option, predicate, record, array } from 'fp-ts'
+import { monoid, function as fn, option, predicate, record, readonlyArray, string } from 'fp-ts'
 import sortBy from 'lodash/sortBy'
 import { Epic } from 'redux-observable'
 import { asapScheduler, concat, EMPTY, from, Observable, of, OperatorFunction, pipe, scheduled, throwError } from 'rxjs'
@@ -231,7 +231,10 @@ export const cliqueOrderEpic: Epic<RootAction, RootAction, RootState> = (action$
       (clique) => clique.shadows.length === 0,
       (clique) => fn.pipe(
         getCliqueRepr(clique),
-        option.fold(() => [], (repr) => repr.tags)
+        option.fold(() => [], (repr) => fn.pipe(
+          repr.tags,
+          readonlyArray.map(string.toLowerCase)
+        ))
       )
     ).map((clique) => clique.name)
   ))
@@ -472,7 +475,7 @@ export const shadowDigestionEpic: Epic<RootAction, RootAction, RootState> = (act
       switchMap(([action, state]) => {
         const clique = fn.pipe(
           cliques(state),
-          array.findFirst((clique) => clique.name === action.payload.clique),
+          readonlyArray.findFirst((clique) => clique.name === action.payload.clique),
           option.getOrElse(() => createEmptyClique(action.payload.clique))
         )
         switch (action.type) {

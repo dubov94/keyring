@@ -333,36 +333,27 @@ describe('shadowElectionEpic', () => {
 })
 
 describe('cliqueOrderEpic', () => {
-  it('sorts on `emplace`', async () => {
+  it('lowers & sorts on `emplace`', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    const shadow = createUserKey({
-      identifier: 'shadow',
-      attrs: { isShadow: true },
-      tags: ['a', 'a']
-    })
-    const sample = createUserKey({
-      identifier: 'sample',
-      tags: ['b', 'a']
-    })
-    store.dispatch(creationSignal(
-      success(shadow), { uid: 'create-shadow', clique: 'x' }
-    ))
-    store.dispatch(creationSignal(
-      success(sample), { uid: 'create-sample', clique: 'y' }
-    ))
+    const shadow = createUserKey({ identifier: 'shadow', attrs: { isShadow: true }, tags: ['a', 'a'] })
+    const sample = createUserKey({ identifier: 'sample', tags: ['c', 'a'] })
+    const upper = createUserKey({ identifier: 'upper', tags: ['B'] })
+    store.dispatch(creationSignal(success(shadow), { uid: 'create-shadow', clique: 'x' }))
+    store.dispatch(creationSignal(success(sample), { uid: 'create-sample', clique: 'y' }))
+    store.dispatch(creationSignal(success(upper), { uid: 'create-upper', clique: 'z' }))
     assert.deepEqual(
       store.getState().user.keys.userKeys.map((key) => key.identifier),
-      [sample.identifier, shadow.identifier]
+      [upper.identifier, sample.identifier, shadow.identifier]
     )
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
     const epicTracker = new EpicTracker(cliqueOrderEpic(action$, state$, {}))
-    actionSubject.next(emplace([sample, shadow]))
+    actionSubject.next(emplace([upper, sample, shadow]))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      cliqueOrder(['x', 'y'])
+      cliqueOrder(['x', 'z', 'y'])
     ])
   })
 })
