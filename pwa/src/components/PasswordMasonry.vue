@@ -4,7 +4,7 @@
   }
 
   .bricks-enter-active, .bricks-move {
-    transition: opacity 0.5s, transform 0.5s;
+    transition: opacity 0.25s, transform 0.25s;
   }
 
   .bricks-leave-active {

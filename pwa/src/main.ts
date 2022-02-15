@@ -18,6 +18,7 @@ import { v4 } from 'uuid'
 import Vue, { VueConstructor } from 'vue'
 import Vuelidate from 'vuelidate'
 import Vuetify from 'vuetify/lib'
+import { VuetifyThemeVariant } from 'vuetify/types/services/theme'
 import Application from './Application.vue'
 import FormTextField from './components/FormTextField.vue'
 
@@ -125,9 +126,20 @@ Vue.mixin({
   }
 })
 
+const THEME: Partial<VuetifyThemeVariant> = {
+  primary: '#1976d2',
+  secondary: '#ff5252',
+  accent: '#ff5252'
+}
 const vuetify = new Vuetify({
   icons: {
     iconfont: 'md'
+  },
+  theme: {
+    themes: {
+      light: THEME,
+      dark: THEME
+    }
   }
 })
 new Vue({

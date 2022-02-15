@@ -24,7 +24,7 @@
         <div class="mail-box">{{ accountMail }}</div>
       </template>
       <template v-else-if="showAcquisitionMail">
-        <div class="mail-box text--secondary">{{ acquisitionMail }}</div>
+        <div class="mail-box grey--text">{{ acquisitionMail }}</div>
       </template>
       <v-window :value="stage" class="pa-4">
         <v-window-item :value="1">

@@ -67,7 +67,7 @@ export const Router = new VueRouter({
     }, {
       path: '/dashboard',
       component: Dashboard,
-      props: { debounceMillis: 200 },
+      props: { debounceMillis: 150 },
       beforeEnter: authenticationGuard
     },
     {

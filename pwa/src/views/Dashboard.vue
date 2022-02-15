@@ -55,7 +55,7 @@
         </password-masonry>
       </v-container>
       <div class="dial">
-        <v-btn fab color="error" @click="addKey" :disabled="!canAccessApi">
+        <v-btn fab color="secondary" @click="addKey" :disabled="!canAccessApi">
           <v-icon>edit</v-icon>
         </v-btn>
       </div>
@@ -77,6 +77,7 @@ import Page from '@/components/Page.vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
 import { getUidService } from '@/cryptography/uid_service'
+import { Key } from '@/redux/domain'
 import { ackFeaturePrompt } from '@/redux/modules/user/account/actions'
 import { canAccessApi, featurePrompts } from '@/redux/modules/user/account/selectors'
 import { userKeysUpdate } from '@/redux/modules/user/keys/actions'
@@ -86,6 +87,12 @@ enum UpdateType {
   SCROLL = 'SCROLL',
   MATCH = 'MATCH'
 }
+
+interface FuseInput {
+  name: string;
+  repr: DeepReadonly<Key>;
+}
+const FUSE_OPTIONS: Fuse.IFuseOptions<FuseInput> = { keys: ['repr.tags'] }
 
 export default (Vue as VueConstructor<Vue>).extend({
   props: ['debounceMillis'],
@@ -135,6 +142,17 @@ export default (Vue as VueConstructor<Vue>).extend({
     },
     toolbarSearchSlot (): string {
       return this.toolbarIsExtended ? 'toolbarExtension' : 'toolbarDefault'
+    },
+    fuseInputs (): FuseInput[] {
+      return array.compact(
+        this.cliques.map((clique: DeepReadonly<Clique>) => fn.pipe(
+          getCliqueRepr(clique),
+          option.map((repr) => ({ name: clique.name, repr }))
+        ))
+      )
+    },
+    fuseInstance (): Fuse<FuseInput> {
+      return new Fuse(this.fuseInputs, FUSE_OPTIONS)
     }
   },
   methods: {
@@ -183,14 +201,7 @@ export default (Vue as VueConstructor<Vue>).extend({
             if (query === '') {
               this.matchedCliques = this.cliques.map((item) => item.name)
             } else {
-              const candidates = array.compact(
-                this.cliques.map((clique: DeepReadonly<Clique>) => fn.pipe(
-                  getCliqueRepr(clique),
-                  option.map((repr) => ({ name: clique.name, repr }))
-                ))
-              )
-              const fuse = new Fuse(candidates, { keys: ['repr.tags'] })
-              this.matchedCliques = fuse.search(query).map(
+              this.matchedCliques = this.fuseInstance.search(query).map(
                 (result) => result.item.name)
             }
             return of(updateType)
