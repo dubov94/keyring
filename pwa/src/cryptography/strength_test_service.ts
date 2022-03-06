@@ -30,7 +30,7 @@ const getColorByScore = (score: number): Color => {
 
 export class ZxcvbnService implements StrengthTestService {
   score (password: string, inputs: string[]): Score {
-    const { score } = zxcvbn(password, inputs)
+    const { score } = zxcvbn(password.slice(0, 64), inputs)
     return {
       value: score / 4,
       color: getColorByScore(score)
