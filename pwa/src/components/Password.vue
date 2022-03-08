@@ -1,3 +1,10 @@
+<style scoped>
+  pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+</style>
+
 <template>
   <v-card>
     <template v-if="!edited">
@@ -55,7 +62,9 @@
     <v-expand-transition>
       <div v-if="reveal">
         <v-divider></v-divider>
-        <v-card-text>{{ baselinePassword.value }}</v-card-text>
+        <v-card-text>
+          <pre>{{ baselinePassword.value }}</pre>
+        </v-card-text>
       </div>
     </v-expand-transition>
     <v-expand-transition>
