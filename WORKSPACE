@@ -152,7 +152,7 @@ maven_install(
     ],
     override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
     repositories = [
-        "https://jcenter.bintray.com/",
+        "https://repo1.maven.org/maven2",
     ],
 )
 
