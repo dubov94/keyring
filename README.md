@@ -12,7 +12,7 @@ Install Python (with PIP and `python-is-python3`), Java 11 and
 Linux distribution. You may also need `build-essentials` or an alternative.
 
 Set up [Redis](https://redis.io/), [PostgreSQL](https://www.postgresql.org/) with
-`postgres:postgres` as an authentication pair and [Docker](https://www.docker.com/.
+`postgres:postgres` as an authentication pair and [Docker](https://www.docker.com/).
 
 Create a database named `keyring` in PostgreSQL; run `bazelisk run //:backends` to
 spin up backends and `bazelisk run //:pwa` to serve frontend.
