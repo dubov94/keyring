@@ -49,7 +49,7 @@ export const fetchRecentSessionsEpic: Epic<RootAction, RootAction, RootState> = 
     if (isActionOf(fetchRecentSessions, action)) {
       return concat(
         of(recentSessionsRetrievalSignal(indicator(RecentSessionsRetrievalFlowIndicator.WORKING))),
-        from(getAdministrationApi().getRecentSessions({
+        from(getAdministrationApi().administrationGetRecentSessions({
           headers: {
             [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
           }

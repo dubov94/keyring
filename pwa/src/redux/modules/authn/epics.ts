@@ -76,7 +76,7 @@ export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action
             from(getSodiumClient().computeAuthDigestAndEncryptionKey(parametrization, action.payload.password)).pipe(
               switchMap(({ authDigest, encryptionKey }) => concat(
                 of(registrationSignal(indicator(RegistrationFlowIndicator.MAKING_REQUEST))),
-                from(getAuthenticationApi().register({
+                from(getAuthenticationApi().authenticationRegister({
                   username: action.payload.username,
                   salt: parametrization,
                   digest: authDigest,
@@ -144,7 +144,7 @@ const apiAuthn = <T extends TypeConstant>(
 ): Observable<RootAction> => {
   return concat(
     of(signalCreator(indicator(AuthnViaApiFlowIndicator.RETRIEVING_PARAMETRIZATION))),
-    from(getAuthenticationApi().getSalt(username)).pipe(
+    from(getAuthenticationApi().authenticationGetSalt(username)).pipe(
       switchMap((getSaltResponse: ServiceGetSaltResponse) => {
         switch (getSaltResponse.error) {
           case ServiceGetSaltResponseError.NONE:
@@ -153,7 +153,7 @@ const apiAuthn = <T extends TypeConstant>(
               from(getSodiumClient().computeAuthDigestAndEncryptionKey(getSaltResponse.salt!, password)).pipe(
                 switchMap(({ authDigest, encryptionKey }) => concat(
                   of(signalCreator(indicator(AuthnViaApiFlowIndicator.MAKING_REQUEST))),
-                  from(getAuthenticationApi().logIn({
+                  from(getAuthenticationApi().authenticationLogIn({
                     username: username,
                     digest: authDigest
                   })).pipe(
@@ -228,7 +228,7 @@ const otpProvision = <T extends TypeConstant>(
 ): Observable<RootAction> => {
   return concat(
     of(signalCreator(indicator(AuthnOtpProvisionFlowIndicator.MAKING_REQUEST))),
-    from(getAuthenticationApi().provideOtp({ authnKey, otp, yieldTrustedToken })).pipe(
+    from(getAuthenticationApi().authenticationProvideOtp({ authnKey, otp, yieldTrustedToken })).pipe(
       switchMap((response: ServiceProvideOtpResponse) => {
         switch (response.error) {
           case ServiceProvideOtpResponseError.NONE:

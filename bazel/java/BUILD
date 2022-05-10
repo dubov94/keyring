@@ -27,7 +27,7 @@ java_plugin(
 
 genrule(
     name = "aspectjweaver",
-    srcs = ["@maven//:org_aspectj_aspectjweaver"],
+    srcs = ["@org_aspectj_aspectjweaver//jar"],
     outs = ["aspectjweaver.jar"],
-    cmd = "cp $(execpath @maven//:org_aspectj_aspectjweaver) $@",
+    cmd = "cp $(execpath @org_aspectj_aspectjweaver//jar) $@",
 )

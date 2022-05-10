@@ -1,6 +1,6 @@
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary")
-load("@rules_proto_grpc//github.com/grpc-ecosystem/grpc-gateway:defs.bzl", "gateway_grpc_library", "gateway_swagger_compile")
+load("@rules_proto_grpc//grpc-gateway:defs.bzl", "gateway_grpc_library", "gateway_openapiv2_compile")
 
 gateway_grpc_library(
     name = "service_gateway_library",
@@ -8,7 +8,7 @@ gateway_grpc_library(
     deps = ["//proto:service_proto"],
 )
 
-gateway_swagger_compile(
+gateway_openapiv2_compile(
     name = "swagger_specification",
     visibility = ["//pwa/src/api/definitions:__pkg__"],
     deps = ["//proto:service_proto"],
@@ -24,6 +24,7 @@ go_binary(
         "@grpc_ecosystem_grpc_gateway//runtime:go_default_library",
         "@org_golang_google_grpc//:go_default_library",
         "@org_golang_google_grpc//metadata:go_default_library",
+        "@org_golang_google_protobuf//encoding/protojson:go_default_library",
     ],
 )
 

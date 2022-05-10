@@ -27,11 +27,11 @@ bazel_skylib_workspace()
 
 http_archive(
     name = "rules_proto",
-    sha256 = "602e7161d9195e50246177e7c55b2f39950a9cf7366f74ed5f22fd45750cd208",
-    strip_prefix = "rules_proto-97d8af4dc474595af3900dd85cb3a29ad28cc313",
+    sha256 = "66bfdf8782796239d3875d37e7de19b1d94301e8972b3cbd2446b332429b4df1",
+    strip_prefix = "rules_proto-4.0.0",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_proto/archive/97d8af4dc474595af3900dd85cb3a29ad28cc313.tar.gz",
-        "https://github.com/bazelbuild/rules_proto/archive/97d8af4dc474595af3900dd85cb3a29ad28cc313.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_proto/archive/refs/tags/4.0.0.tar.gz",
+        "https://github.com/bazelbuild/rules_proto/archive/refs/tags/4.0.0.tar.gz",
     ],
 )
 
@@ -45,9 +45,9 @@ rules_proto_toolchains()
 
 http_archive(
     name = "rules_proto_grpc",
-    sha256 = "5f0f2fc0199810c65a2de148a52ba0aff14d631d4e8202f41aff6a9d590a471b",
-    strip_prefix = "rules_proto_grpc-1.0.2",
-    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/1.0.2.tar.gz"],
+    sha256 = "7954abbb6898830cd10ac9714fbcacf092299fda00ed2baf781172f545120419",
+    strip_prefix = "rules_proto_grpc-3.1.1",
+    urls = ["https://github.com/rules-proto-grpc/rules_proto_grpc/archive/3.1.1.tar.gz"],
 )
 
 load("@rules_proto_grpc//:repositories.bzl", "rules_proto_grpc_repos", "rules_proto_grpc_toolchains")
@@ -58,9 +58,9 @@ rules_proto_grpc_repos()
 
 # external_proto_dependencies.rules_openapi_dependencies
 
-RULES_OPEN_API_VERSION = "4e35a7b968908213e3c6eedc4435d140dbb577b3"
+RULES_OPEN_API_VERSION = "896323d32a19078e83a70513077554a6529b18b7"
 
-RULES_OPEN_API_SHA256 = "d1af6e9bd23b24a07f059b1a97f0bc305d7cf74a2965f06fc11c182d568a0e1c"
+RULES_OPEN_API_SHA256 = "dca86aea8e76ae891bedf42dbb91a7d4b573efc7142cb6049d6b061768c43701"
 
 http_archive(
     name = "io_bazel_rules_openapi",
@@ -85,12 +85,7 @@ rules_proto_grpc_java_repos()
 
 load("@io_grpc_grpc_java//:repositories.bzl", "grpc_java_repositories")
 
-grpc_java_repositories(
-    omit_bazel_skylib = True,
-    omit_com_google_protobuf = True,
-    omit_com_google_protobuf_javalite = True,
-    omit_net_zlib = True,
-)
+grpc_java_repositories()
 
 # language_specific_dependencies.external_java_dependencies
 
@@ -101,8 +96,10 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_jvm_external/archive/3.2.zip"],
 )
 
-load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS")
+load("@io_grpc_grpc_java//:repositories.bzl", "IO_GRPC_GRPC_JAVA_ARTIFACTS", "IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
+
+ASPECTJ_VERSION = "1.9.5"
 
 maven_install(
     artifacts = [
@@ -123,8 +120,7 @@ maven_install(
         "javax.annotation:javax.annotation-api:1.3.2",
         "javax.xml.bind:jaxb-api:2.3.0",
         "net.sargue:mailgun:1.5.0",
-        "org.aspectj:aspectjrt:1.9.5",
-        "org.aspectj:aspectjweaver:1.9.5",
+        "org.aspectj:aspectjrt:{}".format(ASPECTJ_VERSION),
         "org.hibernate:hibernate-c3p0:5.3.16.Final",
         "org.hibernate:hibernate-core:5.3.16.Final",
         "org.hibernate:hibernate-jpamodelgen:5.3.16.Final",
@@ -132,7 +128,7 @@ maven_install(
         "org.postgresql:postgresql:42.1.4",
         "org.slf4j:slf4j-simple:1.7.25",
         "redis.clients:jedis:2.9.0",
-    ] + [
+    ] + IO_GRPC_GRPC_JAVA_ARTIFACTS + [
         "org.apiguardian:apiguardian-api:1.0.0",
         "org.junit.jupiter:junit-jupiter-api:5.6.2",
         "org.junit.jupiter:junit-jupiter-engine:5.6.2",
@@ -150,11 +146,25 @@ maven_install(
         "org.testcontainers:postgresql:1.15.3",
         "org.testcontainers:testcontainers:1.15.3",
     ],
+    generate_compat_repositories = True,
     override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
     repositories = [
         "https://repo1.maven.org/maven2",
     ],
 )
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+
+# Separately to preserve `MANIFEST.MF`.
+http_jar(
+    name = "org_aspectj_aspectjweaver",
+    url = "https://repo1.maven.org/maven2/org/aspectj/aspectjweaver/{version}/aspectjweaver-{version}.jar".format(version = ASPECTJ_VERSION),
+    sha256 = "3ae596023e0789328fb6fbe404bf51746e21b524e58741e0f415be27c6f98aec",
+)
+
+load("@maven//:compat.bzl", maven_compat_repositories = "compat_repositories")
+
+maven_compat_repositories()
 
 # language_specific_dependencies.external_go_dependencies
 
@@ -168,7 +178,9 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 
 go_rules_dependencies()
 
-go_register_toolchains()
+go_register_toolchains(
+    version = "1.17.1",
+)
 
 bazel_gazelle()
 
@@ -176,7 +188,7 @@ load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 gazelle_dependencies()
 
-load("@rules_proto_grpc//github.com/grpc-ecosystem/grpc-gateway:repositories.bzl", rules_proto_grpc_gateway_repos = "gateway_repos")
+load("@rules_proto_grpc//grpc-gateway:repositories.bzl", rules_proto_grpc_gateway_repos = "gateway_repos")
 
 rules_proto_grpc_gateway_repos()
 
@@ -193,14 +205,6 @@ go_repository(
     importpath = "github.com/oschwald/maxminddb-golang",
     tag = "v1.8.0",
 )
-
-# language_specific_dependencies.external_node_dependencies
-
-# language_specific_dependencies.external_node_dependencies.rules_proto_grpc_dependencies
-
-load("@rules_proto_grpc//closure:repositories.bzl", rules_proto_grpc_closure_repos = "closure_repos")
-
-rules_proto_grpc_closure_repos()
 
 # language_specific_dependencies.external_node_dependencies
 

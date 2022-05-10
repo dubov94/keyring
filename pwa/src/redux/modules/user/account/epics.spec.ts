@@ -109,7 +109,7 @@ describe('releaseMailTokenEpic', () => {
     })))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.releaseMailToken(
+    when(mockAdministrationApi.administrationReleaseMailToken(
       deepEqual({ code: 'code' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceReleaseMailTokenResponse>{
@@ -181,7 +181,7 @@ describe('acquireMailTokenEpic', () => {
       useValue: instance(mockSodiumClient)
     })
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.acquireMailToken(
+    when(mockAdministrationApi.administrationAcquireMailToken(
       deepEqual({ digest: 'authDigest', mail: 'mail@example.com' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceAcquireMailTokenResponse>{
@@ -256,7 +256,7 @@ describe('changeUsernameEpic', () => {
       useValue: instance(mockSodiumClient)
     })
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.changeUsername(
+    when(mockAdministrationApi.administrationChangeUsername(
       deepEqual({ digest: 'authDigest', username: 'usernameB' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceChangeUsernameResponse>{
@@ -334,7 +334,7 @@ describe('deleteAccountEpic', () => {
       useValue: instance(mockSodiumClient)
     })
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.deleteAccount(
+    when(mockAdministrationApi.administrationDeleteAccount(
       deepEqual({ digest: 'authDigest' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceDeleteAccountResponse>{
@@ -462,7 +462,7 @@ describe('changeMasterKeyEpic', () => {
       useValue: instance(mockSodiumClient)
     })
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.changeMasterKey(
+    when(mockAdministrationApi.administrationChangeMasterKey(
       deepEqual({
         currentDigest: 'authDigest',
         renewal: {
@@ -529,7 +529,7 @@ describe('changeMasterKeyEpic', () => {
       useValue: instance(mockSodiumClient)
     })
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.changeMasterKey(
+    when(mockAdministrationApi.administrationChangeMasterKey(
       deepEqual({
         currentDigest: 'authDigest',
         renewal: {
@@ -623,7 +623,7 @@ describe('remoteRehashEpic', () => {
       useValue: instance(mockSodiumClient)
     })
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.changeMasterKey(
+    when(mockAdministrationApi.administrationChangeMasterKey(
       deepEqual({
         currentDigest: 'authDigest',
         renewal: {
@@ -682,7 +682,7 @@ describe('otpParamsGenerationEpic', () => {
     })))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.generateOtpParams(deepEqual({}), deepEqual({
+    when(mockAdministrationApi.administrationGenerateOtpParams(deepEqual({}), deepEqual({
       headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' }
     }))).thenResolve(<ServiceGenerateOtpParamsResponse>{
       otpParamsId: 'id',
@@ -734,7 +734,7 @@ describe('otpParamsAcceptanceEpic', () => {
     }))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.acceptOtpParams(deepEqual({
+    when(mockAdministrationApi.administrationAcceptOtpParams(deepEqual({
       otpParamsId: 'id',
       otp: 'otp',
       yieldTrustedToken: true
@@ -804,7 +804,7 @@ describe('otpResetEpic', () => {
     })))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.resetOtp(
+    when(mockAdministrationApi.administrationResetOtp(
       deepEqual({ otp: 'otp' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceResetOtpResponse>{
@@ -867,7 +867,7 @@ describe('ackFeaturePromptEpic', () => {
     })))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.ackFeaturePrompt(
+    when(mockAdministrationApi.administrationAckFeaturePrompt(
       deepEqual({ featureType: ServiceFeatureType.UNKNOWN }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceAckFeaturePromptResponse>{})

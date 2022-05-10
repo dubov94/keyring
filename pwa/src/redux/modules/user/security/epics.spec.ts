@@ -47,7 +47,7 @@ describe('fetchRecentSessionsEpic', () => {
     store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.getRecentSessions(deepEqual({
+    when(mockAdministrationApi.administrationGetRecentSessions(deepEqual({
       headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' }
     }))).thenResolve(<ServiceGetRecentSessionsResponse>{
       sessions: [{

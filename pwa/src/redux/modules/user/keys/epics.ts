@@ -77,7 +77,7 @@ export const creationEpic: Epic<RootAction, RootAction, RootState> = (action$, s
     from(getSodiumClient().encryptPassword(state.user.account.encryptionKey!, action.payload)).pipe(
       switchMap((password) => {
         const { attrs } = action.payload
-        return from(getAdministrationApi().createKey({ password, attrs }, {
+        return from(getAdministrationApi().administrationCreateKey({ password, attrs }, {
           headers: {
             [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey!
           }
@@ -112,7 +112,7 @@ export const updationEpic: Epic<RootAction, RootAction, RootState> = (action$, s
           throw new Error(`\`userKeys\` does not contain ${identifier}`)
         }
         const target = userKeys[index]
-        return from(getAdministrationApi().updateKey({
+        return from(getAdministrationApi().administrationUpdateKey({
           key: {
             identifier: action.payload.identifier,
             password
@@ -143,7 +143,7 @@ export const deletionEpic: Epic<RootAction, RootAction, RootState> = (action$, s
   withLatestFrom(state$),
   mergeMap(([action, state]) => concat(
     of(deletionSignal(indicator(OperationIndicator.WORKING), action.meta)),
-    from(getAdministrationApi().deleteKey({
+    from(getAdministrationApi().administrationDeleteKey({
       identifier: action.payload.identifier
     }, {
       headers: {
@@ -176,7 +176,7 @@ export const shadowElectionEpic: Epic<RootAction, RootAction, RootState> = (acti
   withLatestFrom(state$),
   mergeMap(([action, state]) => concat(
     of(shadowElectionSignal(indicator(OperationIndicator.WORKING), action.meta)),
-    from(getAdministrationApi().electShadow({
+    from(getAdministrationApi().administrationElectShadow({
       identifier: action.payload
     }, {
       headers: {

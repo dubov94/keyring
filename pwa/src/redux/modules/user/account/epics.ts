@@ -92,7 +92,7 @@ export const releaseMailTokenEpic: Epic<RootAction, RootAction, RootState> = (ac
     if (isActionOf(releaseMailToken, action)) {
       return concat(
         of(mailTokenReleaseSignal(indicator(MailTokenReleaseFlowIndicator.WORKING))),
-        from(getAdministrationApi().releaseMailToken({
+        from(getAdministrationApi().administrationReleaseMailToken({
           code: action.payload.code
         }, {
           headers: {
@@ -128,7 +128,7 @@ export const acquireMailTokenEpic: Epic<RootAction, RootAction, RootState> = (ac
         from(getSodiumClient().computeAuthDigestAndEncryptionKey(state.user.account.parametrization!, action.payload.password)).pipe(
           switchMap(({ authDigest }) => concat(
             of(mailTokenAcquisitionSignal(indicator(MailTokenAcquisitionFlowIndicator.MAKING_REQUEST))),
-            from(getAdministrationApi().acquireMailToken({
+            from(getAdministrationApi().administrationAcquireMailToken({
               digest: authDigest,
               mail: action.payload.mail
             }, {
@@ -174,7 +174,7 @@ const masterKeyChange = <T extends TypeConstant>(
             defaultIfEmpty(<{ identifier: string; password: Password }[]>[]),
             switchMap((keys) => concat(
               of(signalCreator(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST))),
-              from(getAdministrationApi().changeMasterKey({
+              from(getAdministrationApi().administrationChangeMasterKey({
                 currentDigest: authDigest,
                 renewal: {
                   salt: newParametrization,
@@ -233,7 +233,7 @@ export const changeUsernameEpic: Epic<RootAction, RootAction, RootState> = (acti
         from(getSodiumClient().computeAuthDigestAndEncryptionKey(state.user.account.parametrization!, action.payload.password)).pipe(
           switchMap(({ authDigest }) => concat(
             of(usernameChangeSignal(indicator(UsernameChangeFlowIndicator.MAKING_REQUEST))),
-            from(getAdministrationApi().changeUsername({
+            from(getAdministrationApi().administrationChangeUsername({
               digest: authDigest,
               username: action.payload.username
             }, {
@@ -275,7 +275,7 @@ export const deleteAccountEpic: Epic<RootAction, RootAction, RootState> = (actio
         from(getSodiumClient().computeAuthDigestAndEncryptionKey(state.user.account.parametrization!, action.payload.password)).pipe(
           switchMap(({ authDigest }) => concat(
             of(accountDeletionSignal(indicator(AccountDeletionFlowIndicator.MAKING_REQUEST))),
-            from(getAdministrationApi().deleteAccount({
+            from(getAdministrationApi().administrationDeleteAccount({
               digest: authDigest
             }, {
               headers: {
@@ -330,7 +330,7 @@ export const otpParamsGenerationEpic: Epic<RootAction, RootAction, RootState> = 
     if (isActionOf(generateOtpParams, action)) {
       return concat(
         of(otpParamsGenerationSignal(indicator(OtpParamsGenerationFlowIndicator.MAKING_REQUEST))),
-        from(getAdministrationApi().generateOtpParams({}, {
+        from(getAdministrationApi().administrationGenerateOtpParams({}, {
           headers: {
             [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
           }
@@ -363,7 +363,7 @@ export const otpParamsAcceptanceEpic: Epic<RootAction, RootAction, RootState> = 
       const yieldTrustedToken = isDepotActive(state)
       return concat(
         of(otpParamsAcceptanceSignal(indicator(OtpParamsAcceptanceFlowIndicator.MAKING_REQUEST))),
-        from(getAdministrationApi().acceptOtpParams({
+        from(getAdministrationApi().administrationAcceptOtpParams({
           otpParamsId: action.payload.otpParamsId,
           otp: action.payload.otp,
           yieldTrustedToken
@@ -400,7 +400,7 @@ export const otpResetEpic: Epic<RootAction, RootAction, RootState> = (action$, s
     if (isActionOf(resetOtp, action)) {
       return concat(
         of(otpResetSignal(indicator(OtpResetFlowIndicator.MAKING_REQUEST))),
-        from(getAdministrationApi().resetOtp({
+        from(getAdministrationApi().administrationResetOtp({
           otp: action.payload.otp
         }, {
           headers: {
@@ -429,7 +429,7 @@ export const displayOtpResetExceptionsEpic = createDisplayExceptionsEpic(otpRese
 export const ackFeaturePromptEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf(ackFeaturePrompt)),
   withLatestFrom(state$),
-  mergeMap(([action, state]) => from(getAdministrationApi().ackFeaturePrompt({
+  mergeMap(([action, state]) => from(getAdministrationApi().administrationAckFeaturePrompt({
     featureType: action.payload
   }, {
     headers: {

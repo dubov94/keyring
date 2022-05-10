@@ -115,7 +115,7 @@ state$.pipe(
   switchMap((sessionKey) => {
     const halfLifetime = SESSION_LIFETIME_IN_MILLIS / 2
     return sessionKey === null ? EMPTY : timer(halfLifetime, halfLifetime).pipe(
-      exhaustMap(() => defer(() => getAdministrationApi().keepAlive({}, {
+      exhaustMap(() => defer(() => getAdministrationApi().administrationKeepAlive({}, {
         headers: {
           [SESSION_TOKEN_HEADER_NAME]: sessionKey
         }

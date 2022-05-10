@@ -8,9 +8,10 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/encoding/protojson"
 
 	gw "github.com/dubov94/keyring/grpc_gateway/service_gateway_library"
 )
@@ -47,7 +48,12 @@ func startProxy() error {
 
 	mux := runtime.NewServeMux(
 		runtime.WithMarshalerOption(
-			runtime.MIMEWildcard, &runtime.JSONPb{OrigName: true, EmitDefaults: true}),
+			runtime.MIMEWildcard, &runtime.JSONPb{
+				MarshalOptions: protojson.MarshalOptions{
+					UseProtoNames: true,
+				},
+			},
+		),
 		runtime.WithIncomingHeaderMatcher(headerMatcher),
 		runtime.WithMetadata(annotator),
 	)

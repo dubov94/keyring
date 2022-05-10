@@ -116,7 +116,7 @@ describe('registrationEpic', () => {
       useValue: instance(mockSodiumClient)
     })
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
-    when(mockAuthenticationApi.register(deepEqual({
+    when(mockAuthenticationApi.authenticationRegister(deepEqual({
       username: 'username',
       salt: 'parametrization',
       digest: 'authDigest',
@@ -163,11 +163,11 @@ describe('logInViaApiEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
-    when(mockAuthenticationApi.getSalt('username')).thenResolve(<ServiceGetSaltResponse>{
+    when(mockAuthenticationApi.authenticationGetSalt('username')).thenResolve(<ServiceGetSaltResponse>{
       error: ServiceGetSaltResponseError.NONE,
       salt: 'parametrization'
     })
-    when(mockAuthenticationApi.logIn(deepEqual({
+    when(mockAuthenticationApi.authenticationLogIn(deepEqual({
       username: 'username',
       digest: 'authDigest'
     }))).thenResolve(<ServiceLogInResponse>{
@@ -242,11 +242,11 @@ describe('logInViaApiEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
-    when(mockAuthenticationApi.getSalt('username')).thenResolve(<ServiceGetSaltResponse>{
+    when(mockAuthenticationApi.authenticationGetSalt('username')).thenResolve(<ServiceGetSaltResponse>{
       error: ServiceGetSaltResponseError.NONE,
       salt: 'parametrization'
     })
-    when(mockAuthenticationApi.logIn(deepEqual({
+    when(mockAuthenticationApi.authenticationLogIn(deepEqual({
       username: 'username',
       digest: 'authDigest'
     }))).thenResolve(<ServiceLogInResponse>{
@@ -318,7 +318,7 @@ describe('provideOtpEpic', () => {
       encryptionKey: 'encryptionKey'
     }
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
-    when(mockAuthenticationApi.provideOtp(deepEqual({
+    when(mockAuthenticationApi.authenticationProvideOtp(deepEqual({
       authnKey: 'authnKey',
       otp: 'otp',
       yieldTrustedToken: false
@@ -530,7 +530,7 @@ describe('backgroundOtpProvisionEpic', () => {
       useValue: instance(mockSodiumClient)
     })
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
-    when(mockAuthenticationApi.provideOtp(deepEqual({
+    when(mockAuthenticationApi.authenticationProvideOtp(deepEqual({
       authnKey: 'authnKey',
       otp: 'otpToken',
       yieldTrustedToken: true

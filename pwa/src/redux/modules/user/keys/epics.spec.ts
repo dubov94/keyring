@@ -77,7 +77,7 @@ describe('creationEpic', () => {
       useValue: instance(mockSodiumClient)
     })
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.createKey(
+    when(mockAdministrationApi.administrationCreateKey(
       deepEqual({
         attrs: { isShadow: true, parent: 'parent' },
         password: {
@@ -140,7 +140,7 @@ describe('updationEpic', () => {
       useValue: instance(mockSodiumClient)
     })
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.updateKey(
+    when(mockAdministrationApi.administrationUpdateKey(
       deepEqual({
         key: {
           identifier: 'identifier',
@@ -183,7 +183,7 @@ describe('deletionEpic', () => {
     store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.deleteKey(
+    when(mockAdministrationApi.administrationDeleteKey(
       deepEqual({ identifier: 'identifier' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceDeleteKeyResponse>{})
@@ -301,7 +301,7 @@ describe('shadowElectionEpic', () => {
     ))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.electShadow(
+    when(mockAdministrationApi.administrationElectShadow(
       deepEqual({ identifier: 'shadow' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceElectShadowResponse>{
