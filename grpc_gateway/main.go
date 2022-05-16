@@ -51,6 +51,7 @@ func startProxy() error {
 			runtime.MIMEWildcard, &runtime.JSONPb{
 				MarshalOptions: protojson.MarshalOptions{
 					UseProtoNames: true,
+					EmitUnpopulated: true,
 				},
 			},
 		),
