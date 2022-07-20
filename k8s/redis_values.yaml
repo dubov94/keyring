@@ -1,0 +1,16 @@
+architecture: replication
+auth:
+  enabled: true
+  existingSecret: redis-credentials
+  existingSecretPasswordKey: redis-password
+master:
+  persistence:
+    enabled: true
+    existingClaim: redis-volume-claim
+replica:
+  persistence:
+    enabled: true
+    existingClaim: redis-volume-claim
+sentinel:
+  enabled: false
+  

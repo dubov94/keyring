@@ -307,6 +307,14 @@ container_pull(
     tag = "1.21",
 )
 
+container_pull(
+    name = "io_docker_index_liquibase_liquibase",
+    digest = "sha256:e2537e2d44f05bf5a684f50b03e616dc9d4615bd7cf1cf58da7618e4193a99f2",
+    registry = "index.docker.io",
+    repository = "liquibase/liquibase",
+    tag = "4.13",
+)
+
 # multirun_dependencies.external_multirun_dependencies
 
 git_repository(

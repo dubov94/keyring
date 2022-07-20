@@ -15,10 +15,12 @@ public class StorageModule {
   @Singleton
   static EntityManagerFactory provideEntityManagerFactory(Environment environment) {
     if (environment.isProduction()) {
-      return Persistence.createEntityManagerFactory("production");
+      return Persistence.createEntityManagerFactory(
+          "production",
+          ImmutableMap.of("javax.persistence.jdbc.password", environment.getPostgresPassword()));
     }
     return Persistence.createEntityManagerFactory(
-        "development", ImmutableMap.of("hibernate.hbm2ddl.auto", "none"));
+        "development", ImmutableMap.of("hibernate.hbm2ddl.auto", "create"));
   }
 
   @Provides

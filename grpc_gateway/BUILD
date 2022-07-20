@@ -33,7 +33,7 @@ container_image(
     base = "@io_docker_index_library_debian//image",
     cmd = [
         "./main",
-        "--server-address=server:5001",
+        "--server-address=server-service:5001",
     ],
     directory = "/root",
     files = [":main"],

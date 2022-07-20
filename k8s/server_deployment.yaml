@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+  labels:
+    app.kubernetes.io/name: server
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: server
+    spec:
+      containers:
+      - name: server
+        image: dubov94/keyring-server
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5001
+        env:
+        - name: MAILGUN_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: email-service-credentials
+              key: mailgun-api-key
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password
+      initContainers:
+      - name: liquibase
+        image: dubov94/keyring-liquibase
+        imagePullPolicy: Always
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password

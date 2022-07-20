@@ -15,12 +15,4 @@ Set up [Redis](https://redis.io/), [PostgreSQL](https://www.postgresql.org/) wit
 `postgres:postgres` as an authentication pair and [Docker](https://www.docker.com/).
 
 Create a database named `keyring` in PostgreSQL; run `bazelisk run //:backends` to
-spin up backends and `bazelisk run //:pwa` to serve frontend.
-
-### Production
-
-Initialize a cluster by executing `docker swarm init`. Set up all the secrets
-mentioned in `docker-compose.yml` via `docker secret create`. Create volume
-directories at `/root/caddy`, `/root/postgres`, `/root/redis` and `/root/geo_ip`.
-Populate the schema with `bazelisk run //server/main/entities:ddl` Finally,
-deploy the stack (`docker stack deploy --compose-file=docker-compose.yml keyring`).
+spin up the backends and `bazelisk run //:pwa` to serve the frontend.

@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cluster-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: $1
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  tls:
+  - hosts:
+    - "parolica.com"
+    secretName: cluster-tls
+  rules:
+  - host: "parolica.com"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/api(/.*)"
+        backend:
+          service:
+            name: grpc-gateway-service
+            port:
+              number: 5002
+      - pathType: Prefix
+        path: "(/.*)"
+        backend:
+          service:
+            name: pwa-service
+            port:
+              number: 8080

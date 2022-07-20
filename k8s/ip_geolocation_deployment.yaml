@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ip-geolocation-deployment
+  labels:
+    app.kubernetes.io/name: ip-geolocation
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ip-geolocation
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ip-geolocation
+    spec:
+      containers:
+      - name: ip-geolocation
+        image: dubov94/keyring-ip-geolocation
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5003
+        env:
+        - name: GEOIPUPDATE_ACCOUNT_ID
+          valueFrom:
+            secretKeyRef:
+              name: geoipupdate-credentials
+              key: account-id
+        - name: GEOIPUPDATE_LICENSE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: geoipupdate-credentials
+              key: license-key

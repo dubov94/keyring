@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grpc-gateway-deployment
+  labels:
+    app.kubernetes.io/name: grpc-gateway
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: grpc-gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: grpc-gateway
+    spec:
+      containers:
+      - name: grpc-gateway
+        image: dubov94/keyring-grpc-gateway
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5002

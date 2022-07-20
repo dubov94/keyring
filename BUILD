@@ -32,7 +32,6 @@ multirun(
     name = "backends",
     commands = [
         ":grpc_gateway",
-        ":janitor",
         ":server",
     ],
     parallel = True,

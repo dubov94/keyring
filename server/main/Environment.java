@@ -38,4 +38,8 @@ public class Environment {
   public String getGeolocationAddress() {
     return geolocationAddress;
   }
+
+  public String getPostgresPassword() {
+    return getVariable("POSTGRES_PASSWORD");
+  }
 }

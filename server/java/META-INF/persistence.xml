@@ -14,8 +14,8 @@
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://postgres/keyring"/>
-            <property name="javax.persistence.jdbc.user" value="postgres"/>
-            <property name="javax.persistence.jdbc.password" value="postgres"/>
+            <property name="javax.persistence.jdbc.user" value="application"/>
+            <!-- `javax.persistence.jdbc.password` is appended in `EntityManagerFactory` providers. -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.connection.provider_class"
                       value="org.hibernate.connection.C3P0ConnectionProvider"/>
@@ -39,6 +39,7 @@
             <property name="javax.persistence.jdbc.user" value="postgres"/>
             <property name="javax.persistence.jdbc.password" value="postgres"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
+            <!-- `hibernate.hbm2ddl.auto` is appended in `EntityManagerFactory` providers. -->
         </properties>
     </persistence-unit>
     <persistence-unit name="testing">
