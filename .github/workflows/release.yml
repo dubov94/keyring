@@ -49,20 +49,6 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - run: docker image tag bazel/pwa:pwa docker.io/dubov94/keyring-pwa
       - run: docker push docker.io/dubov94/keyring-pwa
-  reverse_proxy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: mishas/setup-bazelisk-action@v1
-      - run: bazelisk run //:reverse_proxy
-      - uses: docker/login-action@v1
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker image tag bazel:reverse_proxy docker.io/dubov94/keyring-reverse-proxy
-      - run: docker push docker.io/dubov94/keyring-reverse-proxy
   server:
     runs-on: ubuntu-latest
     steps:

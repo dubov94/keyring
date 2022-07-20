@@ -284,14 +284,6 @@ container_pull(
 )
 
 container_pull(
-    name = "io_docker_index_abiosoft_caddy",
-    digest = "sha256:de933dc1c1f78e8e70b878110eb31eb226857759f79170542ffb3c746893d2c2",
-    registry = "index.docker.io",
-    repository = "abiosoft/caddy",
-    tag = "1.0.3-no-stats",
-)
-
-container_pull(
     name = "io_docker_index_maxmindinc_geoipupdate",
     digest = "sha256:4803802f76c635839ab3d3fd4abb1c0d400c9788cffdd237e7c323298e40c915",
     registry = "index.docker.io",

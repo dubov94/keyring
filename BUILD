@@ -46,12 +46,3 @@ command(
     command = "//pwa:serve",
     data = ["//pwa:package_json"],
 )
-
-container_image(
-    name = "reverse_proxy",
-    base = "@io_docker_index_abiosoft_caddy//image",
-    directory = "/root",
-    files = ["Caddyfile"],
-    symlinks = {"/etc/Caddyfile": "/root/Caddyfile"},
-    workdir = "/root",
-)
