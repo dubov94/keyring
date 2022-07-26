@@ -1,0 +1,25 @@
+repositories:
+  - name: ingress-nginx
+    url: https://kubernetes.github.io/ingress-nginx
+  - name: jetstack
+    url: https://charts.jetstack.io
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami
+releases:
+  - name: nginx-ingress
+    chart: ingress-nginx/ingress-nginx
+    values:
+    - nginx_ingress_values.yaml
+  - name: cert-manager
+    chart: jetstack/cert-manager
+    values:
+    - cert_manager_values.yaml
+  - name: redis
+    chart: bitnami/redis
+    values:
+    - redis_values.yaml
+  - name: postgres
+    chart: bitnami/postgresql
+    values:
+    - postgres_values.yaml
+  
