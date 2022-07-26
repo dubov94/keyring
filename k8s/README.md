@@ -26,7 +26,7 @@ kubectl apply -f ./k8s/volumes/
 ## Helmfile
 
 ```sh
-helmfile apply -f ./k8s/helm/helmfile.yaml
+helmfile -f ./k8s/helm/helmfile.yaml apply
 ```
 
 ## Objects
