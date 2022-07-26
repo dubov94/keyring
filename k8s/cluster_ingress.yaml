@@ -4,7 +4,7 @@ metadata:
   name: cluster-ingress
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: $1
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
     cert-manager.io/cluster-issuer: letsencrypt
 spec:
   tls:
@@ -16,14 +16,14 @@ spec:
     http:
       paths:
       - pathType: Prefix
-        path: "/api(/.*)"
+        path: "/api/(.*)"
         backend:
           service:
             name: grpc-gateway-service
             port:
               number: 5002
       - pathType: Prefix
-        path: "(/.*)"
+        path: "/(.*)"
         backend:
           service:
             name: pwa-service
