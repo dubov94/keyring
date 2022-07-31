@@ -16,8 +16,6 @@ primary:
     enabled: true
     existingClaim: postgres-volume-claim
 readReplicas:
-  # `readReplicas` does not support `existingClaim`.
   persistence:
     enabled: true
-    storageClass: do-block-storage
     size: 8Gi
