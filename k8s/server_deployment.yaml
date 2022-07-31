@@ -28,8 +28,13 @@ spec:
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-credentials
-              key: password
+              name: postgres-postgresql-ha-postgresql
+              key: postgresql-password
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRed:
+              name: redis
+              key: redis-password
       initContainers:
       - name: liquibase
         image: dubov94/keyring-liquibase
@@ -38,5 +43,5 @@ spec:
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: postgres-credentials
-              key: password
+              name: postgres-postgresql-ha-postgresql
+              key: postgresql-password

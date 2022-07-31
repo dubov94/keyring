@@ -19,7 +19,7 @@ releases:
     values:
     - redis_values.yaml
   - name: postgres
-    chart: bitnami/postgresql
+    chart: bitnami/postgresql-ha
     values:
     - postgres_values.yaml
   

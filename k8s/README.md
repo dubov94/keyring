@@ -12,10 +12,8 @@
 | email-service-credentials | mailgun-api-key |
 | geoipupdate-credentials | account-id |
 | geoipupdate-credentials | license-key |
-| postgres-credentials | password |
-| postgres-credentials | postgres-password |
-| postgres-credentials | replication-password |
-| redis-credentials | redis-password |
+| *postgres-postgresql-ha-postgresql* | |
+| *redis* | |
 
 ## Volumes
 

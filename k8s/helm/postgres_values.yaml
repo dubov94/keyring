@@ -1,21 +1,5 @@
-auth:
-  enablePostgresUser: true
-  username: application
-  replicationUsername: repl_user
+postgresql:
   database: keyring
-  existingSecret: postgres-credentials
-  secretKeys:
-    adminPasswordKey: postgres-password
-    userPasswordKey: password
-    replicationPasswordKey: replication-password
-architecture: replication
-replication:
-  applicationName: application
-primary:
-  persistence:
-    enabled: true
-    existingClaim: postgres-volume-claim
-readReplicas:
-  persistence:
-    enabled: true
-    size: 8Gi
+persistence:
+  enabled: true
+  size: 2Gi

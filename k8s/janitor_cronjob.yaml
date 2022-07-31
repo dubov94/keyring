@@ -21,6 +21,6 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-credentials
-                  key: password
+                  name: postgres-postgresql-ha-postgresql
+                  key: postgresql-password
           restartPolicy: OnFailure

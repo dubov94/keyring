@@ -42,4 +42,8 @@ public class Environment {
   public String getPostgresPassword() {
     return getVariable("POSTGRES_PASSWORD");
   }
+
+  public String getRedisPassword() {
+    return getVariable("REDIS_PASSWORD");
+  }
 }
