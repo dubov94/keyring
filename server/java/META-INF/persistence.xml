@@ -14,7 +14,7 @@
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://postgres-postgresql-ha-pgpool/keyring"/>
-            <property name="javax.persistence.jdbc.user" value="application"/>
+            <property name="javax.persistence.jdbc.user" value="postgres"/>
             <!-- `javax.persistence.jdbc.password` is appended in `EntityManagerFactory` providers. -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.connection.provider_class"

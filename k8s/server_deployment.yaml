@@ -32,7 +32,7 @@ spec:
               key: postgresql-password
         - name: REDIS_PASSWORD
           valueFrom:
-            secretKeyRed:
+            secretKeyRef:
               name: redis
               key: redis-password
       initContainers:
