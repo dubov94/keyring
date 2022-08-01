@@ -125,7 +125,7 @@ maven_install(
         "org.hibernate:hibernate-core:5.3.16.Final",
         "org.hibernate:hibernate-jpamodelgen:5.3.16.Final",
         "org.jtwig:jtwig-core:5.86.1.RELEASE",
-        "org.postgresql:postgresql:42.1.4",
+        "org.postgresql:postgresql:42.3.6",
         "org.slf4j:slf4j-simple:1.7.25",
         "redis.clients:jedis:2.9.0",
     ] + IO_GRPC_GRPC_JAVA_ARTIFACTS + [

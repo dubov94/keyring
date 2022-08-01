@@ -53,7 +53,7 @@
         <class>server.main.entities.User</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.testcontainers.jdbc.ContainerDatabaseDriver"/>
-            <property name="javax.persistence.jdbc.url" value="jdbc:tc:postgresql:10:///keyring"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:tc:postgresql:///keyring"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.hbm2ddl.auto" value="create"/>
             <property name="hibernate.show_sql" value="true"/>
