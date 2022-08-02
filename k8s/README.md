@@ -15,12 +15,6 @@
 | *postgres-postgresql-ha-postgresql* | |
 | *redis* | |
 
-## Volumes
-
-```sh
-kubectl apply -f ./k8s/volumes/
-```
-
 ## Helmfile
 
 ```sh
