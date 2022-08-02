@@ -1,16 +1,11 @@
 architecture: replication
 auth:
   enabled: true
-master:
-  count: 1
-  persistence:
-    enabled: true
-    size: 1Gi
 replica:
-  replicaCount: 1
+  replicaCount: 3
   persistence:
     enabled: true
     size: 1Gi
 sentinel:
-  enabled: false
-  
+  enabled: true
+  masterSet: default

@@ -1,15 +1,14 @@
 package server.main.keyvalue;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.Response;
-import redis.clients.jedis.Transaction;
+import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.util.Pool;
 import server.main.Chronometry;
 import server.main.Cryptography;
 
@@ -17,27 +16,14 @@ public class KeyValueClient {
   private static final int SESSION_LIFETIME_S = 10 * 60;
   private static final int AUTHN_LIFETIME_S = 5 * 60;
 
-  private static final ImmutableMap<SetPresenceConstraint, String>
-      SET_PRESENCE_CONSTRAINT_TO_PARAMETER_VALUE =
-          new ImmutableMap.Builder<SetPresenceConstraint, String>()
-              .put(SetPresenceConstraint.MUST_ABSENT, "nx")
-              .put(SetPresenceConstraint.MUST_EXIST, "xx")
-              .build();
-  private static final ImmutableMap<SetExpirationUnit, String>
-      SET_EXPIRATION_UNIT_TO_PARAMETER_VALUE =
-          new ImmutableMap.Builder<SetExpirationUnit, String>()
-              .put(SetExpirationUnit.SECONDS, "ex")
-              .put(SetExpirationUnit.MILLISECONDS, "px")
-              .build();
-
-  private JedisPool jedisPool;
+  private Pool<Jedis> jedisPool;
   private Cryptography cryptography;
   private Gson gson;
   private Chronometry chronometry;
 
   @Inject
   KeyValueClient(
-      JedisPool jedisPool, Cryptography cryptography, Gson gson, Chronometry chronometry) {
+      Pool<Jedis> jedisPool, Cryptography cryptography, Gson gson, Chronometry chronometry) {
     this.jedisPool = jedisPool;
     this.cryptography = cryptography;
     this.gson = gson;
@@ -51,9 +37,7 @@ public class KeyValueClient {
           jedis.set(
               convertSessionIdToKey(sessionId),
               gson.toJson(userPointer.setCreationTimeInMs(chronometry.currentTime())),
-              SET_PRESENCE_CONSTRAINT_TO_PARAMETER_VALUE.get(SetPresenceConstraint.MUST_ABSENT),
-              SET_EXPIRATION_UNIT_TO_PARAMETER_VALUE.get(SetExpirationUnit.SECONDS),
-              SESSION_LIFETIME_S);
+              new SetParams().nx().ex(SESSION_LIFETIME_S));
       if (status == null) {
         throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
       }
@@ -63,12 +47,10 @@ public class KeyValueClient {
 
   public Optional<UserPointer> touchSession(String sessionIdentifier) {
     try (Jedis jedis = jedisPool.getResource()) {
-      String key = convertSessionIdToKey(sessionIdentifier);
-      Transaction transaction = jedis.multi();
-      transaction.expire(key, SESSION_LIFETIME_S);
-      Response<String> userPointerString = transaction.get(key);
-      transaction.exec();
-      return Optional.ofNullable(userPointerString.get())
+      String sessionKey = convertSessionIdToKey(sessionIdentifier);
+      Optional<String> maybeUserPointer =
+          Optional.ofNullable(jedis.getEx(sessionKey, new GetExParams().ex(SESSION_LIFETIME_S)));
+      return maybeUserPointer
           .map(string -> gson.fromJson(string, UserPointer.class))
           .map(
               userPointer ->
@@ -97,9 +79,7 @@ public class KeyValueClient {
           jedis.set(
               convertAuthnIdToKey(authnId),
               String.valueOf(userId),
-              SET_PRESENCE_CONSTRAINT_TO_PARAMETER_VALUE.get(SetPresenceConstraint.MUST_ABSENT),
-              SET_EXPIRATION_UNIT_TO_PARAMETER_VALUE.get(SetExpirationUnit.SECONDS),
-              AUTHN_LIFETIME_S);
+              new SetParams().nx().ex(AUTHN_LIFETIME_S));
       if (status == null) {
         throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
       }
@@ -122,15 +102,5 @@ public class KeyValueClient {
 
   private String convertAuthnIdToKey(String authnId) {
     return String.format("authn:%s", authnId);
-  }
-
-  private enum SetPresenceConstraint {
-    MUST_ABSENT,
-    MUST_EXIST
-  }
-
-  private enum SetExpirationUnit {
-    MILLISECONDS,
-    SECONDS
   }
 }

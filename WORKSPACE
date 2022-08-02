@@ -127,7 +127,7 @@ maven_install(
         "org.jtwig:jtwig-core:5.86.1.RELEASE",
         "org.postgresql:postgresql:42.3.6",
         "org.slf4j:slf4j-simple:1.7.25",
-        "redis.clients:jedis:2.9.0",
+        "redis.clients:jedis:4.2.3",
     ] + IO_GRPC_GRPC_JAVA_ARTIFACTS + [
         "org.apiguardian:apiguardian-api:1.0.0",
         "org.junit.jupiter:junit-jupiter-api:5.6.2",

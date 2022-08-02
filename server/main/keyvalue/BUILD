@@ -22,6 +22,7 @@ java_library(
     deps = [
         "//server/main:environment",
         "@maven//:com_google_dagger_dagger",
+        "@maven//:com_google_guava_guava",
         "@maven//:javax_inject_javax_inject",
         "@maven//:redis_clients_jedis",
     ],
