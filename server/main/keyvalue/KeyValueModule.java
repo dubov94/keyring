@@ -25,6 +25,7 @@ public class KeyValueModule {
           // https://github.com/bitnami/charts/tree/master/bitnami/redis#master-replicas-with-sentinel
           ImmutableSet.of(
               String.format("%s:%d", environment.getRedisHost(), Protocol.DEFAULT_SENTINEL_PORT)),
+          environment.getRedisPassword(),
           environment.getRedisPassword());
     }
     return new JedisPool(
