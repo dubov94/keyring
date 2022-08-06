@@ -10,8 +10,7 @@ import server.main.templates.MailVerificationCodeHeadRendererFactory;
 
 public class MailClient {
   private static final Logger logger = Logger.getLogger(MailClient.class.getName());
-  private static final String DOMAIN = "parolica.com";
-  private static final String FROM_EMAIL = "noreply@parolica.com";
+  private Environment environment;
   private Optional<Configuration> maybeConfiguration;
   private MailVerificationCodeHeadRendererFactory mailVerificationCodeHeadRendererFactory;
   private MailVerificationCodeBodyRendererFactory mailVerificationCodeBodyRendererFactory;
@@ -21,9 +20,14 @@ public class MailClient {
       Environment environment,
       MailVerificationCodeHeadRendererFactory mailVerificationCodeHeadRendererFactory,
       MailVerificationCodeBodyRendererFactory mailVerificationCodeBodyRendererFactory) {
+    this.environment = environment;
     maybeConfiguration =
         environment.isProduction()
-            ? Optional.of(new Configuration().domain(DOMAIN).apiKey(environment.getMailgunApiKey()))
+            ? Optional.of(
+                new Configuration()
+                    .apiUrl(environment.getMailgunApiUrl())
+                    .domain(environment.getMailgunDomain())
+                    .apiKey(environment.getMailgunApiKey()))
             : Optional.empty();
     this.mailVerificationCodeHeadRendererFactory = mailVerificationCodeHeadRendererFactory;
     this.mailVerificationCodeBodyRendererFactory = mailVerificationCodeBodyRendererFactory;
@@ -38,7 +42,7 @@ public class MailClient {
     String head = mailVerificationCodeHeadRendererFactory.newRenderer().setCode(code).render();
     String body = mailVerificationCodeBodyRendererFactory.newRenderer().setCode(code).render();
     Mail.using(maybeConfiguration.get())
-        .from(FROM_EMAIL)
+        .from(environment.getMailgunFrom())
         .to(address)
         .subject(head)
         .html(body)

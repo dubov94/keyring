@@ -15,6 +15,15 @@ public class Environment {
   @Parameter(names = "--geolocation_address")
   private String geolocationAddress = "localhost:5003";
 
+  @Parameter(names = "--mailgun_api_url")
+  private String mailgunApiUrl = "";
+
+  @Parameter(names = "--mailgun_domain")
+  private String mailgunDomain = "";
+
+  @Parameter(names = "--mailgun_from")
+  private String mailgunFrom = "";
+
   private String getVariable(String key) {
     return System.getenv(key);
   }
@@ -25,6 +34,18 @@ public class Environment {
 
   public boolean isProduction() {
     return "production".equals(type);
+  }
+
+  public String getMailgunApiUrl() {
+    return mailgunApiUrl;
+  }
+
+  public String getMailgunDomain() {
+    return mailgunDomain;
+  }
+
+  public String getMailgunFrom() {
+    return mailgunFrom;
   }
 
   public String getMailgunApiKey() {

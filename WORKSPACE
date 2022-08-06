@@ -119,7 +119,7 @@ maven_install(
         "javax.activation:activation:1.1.1",
         "javax.annotation:javax.annotation-api:1.3.2",
         "javax.xml.bind:jaxb-api:2.3.0",
-        "net.sargue:mailgun:1.5.0",
+        "net.sargue:mailgun:1.10.0",
         "org.aspectj:aspectjrt:{}".format(ASPECTJ_VERSION),
         "org.hibernate:hibernate-c3p0:5.3.16.Final",
         "org.hibernate:hibernate-core:5.3.16.Final",
