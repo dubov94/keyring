@@ -46,7 +46,7 @@ module.exports = {
     assetsVersion: 'MoVydmAfvrT9cZ7Q',
     // Disables manifest auto-generation. See
     // https://github.com/vuejs/vue-cli/blob/dev/packages/%40vue/cli-plugin-pwa/lib/HtmlPwaPlugin.js#L168.
-    manifestPath: 'https://pwd.floreina.me/site.webmanifest',
+    manifestPath: 'https://parolica.com/site.webmanifest',
     iconPaths: {
       favicon32: 'img/icons/favicon-32x32.png',
       favicon16: 'img/icons/favicon-16x16.png',
