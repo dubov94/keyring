@@ -13,7 +13,7 @@ genrule(
     name = "stable_status",
     outs = ["stable_status.json"],
     cmd = "cat bazel-out/stable-status.txt | $(execpath :vars_to_json) > $@",
-    stamp = True,
+    stamp = 1,
     tools = [":vars_to_json"],
 )
 
