@@ -21,8 +21,11 @@ public class Environment {
   @Parameter(names = "--mailgun_domain")
   private String mailgunDomain = "";
 
-  @Parameter(names = "--mailgun_from")
-  private String mailgunFrom = "";
+  @Parameter(names = "--email_from_name")
+  private String emailFromName = "";
+
+  @Parameter(names = "--email_from_address")
+  private String emailFromAddress = "";
 
   private String getVariable(String key) {
     return System.getenv(key);
@@ -44,8 +47,12 @@ public class Environment {
     return mailgunDomain;
   }
 
-  public String getMailgunFrom() {
-    return mailgunFrom;
+  public String getEmailFromName() {
+    return emailFromName;
+  }
+
+  public String getEmailFromAddress() {
+    return emailFromAddress;
   }
 
   public String getMailgunApiKey() {

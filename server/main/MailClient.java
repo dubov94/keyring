@@ -42,7 +42,7 @@ public class MailClient {
     String head = mailVerificationCodeHeadRendererFactory.newRenderer().setCode(code).render();
     String body = mailVerificationCodeBodyRendererFactory.newRenderer().setCode(code).render();
     Mail.using(maybeConfiguration.get())
-        .from(environment.getMailgunFrom())
+        .from(environment.getEmailFromName(), environment.getEmailFromAddress())
         .to(address)
         .subject(head)
         .html(body)
