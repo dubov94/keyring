@@ -3,6 +3,7 @@
 * [`helm`](https://github.com/helm/helm)
 * [`helmfile`](https://github.com/roboll/helmfile)
   * [`helm-diff`](https://github.com/databus23/helm-diff)
+* [Storage on DigitalOcean](https://digitalocean.github.io/navigators-guide/book/03-backup/ch07-storage-on-digitalocean.html)
 
 ## [Secrets](https://kubernetes.io/docs/tasks/configmap-secret/)
 
