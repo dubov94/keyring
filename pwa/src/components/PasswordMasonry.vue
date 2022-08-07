@@ -15,12 +15,8 @@
 <template>
   <v-row>
     <transition-group name="bricks" tag="div" class="flex-1" :style="listStyles">
-      <v-lazy :min-height="128" v-for="(item, index) in items" :key="item.name" class="pa-3" :style="{
-          'break-after': (index >= cellsInFull
-            ? (index - cellsInFull + 1) % (height - 1) === 0
-            : (index + 1) % height === 0) ? 'column' : 'auto',
-          'break-inside': 'avoid'
-        }">
+      <v-lazy :min-height="128" v-for="(item, index) in items" :key="item.name"
+        class="pa-3" :style="itemStyles(index)">
         <password :debounce-millis="200" :clique="item" :scoreColor="idToScore[item.name]"
           @save="finalize(item.name, true)" @delete="finalize(item.name, false)"
           @cancel="finalize(item.name)" :init-edit="additions.includes(item.name)">
@@ -93,14 +89,24 @@ export default Vue.extend({
     cellsInFull (): number {
       return this.fullColumns * this.height
     },
-    listStyles (): { [key: string]: string | number } {
+    listStyles (): { [key: string]: string } {
       return {
-        columns: this.columnCount,
+        columns: String(this.columnCount),
         columnGap: '0'
       }
     }
   },
   methods: {
+    itemStyles (index: number): { [key: string]: string } {
+      return {
+        'break-after': (index >= this.cellsInFull
+          ? (index - this.cellsInFull + 1) % (this.height - 1) === 0
+          : (index + 1) % this.height === 0) ? 'column' : 'auto',
+        'break-inside': 'avoid',
+        // Firefox still breaks single item by default.
+        overflow: 'hidden'
+      }
+    },
     finalize (cliqueName: string, attach: boolean) {
       if (this.additions.includes(cliqueName)) {
         this.$emit('addition', cliqueName, attach)
