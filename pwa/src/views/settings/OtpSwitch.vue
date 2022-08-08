@@ -32,7 +32,7 @@
       <div v-else-if="maybeOtpParams">
         <p>
           Scan the image with <a href="https://support.google.com/accounts/answer/1066447"
-            target="_blank" rel="nopener noreferrer">Google Authenticator</a> or a similar application.
+            target="_blank" rel="noopener noreferrer">Google Authenticator</a> or a similar application.
         </p>
         <v-tabs v-model="seedView" centered>
           <v-tab>Image</v-tab>
