@@ -8,7 +8,9 @@ const TEST_RNG = (lower: number, upper: number): number =>
   lower + Math.floor(Math.random() * (upper - lower))
 
 describe('shuffle', () => {
-  it('should have uniform distribution', () => {
+  it('should have uniform distribution', function () {
+    this.retries(2)
+
     const sequence = () => [1, 2, 3, 4]
     const NUMBER_OF_GROUPS = factorial(4)
     const TRIALS_PER_GROUP = 1000
