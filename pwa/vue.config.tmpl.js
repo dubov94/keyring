@@ -20,9 +20,6 @@ module.exports = {
       .test(/\.worker\.(js|ts)$/)
       .use('workerize-loader')
       .loader('workerize-loader')
-      .options({
-        inline: true
-      })
       .end()
 
     config
