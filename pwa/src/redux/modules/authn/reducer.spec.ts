@@ -1,19 +1,24 @@
 import { success } from '@/redux/flow_signal'
 import { expect } from 'chai'
-import { authnOtpProvisionReset, authnOtpProvisionSignal, authnViaApiReset, authnViaApiSignal, authnViaDepotReset, authnViaDepotSignal, registrationReset, registrationSignal } from './actions'
+import {
+  authnOtpProvisionReset,
+  authnOtpProvisionSignal,
+  authnViaApiReset,
+  authnViaApiSignal,
+  authnViaDepotReset,
+  authnViaDepotSignal,
+  registrationReset,
+  registrationSignal
+} from './actions'
 import reducer from './reducer'
 import { hasData, data } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
 import { either, option } from 'fp-ts'
+import { defaultMailVerification } from '../user/account/actions'
+import { createRegistrationFlowResult } from '@/redux/testing/domain'
 
 describe('registration', () => {
-  const signalAction = registrationSignal(success({
-    username: 'username',
-    parametrization: 'parametrization',
-    encryptionKey: 'encryptionKey',
-    sessionKey: 'sessionKey',
-    userKeys: []
-  }))
+  const signalAction = registrationSignal(success(createRegistrationFlowResult({})))
 
   describe('registrationSignal', () => {
     it('updates the result', () => {
@@ -74,7 +79,7 @@ describe('authnOtpProvision', () => {
     userData: {
       sessionKey: 'sessionKey',
       featurePrompts: [],
-      mailVerificationRequired: true,
+      mailVerification: defaultMailVerification(),
       mail: null,
       userKeys: []
     }

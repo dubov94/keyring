@@ -10,6 +10,7 @@ import { Key } from '@/redux/domain'
 import { DeepReadonly } from 'ts-essentials'
 import { createAction } from 'typesafe-actions'
 import { either, option } from 'fp-ts'
+import { MailVerification } from '../user/account/actions'
 
 export enum RegistrationFlowIndicator {
   GENERATING_PARAMETRIZATION = 'GENERATING_PARAMETRIZATION',
@@ -21,6 +22,7 @@ export interface RegistrationFlowResult {
   parametrization: string;
   encryptionKey: string;
   sessionKey: string;
+  mailTokenId: string;
 }
 export const register = createAction('authn/register')<DeepReadonly<{
   username: string;
@@ -51,7 +53,7 @@ export interface OtpContext {
 export interface UserData {
   sessionKey: string;
   featurePrompts: ServiceFeaturePrompt[];
-  mailVerificationRequired: boolean;
+  mailVerification: MailVerification;
   mail: string | null;
   userKeys: Key[];
 }
@@ -118,7 +120,8 @@ export const initiateBackgroundAuthn = createAction('authn/initiateBackgroundAut
 export const backgroundRemoteAuthnSignal = createAction('authn/backgroundRemoteAuthnSignal')<DeepReadonly<AuthnViaApiSignal>>()
 export const backgroundOtpProvisionSignal = createAction('authn/backgroundOtpProvisionSignal')<DeepReadonly<AuthnOtpProvisionSignal>>()
 
-export const remoteAuthnComplete = createAction('authn/remoteAuthnComplete')<DeepReadonly<AuthnViaApiParams & UserData & {
+export type RemoteAuthnCompletionData = AuthnViaApiParams & UserData & {
   isOtpEnabled: boolean;
   otpToken: string | null;
-}>>()
+}
+export const remoteAuthnComplete = createAction('authn/remoteAuthnComplete')<DeepReadonly<RemoteAuthnCompletionData>>()

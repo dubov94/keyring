@@ -80,12 +80,29 @@ class AdministrationServiceTest {
   }
 
   @Test
-  void releaseMailToken_codeDoesNotExist_repliesWithError() {
-    when(mockAccountOperationsInterface.getMailToken(user.getIdentifier(), "0"))
+  void releaseMailToken_tokenDoesNotExist_repliesWithError() {
+    when(mockAccountOperationsInterface.getMailToken(user.getIdentifier(), 1L))
         .thenReturn(Optional.empty());
 
     administrationService.releaseMailToken(
-        ReleaseMailTokenRequest.newBuilder().setCode("0").build(), mockStreamObserver);
+        ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("0").build(),
+        mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            ReleaseMailTokenResponse.newBuilder()
+                .setError(ReleaseMailTokenResponse.Error.INVALID_TOKEN_ID)
+                .build());
+  }
+
+  @Test
+  void releaseMailToken_codeDoesNotMatch_repliesWithError() {
+    when(mockAccountOperationsInterface.getMailToken(user.getIdentifier(), 1L))
+        .thenReturn(Optional.of(new MailToken().setIdentifier(1L).setCode("X")));
+
+    administrationService.releaseMailToken(
+        ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),
+        mockStreamObserver);
 
     verify(mockStreamObserver)
         .onNext(
@@ -95,15 +112,18 @@ class AdministrationServiceTest {
   }
 
   @Test
-  void releaseMailToken_codeExists_repliesWithMail() {
+  void releaseMailToken_tokenExistsAndCodeMatches_repliesWithMail() {
     long userIdentifier = user.getIdentifier();
-    when(mockAccountOperationsInterface.getMailToken(userIdentifier, "0"))
-        .thenReturn(Optional.of(new MailToken().setIdentifier(1).setMail("mail@example.com")));
+    when(mockAccountOperationsInterface.getMailToken(userIdentifier, 1L))
+        .thenReturn(
+            Optional.of(
+                new MailToken().setIdentifier(1L).setCode("A").setMail("mail@example.com")));
 
     administrationService.releaseMailToken(
-        ReleaseMailTokenRequest.newBuilder().setCode("0").build(), mockStreamObserver);
+        ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),
+        mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).releaseMailToken(1);
+    verify(mockAccountOperationsInterface).releaseMailToken(1L);
     verify(mockStreamObserver)
         .onNext(ReleaseMailTokenResponse.newBuilder().setMail("mail@example.com").build());
     verify(mockStreamObserver).onCompleted();
@@ -183,17 +203,18 @@ class AdministrationServiceTest {
   }
 
   @Test
-  void acquireMailToken_digestsMatch_repliesWithDefault() {
+  void acquireMailToken_digestsMatch_repliesWithTokenId() {
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
-    when(mockCryptography.generateUacs()).thenReturn("0");
+    when(mockCryptography.generateUacs()).thenReturn("17");
+    when(mockAccountOperationsInterface.createMailToken(7L, "user@mail.com", "17"))
+        .thenReturn(new MailToken().setIdentifier(1L));
 
     administrationService.acquireMailToken(
         AcquireMailTokenRequest.newBuilder().setDigest("digest").setMail("user@mail.com").build(),
         mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).createMailToken(7L, "user@mail.com", "0");
-    verify(mockMailClient).sendMailVerificationCode("user@mail.com", "0");
-    verify(mockStreamObserver).onNext(AcquireMailTokenResponse.getDefaultInstance());
+    verify(mockMailClient).sendMailVerificationCode("user@mail.com", "17");
+    verify(mockStreamObserver).onNext(AcquireMailTokenResponse.newBuilder().setTokenId(1L).build());
     verify(mockStreamObserver).onCompleted();
   }
 

@@ -12,6 +12,7 @@ import { expect } from 'chai'
 import { authnViaApiReset, authnViaDepotReset, authnViaDepotSignal, initiateBackgroundAuthn, logInViaApi, logInViaDepot, remoteAuthnComplete } from '@/redux/modules/authn/actions'
 import { activateDepot, rehydrateDepot } from '@/redux/modules/depot/actions'
 import { success } from '@/redux/flow_signal'
+import { createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
 
 describe('LogIn', () => {
   let store: Store<RootState, RootAction>
@@ -104,19 +105,7 @@ describe('LogIn', () => {
 
   it('redirects and initiates depot authn on remote authn completion', async () => {
     await getPersistanceSwitch().trigger('click')
-    $actions.next(remoteAuthnComplete({
-      username: 'username',
-      password: 'password',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      featurePrompts: [],
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys: [],
-      isOtpEnabled: false,
-      otpToken: null
-    }))
+    $actions.next(remoteAuthnComplete(createRemoteAuthnCompleteResult({})))
     await wrapper.vm.$nextTick()
 
     expect(await drainActionQueue(actionQueue)).to.include.deep.members([

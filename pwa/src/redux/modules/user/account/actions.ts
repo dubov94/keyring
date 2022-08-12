@@ -24,6 +24,7 @@ export enum MailTokenReleaseFlowIndicator {
   WORKING = 'WORKING'
 }
 export const releaseMailToken = createAction('user/account/releaseMailToken')<DeepReadonly<{
+  tokenId: string;
   code: string;
 }>>()
 export const mailTokenReleaseSignal = createAction('user/account/mailTokenReleaseSignal')<DeepReadonly<
@@ -39,8 +40,12 @@ export const acquireMailToken = createAction('user/account/acquireMailToken')<De
   mail: string;
   password: string;
 }>>()
+export interface MailTokenAcquisitionData {
+  mail: string;
+  tokenId: string;
+}
 export const mailTokenAcquisitionSignal = createAction('user/account/mailTokenAcquisitionSignal')<DeepReadonly<
-  FlowSignal<MailTokenAcquisitionFlowIndicator, string, StandardError<ServiceAcquireMailTokenResponseError>>
+  FlowSignal<MailTokenAcquisitionFlowIndicator, MailTokenAcquisitionData, StandardError<ServiceAcquireMailTokenResponseError>>
 >>()
 export const mailTokenAcquisitionReset = createAction('user/account/mailTokenAcquisitionReset')()
 
@@ -139,3 +144,12 @@ export const ackFeaturePrompt = createAction('user/account/ackFeaturePrompt')<Se
 export const featureAckSignal = createAction('user/account/featureAckSignal')<DeepReadonly<
   FlowSignal<never, ServiceFeatureType, StandardError<never>>
 >>()
+
+export interface MailVerification {
+  required: boolean;
+  tokenId: string;
+}
+export const defaultMailVerification = (): MailVerification => ({
+  required: false,
+  tokenId: ''
+})

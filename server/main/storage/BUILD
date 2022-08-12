@@ -17,6 +17,7 @@ java_library(
         "//server/main/entities:otp_token",
         "//server/main/entities:session",
         "//server/main/entities:user",
+        "@maven//:io_vavr_vavr",
     ],
 )
 
@@ -36,6 +37,7 @@ java_library(
         "//server/main/entities:session",
         "//server/main/entities:user",
         "@maven//:com_google_guava_guava",
+        "@maven//:io_vavr_vavr",
         "@maven//:javax_persistence_javax_persistence_api",
     ],
 )
@@ -68,6 +70,7 @@ woven_junit5_test(
         "//server/main/storage:key_operations_client",
         "//server/main/storage:storage_exception",
         "@maven//:com_google_guava_guava",
+        "@maven//:io_vavr_vavr",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",

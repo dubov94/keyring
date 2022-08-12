@@ -22,6 +22,7 @@ message RegisterResponse {
 
     Error error = 1;
     string session_key = 2;
+    int64 mail_token_id = 3;
 }
 
 message GetSaltRequest {
@@ -53,11 +54,18 @@ message FeaturePrompt {
     FeatureType feature_type = 1;
 }
 
+message MailVerification {
+    bool required = 1;
+    int64 token_id = 2;
+}
+
 message UserData {
+    reserved 3;
+
     string session_key = 1;
     repeated FeaturePrompt feature_prompts = 5;
     repeated KeyProto user_keys = 2;
-    bool mail_verification_required = 3;
+    MailVerification mail_verification = 6;
     string mail = 4;
 }
 
@@ -134,16 +142,19 @@ message AcquireMailTokenResponse {
     }
 
     Error error = 1;
+    int64 token_id = 2;
 }
 
 message ReleaseMailTokenRequest {
     string code = 1;
+    int64 token_id = 2;
 }
 
 message ReleaseMailTokenResponse {
     enum Error {
         NONE = 0;
         INVALID_CODE = 1;
+        INVALID_TOKEN_ID = 2;
     }
 
     Error error = 1;

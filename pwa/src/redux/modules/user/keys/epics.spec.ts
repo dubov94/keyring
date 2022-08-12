@@ -23,7 +23,7 @@ import {
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createRegistrationFlowResult, createUserKey } from '@/redux/testing/domain'
+import { createRegistrationFlowResult, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
 import { SequentialFakeUidService } from '@/redux/testing/services'
 import {
   cancelShadow,
@@ -211,19 +211,9 @@ describe('inheritKeysFromAuthnDataEpic', () => {
   })]
 
   ;[
-    remoteAuthnComplete({
-      username: 'username',
-      password: 'password',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      featurePrompts: [],
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys,
-      isOtpEnabled: false,
-      otpToken: null
-    }),
+    remoteAuthnComplete(createRemoteAuthnCompleteResult({
+      userKeys
+    })),
     authnViaDepotSignal(success({
       username: 'username',
       password: 'password',

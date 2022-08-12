@@ -12,7 +12,7 @@ import { emplace, userKeysUpdate } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createUserKey } from '@/redux/testing/domain'
+import { createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
 import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
 import { activateDepotEpic, localRehashEpic, masterKeyUpdateEpic, updateEncryptedOtpTokenEpic, updateVaultEpic } from './epics'
 
@@ -67,19 +67,10 @@ describe('updateEncryptedOtpTokenEpic', () => {
     hash: 'hash',
     depotKey: 'depotKey'
   })
-  const remoteAuthnCompleteAction = remoteAuthnComplete({
-    username: 'username',
-    password: 'password',
-    parametrization: 'parametreization',
-    encryptionKey: 'encryptionKey',
-    sessionKey: 'sessionKey',
-    featurePrompts: [],
-    mailVerificationRequired: false,
-    mail: 'mail@example.com',
-    userKeys: [],
+  const remoteAuthnCompleteAction = remoteAuthnComplete(createRemoteAuthnCompleteResult({
     isOtpEnabled: true,
     otpToken: 'otpToken'
-  })
+  }))
 
   ;[
     depotActivationDataAction,

@@ -3,6 +3,8 @@ package server.main.storage;
 import static java.util.stream.Collectors.toMap;
 
 import com.google.common.collect.ImmutableMap;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +41,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @LocalTransaction
-  public User createUser(String username, String salt, String hash, String mail, String code) {
+  public Tuple2<User, MailToken> createUser(
+      String username, String salt, String hash, String mail, String code) {
     User user =
         new User().setState(User.State.PENDING).setUsername(username).setSalt(salt).setHash(hash);
     FeaturePrompts featurePrompts = new FeaturePrompts().setUser(user);
@@ -47,27 +50,36 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     entityManager.persist(user);
     entityManager.persist(featurePrompts);
     entityManager.persist(mailToken);
-    return user;
+    return Tuple.of(user, mailToken);
   }
 
   @Override
   @LocalTransaction
-  public void createMailToken(long userIdentifier, String mail, String code) {
+  public MailToken createMailToken(long userIdentifier, String mail, String code) {
     MailToken mailToken =
         new MailToken()
             .setUser(entityManager.getReference(User.class, userIdentifier))
             .setMail(mail)
             .setCode(code);
     entityManager.persist(mailToken);
+    return mailToken;
   }
 
   @Override
   @LocalTransaction
-  public Optional<MailToken> getMailToken(long userIdentifier, String token) {
+  public Optional<MailToken> getMailToken(long userIdentifier, long tokenIdentifier) {
     return Queries.findManyToOne(entityManager, MailToken.class, MailToken_.user, userIdentifier)
         .stream()
-        .filter(mailToken -> Objects.equals(mailToken.getCode(), token))
+        .filter(mailToken -> Objects.equals(mailToken.getIdentifier(), tokenIdentifier))
         .findFirst();
+  }
+
+  @Override
+  @LocalTransaction
+  public Optional<MailToken> latestMailToken(long userIdentifier) {
+    return Queries.findManyToOne(entityManager, MailToken.class, MailToken_.user, userIdentifier)
+        .stream()
+        .max((left, right) -> left.getTimestamp().compareTo(right.getTimestamp()));
   }
 
   @LockEntity(name = "user")

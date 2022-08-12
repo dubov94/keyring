@@ -10,6 +10,8 @@ import { function as fn } from 'fp-ts'
 import { expect } from 'chai'
 import { mailTokenReleaseReset, mailTokenReleaseSignal, releaseMailToken } from '@/redux/modules/user/account/actions'
 import { success } from '@/redux/flow_signal'
+import { registrationSignal } from '@/redux/modules/authn/actions'
+import { createRegistrationFlowResult } from '@/redux/testing/domain'
 
 describe('MailVerification', () => {
   let store: Store<RootState, RootAction>
@@ -51,11 +53,17 @@ describe('MailVerification', () => {
   const getActivateButton = () => wrapper.find('button')
 
   it('dispatches mail token release action', async () => {
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({
+      mailTokenId: 'mailTokenId'
+    }))))
     await getVerificationCodeInput().setValue('123456')
     await getActivateButton().trigger('click')
 
     expect(await drainActionQueue(actionQueue)).to.deep.equal([
-      releaseMailToken({ code: '123456' })
+      releaseMailToken({
+        tokenId: 'mailTokenId',
+        code: '123456'
+      })
     ])
   })
 

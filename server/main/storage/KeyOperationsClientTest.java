@@ -137,7 +137,8 @@ class KeyOperationsClientTest {
                     Password.getDefaultInstance(),
                     KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build()));
 
-    assertTrue(thrown.getMessage().contains(String.format("for %d as it's also a shadow", parentId)));
+    assertTrue(
+        thrown.getMessage().contains(String.format("for %d as it's also a shadow", parentId)));
   }
 
   @Test
@@ -263,6 +264,7 @@ class KeyOperationsClientTest {
   private long createUniqueUser() {
     return accountOperationsClient
         .createUser(UUID.randomUUID().toString(), "", "", "", "")
+        ._1
         .getIdentifier();
   }
 }

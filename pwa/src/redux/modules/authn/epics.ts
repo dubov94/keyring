@@ -32,7 +32,7 @@ import {
   isActionSuccess
 } from '@/redux/flow_signal'
 import { isDepotActive } from '@/redux/modules/depot/selectors'
-import { localOtpTokenFailure, remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
+import { defaultMailVerification, localOtpTokenFailure, remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
 import { NIL_KEY_ID } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
@@ -89,7 +89,8 @@ export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action
                           username: action.payload.username,
                           parametrization,
                           encryptionKey,
-                          sessionKey: response.sessionKey!
+                          sessionKey: response.sessionKey!,
+                          mailTokenId: response.mailTokenId!
                         })))
                       default:
                         return of(registrationSignal(failure(response.error!)))
@@ -128,13 +129,19 @@ const decodeUserData = (encryptionKey: string, userData: ServiceUserData): Obser
     })
   )).pipe(
     defaultIfEmpty(<Key[]>[]),
-    switchMap((userKeys) => of({
-      sessionKey: userData.sessionKey!,
-      featurePrompts: userData.featurePrompts!,
-      mailVerificationRequired: userData.mailVerificationRequired!,
-      mail: userData.mail || null,
-      userKeys
-    }))
+    switchMap((userKeys) => {
+      const mv = userData.mailVerification
+      return of({
+        sessionKey: userData.sessionKey!,
+        featurePrompts: userData.featurePrompts!,
+        mailVerification: mv ? {
+          required: mv.required!,
+          tokenId: mv.tokenId!
+        } : defaultMailVerification(),
+        mail: userData.mail || null,
+        userKeys
+      })
+    })
   )
 }
 

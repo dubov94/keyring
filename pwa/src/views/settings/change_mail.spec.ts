@@ -70,13 +70,19 @@ describe('ChangeMail', () => {
   })
 
   it('dispatches mail release action', async () => {
-    store.dispatch(mailTokenAcquisitionSignal(success('mail@example.com')))
+    store.dispatch(mailTokenAcquisitionSignal(success({
+      tokenId: 'tokenId',
+      mail: 'mail@example.com'
+    })))
     await tickUntilTrue(() => getCodeInput().exists())
     await getCodeInput().setValue('123456')
     await getSubmitButton().trigger('click')
 
     expect(await drainActionQueue(actionQueue)).to.deep.equal([
-      releaseMailToken({ code: '123456' })
+      releaseMailToken({
+        tokenId: 'tokenId',
+        code: '123456'
+      })
     ])
   })
 
@@ -93,7 +99,10 @@ describe('ChangeMail', () => {
     await getNewMailInput().setValue('mail@example.com')
     await getPasswordInput().setValue('password')
     await getNextButton().trigger('click')
-    store.dispatch(mailTokenAcquisitionSignal(success('mail@example.com')))
+    store.dispatch(mailTokenAcquisitionSignal(success({
+      tokenId: 'tokenId',
+      mail: 'mail@example.com'
+    })))
     await tickUntilTrue(() => getCodeInput().exists())
     await getCodeInput().setValue('123456')
     await getSubmitButton().trigger('click')

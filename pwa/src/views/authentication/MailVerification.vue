@@ -49,7 +49,7 @@ import Vue, { VueConstructor } from 'vue'
 import Page from '@/components/Page.vue'
 import { ServiceReleaseMailTokenResponseError } from '@/api/definitions'
 import { DeepReadonly } from 'ts-essentials'
-import { MailTokenRelease, mailTokenRelease } from '@/redux/modules/user/account/selectors'
+import { MailTokenRelease, mailTokenRelease, mailVerificationTokenId } from '@/redux/modules/user/account/selectors'
 import { StandardErrorKind, isActionSuccess } from '@/redux/flow_signal'
 import { releaseMailToken, mailTokenReleaseReset, mailTokenReleaseSignal } from '@/redux/modules/user/account/actions'
 import { takeUntil, filter } from 'rxjs/operators'
@@ -59,6 +59,7 @@ import { error } from '@/redux/remote_data'
 interface Mixins {
   code: { frozen: boolean };
   mailTokenRelease: DeepReadonly<MailTokenRelease>;
+  mailVerificationTokenId: string;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
@@ -83,7 +84,16 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   validations: {
     code: {
-      valid () {
+      notExpired () {
+        return fn.pipe(
+          error(this.mailTokenRelease),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceReleaseMailTokenResponseError.INVALIDTOKENID),
+          option.map(() => !this.code.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
+      },
+      correct () {
         return fn.pipe(
           error(this.mailTokenRelease),
           option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
@@ -95,12 +105,16 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   computed: {
+    mailVerificationTokenId (): string {
+      return mailVerificationTokenId(this.$data.$state)
+    },
     mailTokenRelease (): DeepReadonly<MailTokenRelease> {
       return mailTokenRelease(this.$data.$state)
     },
     codeErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('INVALID_CODE') as string]: !this.$v.code.valid
+        [this.$t('MAIL_CODE_INCORRECT') as string]: !this.$v.code.correct,
+        [this.$t('MAIL_TOKEN_EXPIRED') as string]: !this.$v.code.notExpired
       }
     },
     inProgress (): boolean {
@@ -118,6 +132,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         if (!this.$v.$invalid) {
           this.code.frozen = true
           this.dispatch(releaseMailToken({
+            tokenId: this.mailVerificationTokenId,
             code: this.code.value
           }))
         }

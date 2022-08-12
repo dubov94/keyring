@@ -7,6 +7,7 @@ import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
+import io.vavr.Tuple2;
 import io.vavr.control.Either;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.entities.FeaturePrompts;
 import server.main.entities.Key;
+import server.main.entities.MailToken;
 import server.main.entities.OtpToken;
 import server.main.entities.User;
 import server.main.interceptors.AgentAccessor;
@@ -86,7 +88,9 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     String salt = request.getSalt();
     String hash = cryptography.computeHash(request.getDigest());
     String code = cryptography.generateUacs();
-    User user = accountOperationsInterface.createUser(username, salt, hash, mail, code);
+    Tuple2<User, MailToken> entities =
+        accountOperationsInterface.createUser(username, salt, hash, mail, code);
+    User user = entities._1;
     String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
     accountOperationsInterface.createSession(
         user.getIdentifier(),
@@ -95,7 +99,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         agentAccessor.getUserAgent(),
         versionAccessor.getVersion());
     mailClient.sendMailVerificationCode(mail, code);
-    return Either.right(builder.setSessionKey(sessionKey).build());
+    return Either.right(
+        builder.setSessionKey(sessionKey).setMailTokenId(entities._2.getIdentifier()).build());
   }
 
   @Override
@@ -125,31 +130,35 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   }
 
   private UserData newSessionUserData(User user) {
+    long userId = user.getIdentifier();
     String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
     accountOperationsInterface.createSession(
-        user.getIdentifier(),
+        userId,
         sessionKey,
         agentAccessor.getIpAddress(),
         agentAccessor.getUserAgent(),
         versionAccessor.getVersion());
     UserData.Builder userDataBuilder = UserData.newBuilder();
     userDataBuilder.setSessionKey(sessionKey);
-    FeaturePrompts featurePrompts =
-        accountOperationsInterface.getFeaturePrompts(user.getIdentifier());
+    FeaturePrompts featurePrompts = accountOperationsInterface.getFeaturePrompts(userId);
     userDataBuilder.addAllFeaturePrompts(
         FEATURE_PROMPT_MAPPERS.stream()
             .map(mapper -> mapper.apply(featurePrompts))
             .flatMap(Optional::stream)
             .collect(toList()));
     if (user.getMail() == null) {
-      userDataBuilder.setMailVerificationRequired(true);
+      MailVerification.Builder mailVerificationBuilder = MailVerification.newBuilder();
+      mailVerificationBuilder.setRequired(true);
+      Optional<MailToken> mailToken = accountOperationsInterface.latestMailToken(userId);
+      if (mailToken.isPresent()) {
+        mailVerificationBuilder.setTokenId(mailToken.get().getIdentifier());
+      }
+      userDataBuilder.setMailVerification(mailVerificationBuilder);
     } else {
       userDataBuilder.setMail(user.getMail());
     }
     userDataBuilder.addAllUserKeys(
-        keyOperationsInterface.readKeys(user.getIdentifier()).stream()
-            .map(Key::toKeyProto)
-            .collect(toList()));
+        keyOperationsInterface.readKeys(userId).stream().map(Key::toKeyProto).collect(toList()));
     return userDataBuilder.build();
   }
 

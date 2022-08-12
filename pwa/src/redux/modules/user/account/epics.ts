@@ -93,6 +93,7 @@ export const releaseMailTokenEpic: Epic<RootAction, RootAction, RootState> = (ac
       return concat(
         of(mailTokenReleaseSignal(indicator(MailTokenReleaseFlowIndicator.WORKING))),
         from(getAdministrationApi().administrationReleaseMailToken({
+          tokenId: action.payload.tokenId,
           code: action.payload.code
         }, {
           headers: {
@@ -138,7 +139,10 @@ export const acquireMailTokenEpic: Epic<RootAction, RootAction, RootState> = (ac
             })).pipe(switchMap((response: ServiceAcquireMailTokenResponse) => {
               switch (response.error) {
                 case ServiceAcquireMailTokenResponseError.NONE:
-                  return of(mailTokenAcquisitionSignal(success(action.payload.mail)))
+                  return of(mailTokenAcquisitionSignal(success({
+                    mail: action.payload.mail,
+                    tokenId: response.tokenId!
+                  })))
                 default:
                   return of(mailTokenAcquisitionSignal(failure(response.error!)))
               }

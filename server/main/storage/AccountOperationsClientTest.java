@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import io.vavr.Tuple2;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -49,15 +50,13 @@ class AccountOperationsClientTest {
   @Test
   void createUser_getsUniqueUsername_postsUserAndMailToken() {
     String username = createUniqueUsername();
-    long userIdentifier =
-        accountOperationsClient
-            .createUser(username, "salt", "hash", "mail@example.com", "0")
-            .getIdentifier();
+    Tuple2<User, MailToken> tuple =
+        accountOperationsClient.createUser(username, "salt", "hash", "mail@example.com", "0");
 
-    MailToken mailToken = accountOperationsClient.getMailToken(userIdentifier, "0").get();
+    MailToken mailToken = tuple._2;
     assertEquals("0", mailToken.getCode());
     assertEquals("mail@example.com", mailToken.getMail());
-    User user = mailToken.getUser();
+    User user = tuple._1;
     assertEquals(User.State.PENDING, user.getState());
     assertEquals(username, user.getUsername());
     assertEquals("salt", user.getSalt());
@@ -76,23 +75,40 @@ class AccountOperationsClientTest {
   }
 
   @Test
-  void getMailToken_DoesNotExist_returnsEmpty() {
-    assertEquals(Optional.empty(), accountOperationsClient.getMailToken(Long.MAX_VALUE, ""));
+  void getMailToken_foreignToken_returnsEmpty() {
+    String username = createUniqueUsername();
+    Tuple2<User, MailToken> user = accountOperationsClient.createUser(username, "", "", "", "A");
+
+    assertFalse(
+        accountOperationsClient
+            .getMailToken(user._1.getIdentifier() + 1, user._2.getIdentifier())
+            .isPresent());
+  }
+
+  @Test
+  void latestMailToken_sortsByCreationTime() {
+    long userId = createActiveUser();
+
+    accountOperationsClient.createMailToken(userId, "fst@domain.com", "fst");
+    accountOperationsClient.createMailToken(userId, "snd@domain.com", "snd");
+    accountOperationsClient.createMailToken(userId, "trd@domain.com", "trd");
+    MailToken mailToken = accountOperationsClient.latestMailToken(userId).get();
+
+    assertEquals("trd@domain.com", mailToken.getMail());
   }
 
   @Test
   void releaseMailToken_removesTokenSetsMailActivatesUser() {
     String username = createUniqueUsername();
-    long userIdentifier =
-        accountOperationsClient
-            .createUser(username, "", "", "mail@domain.com", "0")
-            .getIdentifier();
-    MailToken mailToken = accountOperationsClient.getMailToken(userIdentifier, "0").get();
+    Tuple2<User, MailToken> tuple =
+        accountOperationsClient.createUser(username, "", "", "mail@domain.com", "0");
+    long userId = tuple._1.getIdentifier();
+    long mailTokenId = tuple._2.getIdentifier();
 
-    accountOperationsClient.releaseMailToken(mailToken.getIdentifier());
+    accountOperationsClient.releaseMailToken(mailTokenId);
 
-    assertEquals(Optional.empty(), accountOperationsClient.getMailToken(userIdentifier, "0"));
-    User user = accountOperationsClient.getUserByIdentifier(userIdentifier).get();
+    assertFalse(accountOperationsClient.getMailToken(userId, mailTokenId).isPresent());
+    User user = accountOperationsClient.getUserByIdentifier(userId).get();
     assertEquals("mail@domain.com", user.getMail());
     assertEquals(User.State.ACTIVE, user.getState());
   }
@@ -170,11 +186,12 @@ class AccountOperationsClientTest {
 
   @Test
   void createMailToken_putsMailToken() {
-    long userIdentifier = createActiveUser();
+    long userId = createActiveUser();
 
-    accountOperationsClient.createMailToken(userIdentifier, "user@mail.com", "0");
+    long mailTokenId =
+        accountOperationsClient.createMailToken(userId, "user@mail.com", "0").getIdentifier();
 
-    Optional<MailToken> maybeMailToken = accountOperationsClient.getMailToken(userIdentifier, "0");
+    Optional<MailToken> maybeMailToken = accountOperationsClient.getMailToken(userId, mailTokenId);
     assertTrue(maybeMailToken.isPresent());
     MailToken mailToken = maybeMailToken.get();
     assertEquals("user@mail.com", mailToken.getMail());
@@ -291,11 +308,9 @@ class AccountOperationsClientTest {
 
   private long createActiveUser() {
     String username = createUniqueUsername();
-    long userIdentifier =
-        accountOperationsClient.createUser(username, "", "", "", "").getIdentifier();
-    MailToken mailToken = accountOperationsClient.getMailToken(userIdentifier, "").get();
-    accountOperationsClient.releaseMailToken(mailToken.getIdentifier());
-    return userIdentifier;
+    Tuple2<User, MailToken> user = accountOperationsClient.createUser(username, "", "", "", "");
+    accountOperationsClient.releaseMailToken(user._2.getIdentifier());
+    return user._1.getIdentifier();
   }
 
   private String createUniqueUsername() {

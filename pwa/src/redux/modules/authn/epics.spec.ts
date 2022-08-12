@@ -23,11 +23,11 @@ import { Key } from '@/redux/domain'
 import { cancel, exception, failure, FlowSignal, indicator, StandardError, success } from '@/redux/flow_signal'
 import { rehydrateDepot } from '@/redux/modules/depot/actions'
 import { showToast } from '@/redux/modules/ui/toast/actions'
-import { remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
+import { defaultMailVerification, remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createKeyProto, createUserKey } from '@/redux/testing/domain'
+import { createKeyProto, createRegistrationFlowResult, createUserKey } from '@/redux/testing/domain'
 import {
   AuthnOtpProvisionFlowIndicator,
   authnOtpProvisionReset,
@@ -123,7 +123,8 @@ describe('registrationEpic', () => {
       mail: 'mail@example.com'
     }))).thenResolve(<ServiceRegisterResponse>{
       error: ServiceRegisterResponseError.NONE,
-      sessionKey: 'sessionKey'
+      sessionKey: 'sessionKey',
+      mailTokenId: 'mailTokenId'
     })
     container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
       useValue: instance(mockAuthenticationApi)
@@ -142,12 +143,7 @@ describe('registrationEpic', () => {
       registrationSignal(indicator(RegistrationFlowIndicator.GENERATING_PARAMETRIZATION)),
       registrationSignal(indicator(RegistrationFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
       registrationSignal(indicator(RegistrationFlowIndicator.MAKING_REQUEST)),
-      registrationSignal(success({
-        username: 'username',
-        parametrization: 'parametrization',
-        encryptionKey: 'encryptionKey',
-        sessionKey: 'sessionKey'
-      }))
+      registrationSignal(success(createRegistrationFlowResult({})))
     ])
   })
 
@@ -175,7 +171,10 @@ describe('logInViaApiEpic', () => {
       userData: {
         sessionKey: 'sessionKey',
         featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
-        mailVerificationRequired: false,
+        mailVerification: {
+          required: false,
+          tokenId: ''
+        },
         mail: 'mail@example.com',
         userKeys: [createKeyProto({
           identifier: 'identifier',
@@ -226,7 +225,7 @@ describe('logInViaApiEpic', () => {
         content: either.right({
           sessionKey: 'sessionKey',
           featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
-          mailVerificationRequired: false,
+          mailVerification: defaultMailVerification(),
           mail: 'mail@example.com',
           userKeys: [createUserKey({
             identifier: 'identifier',
@@ -254,7 +253,10 @@ describe('logInViaApiEpic', () => {
       userData: {
         sessionKey: 'sessionKey',
         featurePrompts: [],
-        mailVerificationRequired: false,
+        mailVerification: {
+          required: false,
+          tokenId: ''
+        },
         mail: 'mail@example.com',
         userKeys: []
       }
@@ -292,7 +294,7 @@ describe('logInViaApiEpic', () => {
         content: either.right({
           sessionKey: 'sessionKey',
           featurePrompts: [],
-          mailVerificationRequired: false,
+          mailVerification: defaultMailVerification(),
           mail: 'mail@example.com',
           userKeys: []
         })
@@ -327,7 +329,10 @@ describe('provideOtpEpic', () => {
       userData: {
         sessionKey: 'sessionKey',
         featurePrompts: [],
-        mailVerificationRequired: false,
+        mailVerification: {
+          required: false,
+          tokenId: ''
+        },
         mail: 'mail@example.com',
         userKeys: [createKeyProto({
           identifier: 'identifier',
@@ -372,7 +377,7 @@ describe('provideOtpEpic', () => {
         userData: {
           sessionKey: 'sessionKey',
           featurePrompts: [],
-          mailVerificationRequired: false,
+          mailVerification: defaultMailVerification(),
           mail: 'mail@example.com',
           userKeys: [createUserKey({
             identifier: 'identifier',
@@ -540,7 +545,10 @@ describe('backgroundOtpProvisionEpic', () => {
       userData: {
         sessionKey: 'sessionKey',
         featurePrompts: [],
-        mailVerificationRequired: false,
+        mailVerification: {
+          required: false,
+          tokenId: ''
+        },
         mail: 'mail@example.com',
         userKeys: []
       }
@@ -569,7 +577,7 @@ describe('backgroundOtpProvisionEpic', () => {
         userData: {
           sessionKey: 'sessionKey',
           featurePrompts: [],
-          mailVerificationRequired: false,
+          mailVerification: defaultMailVerification(),
           mail: 'mail@example.com',
           userKeys: []
         }
@@ -604,7 +612,7 @@ describe('remoteAuthnCompleteOnCredentialsEpic', () => {
   const userData = {
     sessionKey: 'sessionKey',
     featurePrompts: [],
-    mailVerificationRequired: false,
+    mailVerification: defaultMailVerification(),
     mail: 'mail@example.com',
     userKeys: []
   }

@@ -14,6 +14,7 @@ import { RemoteData } from '@/redux/remote_data'
 import { RootState } from '@/redux/root_reducer'
 import {
   AccountDeletionFlowIndicator,
+  MailTokenAcquisitionData,
   MailTokenAcquisitionFlowIndicator,
   MailTokenReleaseFlowIndicator,
   MasterKeyChangeFlowIndicator,
@@ -26,10 +27,11 @@ import {
 
 export const isAuthenticated = (state: RootState): boolean => state.user.account.isAuthenticated
 export const canAccessApi = (state: RootState): boolean => state.user.account.sessionKey !== null
-export const mailVerificationRequired = (state: RootState): boolean => state.user.account.mailVerificationRequired
+export const mailVerificationRequired = (state: RootState): boolean => state.user.account.mailVerification.required
+export const mailVerificationTokenId = (state: RootState): string => state.user.account.mailVerification.tokenId
 export const accountMail = (state: RootState): string | null => state.user.account.mail
 
-export type MailTokenAcquisition = RemoteData<MailTokenAcquisitionFlowIndicator, string, StandardError<ServiceAcquireMailTokenResponseError>>
+export type MailTokenAcquisition = RemoteData<MailTokenAcquisitionFlowIndicator, MailTokenAcquisitionData, StandardError<ServiceAcquireMailTokenResponseError>>
 export const mailTokenAcquisition = (state: RootState): DeepReadonly<MailTokenAcquisition> => state.user.account.mailTokenAcquisition
 
 export type MailTokenRelease = RemoteData<MailTokenReleaseFlowIndicator, {}, StandardError<ServiceReleaseMailTokenResponseError>>

@@ -10,6 +10,7 @@ import {
 import { reduce } from '@/redux/testing'
 import { clearDepot, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
 import reducer from './reducer'
+import { createRegistrationFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
 
 describe('rehydrateDepot', () => {
   it('restores values', () => {
@@ -62,19 +63,7 @@ describe('remoteAuthnComplete', () => {
   it('clears the encrypted OTP token', () => {
     const state = reduce(reducer, undefined, [
       newEncryptedOtpToken('encryptedOtpToken'),
-      remoteAuthnComplete({
-        username: 'username',
-        password: 'password',
-        parametrization: 'parametrization',
-        encryptionKey: 'encryptionKey',
-        sessionKey: 'sessionKey',
-        featurePrompts: [],
-        mailVerificationRequired: false,
-        mail: 'mail@example.com',
-        userKeys: [],
-        isOtpEnabled: false,
-        otpToken: null
-      })
+      remoteAuthnComplete(createRemoteAuthnCompleteResult({}))
     ])
 
     expect(state.encryptedOtpToken).to.be.null
@@ -129,12 +118,7 @@ describe('clearDepot', () => {
 
 describe('toInitialState', () => {
   ;[
-    registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })),
+    registrationSignal(success(createRegistrationFlowResult({}))),
     accountDeletionSignal(success({})),
     remoteCredentialsMismatchLocal(),
     localOtpTokenFailure()

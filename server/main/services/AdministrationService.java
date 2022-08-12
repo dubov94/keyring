@@ -79,9 +79,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       return Either.right(builder.setError(AcquireMailTokenResponse.Error.INVALID_DIGEST).build());
     }
     String code = cryptography.generateUacs();
-    accountOperationsInterface.createMailToken(userIdentifier, mail, code);
+    MailToken mailToken = accountOperationsInterface.createMailToken(userIdentifier, mail, code);
     mailClient.sendMailVerificationCode(mail, code);
-    return Either.right(builder.build());
+    return Either.right(builder.setTokenId(mailToken.getIdentifier()).build());
   }
 
   @Override
@@ -101,11 +101,14 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     ReleaseMailTokenResponse.Builder builder = ReleaseMailTokenResponse.newBuilder();
     Optional<MailToken> maybeMailToken =
         accountOperationsInterface.getMailToken(
-            sessionAccessor.getUserIdentifier(), request.getCode());
+            sessionAccessor.getUserIdentifier(), request.getTokenId());
     if (!maybeMailToken.isPresent()) {
-      return builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE).build();
+      return builder.setError(ReleaseMailTokenResponse.Error.INVALID_TOKEN_ID).build();
     }
     MailToken mailToken = maybeMailToken.get();
+    if (!Objects.equals(mailToken.getCode(), request.getCode())) {
+      return builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE).build();
+    }
     accountOperationsInterface.releaseMailToken(mailToken.getIdentifier());
     return builder.setMail(mailToken.getMail()).build();
   }

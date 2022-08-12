@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.stub.StreamObserver;
+import io.vavr.Tuple;
 import java.util.Optional;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,7 @@ import org.mockito.Mock;
 import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.entities.FeaturePrompts;
+import server.main.entities.MailToken;
 import server.main.entities.OtpToken;
 import server.main.entities.User;
 import server.main.interceptors.AgentAccessor;
@@ -72,7 +74,7 @@ class AuthenticationServiceTest {
     when(mockCryptography.generateUacs()).thenReturn("0");
     when(mockAccountOperationsInterface.createUser(
             "username", "salt", "hash", "mail@example.com", "0"))
-        .thenReturn(new User().setIdentifier(1L));
+        .thenReturn(Tuple.of(new User().setIdentifier(1L), new MailToken().setIdentifier(2L)));
     when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
     when(mockAgentAccessor.getUserAgent()).thenReturn("Chrome/0.0.0");
     when(mockVersionAccessor.getVersion()).thenReturn("version");
@@ -93,7 +95,8 @@ class AuthenticationServiceTest {
         .createSession(1L, "identifier", "127.0.0.1", "Chrome/0.0.0", "version");
     verify(mockMailClient).sendMailVerificationCode("mail@example.com", "0");
     verify(mockStreamObserver)
-        .onNext(RegisterResponse.newBuilder().setSessionKey("identifier").build());
+        .onNext(
+            RegisterResponse.newBuilder().setSessionKey("identifier").setMailTokenId(2L).build());
     verify(mockStreamObserver).onCompleted();
   }
 
@@ -194,6 +197,8 @@ class AuthenticationServiceTest {
     when(mockVersionAccessor.getVersion()).thenReturn("version");
     when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
     when(mockAccountOperationsInterface.getFeaturePrompts(1L)).thenReturn(new FeaturePrompts());
+    when(mockAccountOperationsInterface.latestMailToken(1L))
+        .thenReturn(Optional.of(new MailToken().setIdentifier(2L)));
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),
@@ -208,7 +213,8 @@ class AuthenticationServiceTest {
                 .setUserData(
                     UserData.newBuilder()
                         .setSessionKey("identifier")
-                        .setMailVerificationRequired(true))
+                        .setMailVerification(
+                            MailVerification.newBuilder().setRequired(true).setTokenId(2L)))
                 .build());
     verify(mockStreamObserver).onCompleted();
   }
@@ -272,6 +278,8 @@ class AuthenticationServiceTest {
     when(mockVersionAccessor.getVersion()).thenReturn("version");
     when(mockKeyValueClient.createSession(any())).thenReturn("session");
     when(mockAccountOperationsInterface.getFeaturePrompts(1L)).thenReturn(new FeaturePrompts());
+    when(mockAccountOperationsInterface.latestMailToken(1L))
+        .thenReturn(Optional.of(new MailToken().setIdentifier(2L)));
 
     authenticationService.provideOtp(
         ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
@@ -287,7 +295,8 @@ class AuthenticationServiceTest {
                 .setUserData(
                     UserData.newBuilder()
                         .setSessionKey("session")
-                        .setMailVerificationRequired(true))
+                        .setMailVerification(
+                            MailVerification.newBuilder().setRequired(true).setTokenId(2L)))
                 .build());
     verify(mockStreamObserver).onCompleted();
   }
@@ -326,6 +335,8 @@ class AuthenticationServiceTest {
     when(mockVersionAccessor.getVersion()).thenReturn("version");
     when(mockKeyValueClient.createSession(any())).thenReturn("session");
     when(mockAccountOperationsInterface.getFeaturePrompts(7L)).thenReturn(new FeaturePrompts());
+    when(mockAccountOperationsInterface.latestMailToken(7L))
+        .thenReturn(Optional.of(new MailToken().setIdentifier(97L)));
 
     authenticationService.provideOtp(
         ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
@@ -341,7 +352,8 @@ class AuthenticationServiceTest {
                 .setUserData(
                     UserData.newBuilder()
                         .setSessionKey("session")
-                        .setMailVerificationRequired(true))
+                        .setMailVerification(
+                            MailVerification.newBuilder().setRequired(true).setTokenId(97L)))
                 .build());
     verify(mockStreamObserver).onCompleted();
   }

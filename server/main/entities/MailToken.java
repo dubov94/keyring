@@ -37,6 +37,10 @@ public class MailToken {
     return this;
   }
 
+  public Timestamp getTimestamp() {
+    return timestamp;
+  }
+
   public User getUser() {
     return user;
   }

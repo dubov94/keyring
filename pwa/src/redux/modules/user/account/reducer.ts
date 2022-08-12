@@ -47,7 +47,10 @@ import {
   otpResetSignal,
   OtpResetFlowIndicator,
   cancelOtpReset,
-  featureAckSignal
+  featureAckSignal,
+  MailVerification,
+  defaultMailVerification,
+  MailTokenAcquisitionData
 } from './actions'
 
 export default createReducer<{
@@ -56,10 +59,10 @@ export default createReducer<{
   encryptionKey: string | null;
   sessionKey: string | null;
   featurePrompts: ServiceFeaturePrompt[];
-  mailVerificationRequired: boolean;
+  mailVerification: MailVerification;
   mail: string | null;
   mailTokenRelease: RemoteData<MailTokenReleaseFlowIndicator, string, StandardError<ServiceReleaseMailTokenResponseError>>;
-  mailTokenAcquisition: RemoteData<MailTokenAcquisitionFlowIndicator, string, StandardError<ServiceAcquireMailTokenResponseError>>;
+  mailTokenAcquisition: RemoteData<MailTokenAcquisitionFlowIndicator, MailTokenAcquisitionData, StandardError<ServiceAcquireMailTokenResponseError>>;
   masterKeyChange: RemoteData<MasterKeyChangeFlowIndicator, {}, StandardError<ServiceChangeMasterKeyResponseError>>;
   usernameChange: RemoteData<UsernameChangeFlowIndicator, {}, StandardError<ServiceChangeUsernameResponseError>>;
   accountDeletion: RemoteData<AccountDeletionFlowIndicator, {}, StandardError<ServiceDeleteAccountResponseError>>;
@@ -75,7 +78,10 @@ export default createReducer<{
     encryptionKey: null,
     sessionKey: null,
     featurePrompts: [],
-    mailVerificationRequired: true,
+    mailVerification: {
+      required: false,
+      tokenId: ''
+    },
     mail: null,
     mailTokenRelease: zero(),
     mailTokenAcquisition: zero(),
@@ -95,7 +101,7 @@ export default createReducer<{
       state.parametrization = flowSuccess.parametrization
       state.encryptionKey = flowSuccess.encryptionKey
       state.sessionKey = flowSuccess.sessionKey
-      state.mailVerificationRequired = true
+      state.mailVerification = { required: true, tokenId: flowSuccess.mailTokenId }
     })
     .addMatcher(isActionOf(remoteAuthnComplete), (state, action) => {
       state.isAuthenticated = true
@@ -103,14 +109,14 @@ export default createReducer<{
       state.encryptionKey = action.payload.encryptionKey
       state.sessionKey = action.payload.sessionKey
       state.featurePrompts = castDraft(action.payload.featurePrompts)
-      state.mailVerificationRequired = action.payload.mailVerificationRequired
+      state.mailVerification = action.payload.mailVerification
       state.mail = action.payload.mail
       state.isOtpEnabled = action.payload.isOtpEnabled
       state.otpToken = action.payload.otpToken
     })
     .addMatcher(isActionSuccess(authnViaDepotSignal), (state) => {
       state.isAuthenticated = true
-      state.mailVerificationRequired = false
+      state.mailVerification = defaultMailVerification()
     })
     .addMatcher(isActionOf(mailTokenReleaseSignal), (state, action) => {
       state.mailTokenRelease = reducer(
@@ -120,7 +126,7 @@ export default createReducer<{
       )(state.mailTokenRelease, action.payload)
     })
     .addMatcher(isActionSuccess(mailTokenReleaseSignal), (state, action) => {
-      state.mailVerificationRequired = false
+      state.mailVerification = defaultMailVerification()
       state.mail = action.payload.data
     })
     .addMatcher(isActionOf(mailTokenReleaseReset), (state) => {
@@ -129,7 +135,7 @@ export default createReducer<{
     .addMatcher(isActionOf(mailTokenAcquisitionSignal), (state, action) => {
       state.mailTokenAcquisition = reducer(
         identity<MailTokenAcquisitionFlowIndicator>(),
-        identity<string>(),
+        identity<MailTokenAcquisitionData>(),
         identity<StandardError<ServiceAcquireMailTokenResponseError>>()
       )(state.mailTokenAcquisition, action.payload)
     })

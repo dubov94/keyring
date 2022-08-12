@@ -9,6 +9,7 @@ import {
   accountDeletionReset,
   accountDeletionSignal,
   cancelOtpReset,
+  defaultMailVerification,
   featureAckSignal,
   mailTokenAcquisitionReset,
   mailTokenAcquisitionSignal,
@@ -27,21 +28,22 @@ import {
   usernameChangeSignal
 } from './actions'
 import reducer from './reducer'
+import { createRegistrationFlowResult } from '@/redux/testing/domain'
 
 describe('registrationSignal', () => {
   it('sets the account state', () => {
-    const state = reducer(undefined, registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    const state = reducer(undefined, registrationSignal(
+      success(createRegistrationFlowResult({}))
+    ))
 
     expect(state.isAuthenticated).to.be.true
     expect(state.parametrization).to.equal('parametrization')
     expect(state.encryptionKey).to.equal('encryptionKey')
     expect(state.sessionKey).to.equal('sessionKey')
-    expect(state.mailVerificationRequired).to.be.true
+    expect(state.mailVerification).to.deep.equal({
+      required: true,
+      tokenId: 'mailTokenId'
+    })
   })
 })
 
@@ -54,7 +56,7 @@ describe('remoteAuthnComplete', () => {
       encryptionKey: 'encryptionKey',
       sessionKey: 'sessionKey',
       featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
-      mailVerificationRequired: false,
+      mailVerification: defaultMailVerification(),
       mail: 'mail@example.com',
       userKeys: [],
       isOtpEnabled: true,
@@ -66,7 +68,7 @@ describe('remoteAuthnComplete', () => {
     expect(state.encryptionKey).to.equal('encryptionKey')
     expect(state.sessionKey).to.equal('sessionKey')
     expect(state.featurePrompts).to.deep.equal([{ featureType: ServiceFeatureType.UNKNOWN }])
-    expect(state.mailVerificationRequired).to.be.false
+    expect(state.mailVerification).to.deep.equal(defaultMailVerification())
     expect(state.mail).to.equal('mail@example.com')
     expect(state.isOtpEnabled).to.be.true
     expect(state.otpToken).to.equal('otpToken')
@@ -83,7 +85,7 @@ describe('authnViaDepotSignal', () => {
     })))
 
     expect(state.isAuthenticated).to.be.true
-    expect(state.mailVerificationRequired).to.be.false
+    expect(state.mailVerification.required).to.be.false
   })
 })
 
@@ -97,10 +99,10 @@ describe('mailTokenRelease', () => {
       expect(hasData(state.mailTokenRelease)).to.be.true
     })
 
-    it('sets `mailVerificationRequired` to false', () => {
+    it('sets `mailVerification.required` to false', () => {
       const state = reducer(undefined, signalAction)
 
-      expect(state.mailVerificationRequired).to.be.false
+      expect(state.mailVerification.required).to.be.false
     })
 
     it('sets `mail` to the new mail', () => {
@@ -120,7 +122,10 @@ describe('mailTokenRelease', () => {
 })
 
 describe('mailTokenAcquisition', () => {
-  const signalAction = mailTokenAcquisitionSignal(success('mail@example.com'))
+  const signalAction = mailTokenAcquisitionSignal(success({
+    tokenId: 'tokenId',
+    mail: 'mail@example.com'
+  }))
 
   describe('mailTokenAcquisitionSignal', () => {
     it('updates the result', () => {
@@ -314,7 +319,10 @@ describe('featureAckSignal', () => {
       encryptionKey: null,
       sessionKey: null,
       featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
-      mailVerificationRequired: true,
+      mailVerification: {
+        required: true,
+        tokenId: 'tokenId'
+      },
       mail: null,
       mailTokenRelease: zero(),
       mailTokenAcquisition: zero(),

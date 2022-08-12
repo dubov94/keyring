@@ -2,9 +2,10 @@ import merge from 'lodash/merge'
 import { DeepPartial } from 'ts-essentials'
 import { ServiceKeyProto } from '@/api/definitions'
 import { Key } from '@/redux/domain'
-import { RegistrationFlowResult } from '@/redux/modules/authn/actions'
+import { RegistrationFlowResult, RemoteAuthnCompletionData } from '@/redux/modules/authn/actions'
 import { NIL_KEY_ID } from '@/redux/modules/user/keys/actions'
 import { Clique } from '@/redux/modules/user/keys/selectors'
+import { defaultMailVerification } from '../modules/user/account/actions'
 
 export const createKeyProto = (partial: DeepPartial<ServiceKeyProto>): ServiceKeyProto => merge({
   identifier: '',
@@ -33,7 +34,24 @@ export const createRegistrationFlowResult = (
   username: 'username',
   parametrization: 'parametrization',
   encryptionKey: 'encryptionKey',
-  sessionKey: 'sessionKey'
+  sessionKey: 'sessionKey',
+  mailTokenId: 'mailTokenId'
+}, partial)
+
+export const createRemoteAuthnCompleteResult = (
+  partial: DeepPartial<RemoteAuthnCompletionData>
+): RemoteAuthnCompletionData => merge({
+  username: 'username',
+  password: 'password',
+  parametrization: 'parametrization',
+  encryptionKey: 'encryptionKey',
+  sessionKey: 'sessionKey',
+  featurePrompts: [],
+  mailVerification: defaultMailVerification(),
+  mail: 'mail@example.com',
+  userKeys: [],
+  isOtpEnabled: false,
+  otpToken: null
 }, partial)
 
 export const createClique = (partial: DeepPartial<Clique>): Clique => merge({

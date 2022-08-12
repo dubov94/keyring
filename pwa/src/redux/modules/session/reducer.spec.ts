@@ -4,16 +4,11 @@ import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '@/
 import { logOut, LogoutTrigger, usernameChangeSignal } from '@/redux/modules/user/account/actions'
 import { rehydrateSession } from './actions'
 import reducer from './reducer'
+import { createRegistrationFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
 
 describe('registrationSignal', () => {
   it('updates the username', () => {
-    const state = reducer(undefined, registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      userKeys: []
-    })))
+    const state = reducer(undefined, registrationSignal(success(createRegistrationFlowResult({}))))
 
     expect(state.username).to.equal('username')
   })
@@ -21,19 +16,7 @@ describe('registrationSignal', () => {
 
 describe('authnSignal', () => {
   ;[
-    remoteAuthnComplete({
-      username: 'username',
-      password: 'password',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      featurePrompts: [],
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys: [],
-      isOtpEnabled: false,
-      otpToken: null
-    }),
+    remoteAuthnComplete(createRemoteAuthnCompleteResult({})),
     authnViaDepotSignal(success({
       username: 'username',
       password: 'password',

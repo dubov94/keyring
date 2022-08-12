@@ -10,6 +10,7 @@ import { function as fn } from 'fp-ts'
 import { expect } from 'chai'
 import { register, registrationReset, registrationSignal } from '@/redux/modules/authn/actions'
 import { success } from '@/redux/flow_signal'
+import { createRegistrationFlowResult } from '@/redux/testing/domain'
 
 describe('Register', () => {
   let store: Store<RootState, RootAction>
@@ -76,12 +77,7 @@ describe('Register', () => {
   })
 
   it('redirects on completion', async () => {
-    $actions.next(registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    $actions.next(registrationSignal(success(createRegistrationFlowResult({}))))
     await wrapper.vm.$nextTick()
 
     expect(router.currentRoute.path).to.equal('/mail-verification')

@@ -1,5 +1,6 @@
 package server.main.storage;
 
+import io.vavr.Tuple2;
 import java.util.List;
 import java.util.Optional;
 import server.main.entities.FeaturePrompts;
@@ -12,11 +13,14 @@ import server.main.proto.service.FeatureType;
 import server.main.proto.service.KeyPatch;
 
 public interface AccountOperationsInterface {
-  User createUser(String username, String salt, String hash, String mail, String code);
+  Tuple2<User, MailToken> createUser(
+      String username, String salt, String hash, String mail, String code);
 
-  void createMailToken(long userIdentifier, String mail, String code);
+  MailToken createMailToken(long userIdentifier, String mail, String code);
 
-  Optional<MailToken> getMailToken(long userIdentifier, String token);
+  Optional<MailToken> getMailToken(long userIdentifier, long tokenIdentifier);
+
+  Optional<MailToken> latestMailToken(long userIdentifier);
 
   void releaseMailToken(long tokenIdentifier);
 

@@ -35,7 +35,7 @@ import { emplace } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createUserKey } from '@/redux/testing/domain'
+import { createRegistrationFlowResult, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,
@@ -101,16 +101,11 @@ import {
 describe('releaseMailTokenEpic', () => {
   it('emits release sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationReleaseMailToken(
-      deepEqual({ code: 'code' }),
+      deepEqual({ tokenId: 'mailTokenId', code: 'code' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceReleaseMailTokenResponse>{
       error: ServiceReleaseMailTokenResponseError.NONE,
@@ -121,7 +116,7 @@ describe('releaseMailTokenEpic', () => {
     })
 
     const epicTracker = new EpicTracker(releaseMailTokenEpic(action$, state$, {}))
-    actionSubject.next(releaseMailToken({ code: 'code' }))
+    actionSubject.next(releaseMailToken({ tokenId: 'mailTokenId', code: 'code' }))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
@@ -165,12 +160,7 @@ describe('displayMailTokenReleaseExceptionsEpic', () => {
 describe('acquireMailTokenEpic', () => {
   it('emits acquisition sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
@@ -185,7 +175,8 @@ describe('acquireMailTokenEpic', () => {
       deepEqual({ digest: 'authDigest', mail: 'mail@example.com' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceAcquireMailTokenResponse>{
-      error: ServiceAcquireMailTokenResponseError.NONE
+      error: ServiceAcquireMailTokenResponseError.NONE,
+      tokenId: 'mailTokenId'
     })
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
       useValue: instance(mockAdministrationApi)
@@ -202,7 +193,10 @@ describe('acquireMailTokenEpic', () => {
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       mailTokenAcquisitionSignal(indicator(MailTokenAcquisitionFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
       mailTokenAcquisitionSignal(indicator(MailTokenAcquisitionFlowIndicator.MAKING_REQUEST)),
-      mailTokenAcquisitionSignal(success('mail@example.com'))
+      mailTokenAcquisitionSignal(success({
+        tokenId: 'mailTokenId',
+        mail: 'mail@example.com'
+      }))
     ])
   })
 
@@ -240,12 +234,9 @@ describe('displayMailTokenAcquisitionExceptionsEpic', () => {
 describe('changeUsernameEpic', () => {
   it('emits change sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'usernameA',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({
+      username: 'usernameA'
+    }))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
@@ -318,12 +309,7 @@ describe('displayUsernameChangeExceptionsEpic', () => {
 describe('deleteAccountEpic', () => {
   it('emits deletion sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
@@ -429,12 +415,7 @@ describe('logOutOnBackgroundAuthnFailureEpic', () => {
 describe('changeMasterKeyEpic', () => {
   it('emits change sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     store.dispatch(emplace([createUserKey({
       identifier: 'identifier',
       value: 'value',
@@ -508,12 +489,7 @@ describe('changeMasterKeyEpic', () => {
 
   it('does not get stuck on an empty set of keys', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'passwordA')).thenResolve({
@@ -601,12 +577,7 @@ describe('displayMasterKeyChangeExceptionsEpic', () => {
 describe('remoteRehashEpic', () => {
   it('emits rehash sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
     when(mockSodiumClient.isParametrizationUpToDate('parametrization')).thenReturn(false)
@@ -642,19 +613,7 @@ describe('remoteRehashEpic', () => {
     })
 
     const epicTracker = new EpicTracker(remoteRehashEpic(action$, state$, {}))
-    actionSubject.next(remoteAuthnComplete({
-      username: 'username',
-      password: 'password',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey',
-      featurePrompts: [],
-      mailVerificationRequired: false,
-      mail: 'mail@example.com',
-      userKeys: [],
-      isOtpEnabled: false,
-      otpToken: null
-    }))
+    actionSubject.next(remoteAuthnComplete(createRemoteAuthnCompleteResult({})))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
@@ -674,12 +633,7 @@ describe('remoteRehashEpic', () => {
 describe('otpParamsGenerationEpic', () => {
   it('emits generation sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'username',
-      parametrization: 'parametrization',
-      encryptionKey: 'encryptionKey',
-      sessionKey: 'sessionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationGenerateOtpParams(deepEqual({}), deepEqual({
@@ -720,12 +674,7 @@ describe('otpParamsGenerationEpic', () => {
 describe('otpParamsAcceptanceEpic', () => {
   it('emits acceptance sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'user',
-      parametrization: 'parametrization',
-      sessionKey: 'sessionKey',
-      encryptionKey: 'encryptionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     store.dispatch(depotActivationData({
       username: 'user',
       salt: 'salt',
@@ -796,12 +745,7 @@ describe('displayOtpParamsAcceptanceExceptionsEpic', () => {
 describe('otpResetEpic', () => {
   it('emits reset sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'user',
-      parametrization: 'parametrization',
-      sessionKey: 'sessionKey',
-      encryptionKey: 'encryptionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationResetOtp(
@@ -859,12 +803,7 @@ describe('displayOtpResetExceptionsEpic', () => {
 describe('ackFeaturePromptEpic', () => {
   it('emits acknowledgement sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(registrationSignal(success({
-      username: 'user',
-      parametrization: 'parametrization',
-      sessionKey: 'sessionKey',
-      encryptionKey: 'encryptionKey'
-    })))
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationAckFeaturePrompt(

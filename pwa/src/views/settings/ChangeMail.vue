@@ -24,7 +24,7 @@
         <div class="mail-box">{{ accountMail }}</div>
       </template>
       <template v-else-if="showAcquisitionMail">
-        <div class="mail-box grey--text">{{ acquisitionMail }}</div>
+        <div class="mail-box grey--text">{{ acquisitionData.mail }}</div>
       </template>
       <v-window :value="stage" class="pa-4">
         <v-window-item :value="1">
@@ -64,9 +64,22 @@
 </template>
 
 <script lang="ts">
+import { function as fn, option } from 'fp-ts'
+import { filter, takeUntil } from 'rxjs/operators'
+import { DeepReadonly } from 'ts-essentials'
 import Vue, { VueConstructor } from 'vue'
 import { email, required } from 'vuelidate/lib/validators'
 import { ServiceAcquireMailTokenResponseError, ServiceReleaseMailTokenResponseError } from '@/api/definitions'
+import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
+import { showToast } from '@/redux/modules/ui/toast/actions'
+import {
+  acquireMailToken,
+  mailTokenAcquisitionReset,
+  releaseMailToken,
+  mailTokenReleaseReset,
+  mailTokenReleaseSignal,
+  MailTokenAcquisitionData
+} from '@/redux/modules/user/account/actions'
 import {
   canAccessApi,
   mailTokenAcquisition,
@@ -75,19 +88,7 @@ import {
   MailTokenRelease,
   accountMail
 } from '@/redux/modules/user/account/selectors'
-import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
-import { function as fn, option } from 'fp-ts'
-import { filter, takeUntil } from 'rxjs/operators'
 import { hasIndicator, error, hasData, data } from '@/redux/remote_data'
-import {
-  acquireMailToken,
-  mailTokenAcquisitionReset,
-  releaseMailToken,
-  mailTokenReleaseReset,
-  mailTokenReleaseSignal
-} from '@/redux/modules/user/account/actions'
-import { DeepReadonly } from 'ts-essentials'
-import { showToast } from '@/redux/modules/ui/toast/actions'
 
 interface Mixins {
   requestGroup: { password: { frozen: boolean } };
@@ -128,7 +129,16 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       }
     },
     code: {
-      valid () {
+      notExpired () {
+        return fn.pipe(
+          error(this.mailTokenRelease),
+          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
+            value.value === ServiceReleaseMailTokenResponseError.INVALIDTOKENID),
+          option.map(() => !this.code.frozen),
+          option.getOrElse<boolean>(() => true)
+        )
+      },
+      correct () {
         return fn.pipe(
           error(this.mailTokenRelease),
           option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
@@ -171,14 +181,14 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     mailTokenAcquisition (): DeepReadonly<MailTokenAcquisition> {
       return mailTokenAcquisition(this.$data.$state)
     },
-    acquisitionMail (): string | null {
+    acquisitionData (): MailTokenAcquisitionData | null {
       return fn.pipe(
         data(this.mailTokenAcquisition),
-        option.getOrElse<string | null>(() => null)
+        option.getOrElse<MailTokenAcquisitionData | null>(() => null)
       )
     },
     showAcquisitionMail (): boolean {
-      return this.stage === 2 && this.acquisitionMail !== null
+      return this.stage === 2 && this.acquisitionData !== null
     },
     mailTokenRelease (): DeepReadonly<MailTokenRelease> {
       return mailTokenRelease(this.$data.$state)
@@ -212,7 +222,8 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     codeErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('INVALID_CODE') as string]: !this.$v.code.valid
+        [this.$t('MAIL_CODE_INCORRECT') as string]: !this.$v.code.correct,
+        [this.$t('MAIL_CODE_EXPIRED') as string]: !this.$v.code.notExpired
       }
     }
   },
@@ -243,6 +254,9 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         if (!this.$v.code.$invalid) {
           this.code.frozen = true
           this.dispatch(releaseMailToken({
+            tokenId: this.acquisitionData !== null
+              ? this.acquisitionData.tokenId
+              : '',
             code: this.code.value
           }))
         }
