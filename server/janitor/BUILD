@@ -16,6 +16,7 @@ java_library(
     plugins = ["//bazel/java:dagger_compiler"],
     deps = [
         ":environment",
+        "//server/main:arithmetic",
         "//server/main:chronometry",
         # For `hibernate.hbm2ddl.auto`.
         "//server/main/entities",

@@ -6,6 +6,7 @@ import dagger.Provides;
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import server.main.Arithmetic;
 import server.main.Chronometry;
 
 @Module
@@ -24,7 +25,13 @@ class AppModule {
 
   @Provides
   @Singleton
-  static Chronometry provideChronometry() {
-    return new Chronometry();
+  static Arithmetic provideArithmetic() {
+    return new Arithmetic();
+  }
+
+  @Provides
+  @Singleton
+  static Chronometry provideChronometry(Arithmetic arithmetic) {
+    return new Chronometry(arithmetic);
   }
 }
