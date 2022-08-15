@@ -1,14 +1,17 @@
 package server.main.storage;
 
 import static java.util.stream.Collectors.toMap;
+import static server.main.storage.AccountOperationsInterface.NudgeStatus;
 
 import com.google.common.collect.ImmutableMap;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -67,10 +70,9 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @LocalTransaction
-  public Optional<MailToken> getMailToken(long userIdentifier, long tokenIdentifier) {
-    return Queries.findManyToOne(entityManager, MailToken.class, MailToken_.user, userIdentifier)
-        .stream()
-        .filter(mailToken -> Objects.equals(mailToken.getIdentifier(), tokenIdentifier))
+  public Optional<MailToken> getMailToken(long userId, long tokenId) {
+    return Queries.findManyToOne(entityManager, MailToken.class, MailToken_.user, userId).stream()
+        .filter(mailToken -> Objects.equals(mailToken.getIdentifier(), tokenId))
         .findFirst();
   }
 
@@ -393,5 +395,26 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     }
     consumer.accept(featurePrompts);
     entityManager.persist(featurePrompts);
+  }
+
+  @Override
+  @LocalTransaction
+  public Tuple2<NudgeStatus, Optional<MailToken>> nudgeMailToken(
+      long userId, long tokenId, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant) {
+    Optional<MailToken> maybeMailToken = getMailToken(userId, tokenId);
+    if (!maybeMailToken.isPresent()) {
+      return Tuple.of(NudgeStatus.NOT_FOUND, Optional.empty());
+    }
+    MailToken mailToken = maybeMailToken.get();
+    Instant availabilityInstant =
+        nextAvailabilityInstant.apply(mailToken.getLastAttempt(), mailToken.getAttemptCount());
+    Instant currentTime = chronometry.currentTime();
+    if (!chronometry.isBefore(availabilityInstant, currentTime)) {
+      return Tuple.of(NudgeStatus.NOT_AVAILABLE_YET, Optional.empty());
+    }
+    mailToken.setLastAttempt(currentTime);
+    mailToken.incrementAttemptCount();
+    entityManager.persist(mailToken);
+    return Tuple.of(NudgeStatus.OK, Optional.of(mailToken));
   }
 }

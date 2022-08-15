@@ -19,6 +19,12 @@ public class User {
 
   @Version private long version;
 
+  public enum State {
+    PENDING,
+    ACTIVE,
+    DELETED
+  }
+
   @Enumerated private State state;
 
   @Column(columnDefinition = "text", unique = true)
@@ -35,7 +41,7 @@ public class User {
 
   @Column(name = "otp_spare_attempts")
   @ColumnDefault("0")
-  private int otpSpareAttempts;
+  private int otpSpareAttempts = 0;
 
   @Column(columnDefinition = "text")
   private String mail;
@@ -137,11 +143,5 @@ public class User {
 
   public boolean isActivated() {
     return getMail() != null;
-  }
-
-  public enum State {
-    PENDING,
-    ACTIVE,
-    DELETED
   }
 }

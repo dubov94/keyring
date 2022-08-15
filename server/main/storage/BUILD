@@ -57,6 +57,8 @@ woven_junit5_test(
         "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
+        ":account_operations_client",
+        ":account_operations_interface",
         "//proto:service_java_grpc",
         "//server/main:chronometry",
         "//server/main/aspects:storage_manager_aspect",
@@ -66,7 +68,6 @@ woven_junit5_test(
         "//server/main/entities:otp_token",
         "//server/main/entities:session",
         "//server/main/entities:user",
-        "//server/main/storage:account_operations_client",
         "//server/main/storage:key_operations_client",
         "//server/main/storage:storage_exception",
         "@maven//:com_google_guava_guava",
@@ -121,6 +122,7 @@ woven_junit5_test(
     ],
     deps = [
         "//proto:service_java_grpc",
+        "//server/main:arithmetic",
         "//server/main:chronometry",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:key",

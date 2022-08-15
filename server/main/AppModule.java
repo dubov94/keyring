@@ -19,8 +19,14 @@ class AppModule {
 
   @Provides
   @Singleton
-  static Cryptography provideCryptography() {
-    return new Cryptography(new SecureRandom(), UACS_LENGTH);
+  static Arithmetic provideArithmetic() {
+    return new Arithmetic();
+  }
+
+  @Provides
+  @Singleton
+  static Cryptography provideCryptography(Arithmetic arithmetic) {
+    return new Cryptography(new SecureRandom(), arithmetic, UACS_LENGTH);
   }
 
   @Provides
@@ -49,8 +55,8 @@ class AppModule {
 
   @Provides
   @Singleton
-  static Chronometry provideChronometry() {
-    return new Chronometry();
+  static Chronometry provideChronometry(Arithmetic arithmetic) {
+    return new Chronometry(arithmetic);
   }
 
   @Provides

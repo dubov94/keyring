@@ -1,8 +1,10 @@
 package server.main.storage;
 
 import io.vavr.Tuple2;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import server.main.entities.FeaturePrompts;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
@@ -18,7 +20,7 @@ public interface AccountOperationsInterface {
 
   MailToken createMailToken(long userIdentifier, String mail, String code);
 
-  Optional<MailToken> getMailToken(long userIdentifier, long tokenIdentifier);
+  Optional<MailToken> getMailToken(long userId, long tokenId);
 
   Optional<MailToken> latestMailToken(long userIdentifier);
 
@@ -60,4 +62,13 @@ public interface AccountOperationsInterface {
   FeaturePrompts getFeaturePrompts(long userId);
 
   void ackFeaturePrompt(long userId, FeatureType featureType);
+
+  public enum NudgeStatus {
+    OK,
+    NOT_FOUND,
+    NOT_AVAILABLE_YET
+  }
+
+  Tuple2<NudgeStatus, Optional<MailToken>> nudgeMailToken(
+      long userId, long tokenId, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant);
 }

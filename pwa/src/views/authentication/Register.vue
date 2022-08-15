@@ -55,10 +55,12 @@ import { ServiceRegisterResponseError } from '@/api/definitions'
 import { register, RegistrationFlowIndicator, registrationReset, registrationSignal } from '@/redux/modules/authn/actions'
 import { registration, Registration } from '@/redux/modules/authn/selectors'
 import { DeepReadonly } from 'ts-essentials'
-import { StandardErrorKind, isActionSuccess } from '@/redux/flow_signal'
+import { isActionSuccess } from '@/redux/flow_signal'
 import { takeUntil, filter } from 'rxjs/operators'
 import { option, function as fn, map, eq } from 'fp-ts'
-import { error } from '@/redux/remote_data'
+import { remoteDataValidator } from '@/components/form_validators'
+
+const usernameAvailableValidator = remoteDataValidator(ServiceRegisterResponseError.NAMETAKEN)
 
 const INDICATOR_TO_MESSAGE = new Map<RegistrationFlowIndicator, string>([
   [RegistrationFlowIndicator.GENERATING_PARAMETRIZATION, 'Generating salt'],
@@ -98,13 +100,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     username: {
       required,
       isAvailable () {
-        return fn.pipe(
-          error(this.registration),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceRegisterResponseError.NAMETAKEN),
-          option.map(() => !this.username.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+        return !usernameAvailableValidator(this.registration, this.username.frozen)
       }
     },
     password: { required },

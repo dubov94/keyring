@@ -90,7 +90,7 @@ import {
   ServiceAcceptOtpParamsResponseError,
   ServiceResetOtpResponseError
 } from '@/api/definitions'
-import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
+import { isActionSuccess } from '@/redux/flow_signal'
 import {
   ackFeaturePrompt,
   generateOtpParams,
@@ -114,7 +114,11 @@ import {
   OtpReset,
   otpReset
 } from '@/redux/modules/user/account/selectors'
-import { hasIndicator, data, error } from '@/redux/remote_data'
+import { hasIndicator, data } from '@/redux/remote_data'
+import { remoteDataValidator } from '@/components/form_validators'
+
+const activationCorrectValidator = remoteDataValidator(ServiceAcceptOtpParamsResponseError.INVALIDCODE)
+const deactivationCorrectValidator = remoteDataValidator(ServiceResetOtpResponseError.INVALIDCODE)
 
 interface Mixins {
   activation: { frozen: boolean };
@@ -139,25 +143,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   validations: {
     activation: {
-      valid () {
-        return fn.pipe(
-          error(this.otpParamsAcceptance),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceAcceptOtpParamsResponseError.INVALIDCODE),
-          option.map(() => !this.activation.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+      correct () {
+        return !activationCorrectValidator(this.otpParamsAcceptance, this.activation.frozen)
       }
     },
     deactivation: {
-      valid () {
-        return fn.pipe(
-          error(this.otpReset),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceResetOtpResponseError.INVALIDCODE),
-          option.map(() => !this.deactivation.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+      correct () {
+        return !deactivationCorrectValidator(this.otpReset, this.deactivation.frozen)
       }
     }
   },
@@ -188,7 +180,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       return hasIndicator(this.otpParamsAcceptance)
     },
     activationOtpIcon (): string {
-      return this.$v.activation.valid ? '' : 'error'
+      return this.$v.activation.correct ? '' : 'error'
     },
     otpReset (): DeepReadonly<OtpReset> {
       return otpReset(this.$data.$state)
@@ -197,7 +189,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       return hasIndicator(this.otpReset)
     },
     deactivationOtpIcon (): string {
-      return this.$v.deactivation.valid ? '' : 'error'
+      return this.$v.deactivation.correct ? '' : 'error'
     }
   },
   created () {

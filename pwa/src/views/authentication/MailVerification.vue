@@ -50,17 +50,21 @@ import Page from '@/components/Page.vue'
 import { ServiceReleaseMailTokenResponseError } from '@/api/definitions'
 import { DeepReadonly } from 'ts-essentials'
 import { MailTokenRelease, mailTokenRelease, mailVerificationTokenId } from '@/redux/modules/user/account/selectors'
-import { StandardErrorKind, isActionSuccess } from '@/redux/flow_signal'
+import { isActionSuccess } from '@/redux/flow_signal'
 import { releaseMailToken, mailTokenReleaseReset, mailTokenReleaseSignal } from '@/redux/modules/user/account/actions'
 import { takeUntil, filter } from 'rxjs/operators'
-import { function as fn, option } from 'fp-ts'
-import { error } from '@/redux/remote_data'
+import { option } from 'fp-ts'
+import { remoteDataValidator } from '@/components/form_validators'
 
 interface Mixins {
   code: { frozen: boolean };
   mailTokenRelease: DeepReadonly<MailTokenRelease>;
   mailVerificationTokenId: string;
 }
+
+const codeNotExpiredValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.INVALIDTOKENID)
+const codeCorrectValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.INVALIDCODE)
+const codeNotThrottledValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.TOOMANYREQUESTS)
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
@@ -84,23 +88,16 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   validations: {
     code: {
-      notExpired () {
-        return fn.pipe(
-          error(this.mailTokenRelease),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceReleaseMailTokenResponseError.INVALIDTOKENID),
-          option.map(() => !this.code.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+      nonRetryable: {
+        notExpired () {
+          return !codeNotExpiredValidator(this.mailTokenRelease, this.code.frozen)
+        },
+        correct () {
+          return !codeCorrectValidator(this.mailTokenRelease, this.code.frozen)
+        }
       },
-      correct () {
-        return fn.pipe(
-          error(this.mailTokenRelease),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceReleaseMailTokenResponseError.INVALIDCODE),
-          option.map(() => !this.code.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+      notThrottled () {
+        return !codeNotThrottledValidator(this.mailTokenRelease, this.code.frozen)
       }
     }
   },
@@ -113,8 +110,9 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     codeErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('MAIL_CODE_INCORRECT') as string]: !this.$v.code.correct,
-        [this.$t('MAIL_TOKEN_EXPIRED') as string]: !this.$v.code.notExpired
+        [this.$t('MAIL_CODE_INCORRECT') as string]: !this.$v.code.nonRetryable!.correct,
+        [this.$t('MAIL_TOKEN_EXPIRED') as string]: !this.$v.code.nonRetryable!.notExpired,
+        [this.$t('MAIL_TOKEN_THROTTLED') as string]: !this.$v.code.notThrottled
       }
     },
     inProgress (): boolean {
@@ -129,7 +127,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     submit () {
       if (!this.inProgress) {
         this.$v.$touch()
-        if (!this.$v.$invalid) {
+        if (!this.$v.code.nonRetryable!.$invalid) {
           this.code.frozen = true
           this.dispatch(releaseMailToken({
             tokenId: this.mailVerificationTokenId,

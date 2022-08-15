@@ -6,16 +6,26 @@ exports_files([
 ])
 
 java_library(
+    name = "arithmetic",
+    srcs = ["Arithmetic.java"],
+    visibility = ["//server:internal"],
+)
+
+java_library(
     name = "chronometry",
     srcs = ["Chronometry.java"],
     visibility = ["//server:internal"],
+    deps = [":arithmetic"],
 )
 
 java_library(
     name = "cryptography",
     srcs = ["Cryptography.java"],
     visibility = ["//server:internal"],
-    deps = ["@maven//:com_google_guava_guava"],
+    deps = [
+        ":arithmetic",
+        "@maven//:com_google_guava_guava",
+    ],
 )
 
 junit5_test(
@@ -23,6 +33,7 @@ junit5_test(
     srcs = ["CryptographyTest.java"],
     test_package = "server.main",
     deps = [
+        ":arithmetic",
         "//server/main:cryptography",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_mockito_mockito_core",
@@ -56,6 +67,7 @@ java_library(
         "//bazel/java:dagger_compiler",
     ],
     deps = [
+        ":arithmetic",
         ":chronometry",
         ":cryptography",
         "//server/main/interceptors:agent_accessor",

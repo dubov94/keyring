@@ -27,24 +27,12 @@ import { eq, function as fn, map, option } from 'fp-ts'
 import { DeepReadonly } from 'ts-essentials'
 import Vue, { VueConstructor } from 'vue'
 import { ServiceProvideOtpResponseError } from '@/api/definitions'
-import { StandardErrorKind } from '@/redux/flow_signal'
 import { AuthnOtpProvisionFlowIndicator } from '@/redux/modules/authn/actions'
 import { AuthnOtpProvision } from '@/redux/modules/authn/selectors'
-import { error } from '@/redux/remote_data'
+import { remoteDataValidator } from '@/components/form_validators'
 
-const errorPredicate = (apiError: ServiceProvideOtpResponseError) => {
-  return (authnOtpProvision: AuthnOtpProvision, isFrozen: boolean): boolean => {
-    return !fn.pipe(
-      error(authnOtpProvision),
-      option.filter((value) => value.kind === StandardErrorKind.FAILURE && value.value.error === apiError),
-      option.map(() => !isFrozen),
-      option.getOrElse<boolean>(() => true)
-    )
-  }
-}
-
-const invalidityPredicate = errorPredicate(ServiceProvideOtpResponseError.INVALIDCODE)
-const exhaustionPredicate = errorPredicate(ServiceProvideOtpResponseError.ATTEMPTSEXHAUSTED)
+const otpCorrectValidator = remoteDataValidator(ServiceProvideOtpResponseError.INVALIDCODE)
+const otpLenientValidator = remoteDataValidator(ServiceProvideOtpResponseError.ATTEMPTSEXHAUSTED)
 
 const INDICATOR_TO_MESSAGE = new Map<AuthnOtpProvisionFlowIndicator, string>([
   [AuthnOtpProvisionFlowIndicator.MAKING_REQUEST, 'Making request'],
@@ -65,18 +53,18 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   validations: {
     otp: {
-      valid () {
-        return !invalidityPredicate(this.authnOtpProvision, this.frozen)
+      correct () {
+        return !otpCorrectValidator(this.authnOtpProvision, this.frozen)
       },
       lenient () {
-        return !exhaustionPredicate(this.authnOtpProvision, this.frozen)
+        return !otpLenientValidator(this.authnOtpProvision, this.frozen)
       }
     }
   },
   computed: {
     otpErrors () {
       return {
-        [this.$t('INVALID_CODE') as string]: !this.$v.otp.valid,
+        [this.$t('INVALID_CODE') as string]: !this.$v.otp.correct,
         [this.$t('OTP_ATTEMPTS_EXHAUSTED') as string]: !this.$v.otp.lenient
       }
     },

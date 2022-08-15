@@ -12,6 +12,7 @@ const MESSAGES: LocaleMessages = {
     EMAIL_ADDRESS_IS_REQUIRED: 'E-mail address is required',
     MAIL_CODE_INCORRECT: 'The code is incorrect',
     MAIL_TOKEN_EXPIRED: 'The code has expired',
+    MAIL_TOKEN_THROTTLED: 'Please wait until failure timer resets',
     INVALID_CURRENT_PASSWORD: 'Invalid current password',
     INVALID_PASSWORD: 'Invalid password',
     INVALID_USERNAME_OR_PASSWORD: 'Invalid username or password',

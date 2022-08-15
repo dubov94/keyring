@@ -41,10 +41,12 @@ import { function as fn, option, map, eq } from 'fp-ts'
 import { canAccessApi, masterKeyChange, MasterKeyChange } from '@/redux/modules/user/account/selectors'
 import { MasterKeyChangeFlowIndicator, changeMasterKey, masterKeyChangeReset, masterKeyChangeSignal } from '@/redux/modules/user/account/actions'
 import { filter, takeUntil } from 'rxjs/operators'
-import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
-import { error } from '@/redux/remote_data'
+import { isActionSuccess } from '@/redux/flow_signal'
 import { DeepReadonly } from 'ts-essentials'
 import { showToast } from '@/redux/modules/ui/toast/actions'
+import { remoteDataValidator } from '@/components/form_validators'
+
+const currentCorrectValidator = remoteDataValidator(ServiceChangeMasterKeyResponseError.INVALIDCURRENTDIGEST)
 
 const INDICATOR_TO_MESSAGE = new Map<MasterKeyChangeFlowIndicator, string>([
   [MasterKeyChangeFlowIndicator.REENCRYPTING, 'Re-encrypting'],
@@ -67,14 +69,8 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   validations: {
     current: {
-      valid () {
-        return fn.pipe(
-          error(this.masterKeyChange),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceChangeMasterKeyResponseError.INVALIDCURRENTDIGEST),
-          option.map(() => !this.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+      correct () {
+        return !currentCorrectValidator(this.masterKeyChange, this.frozen)
       }
     },
     renewal: { required },
@@ -106,7 +102,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     currentErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('INVALID_CURRENT_PASSWORD') as string]: !this.$v.current.valid
+        [this.$t('INVALID_CURRENT_PASSWORD') as string]: !this.$v.current.correct
       }
     },
     renewalErrors (): { [key: string]: boolean } {

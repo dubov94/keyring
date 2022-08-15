@@ -2,6 +2,7 @@ package server.main.services;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.*;
+import static server.main.storage.AccountOperationsInterface.NudgeStatus;
 
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
@@ -15,6 +16,7 @@ import java.util.*;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import org.apache.commons.validator.routines.EmailValidator;
+import server.main.Chronometry;
 import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.aspects.Annotations.ValidateUser;
@@ -41,6 +43,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private Cryptography cryptography;
   private MailClient mailClient;
   private IGoogleAuthenticator googleAuthenticator;
+  private Chronometry chronometry;
 
   @Inject
   AdministrationService(
@@ -51,7 +54,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       KeyValueClient keyValueClient,
       Cryptography cryptography,
       MailClient mailClient,
-      IGoogleAuthenticator googleAuthenticator) {
+      IGoogleAuthenticator googleAuthenticator,
+      Chronometry chronometry) {
     this.keyOperationsInterface = keyOperationsInterface;
     this.accountOperationsInterface = accountOperationsInterface;
     this.geolocationServiceInterface = geolocationServiceInterface;
@@ -60,6 +64,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     this.cryptography = cryptography;
     this.mailClient = mailClient;
     this.googleAuthenticator = googleAuthenticator;
+    this.chronometry = chronometry;
   }
 
   private Either<StatusException, AcquireMailTokenResponse> _acquireMailToken(
@@ -99,13 +104,23 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private ReleaseMailTokenResponse _releaseMailToken(ReleaseMailTokenRequest request) {
     ReleaseMailTokenResponse.Builder builder = ReleaseMailTokenResponse.newBuilder();
-    Optional<MailToken> maybeMailToken =
-        accountOperationsInterface.getMailToken(
-            sessionAccessor.getUserIdentifier(), request.getTokenId());
-    if (!maybeMailToken.isPresent()) {
+    Tuple2<NudgeStatus, Optional<MailToken>> nudgeResult =
+        accountOperationsInterface.nudgeMailToken(
+            sessionAccessor.getUserIdentifier(),
+            request.getTokenId(),
+            (lastAttempt, attemptCount) ->
+                chronometry.nextAttempt(
+                    lastAttempt, attemptCount, /* baseDelayS */ 1, /* graceCount */ 3));
+    if (Objects.equals(NudgeStatus.NOT_FOUND, nudgeResult._1)) {
       return builder.setError(ReleaseMailTokenResponse.Error.INVALID_TOKEN_ID).build();
     }
-    MailToken mailToken = maybeMailToken.get();
+    if (Objects.equals(NudgeStatus.NOT_AVAILABLE_YET, nudgeResult._1)) {
+      return builder.setError(ReleaseMailTokenResponse.Error.TOO_MANY_REQUESTS).build();
+    }
+    if (!nudgeResult._2.isPresent()) {
+      throw new IllegalStateException();
+    }
+    MailToken mailToken = nudgeResult._2.get();
     if (!Objects.equals(mailToken.getCode(), request.getCode())) {
       return builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE).build();
     }

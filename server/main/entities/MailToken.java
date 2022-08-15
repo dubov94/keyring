@@ -2,21 +2,23 @@ package server.main.entities;
 
 import com.google.common.base.Preconditions;
 import java.sql.Timestamp;
+import java.time.Instant;
 import javax.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(
-    name = "mail_tokens",
-    uniqueConstraints = {@UniqueConstraint(columnNames = {"user_identifier", "code"})})
+@Table(name = "mail_tokens")
 public class MailToken {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
 
   @CreationTimestamp private Timestamp timestamp;
+
+  @Version private long version;
 
   @ManyToOne
   @OnDelete(action = OnDeleteAction.CASCADE)
@@ -27,6 +29,14 @@ public class MailToken {
 
   @Column(columnDefinition = "text")
   private String mail;
+
+  @Column(name = "last_attempt")
+  @ColumnDefault("timestamp 'epoch'")
+  private Timestamp lastAttempt = Timestamp.from(Instant.EPOCH);
+
+  @Column(name = "attempt_count")
+  @ColumnDefault("0")
+  private int attemptCount = 0;
 
   public long getIdentifier() {
     return identifier;
@@ -68,5 +78,27 @@ public class MailToken {
     Validators.checkMailLength(mail);
     this.mail = mail;
     return this;
+  }
+
+  public Instant getLastAttempt() {
+    return lastAttempt.toInstant();
+  }
+
+  public MailToken setLastAttempt(Instant instant) {
+    lastAttempt = Timestamp.from(instant);
+    return this;
+  }
+
+  public int getAttemptCount() {
+    return attemptCount;
+  }
+
+  public MailToken setAttemptCount(int attemptCount) {
+    this.attemptCount = attemptCount;
+    return this;
+  }
+
+  public void incrementAttemptCount() {
+    attemptCount += 1;
   }
 }

@@ -70,7 +70,7 @@ import { DeepReadonly } from 'ts-essentials'
 import Vue, { VueConstructor } from 'vue'
 import { email, required } from 'vuelidate/lib/validators'
 import { ServiceAcquireMailTokenResponseError, ServiceReleaseMailTokenResponseError } from '@/api/definitions'
-import { isActionSuccess, StandardErrorKind } from '@/redux/flow_signal'
+import { isActionSuccess } from '@/redux/flow_signal'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 import {
   acquireMailToken,
@@ -88,7 +88,13 @@ import {
   MailTokenRelease,
   accountMail
 } from '@/redux/modules/user/account/selectors'
-import { hasIndicator, error, hasData, data } from '@/redux/remote_data'
+import { hasIndicator, hasData, data } from '@/redux/remote_data'
+import { remoteDataValidator } from '@/components/form_validators'
+
+const passwordCorrectValidator = remoteDataValidator(ServiceAcquireMailTokenResponseError.INVALIDDIGEST)
+const codeNotExpiredValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.INVALIDTOKENID)
+const codeCorrectValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.INVALIDCODE)
+const codeNotThrottledValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.TOOMANYREQUESTS)
 
 interface Mixins {
   requestGroup: { password: { frozen: boolean } };
@@ -117,35 +123,22 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     requestGroup: {
       mail: { email, required },
       password: {
-        valid () {
-          return fn.pipe(
-            error(this.mailTokenAcquisition),
-            option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-              value.value === ServiceAcquireMailTokenResponseError.INVALIDDIGEST),
-            option.map(() => !this.requestGroup.password.frozen),
-            option.getOrElse<boolean>(() => true)
-          )
+        correct () {
+          return !passwordCorrectValidator(this.mailTokenAcquisition, this.requestGroup.password.frozen)
         }
       }
     },
     code: {
-      notExpired () {
-        return fn.pipe(
-          error(this.mailTokenRelease),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceReleaseMailTokenResponseError.INVALIDTOKENID),
-          option.map(() => !this.code.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+      nonRetryable: {
+        notExpired () {
+          return !codeNotExpiredValidator(this.mailTokenRelease, this.code.frozen)
+        },
+        correct () {
+          return !codeCorrectValidator(this.mailTokenRelease, this.code.frozen)
+        }
       },
-      correct () {
-        return fn.pipe(
-          error(this.mailTokenRelease),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceReleaseMailTokenResponseError.INVALIDCODE),
-          option.map(() => !this.code.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+      notThrottled () {
+        return !codeNotThrottledValidator(this.mailTokenRelease, this.code.frozen)
       }
     }
   },
@@ -217,13 +210,14 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     passwordErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('INVALID_PASSWORD') as string]: !this.$v.requestGroup.password!.valid
+        [this.$t('INVALID_PASSWORD') as string]: !this.$v.requestGroup.password!.correct
       }
     },
     codeErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('MAIL_CODE_INCORRECT') as string]: !this.$v.code.correct,
-        [this.$t('MAIL_CODE_EXPIRED') as string]: !this.$v.code.notExpired
+        [this.$t('MAIL_CODE_INCORRECT') as string]: !this.$v.code.nonRetryable!.correct,
+        [this.$t('MAIL_CODE_EXPIRED') as string]: !this.$v.code.nonRetryable!.notExpired,
+        [this.$t('MAIL_TOKEN_THROTTLED') as string]: !this.$v.code.notThrottled
       }
     }
   },
@@ -251,7 +245,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     releaseToken () {
       if (this.canAccessApi && !this.releaseInProgress) {
         this.$v.code.$touch()
-        if (!this.$v.code.$invalid) {
+        if (!this.$v.code.nonRetryable!.$invalid) {
           this.code.frozen = true
           this.dispatch(releaseMailToken({
             tokenId: this.acquisitionData !== null

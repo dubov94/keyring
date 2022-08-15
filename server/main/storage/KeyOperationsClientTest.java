@@ -18,6 +18,7 @@ import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import server.main.Arithmetic;
 import server.main.Chronometry;
 import server.main.aspects.StorageManagerAspect;
 import server.main.entities.Key;
@@ -39,7 +40,7 @@ class KeyOperationsClientTest {
 
   @BeforeEach
   void beforeEach() {
-    accountOperationsClient = new AccountOperationsClient(new Chronometry());
+    accountOperationsClient = new AccountOperationsClient(new Chronometry(new Arithmetic()));
     keyOperationsClient = new KeyOperationsClient();
   }
 

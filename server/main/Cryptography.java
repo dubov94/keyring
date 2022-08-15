@@ -4,34 +4,25 @@ import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 import java.security.SecureRandom;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.Objects;
 
 public class Cryptography {
   private int uacsLength;
   private SecureRandom secureRandom;
+  private Arithmetic arithmetic;
   private static Pattern totpPattern = Pattern.compile("^\\d{6}$");
 
-  Cryptography(SecureRandom secureRandom, int uacsLength) {
+  Cryptography(SecureRandom secureRandom, Arithmetic arithmetic, int uacsLength) {
     this.secureRandom = secureRandom;
+    this.arithmetic = arithmetic;
     this.uacsLength = uacsLength;
-  }
-
-  private int pow(int base, int power) {
-    if (power == 0) {
-      return 1;
-    } else if (power % 2 == 0) {
-      int multiplier = pow(base, power / 2);
-      return multiplier * multiplier;
-    } else {
-      return base * pow(base, power - 1);
-    }
   }
 
   public String generateUacs() {
     StringBuilder stringBuilder = new StringBuilder();
-    int randomNumber = secureRandom.nextInt(pow(10, uacsLength));
+    int randomNumber = secureRandom.nextInt(arithmetic.pow(10, uacsLength));
     String codeSuffix = String.valueOf(randomNumber);
     int skipsCount = uacsLength - codeSuffix.length();
     for (int padding = 0; padding < skipsCount; ++padding) {

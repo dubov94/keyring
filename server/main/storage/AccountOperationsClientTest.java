@@ -3,6 +3,7 @@ package server.main.storage;
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import static server.main.storage.AccountOperationsInterface.NudgeStatus;
 
 import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple2;
@@ -169,7 +170,6 @@ class AccountOperationsClientTest {
     Instant instant = Instant.ofEpochSecond(1);
     when(mockChronometry.currentTime()).thenReturn(instant);
     long userIdentifier = createActiveUser();
-
     accountOperationsClient.createSession(
         userIdentifier, "key", "127.0.0.1", "Chrome/0.0.0", "version");
 
@@ -304,6 +304,55 @@ class AccountOperationsClientTest {
     assertNull(user.getOtpSharedSecret());
     assertEquals(0, user.getOtpSpareAttempts());
     assertFalse(accountOperationsClient.getOtpToken(userId, "token", true).isPresent());
+  }
+
+  @Test
+  void nudgeMailToken_absentToken_returnsEmpty() {
+    long userId = createActiveUser();
+
+    Tuple2<NudgeStatus, Optional<MailToken>> nudgeResult =
+        accountOperationsClient.nudgeMailToken(
+            userId, 8L, (lastAttempt, attemptCount) -> lastAttempt.plusSeconds(attemptCount));
+
+    assertEquals(NudgeStatus.NOT_FOUND, nudgeResult._1);
+  }
+
+  @Test
+  void nudgeMailToken_notAvailable_returnsFalse() {
+    long userId = createActiveUser();
+    long mailTokenId =
+        accountOperationsClient.createMailToken(userId, "mail@domain.com", "A").getIdentifier();
+    Instant epochPlusFour = Instant.ofEpochSecond(4);
+    Instant epochPlusTwo = Instant.ofEpochSecond(2);
+    when(mockChronometry.currentTime()).thenReturn(epochPlusTwo);
+    when(mockChronometry.isBefore(epochPlusFour, epochPlusTwo)).thenReturn(false);
+
+    Tuple2<NudgeStatus, Optional<MailToken>> nudgeResult =
+        accountOperationsClient.nudgeMailToken(
+            userId, mailTokenId, (lastAttempt, attemptCount) -> epochPlusFour);
+
+    assertEquals(NudgeStatus.NOT_AVAILABLE_YET, nudgeResult._1);
+  }
+
+  @Test
+  void nudgeMailToken_available_updatesTrail() {
+    long userId = createActiveUser();
+    long mailTokenId =
+        accountOperationsClient.createMailToken(userId, "mail@domain.com", "A").getIdentifier();
+    Instant epochPlusOne = Instant.ofEpochSecond(1);
+    Instant epochPlusTwo = Instant.ofEpochSecond(2);
+    when(mockChronometry.currentTime()).thenReturn(epochPlusTwo);
+    when(mockChronometry.isBefore(epochPlusOne, epochPlusTwo)).thenReturn(true);
+
+    Tuple2<NudgeStatus, Optional<MailToken>> nudgeResult =
+        accountOperationsClient.nudgeMailToken(
+            userId, mailTokenId, (lastAttempt, attemptCount) -> epochPlusOne);
+
+    assertEquals(NudgeStatus.OK, nudgeResult._1);
+    assertTrue(nudgeResult._2.isPresent());
+    MailToken mailToken = accountOperationsClient.getMailToken(userId, mailTokenId).get();
+    assertEquals(epochPlusTwo, mailToken.getLastAttempt());
+    assertEquals(1, mailToken.getAttemptCount());
   }
 
   private long createActiveUser() {

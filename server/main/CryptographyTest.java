@@ -14,16 +14,18 @@ import org.mockito.Mock;
 @ExtendWith(MockitoExtension.class)
 class CryptographyTest {
   @Mock private SecureRandom mockSecureRandom;
+  @Mock private Arithmetic mockArithmetic;
 
   private Cryptography cryptography;
 
   @BeforeEach
   void beforeEach() {
-    cryptography = new Cryptography(mockSecureRandom, 2);
+    cryptography = new Cryptography(mockSecureRandom, mockArithmetic, 2);
   }
 
   @Test
   void generateUacs_getsShortNumber_prependsWithZeroes() {
+    when(mockArithmetic.pow(10, 2)).thenReturn(100);
     when(mockSecureRandom.nextInt(100)).thenReturn(1);
 
     String code = cryptography.generateUacs();
@@ -33,6 +35,7 @@ class CryptographyTest {
 
   @Test
   void generateUacs_getsLongNumber_returnsIntactString() {
+    when(mockArithmetic.pow(10, 2)).thenReturn(100);
     when(mockSecureRandom.nextInt(100)).thenReturn(99);
 
     String code = cryptography.generateUacs();

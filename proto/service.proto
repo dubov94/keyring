@@ -155,6 +155,7 @@ message ReleaseMailTokenResponse {
         NONE = 0;
         INVALID_CODE = 1;
         INVALID_TOKEN_ID = 2;
+        TOO_MANY_REQUESTS = 3;
     }
 
     Error error = 1;

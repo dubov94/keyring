@@ -2,8 +2,10 @@ package server.main.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static server.main.storage.AccountOperationsInterface.NudgeStatus;
 
 import com.google.common.collect.ImmutableList;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
@@ -11,10 +13,12 @@ import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
+import io.vavr.Tuple;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
@@ -23,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import server.main.Chronometry;
 import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.aspects.ValidateUserAspect;
@@ -49,6 +54,7 @@ class AdministrationServiceTest {
   @Mock private Cryptography mockCryptography;
   @Mock private MailClient mockMailClient;
   @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
+  @Mock private Chronometry mockChronometry;
 
   private User user =
       new User()
@@ -72,7 +78,8 @@ class AdministrationServiceTest {
             mockKeyValueClient,
             mockCryptography,
             mockMailClient,
-            mockGoogleAuthenticator);
+            mockGoogleAuthenticator,
+            mockChronometry);
     long userIdentifier = user.getIdentifier();
     when(mockSessionAccessor.getUserIdentifier()).thenReturn(userIdentifier);
     when(mockAccountOperationsInterface.getUserByIdentifier(userIdentifier))
@@ -81,8 +88,9 @@ class AdministrationServiceTest {
 
   @Test
   void releaseMailToken_tokenDoesNotExist_repliesWithError() {
-    when(mockAccountOperationsInterface.getMailToken(user.getIdentifier(), 1L))
-        .thenReturn(Optional.empty());
+    when(mockAccountOperationsInterface.nudgeMailToken(
+            eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
+        .thenReturn(Tuple.of(NudgeStatus.NOT_FOUND, Optional.empty()));
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("0").build(),
@@ -96,9 +104,28 @@ class AdministrationServiceTest {
   }
 
   @Test
+  void releaseMailToken_tooEarly_repliesWithError() {
+    when(mockAccountOperationsInterface.nudgeMailToken(
+            eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
+        .thenReturn(Tuple.of(NudgeStatus.NOT_AVAILABLE_YET, Optional.empty()));
+
+    administrationService.releaseMailToken(
+        ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),
+        mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            ReleaseMailTokenResponse.newBuilder()
+                .setError(ReleaseMailTokenResponse.Error.TOO_MANY_REQUESTS)
+                .build());
+  }
+
+  @Test
   void releaseMailToken_codeDoesNotMatch_repliesWithError() {
-    when(mockAccountOperationsInterface.getMailToken(user.getIdentifier(), 1L))
-        .thenReturn(Optional.of(new MailToken().setIdentifier(1L).setCode("X")));
+    when(mockAccountOperationsInterface.nudgeMailToken(
+            eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
+        .thenReturn(
+            Tuple.of(NudgeStatus.OK, Optional.of(new MailToken().setIdentifier(1L).setCode("X"))));
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),
@@ -113,11 +140,13 @@ class AdministrationServiceTest {
 
   @Test
   void releaseMailToken_tokenExistsAndCodeMatches_repliesWithMail() {
-    long userIdentifier = user.getIdentifier();
-    when(mockAccountOperationsInterface.getMailToken(userIdentifier, 1L))
+    when(mockAccountOperationsInterface.nudgeMailToken(
+            eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
         .thenReturn(
-            Optional.of(
-                new MailToken().setIdentifier(1L).setCode("A").setMail("mail@example.com")));
+            Tuple.of(
+                NudgeStatus.OK,
+                Optional.of(
+                    new MailToken().setIdentifier(1L).setCode("A").setMail("mail@example.com"))));
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),

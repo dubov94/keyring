@@ -7,6 +7,7 @@ java_library(
     visibility = ["//server:internal"],
     deps = [
         "//proto:service_java_grpc",
+        "//server/main:chronometry",
         "//server/main:cryptography",
         "//server/main:mail_client",
         "//server/main/aspects:annotations",
@@ -40,6 +41,7 @@ woven_junit5_test(
     test_package = "server.main.services",
     deps = [
         "//proto:service_java_grpc",
+        "//server/main:chronometry",
         "//server/main:cryptography",
         "//server/main:mail_client",
         "//server/main/aspects:validate_user_aspect",
@@ -56,6 +58,7 @@ woven_junit5_test(
         "//server/main/storage:key_operations_interface",
         "@maven//:com_google_guava_guava",
         "@maven//:com_warrenstrange_googleauth",
+        "@maven//:io_vavr_vavr",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",

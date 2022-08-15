@@ -45,7 +45,7 @@ public class Key {
 
   @Column(name = "is_shadow")
   @ColumnDefault("false")
-  private boolean isShadow;
+  private boolean isShadow = false;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)

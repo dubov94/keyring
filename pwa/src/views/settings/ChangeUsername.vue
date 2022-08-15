@@ -26,14 +26,18 @@
 import Vue, { VueConstructor } from 'vue'
 import { required } from 'vuelidate/lib/validators'
 import { ServiceChangeUsernameResponseError } from '@/api/definitions'
-import { function as fn, option } from 'fp-ts'
-import { StandardErrorKind, isActionSuccess } from '@/redux/flow_signal'
+import { option } from 'fp-ts'
+import { isActionSuccess } from '@/redux/flow_signal'
 import { UsernameChange, usernameChange, canAccessApi } from '@/redux/modules/user/account/selectors'
 import { usernameChangeReset, usernameChangeSignal, changeUsername } from '@/redux/modules/user/account/actions'
 import { filter, takeUntil } from 'rxjs/operators'
-import { hasIndicator, error } from '@/redux/remote_data'
+import { hasIndicator } from '@/redux/remote_data'
 import { DeepReadonly } from 'ts-essentials'
 import { showToast } from '@/redux/modules/ui/toast/actions'
+import { remoteDataValidator } from '@/components/form_validators'
+
+const usernameAvailableValidator = remoteDataValidator(ServiceChangeUsernameResponseError.NAMETAKEN)
+const passwordCorrectValidator = remoteDataValidator(ServiceChangeUsernameResponseError.INVALIDDIGEST)
 
 interface Mixins {
   frozen: boolean;
@@ -45,24 +49,12 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     username: {
       required,
       isAvailable () {
-        return fn.pipe(
-          error(this.usernameChange),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceChangeUsernameResponseError.NAMETAKEN),
-          option.map(() => !this.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+        return !usernameAvailableValidator(this.usernameChange, this.frozen)
       }
     },
     password: {
-      valid () {
-        return fn.pipe(
-          error(this.usernameChange),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceChangeUsernameResponseError.INVALIDDIGEST),
-          option.map(() => !this.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+      correct () {
+        return !passwordCorrectValidator(this.usernameChange, this.frozen)
       }
     }
   },
@@ -108,7 +100,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     passwordErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('INVALID_PASSWORD') as string]: !this.$v.password.valid
+        [this.$t('INVALID_PASSWORD') as string]: !this.$v.password.correct
       }
     }
   },

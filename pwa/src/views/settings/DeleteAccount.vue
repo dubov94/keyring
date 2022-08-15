@@ -20,12 +20,14 @@
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
 import { ServiceDeleteAccountResponseError } from '@/api/definitions'
-import { function as fn, option } from 'fp-ts'
-import { StandardErrorKind } from '@/redux/flow_signal'
+import { option } from 'fp-ts'
 import { canAccessApi, accountDeletion, AccountDeletion } from '@/redux/modules/user/account/selectors'
 import { deleteAccount, accountDeletionReset } from '@/redux/modules/user/account/actions'
-import { hasIndicator, error } from '@/redux/remote_data'
+import { hasIndicator } from '@/redux/remote_data'
 import { DeepReadonly } from 'ts-essentials'
+import { remoteDataValidator } from '@/components/form_validators'
+
+const passwordCorrectValidator = remoteDataValidator(ServiceDeleteAccountResponseError.INVALIDDIGEST)
 
 interface Mixins {
   frozen: boolean;
@@ -35,14 +37,8 @@ interface Mixins {
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   validations: {
     password: {
-      valid () {
-        return fn.pipe(
-          error(this.accountDeletion),
-          option.filter((value) => value.kind === StandardErrorKind.FAILURE &&
-            value.value === ServiceDeleteAccountResponseError.INVALIDDIGEST),
-          option.map(() => !this.frozen),
-          option.getOrElse<boolean>(() => true)
-        )
+      correct () {
+        return !passwordCorrectValidator(this.accountDeletion, this.frozen)
       }
     }
   },
@@ -64,7 +60,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     passwordErrors (): { [key: string]: boolean } {
       return {
-        [this.$t('INVALID_PASSWORD') as string]: !this.$v.password.valid
+        [this.$t('INVALID_PASSWORD') as string]: !this.$v.password.correct
       }
     }
   },
