@@ -106,7 +106,7 @@ class AccountOperationsClientTest {
     long userId = tuple._1.getIdentifier();
     long mailTokenId = tuple._2.getIdentifier();
 
-    accountOperationsClient.releaseMailToken(mailTokenId);
+    accountOperationsClient.releaseMailToken(userId, mailTokenId);
 
     assertFalse(accountOperationsClient.getMailToken(userId, mailTokenId).isPresent());
     User user = accountOperationsClient.getUserByIdentifier(userId).get();
@@ -255,7 +255,7 @@ class AccountOperationsClientTest {
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of("a", "b"));
 
-    accountOperationsClient.acceptOtpParams(otpParams.getId());
+    accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
 
     assertEquals(Optional.empty(), accountOperationsClient.getOtpParams(userId, otpParams.getId()));
     User user = accountOperationsClient.getUserByIdentifier(userId).get();
@@ -270,7 +270,7 @@ class AccountOperationsClientTest {
     long userId = createActiveUser();
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of());
-    accountOperationsClient.acceptOtpParams(otpParams.getId());
+    accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
 
     accountOperationsClient.createOtpToken(userId, "value");
 
@@ -282,11 +282,11 @@ class AccountOperationsClientTest {
     long userId = createActiveUser();
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of());
-    accountOperationsClient.acceptOtpParams(otpParams.getId());
+    accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
     accountOperationsClient.createOtpToken(userId, "value");
     long tokenId = accountOperationsClient.getOtpToken(userId, "value", false).get().getId();
 
-    accountOperationsClient.deleteOtpToken(tokenId);
+    accountOperationsClient.deleteOtpToken(userId, tokenId);
 
     assertFalse(accountOperationsClient.getOtpToken(userId, "value", false).isPresent());
   }
@@ -296,7 +296,7 @@ class AccountOperationsClientTest {
     long userId = createActiveUser();
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of("token"));
-    accountOperationsClient.acceptOtpParams(otpParams.getId());
+    accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
 
     accountOperationsClient.resetOtp(userId);
 
@@ -358,8 +358,9 @@ class AccountOperationsClientTest {
   private long createActiveUser() {
     String username = createUniqueUsername();
     Tuple2<User, MailToken> user = accountOperationsClient.createUser(username, "", "", "", "");
-    accountOperationsClient.releaseMailToken(user._2.getIdentifier());
-    return user._1.getIdentifier();
+    long userId = user._1.getIdentifier();
+    accountOperationsClient.releaseMailToken(userId, user._2.getIdentifier());
+    return userId;
   }
 
   private String createUniqueUsername() {

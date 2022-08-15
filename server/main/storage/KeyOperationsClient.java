@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
@@ -34,13 +35,13 @@ public class KeyOperationsClient implements KeyOperationsInterface {
         throw new IllegalArgumentException(
             String.format("Referenced parent %d does not exist", attrsParent));
       }
-      if (parent.getUser().getIdentifier() != user.getIdentifier()) {
+      if (!Objects.equals(parent.getUser().getIdentifier(), user.getIdentifier())) {
         throw new IllegalArgumentException(
             String.format("Parent %d does not belong to the user", attrsParent));
       }
       if (parent.getIsShadow()) {
         throw new IllegalArgumentException(
-          String.format("Cannot create a shadow for %d as it's also a shadow", attrsParent));
+            String.format("Cannot create a shadow for %d as it's also a shadow", attrsParent));
       }
       newKey.setParent(parent);
     }
@@ -82,7 +83,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
       throw new IllegalArgumentException();
     }
     Key key = maybeKey.get();
-    if (key.getUser().getIdentifier() != userIdentifier) {
+    if (!Objects.equals(key.getUser().getIdentifier(), userIdentifier)) {
       throw new IllegalArgumentException();
     }
     _updateKey(key, patch);
@@ -101,7 +102,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
       throw new IllegalArgumentException();
     }
     Key key = maybeKey.get();
-    if (key.getUser().getIdentifier() != userIdentifier) {
+    if (!Objects.equals(key.getUser().getIdentifier(), userIdentifier)) {
       throw new IllegalArgumentException();
     }
     _deleteKey(key);
@@ -143,7 +144,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
       throw new IllegalArgumentException();
     }
     Key target = maybeTarget.get();
-    if (target.getUser().getIdentifier() != userId) {
+    if (!Objects.equals(target.getUser().getIdentifier(), userId)) {
       throw new IllegalArgumentException();
     }
     return _electShadow(userId, target);

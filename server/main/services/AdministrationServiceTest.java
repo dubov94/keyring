@@ -140,8 +140,8 @@ class AdministrationServiceTest {
 
   @Test
   void releaseMailToken_tokenExistsAndCodeMatches_repliesWithMail() {
-    when(mockAccountOperationsInterface.nudgeMailToken(
-            eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
+    long userId = user.getIdentifier();
+    when(mockAccountOperationsInterface.nudgeMailToken(eq(userId), eq(1L), any(BiFunction.class)))
         .thenReturn(
             Tuple.of(
                 NudgeStatus.OK,
@@ -152,7 +152,7 @@ class AdministrationServiceTest {
         ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),
         mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).releaseMailToken(1L);
+    verify(mockAccountOperationsInterface).releaseMailToken(userId, 1L);
     verify(mockStreamObserver)
         .onNext(ReleaseMailTokenResponse.newBuilder().setMail("mail@example.com").build());
     verify(mockStreamObserver).onCompleted();
@@ -403,7 +403,7 @@ class AdministrationServiceTest {
             .build(),
         mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).acceptOtpParams(1L);
+    verify(mockAccountOperationsInterface).acceptOtpParams(user.getIdentifier(), 1L);
     verify(mockAccountOperationsInterface).createOtpToken(7L, "token");
     verify(mockStreamObserver)
         .onNext(AcceptOtpParamsResponse.newBuilder().setTrustedToken("token").build());

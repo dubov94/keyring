@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple2;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -79,7 +80,7 @@ class KeyOperationsClientTest {
     List<Key> keys = keyOperationsClient.readKeys(userId);
     assertEquals(2, keys.size());
     Optional<Key> maybeChildKey =
-        keys.stream().filter(key -> key.getIdentifier() == childId).findAny();
+        keys.stream().filter(key -> Objects.equals(key.getIdentifier(), childId)).findAny();
     assertTrue(maybeChildKey.isPresent());
     Key childKey = maybeChildKey.get();
     assertTrue(childKey.getIsShadow());
@@ -259,7 +260,7 @@ class KeyOperationsClientTest {
   }
 
   private Optional<Key> getKeyFromList(List<Key> allKeys, long keyId) {
-    return allKeys.stream().filter(key -> key.getIdentifier() == keyId).findAny();
+    return allKeys.stream().filter(key -> Objects.equals(key.getIdentifier(), keyId)).findAny();
   }
 
   private long createUniqueUser() {

@@ -342,7 +342,7 @@ class AuthenticationServiceTest {
         ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
         mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).deleteOtpToken(42L);
+    verify(mockAccountOperationsInterface).deleteOtpToken(1L, 42L);
     verify(mockKeyValueClient).dropAuthn("authn");
     verify(mockAccountOperationsInterface).restoreOtpSpareAttempts(1L);
     verify(mockAccountOperationsInterface).getFeaturePrompts(7L);

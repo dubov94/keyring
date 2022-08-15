@@ -228,7 +228,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
                 .setAttemptsLeft(user.getOtpSpareAttempts())
                 .build());
       }
-      accountOperationsInterface.deleteOtpToken(maybeOtpToken.get().getId());
+      accountOperationsInterface.deleteOtpToken(userId, maybeOtpToken.get().getId());
     }
     keyValueClient.dropAuthn(authnKey);
     accountOperationsInterface.restoreOtpSpareAttempts(userId);

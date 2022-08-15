@@ -24,7 +24,7 @@ public interface AccountOperationsInterface {
 
   Optional<MailToken> latestMailToken(long userIdentifier);
 
-  void releaseMailToken(long tokenIdentifier);
+  void releaseMailToken(long userId, long tokenIdentifier);
 
   Optional<User> getUserByName(String username);
 
@@ -45,13 +45,13 @@ public interface AccountOperationsInterface {
 
   Optional<OtpParams> getOtpParams(long userId, long otpParamsId);
 
-  void acceptOtpParams(long otpParamsId);
+  void acceptOtpParams(long userId, long otpParamsId);
 
   void createOtpToken(long userId, String otpToken);
 
   Optional<OtpToken> getOtpToken(long userId, String value, boolean mustBeInitial);
 
-  void deleteOtpToken(long tokenId);
+  void deleteOtpToken(long userId, long tokenId);
 
   void resetOtp(long userId);
 

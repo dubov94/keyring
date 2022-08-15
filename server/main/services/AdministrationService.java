@@ -103,10 +103,11 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   private ReleaseMailTokenResponse _releaseMailToken(ReleaseMailTokenRequest request) {
+    long userId = sessionAccessor.getUserIdentifier();
     ReleaseMailTokenResponse.Builder builder = ReleaseMailTokenResponse.newBuilder();
     Tuple2<NudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsInterface.nudgeMailToken(
-            sessionAccessor.getUserIdentifier(),
+            userId,
             request.getTokenId(),
             (lastAttempt, attemptCount) ->
                 chronometry.nextAttempt(
@@ -124,7 +125,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (!Objects.equals(mailToken.getCode(), request.getCode())) {
       return builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE).build();
     }
-    accountOperationsInterface.releaseMailToken(mailToken.getIdentifier());
+    accountOperationsInterface.releaseMailToken(userId, mailToken.getIdentifier());
     return builder.setMail(mailToken.getMail()).build();
   }
 
@@ -378,10 +379,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, AcceptOtpParamsResponse> _acceptOtpParams(
       AcceptOtpParamsRequest request) {
-    long userIdentifier = sessionAccessor.getUserIdentifier();
+    long userId = sessionAccessor.getUserIdentifier();
     Optional<OtpParams> maybeOtpParams =
-        accountOperationsInterface.getOtpParams(
-            userIdentifier, Long.valueOf(request.getOtpParamsId()));
+        accountOperationsInterface.getOtpParams(userId, Long.valueOf(request.getOtpParamsId()));
     if (!maybeOtpParams.isPresent()) {
       return Either.left(new StatusException(Status.NOT_FOUND));
     }
@@ -392,10 +392,10 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         || !googleAuthenticator.authorize(otpParams.getOtpSharedSecret(), maybeTotp.get())) {
       return Either.right(builder.setError(AcceptOtpParamsResponse.Error.INVALID_CODE).build());
     }
-    accountOperationsInterface.acceptOtpParams(otpParams.getId());
+    accountOperationsInterface.acceptOtpParams(userId, otpParams.getId());
     if (request.getYieldTrustedToken()) {
       String otpToken = cryptography.generateTts();
-      accountOperationsInterface.createOtpToken(userIdentifier, otpToken);
+      accountOperationsInterface.createOtpToken(userId, otpToken);
       builder.setTrustedToken(otpToken);
     }
     return Either.right(builder.build());

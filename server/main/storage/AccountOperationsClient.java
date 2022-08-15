@@ -96,18 +96,18 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @LocalTransaction
-  public void releaseMailToken(long tokenIdentifier) {
+  public void releaseMailToken(long userId, long tokenIdentifier) {
     Optional<MailToken> maybeMailToken =
         Optional.ofNullable(entityManager.find(MailToken.class, tokenIdentifier));
     if (!maybeMailToken.isPresent()) {
       throw new IllegalArgumentException();
     }
     MailToken mailToken = maybeMailToken.get();
-    Optional<User> maybeUser = Optional.ofNullable(mailToken.getUser());
-    if (!maybeUser.isPresent()) {
+    User user = mailToken.getUser();
+    if (!Objects.equals(user.getIdentifier(), userId)) {
       throw new IllegalArgumentException();
     }
-    _releaseMailToken(maybeUser.get(), mailToken);
+    _releaseMailToken(user, mailToken);
   }
 
   @Override
@@ -260,14 +260,18 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @LocalTransaction
-  public void acceptOtpParams(long otpParamsId) {
+  public void acceptOtpParams(long userId, long otpParamsId) {
     Optional<OtpParams> maybeOtpParams =
         Optional.ofNullable(entityManager.find(OtpParams.class, otpParamsId));
     if (!maybeOtpParams.isPresent()) {
       throw new IllegalArgumentException();
     }
     OtpParams otpParams = maybeOtpParams.get();
-    _acceptOtpParams(otpParams.getUser(), otpParams);
+    User user = otpParams.getUser();
+    if (!Objects.equals(user.getIdentifier(), userId)) {
+      throw new IllegalArgumentException();
+    }
+    _acceptOtpParams(user, otpParams);
   }
 
   @LockEntity(name = "user")
@@ -301,13 +305,17 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @LocalTransaction
-  public void deleteOtpToken(long tokenId) {
+  public void deleteOtpToken(long userId, long tokenId) {
     Optional<OtpToken> maybeOtpToken =
         Optional.ofNullable(entityManager.find(OtpToken.class, tokenId));
     if (!maybeOtpToken.isPresent()) {
       throw new IllegalArgumentException();
     }
-    entityManager.remove(maybeOtpToken.get());
+    OtpToken otpToken = maybeOtpToken.get();
+    if (!Objects.equals(otpToken.getUser().getIdentifier(), userId)) {
+      throw new IllegalArgumentException();
+    }
+    entityManager.remove(otpToken);
   }
 
   @LockEntity(name = "user")
