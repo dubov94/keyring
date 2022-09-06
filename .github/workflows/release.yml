@@ -99,3 +99,17 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - run: docker image tag bazel/server:liquibase docker.io/dubov94/keyring-liquibase
       - run: docker push docker.io/dubov94/keyring-liquibase
+  archiver:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: mishas/setup-bazelisk-action@v1
+      - run: bazelisk run //server/archiver
+      - uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - run: docker image tag bazel/server/archiver:archiver docker.io/dubov94/keyring-archiver
+      - run: docker push docker.io/dubov94/keyring-archiver

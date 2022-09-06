@@ -206,6 +206,34 @@ go_repository(
     tag = "v1.8.0",
 )
 
+go_repository(
+    name = "com_google_cloud_go_compute",
+    importpath = "cloud.google.com/go/compute",
+    sum = "h1:v/k9Eueb8aAJ0vZuxKMrgm6kPhCLZU9HxFU+AFDs9Uk=",
+    version = "v1.7.0",
+)
+
+go_repository(
+    name = "com_google_cloud_go_iam",
+    importpath = "cloud.google.com/go/iam",
+    sum = "h1:exkAomrVUuzx9kWFI1wm3KI0uoDeUFPB4kKGzx6x+Gc=",
+    version = "v0.3.0",
+)
+
+go_repository(
+    name = "com_google_cloud_go_storage",
+    importpath = "cloud.google.com/go/storage",
+    sum = "h1:S8N1cAStu7BOeFfE8KAQzmyyLkK8p/vmRq6kuBTW58Y=",
+    version = "v1.22.1",
+)
+
+go_repository(
+    name = "org_golang_google_api",
+    importpath = "google.golang.org/api",
+    sum = "h1:NTsGnUFJMYROtiquksZHBWtHfeMC7iYthki7Eq3pa8o=",
+    version = "v0.84.0",
+)
+
 # language_specific_dependencies.external_node_dependencies
 
 http_archive(
@@ -276,22 +304,6 @@ container_pull(
 )
 
 container_pull(
-    name = "io_docker_index_library_openjdk",
-    digest = "sha256:eaa06bc0541a17a55ac9040ccf8ce40655ef6e247534c21e4e065e1cf6078db2",
-    registry = "index.docker.io",
-    repository = "library/openjdk",
-    tag = "9-jre",
-)
-
-container_pull(
-    name = "io_docker_index_maxmindinc_geoipupdate",
-    digest = "sha256:4803802f76c635839ab3d3fd4abb1c0d400c9788cffdd237e7c323298e40c915",
-    registry = "index.docker.io",
-    repository = "maxmindinc/geoipupdate",
-    tag = "v4.3",
-)
-
-container_pull(
     name = "io_docker_index_library_nginx",
     digest = "sha256:3f13b4376446cf92b0cb9a5c46ba75d57c41f627c4edb8b635fa47386ea29e20",
     registry = "index.docker.io",
@@ -300,11 +312,35 @@ container_pull(
 )
 
 container_pull(
+    name = "io_docker_index_library_openjdk",
+    digest = "sha256:eaa06bc0541a17a55ac9040ccf8ce40655ef6e247534c21e4e065e1cf6078db2",
+    registry = "index.docker.io",
+    repository = "library/openjdk",
+    tag = "9-jre",
+)
+
+container_pull(
+    name = "io_docker_index_library_postgres",
+    digest = "sha256:9ece045f37060bf6b0a36ffbd5afa4f56636370791abae5062ed6005ec0e5110",
+    registry = "index.docker.io",
+    repository = "library/postgres",
+    tag = "14-alpine",
+)
+
+container_pull(
     name = "io_docker_index_liquibase_liquibase",
     digest = "sha256:e2537e2d44f05bf5a684f50b03e616dc9d4615bd7cf1cf58da7618e4193a99f2",
     registry = "index.docker.io",
     repository = "liquibase/liquibase",
     tag = "4.13",
+)
+
+container_pull(
+    name = "io_docker_index_maxmindinc_geoipupdate",
+    digest = "sha256:4803802f76c635839ab3d3fd4abb1c0d400c9788cffdd237e7c323298e40c915",
+    registry = "index.docker.io",
+    repository = "maxmindinc/geoipupdate",
+    tag = "v4.3",
 )
 
 # multirun_dependencies.external_multirun_dependencies

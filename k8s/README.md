@@ -9,6 +9,8 @@
 
 | Secret | Key |
 | --- | --- |
+| archiver-credentials | service-account-key |
+| archiver-links | bucket-name |
 | *cluster-tls* | |
 | email-service-credentials | mailgun-api-key |
 | geoipupdate-credentials | account-id |

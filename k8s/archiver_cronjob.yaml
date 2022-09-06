@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: archiver-cronjob
+  labels:
+    app.kubernetes.io/name: archiver
+spec:
+  # https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#cron-schedule-syntax
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: archiver
+        spec:
+          containers:
+          - name: archiver
+            image: dubov94/keyring-archiver
+            imagePullPolicy: Always
+            env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-postgresql-ha-postgresql
+                  key: postgresql-password
+            - name: CLOUD_CREDS_PATH
+              value: /etc/keyring/archiver-credentials/service-account-key
+            - name: BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: archiver-links
+                  key: bucket-name
+            volumeMounts:
+            - name: archiver-credentials-volume
+              mountPath: /etc/keyring/archiver-credentials
+              readOnly: true
+          volumes:
+          - name: archiver-credentials-volume
+            secret:
+              secretName: archiver-credentials
+          restartPolicy: OnFailure
