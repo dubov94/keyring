@@ -1,3 +1,3 @@
 #!/bin/sh
 
-./main
+./main --logtostderr
