@@ -25,11 +25,11 @@ func writeArchive(ctx context.Context) (fileName string, err error) {
 	// As `dir` is an empty string, `CreateTemp` will use the
 	// default directory.
 	file, err := os.CreateTemp("", "*")
-    if err != nil {
+	if err != nil {
 		return "", fmt.Errorf("unable to create a location for the archive: %w", err)
-    }
+	}
 	fileName = file.Name()
-    defer func() {
+	defer func() {
 		if dErr := file.Close(); dErr != nil && err == nil {
 			err = fmt.Errorf("unable to close the temporary file at %s: %w", fileName, dErr)
 		}
@@ -46,7 +46,7 @@ func writeArchive(ctx context.Context) (fileName string, err error) {
 		"postgres",
 		*databaseName,
 	)
-    cmd.Stdout = file
+	cmd.Stdout = file
 	err = cmd.Run()
 	if err != nil {
 		return "", fmt.Errorf("unable to dump database '%s': %w", *databaseName, err)
