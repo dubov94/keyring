@@ -39,9 +39,7 @@ func headerMatcher(key string) (string, bool) {
 	}
 }
 
-func startProxy() error {
-	var err error
-
+func startProxy() (err error) {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -62,12 +60,12 @@ func startProxy() error {
 
 	err = gw.RegisterAuthenticationHandlerFromEndpoint(ctx, mux, *serverAddress, opts)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to register `Authentication` endpoints: %w", err)
 	}
 
 	err = gw.RegisterAdministrationHandlerFromEndpoint(ctx, mux, *serverAddress, opts)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to register `Administration` endpoints: %w", err)
 	}
 
 	return http.ListenAndServe(fmt.Sprintf(":%d", *port), mux)

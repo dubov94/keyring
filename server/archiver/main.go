@@ -21,16 +21,14 @@ var (
 	bucketName = flag.String("bucket-name", "", "Name of the bucket with archives.")
 )
 
-func writeArchive(ctx context.Context) (string, error) {
-	var err error
-
+func writeArchive(ctx context.Context) (fileName string, err error) {
 	// As `dir` is an empty string, `CreateTemp` will use the
 	// default directory.
 	file, err := os.CreateTemp("", "*")
     if err != nil {
 		return "", fmt.Errorf("unable to create a location for the archive: %w", err)
     }
-	fileName := file.Name()
+	fileName = file.Name()
     defer func() {
 		if dErr := file.Close(); dErr != nil && err == nil {
 			err = fmt.Errorf("unable to close the temporary file at %s: %w", fileName, dErr)
@@ -57,9 +55,7 @@ func writeArchive(ctx context.Context) (string, error) {
 	return fileName, nil
 }
 
-func storeArchive(ctx context.Context) (string, error) {
-	var err error
-
+func storeArchive(ctx context.Context) (objectName string, err error) {
 	client, err := storage.NewClient(ctx, option.WithCredentialsFile(*jsonCredsPath))
 	if err != nil {
 		return "", fmt.Errorf("unable to create a Cloud Storage client: %w", err)
@@ -71,7 +67,7 @@ func storeArchive(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("unable to write the archive: %w", err)
 	}
 
-	objectName := time.Now().UTC().Format(time.RFC3339)
+	objectName = time.Now().UTC().Format(time.RFC3339)
 	object := bucket.Object(objectName)
 	writer := object.NewWriter(ctx)
 	defer func() {
@@ -79,7 +75,7 @@ func storeArchive(ctx context.Context) (string, error) {
 			err = fmt.Errorf("unable to create a writer for '%s': %w", objectName, dErr)
 		}
 	}()
-	
+
 	archiveReader, err := os.Open(archivePath)
 	if err != nil {
 		return "", fmt.Errorf("unable to open the archive at %s: %w", archivePath, err)

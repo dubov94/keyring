@@ -40,17 +40,22 @@ type server struct {
 	gi.UnimplementedGeoIpServiceServer
 }
 
-func (s *server) GetIpInfo(ctx context.Context, in *gi.GetIpInfoRequest) (*gi.GetIpInfoResponse, error) {
+func (s *server) GetIpInfo(ctx context.Context, in *gi.GetIpInfoRequest) (response *gi.GetIpInfoResponse, err error) {
 	reader, err := mmdb.Open(dbPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to open MMDB: %w", err)
 	}
-	defer reader.Close()
+	defer func() {
+		if dErr := reader.Close(); dErr != nil && err == nil {
+			err = fmt.Errorf("unable to close MMDB: %w", dErr)
+		}
+	}()
 
 	var r record
-	err = reader.Lookup(net.ParseIP(in.GetIpAddress()), &r)
+	ipAddress := in.GetIpAddress()
+	err = reader.Lookup(net.ParseIP(ipAddress), &r)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to look up %s: %w", ipAddress, err)
 	}
 
 	return &gi.GetIpInfoResponse{
@@ -79,7 +84,7 @@ func main() {
 	defer glog.Flush()
 
 	if err := updateDb(); err != nil {
-		glog.Fatalf("Unable to update the database: %v", err)
+		glog.Fatalf("unable to update the database: %w", err)
 	}
 
 	group, gCtx := errgroup.WithContext(context.Background())
@@ -90,7 +95,7 @@ func main() {
 			select {
 			case <-ticker.C:
 				if err := updateDb(); err != nil {
-					return fmt.Errorf("Unable to update the database: %v", err)
+					return fmt.Errorf("unable to update the database: %w", err)
 				}
 			case <-gCtx.Done():
 				return nil
@@ -98,17 +103,17 @@ func main() {
 		}
 	})
 
-	group.Go(func() error {
+	group.Go(func() (err error) {
 		ln, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 		if err != nil {
-			return fmt.Errorf("Unable to listen: %v", err)
+			return fmt.Errorf("unable to listen to %d: %v", *port, err)
 		}
 	
 		s := grpc.NewServer()
 		gi.RegisterGeoIpServiceServer(s, &server{})
 	
 		if err = s.Serve(ln); err != nil {
-			return fmt.Errorf("Unable to serve: %v", err)
+			return fmt.Errorf("unable to serve at %d: %v", *port, err)
 		}
 
 		return nil
