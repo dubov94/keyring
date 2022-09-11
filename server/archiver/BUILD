@@ -15,7 +15,6 @@ go_binary(
 container_image(
     name = "archiver_image",
     base = "@io_docker_index_library_postgres//image",
-    entrypoint = ["./entrypoint.sh"],
     directory = "/root",
     files = [
         "entrypoint.sh",
@@ -37,4 +36,5 @@ container_run_and_commit(
 container_image(
     name = "archiver",
     base = ":archiver_ca",
+    entrypoint = ["./entrypoint.sh"],
 )
