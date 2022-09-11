@@ -25,11 +25,16 @@ container_image(
 )
 
 container_run_and_commit(
-    name = "archiver",
+    name = "archiver_ca",
     image = ":archiver_image.tar",
     commands = [" && ".join([
         "apt update",
         "apt install --assume-yes --no-install-recommends ca-certificates",
     ])],
     docker_run_flags = ["--entrypoint=''"],
+)
+
+container_image(
+    name = "archiver",
+    base = ":archiver_ca",
 )
