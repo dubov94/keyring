@@ -72,8 +72,9 @@ func (s *server) GetIpInfo(ctx context.Context, in *gi.GetIpInfoRequest) (respon
 	}, nil
 }
 
-func updateDb() error {
+func updateMmdb() error {
 	// Expects GEOIPUPDATE_ACCOUNT_ID, GEOIPUPDATE_LICENSE_KEY and GEOIPUPDATE_EDITION_IDS.
+	defer glog.Info("`updateMmdb` call complete")
 	cmd := exec.Command(entryShPath)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -83,7 +84,7 @@ func updateDb() error {
 func main() {
 	defer glog.Flush()
 
-	if err := updateDb(); err != nil {
+	if err := updateMmdb(); err != nil {
 		glog.Fatalf("unable to update the database: %w", err)
 	}
 
@@ -94,7 +95,7 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				if err := updateDb(); err != nil {
+				if err := updateMmdb(); err != nil {
 					return fmt.Errorf("unable to update the database: %w", err)
 				}
 			case <-gCtx.Done():
