@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+spec:
+  template:
+    spec:
+      metadata:
+        labels:
+          app.kubernetes.io/name: restorer
+      spec:
+        containers:
+        - name: restorer
+          image: dubov94/keyring-restorer
+          imagePullPolicy: Always
+          env:
+          - name: PGPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: postgres-postgresql-ha-postgresql
+                key: postgresql-password
+          - name: CLOUD_CREDS_PATH
+            value: /etc/keyring/archiver-credentials/service-account-key
+          - name: BUCKET_NAME
+            valueFrom:
+              secretKeyRef:
+                name: archiver-links
+                key: bucket-name
+          - name: OBJECT_NAME
+            value: $KEYRING_OBJECT_NAME
+          volumeMounts:
+          - name: archiver-credentials-volume
+            mountPath: /etc/keyring/archiver-credentials
+            readOnly: true
+        volumes:
+        - name: archiver-credentials-volume
+          secret:
+            secretName: archiver-credentials
+        restartPolicy: Never
+  backoffLimit: 0

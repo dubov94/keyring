@@ -29,3 +29,9 @@ helmfile -f ./k8s/helm/helmfile.yaml apply
 ```sh
 kubectl apply -f ./k8s/
 ```
+
+### Jobs
+
+```sh
+KEYRING_OBJECT_NAME=2022-09-01T00:00:00Z envsubst < ./jobs/restorer_job.yaml | kubectl apply -f -
+```

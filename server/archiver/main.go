@@ -64,7 +64,7 @@ func storeArchive(ctx context.Context) (objectName string, err error) {
 
 	archivePath, err := writeArchive(ctx)
 	if err != nil {
-		return "", fmt.Errorf("unable to write the archive: %w", err)
+		return "", fmt.Errorf("unable to write the archive to the disk: %w", err)
 	}
 
 	objectName = time.Now().UTC().Format(time.RFC3339)
@@ -72,7 +72,7 @@ func storeArchive(ctx context.Context) (objectName string, err error) {
 	writer := object.NewWriter(ctx)
 	defer func() {
 		if dErr := writer.Close(); dErr != nil && err == nil {
-			err = fmt.Errorf("unable to create a writer for '%s': %w", objectName, dErr)
+			err = fmt.Errorf("unable to close the writer for '%s': %w", objectName, dErr)
 		}
 	}()
 
