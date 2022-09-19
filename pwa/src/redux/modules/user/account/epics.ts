@@ -295,6 +295,8 @@ export const deleteAccountEpic: Epic<RootAction, RootAction, RootState> = (actio
             }))
           ))
         )
+      ).pipe(
+        catchError((error) => of(accountDeletionSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(accountDeletionReset, action)) {
       return of(accountDeletionSignal(cancel()))
