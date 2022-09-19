@@ -27,12 +27,9 @@ func restoreArchive(ctx context.Context, reader io.Reader) error {
 	cmd := exec.CommandContext(
 		ctx,
 		"pg_restore",
-		"--host",
-		*host,
-		"--username",
-		"postgres",
-		"--dbname",
-		*databaseName,
+		fmt.Sprintf("--host=%s", *host),
+		"--username=postgres",
+		fmt.Sprintf("--dbname=%s", *databaseName),
 		"--exit-on-error",
 	)
 	cmd.Stdin = reader

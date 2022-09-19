@@ -40,10 +40,9 @@ func writeArchive(ctx context.Context) (fileName string, err error) {
 	cmd := exec.CommandContext(
 		ctx,
 		"pg_dump",
-		"--host",
-		*host,
-		"--username",
-		"postgres",
+		fmt.Sprintf("--host=%s", *host),
+		"--username=postgres",
+		"--format=custom",
 		*databaseName,
 	)
 	cmd.Stdout = file
