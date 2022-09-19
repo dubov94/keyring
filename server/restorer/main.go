@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 
 	"cloud.google.com/go/storage"
@@ -35,6 +36,8 @@ func restoreArchive(ctx context.Context, reader io.Reader) error {
 		"--exit-on-error",
 	)
 	cmd.Stdin = reader
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("unable to restore database '%s': %w", *databaseName, err)
 	}
