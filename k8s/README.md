@@ -30,8 +30,22 @@ helmfile -f ./k8s/helm/helmfile.yaml apply
 kubectl apply -f ./k8s/
 ```
 
-### Jobs
+### `restorer_job.yaml`
 
 ```sh
-KEYRING_OBJECT_NAME=2022-09-01T00:00:00Z envsubst < ./jobs/restorer_job.yaml | kubectl apply -f -
+KEYRING_OBJECT_NAME=2022-09-01T00:00:00Z envsubst < ./k8s/jobs/restorer_job.yaml | kubectl create -f -
+```
+
+## `postgres_values.yaml`
+
+```sh
+kubectl get pods --selector=app.kubernetes.io/component=pgpool
+```
+
+```sh
+kubectl exec --stdin --tty "$PGPOOL_POD_NAME" -- /bin/bash
+```
+
+```sh
+PGPASSWORD="$PGPOOL_POSTGRES_PASSWORD" psql --host localhost --user postgres
 ```
