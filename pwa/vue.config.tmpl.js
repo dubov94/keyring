@@ -42,7 +42,7 @@ module.exports = {
     msTileColor: '#2d89ef',
     assetsVersion: 'MoVydmAfvrT9cZ7Q',
     // Disables manifest auto-generation. See
-    // https://github.com/vuejs/vue-cli/blob/dev/packages/%40vue/cli-plugin-pwa/lib/HtmlPwaPlugin.js#L168.
+    // https://github.com/vuejs/vue-cli/blob/ea4c98ae84f20d410126707a1defc58a33998e8b/packages/@vue/cli-plugin-pwa/lib/HtmlPwaPlugin.js#L185
     manifestPath: 'https://parolica.com/site.webmanifest',
     iconPaths: {
       favicon32: 'img/icons/favicon-32x32.png',
