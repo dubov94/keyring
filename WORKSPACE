@@ -2,6 +2,7 @@ workspace(
     name = "keyring",
     managed_directories = {
         "@pwa_npm": ["pwa/node_modules"],
+        "@redirection_npm": ["redirection/node_modules"],
     },
 )
 
@@ -256,6 +257,12 @@ yarn_install(
     name = "pwa_npm",
     package_json = "//pwa:package.json",
     yarn_lock = "//pwa:yarn.lock",
+)
+
+yarn_install(
+    name = "redirection_npm",
+    package_json = "//redirection:package.json",
+    yarn_lock = "//redirection:yarn.lock",
 )
 
 # packaging_dependencies
