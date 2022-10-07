@@ -43,9 +43,13 @@ SOURCES = [
 ]
 
 DEPENDENCIES = [
+    "@redirection_npm//@emotion/react",
+    "@redirection_npm//@emotion/styled",
     "@redirection_npm//@fontsource/roboto",
+    "@redirection_npm//@mui/material",
     "@redirection_npm//@types/react",
     "@redirection_npm//@types/react-dom",
+    "@redirection_npm//gsap",
     "@redirection_npm//react",
     "@redirection_npm//react-dom",
     "@redirection_npm//typescript",
