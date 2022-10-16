@@ -91,6 +91,8 @@ export default Vue.extend({
     },
     listStyles (): { [key: string]: string } {
       return {
+        // Prevents width expansion on scrolling.
+        width: '100%',
         columns: String(this.columnCount),
         columnGap: '0'
       }
