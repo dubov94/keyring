@@ -26,7 +26,6 @@
 import Vue, { VueConstructor } from 'vue'
 import { required } from 'vuelidate/lib/validators'
 import { ServiceChangeUsernameResponseError } from '@/api/definitions'
-import { option } from 'fp-ts'
 import { isActionSuccess } from '@/redux/flow_signal'
 import { UsernameChange, usernameChange, canAccessApi } from '@/redux/modules/user/account/selectors'
 import { usernameChangeReset, usernameChangeSignal, changeUsername } from '@/redux/modules/user/account/actions'
