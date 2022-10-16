@@ -10,6 +10,8 @@
     bottom: 0;
     left: 0;
     z-index: -1;
+    /* Removes the stripe at the bottom. */
+    overflow: hidden;
   }
 </style>
 
