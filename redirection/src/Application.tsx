@@ -58,9 +58,9 @@ const Application = () => {
           <Box mt={2}>
             <LogoAnimation/>
           </Box>
-          <Grid container mt={2} spacing={2}>
+          <Grid container mt={2} spacing={2} alignItems="stretch">
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2 }}>
+              <Paper sx={{ p: 2, height: 1 }}>
                 <Typography variant="h6" gutterBottom>
                   What's happening?
                 </Typography>
@@ -68,7 +68,19 @@ const Application = () => {
                   TL;DR: We are moving to <Link href="https://parolica.com">parolica.com</Link>.
                 </Typography>
               </Paper>
-              <Paper sx={{ p: 2, mt: 2 }}>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Paper sx={{ p: 2, height: 1 }}>
+                <Typography variant="h6" gutterBottom>
+                  Where are all my passwords now?
+                </Typography>
+                <Typography variant="body1" gutterBottom>
+                  They are still there, just on a new domain.
+                </Typography>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Paper sx={{ p: 2, height: 1 }}>
                 <Typography variant="h6" gutterBottom>
                   What about the data stored on this device?
                 </Typography>
@@ -79,15 +91,7 @@ const Application = () => {
               </Paper>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Where are all my passwords now?
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                  They are still there, just on a new domain.
-                </Typography>
-              </Paper>
-              <Paper sx={{ p: 2, mt: 2 }}>
+              <Paper sx={{ p: 2, height: 1 }}>
                 <Typography variant="h6" gutterBottom>
                   I had the app installed as a{' '}
                   <Link href="https://support.google.com/chrome/answer/9658361" target="_blank"
