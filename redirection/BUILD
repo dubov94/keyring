@@ -46,6 +46,8 @@ DEPENDENCIES = [
     "@redirection_npm//@emotion/react",
     "@redirection_npm//@emotion/styled",
     "@redirection_npm//@fontsource/roboto",
+    "@redirection_npm//@mui/icons-material",
+    "@redirection_npm//@mui/lab",
     "@redirection_npm//@mui/material",
     "@redirection_npm//@types/react",
     "@redirection_npm//@types/react-dom",

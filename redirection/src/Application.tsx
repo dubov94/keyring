@@ -1,19 +1,31 @@
 /** @jsxImportSource @emotion/react */
 
-import React, { Fragment } from 'react'
+import React, { Fragment, useEffect, useState } from 'react'
 import styled from '@emotion/styled'
+import DoneIcon from '@mui/icons-material/Done'
 import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
 import Container from '@mui/material/Container'
 import CssBaseline from '@mui/material/CssBaseline'
 import Grid from '@mui/material/Grid'
 import Link from '@mui/material/Link'
+import LoadingButton from '@mui/lab/LoadingButton'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import LogoAnimation from './LogoAnimation.tsx'
+import { deleteStorages, deleteCaches, deleteIndexedDb } from './wipeout.ts'
 
 const Application = () => {
+  const [storagesDone, setStoragesDone] = useState(false)
+  const [cachesDone, setCachesDone] = useState(false)
+  const [indexedDbDone, setIndexedDbDone] = useState(false)
+
+  useEffect(() => {
+    deleteStorages().then(() => { setStoragesDone(true) }).catch(console.error)
+    deleteCaches().then(() => { setCachesDone(true) }).catch(console.error)
+    deleteIndexedDb().then(() => { setIndexedDbDone(true) }).catch(console.error)
+  }, [])
+
   const OriginalName = styled.span`
     background: #2d89ef;
     border-radius: 16px;
@@ -26,6 +38,12 @@ const Application = () => {
   const InitialR = styled.span`
     color: #54b5f9;
   `
+
+  const wipeoutComplete = [
+    storagesDone,
+    cachesDone,
+    indexedDbDone
+  ].every(indicator => indicator)
 
   return (
     <Fragment>
@@ -55,7 +73,8 @@ const Application = () => {
                   What about the data stored on this device?
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  TBD
+                  It's being wiped out. Once the operation is complete,
+                  the button below will display a check mark.
                 </Typography>
               </Paper>
             </Grid>
@@ -82,9 +101,11 @@ const Application = () => {
             </Grid>
           </Grid>
           <Box mt={4} textAlign="center">
-            <Button variant="contained" href="https://parolica.com" size="large">
+            <LoadingButton variant="contained" href="https://parolica.com"
+              size="large" startIcon={<DoneIcon />}
+              loading={!wipeoutComplete} loadingPosition="start">
               Go to parolica.com
-            </Button>
+            </LoadingButton>
           </Box>
           <Typography align="center" variant="body2" mt={8} gutterBottom>
             <Link href="https://streamlinehq.com/" target="_blank"
