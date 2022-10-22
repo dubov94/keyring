@@ -2,6 +2,11 @@ load("@bazel_skylib//rules:write_file.bzl", "write_file")
 load("@redirection_npm//react-scripts:index.bzl", "react_scripts")
 load("//bazel:files.bzl", "filegroup_copy")
 
+package_group(
+    name = "internal",
+    packages = ["//redirection/..."],
+)
+
 exports_files([
     "package.json",
     "yarn.lock",
@@ -40,6 +45,7 @@ SOURCES = [
     ":package_json",
     ":public",
     ":src",
+    "//redirection/service_worker",
 ]
 
 DEPENDENCIES = [

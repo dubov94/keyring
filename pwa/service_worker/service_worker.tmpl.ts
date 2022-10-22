@@ -11,7 +11,7 @@ enum SwEventType {
   NAVIGATE = 'navigate'
 }
 
-workbox.core.setCacheNameDetails({ prefix: 'keyring.pwa' })
+workbox.core.setCacheNameDetails({ prefix: 'keyring.pwa' });
 
 const precacheController = new workbox.precaching.PrecacheController();
 precacheController.addToCacheList(scope.__precacheManifest);

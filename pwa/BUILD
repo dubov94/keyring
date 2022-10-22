@@ -1,4 +1,3 @@
-load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher", "vue_cli_launcher_test")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
