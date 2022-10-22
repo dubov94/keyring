@@ -127,9 +127,9 @@ Vue.mixin({
 })
 
 const THEME: Partial<VuetifyThemeVariant> = {
-  primary: '#1976d2',
-  secondary: '#ff5252',
-  accent: '#ff5252'
+  primary: '#052842',
+  secondary: '#b31d1f',
+  accent: '#b31d1f'
 }
 const vuetify = new Vuetify({
   icons: {

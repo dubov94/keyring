@@ -9,7 +9,7 @@ import Application from './Application.tsx'
 const theme = createTheme({
   palette: {
     background: {
-      default: '#e3f2fd'
+      default: '#ffffff'
     }
   }
 })
