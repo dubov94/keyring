@@ -150,6 +150,9 @@ DEPENDENCIES = [
     "@pwa_npm//vuetify",
     "@pwa_npm//vuetify-loader",
     "@pwa_npm//workerize-loader",
+    "@pwa_npm//vue-svg-loader",
+    # For `vue-svg-loader`.
+    "@pwa_npm//vue-template-compiler",
     "@pwa_npm//zxcvbn",
 ]
 

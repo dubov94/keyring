@@ -1,20 +1,20 @@
 {
-    "name": "Key Ring",
-    "short_name": "Key Ring",
+    "name": "Parolica",
+    "short_name": "Parolica",
     "icons": [
         {
-            "src": "img/icons/android-chrome-192x192.png?v=MoVydmAfvrT9cZ7Q",
+            "src": "assets/android-chrome-192x192.png?v=c6c7a71c3f9d4ff5a0742bfecbda8123",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "img/icons/android-chrome-512x512.png?v=MoVydmAfvrT9cZ7Q",
+            "src": "assets/android-chrome-512x512.png?v=c6c7a71c3f9d4ff5a0742bfecbda8123",
             "sizes": "512x512",
             "type": "image/png"
         }
     ],
-    "theme_color": "#1976d2",
-    "background_color": "#1976d2",
+    "theme_color": "#052842",
+    "background_color": "#052842",
     "start_url": ".",
     "display": "standalone"
 }

@@ -359,7 +359,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
             .setSharedSecret(sharedSecret)
             .setKeyUri(
                 GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(
-                    "keyring", user.getUsername(), credentials))
+                    "parolica.com", user.getUsername(), credentials))
             .addAllScratchCodes(scratchCodes)
             .build());
   }

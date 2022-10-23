@@ -25,7 +25,7 @@ module.exports = {
     config
       .plugin('html')
       .tap(args => {
-        args[0].title = 'Key Ring'
+        args[0].title = 'Parolica'
         const constructTemplateParameters = args[0].templateParameters
         args[0].templateParameters = (compilation, assets, pluginOptions) => {
           const parameters = constructTemplateParameters(compilation, assets, pluginOptions)
@@ -35,26 +35,36 @@ module.exports = {
         }
         return args
       })
+
+    const svgRule = config.module.rule('svg')
+    svgRule.uses.clear()
+    svgRule
+      .use('babel-loader')
+      .loader('babel-loader')
+      .end()
+      .use('vue-svg-loader')
+      .loader('vue-svg-loader')
   },
   pwa: {
-    name: 'Key Ring',
-    themeColor: '#1976d2',
-    msTileColor: '#2d89ef',
-    assetsVersion: 'MoVydmAfvrT9cZ7Q',
+    name: 'Parolica',
+    themeColor: '#052842',
+    // Recommended by Metro.
+    msTileColor: '#2b5797',
+    assetsVersion: 'c6c7a71c3f9d4ff5a0742bfecbda8123',
     // Disables manifest auto-generation. See
     // https://github.com/vuejs/vue-cli/blob/ea4c98ae84f20d410126707a1defc58a33998e8b/packages/@vue/cli-plugin-pwa/lib/HtmlPwaPlugin.js#L185
     manifestPath: 'https://parolica.com/site.webmanifest',
     iconPaths: {
-      favicon32: 'img/icons/favicon-32x32.png',
-      favicon16: 'img/icons/favicon-16x16.png',
-      appleTouchIcon: 'img/icons/apple-touch-icon.png',
-      maskIcon: 'img/icons/safari-pinned-tab.svg',
-      msTileImage: 'img/icons/mstile-144x144.png'
+      favicon32: 'assets/favicon-32x32.png',
+      favicon16: 'assets/favicon-16x16.png',
+      appleTouchIcon: 'assets/apple-touch-icon.png',
+      maskIcon: 'assets/safari-pinned-tab.svg',
+      msTileImage: 'assets/mstile-150x150.png'
     },
     workboxPluginMode: 'InjectManifest',
     workboxOptions: {
       swSrc: `${__dirname}/service_worker/service-worker.js`,
-      // Inherited from https://github.com/vuejs/vue-cli/pull/769.
+      // Derived from https://github.com/vuejs/vue-cli/pull/769.
       exclude: [
         'robots.txt',
         'favicon.ico',

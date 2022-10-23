@@ -88,7 +88,8 @@
     "typescript": "~3.8.3",
     "vue-cli-launcher": "^1.1.0",
     "vue-cli-plugin-vuetify": "~2.4.1",
-    "vue-template-compiler": "^2.6.11",
+    "vue-svg-loader": "^0.16.0",
+    "vue-template-compiler": "2.6.11",
     "vuetify-loader": "^1.7.0",
     "workerize-loader": "^1.2.0"
   }

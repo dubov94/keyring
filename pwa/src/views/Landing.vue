@@ -13,6 +13,12 @@
     /* Removes the stripe at the bottom. */
     overflow: hidden;
   }
+
+  .authentication-panel {
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: calc(2 * 4px);
+  }
 </style>
 
 <template>
@@ -23,14 +29,23 @@
     <v-main>
       <v-container fluid>
         <div class="article">
-          <h1 class="text-center white--text mt-32" :class="nameDynamicClasses">Key Ring</h1>
-          <h2 class="text-center white--text mt-4" :class="descriptionDynamicClasses">
+          <div class="mt-32 text-center white--text">
+            <div class="d-inline-block">
+              <div class="text-center" :class="nameDynamicClasses">Parolica</div>
+              <div class="text-right text-caption" :class="ipaDynamicClasses">
+                [pɐˈrolʲɪtsə]
+              </div>
+            </div>
+          </div>
+          <div class="text-center white--text mt-4" :class="descriptionDynamicClasses">
             An unobtrusive password manager 😋
-          </h2>
+          </div>
           <div class="text-center mt-12">
             <template v-if="!isAuthenticated">
-              <v-btn class="mx-2" large outlined color="white" to="/log-in">Log in</v-btn>
-              <v-btn class="mx-2" large outlined color="white" to="/register">Register</v-btn>
+              <div class="authentication-panel">
+                <v-btn large outlined color="white" to="/log-in">Log in</v-btn>
+                <v-btn large outlined color="white" to="/register">Register</v-btn>
+              </div>
             </template>
             <template v-if="isAuthenticated">
               <v-btn large outlined color="white" to="/dashboard">Go to dashboard</v-btn>
@@ -69,16 +84,23 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     nameDynamicClasses (): { [key: string]: boolean } {
       return {
-        'display-4': this.$vuetify.breakpoint.lgAndUp,
-        'display-3': this.$vuetify.breakpoint.mdOnly,
-        'display-2': this.$vuetify.breakpoint.smAndDown
+        'text-h1': this.$vuetify.breakpoint.lgAndUp,
+        'text-h2': this.$vuetify.breakpoint.mdOnly,
+        'text-h3': this.$vuetify.breakpoint.smAndDown
+      }
+    },
+    ipaDynamicClasses (): { [key: string]: boolean } {
+      return {
+        'mt-n3': this.$vuetify.breakpoint.lgAndUp,
+        'mt-n2': this.$vuetify.breakpoint.mdOnly,
+        'mt-n1': this.$vuetify.breakpoint.smAndDown
       }
     },
     descriptionDynamicClasses (): { [key: string]: boolean } {
       return {
-        'display-2': this.$vuetify.breakpoint.lgAndUp,
-        'display-1': this.$vuetify.breakpoint.mdOnly,
-        headline: this.$vuetify.breakpoint.smAndDown
+        'text-h3': this.$vuetify.breakpoint.lgAndUp,
+        'text-h4': this.$vuetify.breakpoint.mdOnly,
+        'text-h5': this.$vuetify.breakpoint.smAndDown
       }
     }
   },
@@ -88,7 +110,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       const pattern = trianglify({
         width: background.clientWidth,
         height: background.clientHeight,
-        xColors: 'YlGnBu',
+        xColors: ['#052842', '#54b5f9', '#db4367', '#b31d1f'],
         seed: 'keyring'
       })
       pattern.toCanvas(this.$refs.backgroundCanvas as HTMLElement)

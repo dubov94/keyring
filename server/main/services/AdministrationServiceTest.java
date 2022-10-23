@@ -381,7 +381,7 @@ class AdministrationServiceTest {
                 .setOtpParamsId("1")
                 .setSharedSecret("secret")
                 .setKeyUri(
-                    "otpauth://totp/keyring:username?secret=secret&issuer=keyring&algorithm=SHA1&digits=6&period=30")
+                    "otpauth://totp/parolica.com:username?secret=secret&issuer=parolica.com&algorithm=SHA1&digits=6&period=30")
                 .addAllScratchCodes(scratchCodes)
                 .build());
     verify(mockStreamObserver).onCompleted();

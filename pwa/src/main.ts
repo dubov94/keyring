@@ -22,6 +22,8 @@ import { VuetifyThemeVariant } from 'vuetify/types/services/theme'
 import Application from './Application.vue'
 import FormTextField from './components/FormTextField.vue'
 
+import Logomark from './logomark.svg'
+
 import { ADMINISTRATION_API_TOKEN, AUTHENTICATION_API_TOKEN } from '@/api/api_di'
 import { AdministrationApi, AuthenticationApi } from '@/api/definitions'
 import { fetchFromApi } from '@/api/fetch'
@@ -133,7 +135,12 @@ const THEME: Partial<VuetifyThemeVariant> = {
 }
 const vuetify = new Vuetify({
   icons: {
-    iconfont: 'md'
+    iconfont: 'md',
+    values: {
+      logomark: {
+        component: Logomark
+      }
+    }
   },
   theme: {
     themes: {

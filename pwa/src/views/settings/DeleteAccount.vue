@@ -20,7 +20,6 @@
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
 import { ServiceDeleteAccountResponseError } from '@/api/definitions'
-import { option } from 'fp-ts'
 import { canAccessApi, accountDeletion, AccountDeletion } from '@/redux/modules/user/account/selectors'
 import { deleteAccount, accountDeletionReset } from '@/redux/modules/user/account/actions'
 import { hasIndicator } from '@/redux/remote_data'

@@ -3,7 +3,7 @@
     <v-app-bar-nav-icon v-if="hasMenu" @click="toggle">
     </v-app-bar-nav-icon>
     <v-btn icon :to="homeTarget">
-      <v-icon>home</v-icon>
+      <v-icon>$vuetify.icons.logomark</v-icon>
     </v-btn>
     <slot>
       <v-spacer></v-spacer>
