@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redirection-deployment
+  labels:
+    app.kubernetes.io/name: redirection
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redirection
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: redirection
+    spec:
+      containers:
+      - name: redirection
+        image: dubov94/keyring-redirection
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
