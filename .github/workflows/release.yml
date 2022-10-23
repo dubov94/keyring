@@ -141,4 +141,3 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - run: docker image tag bazel/redirection:redirection docker.io/dubov94/keyring-redirection
       - run: docker push docker.io/dubov94/keyring-redirection
-
