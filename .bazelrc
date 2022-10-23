@@ -7,3 +7,6 @@ build --test_env=PROCESSOR_ARCHITECTURE
 
 # https://docs.bazel.build/versions/master/user-manual.html#workspace_status
 build --workspace_status_command=./bazel/workspace/print_vars.sh
+
+# https://github.com/bazelbuild/bazel/issues/12837#issuecomment-762070694
+build --nojava_header_compilation

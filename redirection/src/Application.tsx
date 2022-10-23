@@ -22,8 +22,11 @@ const Application = () => {
 
   useEffect(() => {
     deleteStorages().then(() => { setStoragesDone(true) }).catch(console.error)
-    deleteCaches().then(() => { setCachesDone(true) }).catch(console.error)
-    deleteIndexedDb().then(() => { setIndexedDbDone(true) }).catch(console.error)
+    // 'Because CacheStorage requires file-system access, it may be unavailable
+    // in private mode in Firefox.'
+    deleteCaches().catch(console.warn).finally(() => { setCachesDone(true) })
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=781982
+    deleteIndexedDb().catch(console.warn).finally(() => { setIndexedDbDone(true) })
   }, [])
 
   const OriginalName = styled.span`

@@ -127,4 +127,18 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       - run: docker image tag bazel/server/restorer:restorer docker.io/dubov94/keyring-restorer
       - run: docker push docker.io/dubov94/keyring-restorer
+  redirection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - uses: mishas/setup-bazelisk-action@v1
+      - run: bazelisk run //server/redirection
+      - uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - run: docker image tag bazel/server/redirection:redirection docker.io/dubov94/keyring-redirection
+      - run: docker push docker.io/dubov94/keyring-redirection
 

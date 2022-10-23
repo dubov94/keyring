@@ -1,5 +1,7 @@
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@redirection_npm//react-scripts:index.bzl", "react_scripts")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("//bazel:files.bzl", "filegroup_copy")
 
 package_group(
@@ -45,7 +47,6 @@ SOURCES = [
     ":package_json",
     ":public",
     ":src",
-    "//redirection/service_worker",
 ]
 
 DEPENDENCIES = [
@@ -71,4 +72,39 @@ react_scripts(
     ],
     data = [":chdir_js"] + SOURCES,
     tags = ["ibazel_notify_changes"],
+)
+
+react_scripts(
+    name = "dist",
+    args = [
+        "--node_options=--require=./$(execpath :chdir_js)",
+        "build",
+    ],
+    data = [":chdir_js"] + SOURCES + DEPENDENCIES,
+    env = {
+        # https://create-react-app.dev/docs/advanced-configuration/
+        "BUILD_PATH": "./dist",
+    },
+    output_dir = True,
+)
+
+pkg_tar(
+    name = "pkg_tar",
+    srcs = [
+        ":dist",
+        "//redirection/service_worker",
+    ],
+    package_dir = "dist",
+    stamp = 1,
+)
+
+container_image(
+    name = "redirection",
+    base = "@io_docker_index_library_nginx//image",
+    directory = "/root",
+    files = ["nginx.conf"],
+    ports = ["8080"],
+    symlinks = {"/etc/nginx/nginx.conf": "/root/nginx.conf"},
+    tars = [":pkg_tar"],
+    workdir = "/root",
 )

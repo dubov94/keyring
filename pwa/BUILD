@@ -186,6 +186,7 @@ vue_cli_launcher(
 pkg_tar(
     name = "pkg_tar",
     srcs = [":dist"],
+    package_dir = "dist",
 )
 
 container_image(
