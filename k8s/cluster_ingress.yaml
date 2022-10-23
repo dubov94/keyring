@@ -2,15 +2,17 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: cluster-ingress
+  # https://kubernetes.github.io/ingress-nginx/user-guide/tls/#server-side-https-enforcement-through-redirect
+  # https://kubernetes.github.io/ingress-nginx/user-guide/tls/#http-strict-transport-security
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/rewrite-target: /$1
     cert-manager.io/cluster-issuer: letsencrypt
-# TODO: Enable for `redirection`.
 spec:
   tls:
   - hosts:
     - "parolica.com"
+    - "pwd.floreina.me"
     secretName: cluster-tls
   rules:
   - host: "parolica.com"
@@ -28,5 +30,15 @@ spec:
         backend:
           service:
             name: pwa-service
+            port:
+              number: 8080
+  - host: "pwd.floreina.me"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/(.*)"
+        backend:
+          service:
+            name: redirection-service
             port:
               number: 8080
