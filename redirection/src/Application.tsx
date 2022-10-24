@@ -68,7 +68,9 @@ const Application = () => {
                   What's happening?
                 </Typography>
                 <Typography variant="body1" gutterBottom>
-                  TL;DR: We are moving to <Link href="https://parolica.com">parolica.com</Link>.
+                  TL;DR: We are moving to{' '}
+                  <Link href="https://parolica.com" target="_blank"
+                    rel="noopener noreferrer">parolica.com</Link>.
                 </Typography>
               </Paper>
             </Grid>
@@ -97,8 +99,8 @@ const Application = () => {
               <Paper sx={{ p: 2, height: 1 }}>
                 <Typography variant="h6" gutterBottom>
                   I had the app installed as a{' '}
-                  <Link href="https://support.google.com/chrome/answer/9658361" target="_blank"
-                    rel="noopener noreferrer">PWA</Link>.
+                  <Link href="https://support.google.com/chrome/answer/9658361"
+                    target="_blank" rel="noopener noreferrer">PWA</Link>.
                   What do I do now?
                 </Typography>
                 <Typography variant="body1" gutterBottom>
@@ -109,14 +111,15 @@ const Application = () => {
           </Grid>
           <Box mt={4} textAlign="center">
             <LoadingButton variant="contained" href="https://parolica.com"
+              target="_blank" rel="noopener noreferrer"
               size="large" startIcon={<DoneIcon />}
               loading={!wipeoutComplete} loadingPosition="start">
               Go to parolica.com
             </LoadingButton>
           </Box>
           <Typography align="center" variant="body2" mt={8} gutterBottom>
-            <Link href="https://streamlinehq.com/" target="_blank"
-              rel="noopener noreferrer">
+            <Link href="https://streamlinehq.com/"
+              target="_blank" rel="noopener noreferrer">
               Free illustrations from Streamline
             </Link>
           </Typography>
