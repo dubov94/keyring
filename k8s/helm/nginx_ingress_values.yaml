@@ -1,0 +1,5 @@
+controller:
+  config:
+    use-proxy-protocol: "true"
+    use-forwarded-headers: "true"
+    compute-full-forwarded-for: "true"
