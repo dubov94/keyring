@@ -5,18 +5,20 @@ import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.Root;
-import server.main.aspects.Annotations.EntityController;
-import server.main.aspects.Annotations.LocalTransaction;
+import server.main.aspects.Annotations.ContextualEntityManager;
+import server.main.aspects.Annotations.WithEntityManager;
+import server.main.aspects.Annotations.WithEntityTransaction;
 import server.main.entities.User;
 import server.main.entities.User_;
 
 public final class DeletedUsers implements Runnable {
-  @EntityController private EntityManager entityManager;
+  @ContextualEntityManager private EntityManager entityManager;
 
   @Inject
   DeletedUsers() {}
 
-  @LocalTransaction
+  @WithEntityManager
+  @WithEntityTransaction
   public void run() {
     CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
     CriteriaDelete<User> criteriaDelete = criteriaBuilder.createCriteriaDelete(User.class);

@@ -14,6 +14,7 @@ java_library(
     deps = [
         ":annotations",
         "//server/main/storage:storage_exception",
+        "@maven//:com_google_guava_guava",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_aspectj_aspectjrt",
     ],

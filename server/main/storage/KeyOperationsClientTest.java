@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import server.main.Arithmetic;
 import server.main.Chronometry;
+import server.main.aspects.Annotations.WithEntityManager;
 import server.main.aspects.StorageManagerAspect;
 import server.main.entities.Key;
 import server.main.proto.service.KeyAttrs;
@@ -46,6 +47,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createKey() {
     long userIdentifier = createUniqueUser();
     Password password =
@@ -62,6 +64,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createKey_withParent() {
     long userId = createUniqueUser();
     Password parent = Password.newBuilder().setValue("parent").build();
@@ -88,6 +91,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createKey_nonShadowWithParent_throws() {
     long userId = createUniqueUser();
 
@@ -99,6 +103,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createKey_foreignParent_throws() {
     long userA = createUniqueUser();
     long userB = createUniqueUser();
@@ -122,6 +127,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createKey_shadowForShadow_throws() {
     long userId = createUniqueUser();
     Password parent = Password.newBuilder().setValue("parent").build();
@@ -144,6 +150,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void updateKey() {
     long userIdentifier = createUniqueUser();
     long keyIdentifier =
@@ -169,6 +176,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void deleteKey() {
     long userIdentifier = createUniqueUser();
     long keyIdentifier =
@@ -183,6 +191,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void electShadow_createParent() {
     long userId = createUniqueUser();
     Password password =
@@ -204,6 +213,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void electShadow_updateParent() {
     long userId = createUniqueUser();
     long parentId =
@@ -230,6 +240,7 @@ class KeyOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void electShadow_nonShadow_deletesDependants() {
     long userId = createUniqueUser();
     long parentId =

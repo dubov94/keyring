@@ -20,6 +20,7 @@ import server.main.Chronometry;
 import server.main.Cryptography;
 import server.main.MailClient;
 import server.main.aspects.Annotations.ValidateUser;
+import server.main.aspects.Annotations.WithEntityManager;
 import server.main.entities.Key;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
@@ -90,6 +91,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void acquireMailToken(
       AcquireMailTokenRequest request, StreamObserver<AcquireMailTokenResponse> response) {
@@ -130,6 +132,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser(states = {User.State.PENDING, User.State.ACTIVE})
   public void releaseMailToken(
       ReleaseMailTokenRequest request, StreamObserver<ReleaseMailTokenResponse> response) {
@@ -144,6 +147,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void createKey(CreateKeyRequest request, StreamObserver<CreateKeyResponse> response) {
     Key key =
@@ -161,6 +165,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void readKeys(ReadKeysRequest request, StreamObserver<ReadKeysResponse> response) {
     List<KeyProto> keys =
@@ -172,6 +177,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void updateKey(UpdateKeyRequest request, StreamObserver<UpdateKeyResponse> response) {
     keyOperationsInterface.updateKey(sessionAccessor.getUserIdentifier(), request.getKey());
@@ -180,6 +186,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void deleteKey(DeleteKeyRequest request, StreamObserver<DeleteKeyResponse> response) {
     keyOperationsInterface.deleteKey(sessionAccessor.getUserIdentifier(), request.getIdentifier());
@@ -188,6 +195,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void electShadow(
       ElectShadowRequest request, StreamObserver<ElectShadowResponse> response) {
@@ -228,6 +236,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void changeMasterKey(
       ChangeMasterKeyRequest request, StreamObserver<ChangeMasterKeyResponse> response) {
@@ -264,6 +273,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void changeUsername(
       ChangeUsernameRequest request, StreamObserver<ChangeUsernameResponse> response) {
@@ -297,6 +307,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void deleteAccount(
       DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> response) {
@@ -310,6 +321,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void getRecentSessions(
       GetRecentSessionsRequest request, StreamObserver<GetRecentSessionsResponse> response) {
@@ -365,6 +377,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void generateOtpParams(
       GenerateOtpParamsRequest request, StreamObserver<GenerateOtpParamsResponse> response) {
@@ -402,6 +415,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void acceptOtpParams(
       AcceptOtpParamsRequest request, StreamObserver<AcceptOtpParamsResponse> response) {
@@ -445,6 +459,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void resetOtp(ResetOtpRequest request, StreamObserver<ResetOtpResponse> response) {
     Either<StatusException, ResetOtpResponse> result = _resetOtp(request);
@@ -457,6 +472,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @WithEntityManager
   @ValidateUser
   public void ackFeaturePrompt(
       AckFeaturePromptRequest request, StreamObserver<AckFeaturePromptResponse> response) {

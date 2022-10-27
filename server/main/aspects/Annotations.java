@@ -15,11 +15,19 @@ public class Annotations {
 
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.FIELD)
-  public @interface EntityController {}
+  public @interface ContextualEntityManager {}
+
+  /**
+   * Prevents `OptimisticLockException` in distributed environments by reusing `EntityManager`, thus
+   * leveraging first-level cache and avoiding stale results.
+   */
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.METHOD)
+  public @interface WithEntityManager {}
 
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
-  public @interface LocalTransaction {}
+  public @interface WithEntityTransaction {}
 
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)

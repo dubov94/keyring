@@ -26,7 +26,8 @@ class StorageManagerAspectTest {
   @Mock private EntityManagerFactory mockEntityManagerFactory;
   @Mock private EntityManager mockEntityManager;
   @Mock private EntityTransaction mockEntityTransaction;
-  @Mock private ProceedingJoinPoint mockLocalTransactionJoinPoint;
+  @Mock private ProceedingJoinPoint mockManagerJoinPoint;
+  @Mock private ProceedingJoinPoint mockTransactionJoinPoint;
   @Mock private JoinPoint mockLockEntityJoinPoint;
   @Mock private MethodSignature mockLockEntityMethodSignature;
 
@@ -42,128 +43,159 @@ class StorageManagerAspectTest {
   }
 
   @Test
-  void getEntityController_oneThreadSetsEntityManager_anotherThreadSeesNull() throws Throwable {
-    when(mockLocalTransactionJoinPoint.proceed())
+  void getContextualEntityManager_oneThreadSetsEntityManager_anotherThreadSeesNull()
+      throws Throwable {
+    when(mockManagerJoinPoint.proceed())
         .then(
             (Void) -> {
-              assertEquals(mockEntityManager, storageManagerAspect.getEntityController(null));
+              assertEquals(
+                  mockEntityManager, storageManagerAspect.getContextualEntityManager(null));
               Thread thread =
                   new Thread(
-                      () -> assertEquals(null, storageManagerAspect.getEntityController(null)));
+                      () ->
+                          assertEquals(
+                              null, storageManagerAspect.getContextualEntityManager(null)));
               thread.start();
               thread.join();
               return null;
             });
 
-    storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint);
+    storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint);
 
-    verify(mockLocalTransactionJoinPoint).proceed();
+    verify(mockManagerJoinPoint).proceed();
   }
 
   @Test
-  void getEntityController_recursiveLocalTransaction_usesSameEntityManager() throws Throwable {
+  void getContextualEntityManager_recursiveWithEntityManager_usesSameEntityManager()
+      throws Throwable {
     ProceedingJoinPoint mockAnotherJoinPoint = mock(ProceedingJoinPoint.class);
     when(mockAnotherJoinPoint.proceed())
         .then(
             (Void) -> {
-              assertEquals(mockEntityManager, storageManagerAspect.getEntityController(null));
+              assertEquals(
+                  mockEntityManager, storageManagerAspect.getContextualEntityManager(null));
               return null;
             });
-    when(mockLocalTransactionJoinPoint.proceed())
+    when(mockManagerJoinPoint.proceed())
         .then(
             (Void) -> {
-              assertEquals(mockEntityManager, storageManagerAspect.getEntityController(null));
-              storageManagerAspect.executeLocalTransaction(null, mockAnotherJoinPoint);
+              assertEquals(
+                  mockEntityManager, storageManagerAspect.getContextualEntityManager(null));
+              storageManagerAspect.executeWithEntityManager(null, mockAnotherJoinPoint);
               return null;
             });
 
-    storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint);
+    storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint);
 
-    verify(mockLocalTransactionJoinPoint).proceed();
+    verify(mockManagerJoinPoint).proceed();
   }
 
   @Test
-  void executeLocalTransaction_joinPointThrows_rollbacksClosesAndRemovesReference()
-      throws Throwable {
-    when(mockLocalTransactionJoinPoint.proceed()).thenThrow(new RuntimeException());
-    when(mockEntityTransaction.isActive()).thenReturn(true);
+  void executeWithEntityManager_joinPointThrows_closesRemovesReference() throws Throwable {
+    when(mockManagerJoinPoint.proceed()).thenThrow(new RuntimeException());
 
     assertThrows(
-        StorageException.class,
-        () -> storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
+        RuntimeException.class,
+        () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
 
-    verify(mockEntityTransaction).rollback();
     verify(mockEntityManager).close();
-    assertEquals(null, storageManagerAspect.getEntityController(null));
+    assertEquals(null, storageManagerAspect.getContextualEntityManager(null));
   }
 
   @Test
-  void executeLocalTransaction_getTransactionThrows_noRollback() throws Throwable {
-    when(mockEntityManager.getTransaction()).thenThrow(new RuntimeException());
-
-    assertThrows(
-        StorageException.class,
-        () -> storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
-  }
-
-  @Test
-  void executeLocalTransaction_inactiveTransactionThrows_noRollback() throws Throwable {
+  void executeWithEntityTransaction_inactiveTransactionThrows_noRollback() throws Throwable {
+    when(mockManagerJoinPoint.proceed())
+        .then(
+            (Void) -> {
+              storageManagerAspect.executeWithEntityTransaction(null, mockTransactionJoinPoint);
+              return null;
+            });
     doThrow(new RuntimeException()).when(mockEntityTransaction).begin();
     when(mockEntityTransaction.isActive()).thenReturn(false);
 
     assertThrows(
         StorageException.class,
-        () -> storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
+        () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
 
     verify(mockEntityTransaction, never()).rollback();
   }
 
   @Test
-  void executeLocalTransaction_isActiveThrows_databaseExceptionThrown() throws Throwable {
+  void executeWithEntityTransaction_isActiveThrows_databaseExceptionThrown() throws Throwable {
+    when(mockManagerJoinPoint.proceed())
+        .then(
+            (Void) -> {
+              storageManagerAspect.executeWithEntityTransaction(null, mockTransactionJoinPoint);
+              return null;
+            });
     doThrow(new RuntimeException()).when(mockEntityTransaction).begin();
     when(mockEntityTransaction.isActive()).thenThrow(new RuntimeException());
 
     assertThrows(
         StorageException.class,
-        () -> storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
+        () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
   }
 
   @Test
-  void executeLocalTransaction_rollbackThrows_databaseExceptionThrown() throws Throwable {
+  void executeWithEntityTransaction_rollbackThrows_databaseExceptionThrown() throws Throwable {
+    when(mockManagerJoinPoint.proceed())
+        .then(
+            (Void) -> {
+              storageManagerAspect.executeWithEntityTransaction(null, mockTransactionJoinPoint);
+              return null;
+            });
+    when(mockTransactionJoinPoint.proceed()).thenReturn(null);
     doThrow(new RuntimeException()).when(mockEntityTransaction).commit();
     when(mockEntityTransaction.isActive()).thenReturn(true);
     doThrow(new RuntimeException()).when(mockEntityTransaction).rollback();
 
     assertThrows(
         StorageException.class,
-        () -> storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
+        () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
   }
 
   @Test
-  void executeLocalTransaction_joinPointReturnsValue_propagatesValueBack() throws Throwable {
-    when(mockLocalTransactionJoinPoint.proceed()).thenReturn(0);
+  void executeWithEntityTransaction_joinPointReturnsValue_propagatesValueBack() throws Throwable {
+    when(mockManagerJoinPoint.proceed())
+        .then(
+            (Void) -> {
+              assertEquals(
+                  0,
+                  storageManagerAspect.executeWithEntityTransaction(
+                      null, mockTransactionJoinPoint));
+              return null;
+            });
+    when(mockTransactionJoinPoint.proceed()).thenReturn(0);
 
-    assertEquals(
-        0, storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint));
+    storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint);
+
+    verify(mockEntityTransaction).begin();
+    verify(mockEntityTransaction).commit();
   }
 
   @Test
   void executeLockEntity_locksMatchingArgument() throws Throwable {
-    User user = new User().setUsername("username");
-    when(mockLockEntityMethodSignature.getParameterNames())
-        .thenReturn(new String[] {"abc", "argument", "xyz"});
-    when(mockLockEntityJoinPoint.getArgs()).thenReturn(new Object[] {null, user, null});
-    when(mockLocalTransactionJoinPoint.proceed())
+    when(mockManagerJoinPoint.proceed())
+        .then(
+            (Void) -> {
+              storageManagerAspect.executeWithEntityTransaction(null, mockTransactionJoinPoint);
+              return null;
+            });
+    when(mockTransactionJoinPoint.proceed())
         .then(
             (Void) -> {
               storageManagerAspect.executeLockEntity(
                   createLockEntityAnnotation(), mockLockEntityJoinPoint);
               return null;
             });
+    User user = new User().setUsername("username");
+    when(mockLockEntityMethodSignature.getParameterNames())
+        .thenReturn(new String[] {"abc", "argument", "xyz"});
+    when(mockLockEntityJoinPoint.getArgs()).thenReturn(new Object[] {null, user, null});
 
-    storageManagerAspect.executeLocalTransaction(null, mockLocalTransactionJoinPoint);
+    storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint);
 
-    verify(mockLocalTransactionJoinPoint).proceed();
+    verify(mockTransactionJoinPoint).proceed();
     verify(mockEntityManager).lock(user, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
   }
 

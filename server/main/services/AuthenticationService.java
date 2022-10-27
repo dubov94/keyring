@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import org.apache.commons.validator.routines.EmailValidator;
 import server.main.Cryptography;
 import server.main.MailClient;
+import server.main.aspects.Annotations.WithEntityManager;
 import server.main.entities.FeaturePrompts;
 import server.main.entities.Key;
 import server.main.entities.MailToken;
@@ -75,6 +76,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.googleAuthenticator = googleAuthenticator;
   }
 
+  @WithEntityManager
   private Either<StatusException, RegisterResponse> _register(RegisterRequest request) {
     String username = request.getUsername();
     String mail = request.getMail();
@@ -114,6 +116,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
   }
 
+  @WithEntityManager
   private GetSaltResponse _getSalt(GetSaltRequest request) {
     GetSaltResponse.Builder builder = GetSaltResponse.newBuilder();
     Optional<User> maybeUser = accountOperationsInterface.getUserByName(request.getUsername());
@@ -162,6 +165,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     return userDataBuilder.build();
   }
 
+  @WithEntityManager
   private LogInResponse _logIn(LogInRequest request) {
     LogInResponse.Builder builder = LogInResponse.newBuilder();
     Optional<User> maybeUser = accountOperationsInterface.getUserByName(request.getUsername());
@@ -191,6 +195,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     response.onCompleted();
   }
 
+  @WithEntityManager
   private Either<StatusException, ProvideOtpResponse> _provideOtp(ProvideOtpRequest request) {
     ProvideOtpResponse.Builder builder = ProvideOtpResponse.newBuilder();
     String authnKey = request.getAuthnKey();

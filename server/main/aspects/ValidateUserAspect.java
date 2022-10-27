@@ -7,12 +7,14 @@ import java.util.Optional;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.DeclarePrecedence;
 import server.main.aspects.Annotations.ValidateUser;
 import server.main.entities.User;
 import server.main.interceptors.SessionAccessor;
 import server.main.storage.AccountOperationsInterface;
 
 @Aspect
+@DeclarePrecedence("StorageManagerAspect, ValidateUserAspect")
 public class ValidateUserAspect {
   private SessionAccessor sessionAccessor;
   private AccountOperationsInterface accountOperationsInterface;

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import server.main.Chronometry;
+import server.main.aspects.Annotations.WithEntityManager;
 import server.main.aspects.StorageManagerAspect;
 import server.main.entities.Key;
 import server.main.entities.MailToken;
@@ -49,6 +50,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createUser_getsUniqueUsername_postsUserAndMailToken() {
     String username = createUniqueUsername();
     Tuple2<User, MailToken> tuple =
@@ -66,6 +68,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createUser_getsExistingUsername_throwsException() {
     String username = createUniqueUsername();
     accountOperationsClient.createUser(username, "", "", "", "0");
@@ -76,6 +79,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void getMailToken_foreignToken_returnsEmpty() {
     String username = createUniqueUsername();
     Tuple2<User, MailToken> user = accountOperationsClient.createUser(username, "", "", "", "A");
@@ -87,6 +91,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void latestMailToken_sortsByCreationTime() {
     long userId = createActiveUser();
 
@@ -99,6 +104,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void releaseMailToken_removesTokenSetsMailActivatesUser() {
     String username = createUniqueUsername();
     Tuple2<User, MailToken> tuple =
@@ -115,16 +121,19 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void getUserByName_userDoesNotExist_returnsEmpty() {
     assertEquals(Optional.empty(), accountOperationsClient.getUserByName(""));
   }
 
   @Test
+  @WithEntityManager
   void getUserByIdentifier_userDoesNotExist_returnsEmpty() {
     assertEquals(Optional.empty(), accountOperationsClient.getUserByIdentifier(Long.MAX_VALUE));
   }
 
   @Test
+  @WithEntityManager
   void changeMasterKey_updatesSaltHashAndKeys() {
     long userIdentifier = createActiveUser();
     long keyIdentifier =
@@ -155,6 +164,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void changeMasterKey_lacksKeyUpdates_throwsException() {
     long userIdentifier = createActiveUser();
     keyOperationsClient.createKey(
@@ -166,6 +176,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createSession_putsSession() {
     Instant instant = Instant.ofEpochSecond(1);
     when(mockChronometry.currentTime()).thenReturn(instant);
@@ -185,6 +196,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createMailToken_putsMailToken() {
     long userId = createActiveUser();
 
@@ -199,6 +211,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void changeUsername_getsExistingUsername_throwsException() {
     long userIdentifier = createActiveUser();
     String username = createUniqueUsername();
@@ -210,6 +223,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void changeUsername_getsUniqueUsername_updatesUsername() {
     long userIdentifier = createActiveUser();
 
@@ -222,6 +236,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void markAccountAsDeleted_updatesState() {
     long userIdentifier = createActiveUser();
 
@@ -234,6 +249,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createOtpParams_putsOtpParams() {
     long userId = createActiveUser();
 
@@ -250,6 +266,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void acceptOtpParams_persistsOtpData() {
     long userId = createActiveUser();
     OtpParams otpParams =
@@ -266,6 +283,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void createOtpToken_putsOtpToken() {
     long userId = createActiveUser();
     OtpParams otpParams =
@@ -278,6 +296,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void deleteOtpToken_removesOtpToken() {
     long userId = createActiveUser();
     OtpParams otpParams =
@@ -292,6 +311,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void resetOtp_removesOtpData() {
     long userId = createActiveUser();
     OtpParams otpParams =
@@ -307,6 +327,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void nudgeMailToken_absentToken_returnsEmpty() {
     long userId = createActiveUser();
 
@@ -318,6 +339,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void nudgeMailToken_notAvailable_returnsFalse() {
     long userId = createActiveUser();
     long mailTokenId =
@@ -335,6 +357,7 @@ class AccountOperationsClientTest {
   }
 
   @Test
+  @WithEntityManager
   void nudgeMailToken_available_updatesTrail() {
     long userId = createActiveUser();
     long mailTokenId =

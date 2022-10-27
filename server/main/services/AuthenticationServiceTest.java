@@ -8,13 +8,17 @@ import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.stub.StreamObserver;
 import io.vavr.Tuple;
 import java.util.Optional;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
+import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import server.main.Cryptography;
 import server.main.MailClient;
+import server.main.aspects.StorageManagerAspect;
 import server.main.entities.FeaturePrompts;
 import server.main.entities.MailToken;
 import server.main.entities.OtpToken;
@@ -28,6 +32,8 @@ import server.main.storage.KeyOperationsInterface;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
+  @Mock private EntityManagerFactory mockEntityManagerFactory;
+  @Mock private EntityManager mockEntityManager;
   @Mock private AccountOperationsInterface mockAccountOperationsInterface;
   @Mock private KeyOperationsInterface mockKeyOperationsInterface;
   @Mock private Cryptography mockCryptography;
@@ -42,6 +48,7 @@ class AuthenticationServiceTest {
 
   @BeforeEach
   void beforeEach() {
+    Aspects.aspectOf(StorageManagerAspect.class).initialize(mockEntityManagerFactory);
     authenticationService =
         new AuthenticationService(
             mockAccountOperationsInterface,
@@ -52,6 +59,7 @@ class AuthenticationServiceTest {
             mockAgentAccessor,
             mockVersionAccessor,
             mockGoogleAuthenticator);
+    when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
   }
 
   @Test

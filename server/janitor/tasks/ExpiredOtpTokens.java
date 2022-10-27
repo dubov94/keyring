@@ -7,22 +7,24 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.Root;
 import server.main.Chronometry;
-import server.main.aspects.Annotations.EntityController;
-import server.main.aspects.Annotations.LocalTransaction;
+import server.main.aspects.Annotations.ContextualEntityManager;
+import server.main.aspects.Annotations.WithEntityManager;
+import server.main.aspects.Annotations.WithEntityTransaction;
 import server.main.entities.OtpToken;
 import server.main.entities.OtpToken_;
 
 public final class ExpiredOtpTokens implements Runnable {
   private Chronometry chronometry;
 
-  @EntityController private EntityManager entityManager;
+  @ContextualEntityManager private EntityManager entityManager;
 
   @Inject
   ExpiredOtpTokens(Chronometry chronometry) {
     this.chronometry = chronometry;
   }
 
-  @LocalTransaction
+  @WithEntityManager
+  @WithEntityTransaction
   public void run() {
     CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
     CriteriaDelete<OtpToken> criteriaDelete = criteriaBuilder.createCriteriaDelete(OtpToken.class);

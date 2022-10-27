@@ -18,9 +18,9 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import server.main.Chronometry;
-import server.main.aspects.Annotations.EntityController;
-import server.main.aspects.Annotations.LocalTransaction;
+import server.main.aspects.Annotations.ContextualEntityManager;
 import server.main.aspects.Annotations.LockEntity;
+import server.main.aspects.Annotations.WithEntityTransaction;
 import server.main.entities.*;
 import server.main.proto.service.FeatureType;
 import server.main.proto.service.KeyPatch;
@@ -36,14 +36,14 @@ public class AccountOperationsClient implements AccountOperationsInterface {
           featurePrompts -> featurePrompts.setFuzzySearch(false));
 
   private Chronometry chronometry;
-  @EntityController private EntityManager entityManager;
+  @ContextualEntityManager private EntityManager entityManager;
 
   AccountOperationsClient(Chronometry chronometry) {
     this.chronometry = chronometry;
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public Tuple2<User, MailToken> createUser(
       String username, String salt, String hash, String mail, String code) {
     User user =
@@ -57,7 +57,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public MailToken createMailToken(long userIdentifier, String mail, String code) {
     MailToken mailToken =
         new MailToken()
@@ -69,7 +69,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public Optional<MailToken> getMailToken(long userId, long tokenId) {
     return Queries.findManyToOne(entityManager, MailToken.class, MailToken_.user, userId).stream()
         .filter(mailToken -> Objects.equals(mailToken.getIdentifier(), tokenId))
@@ -77,7 +77,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public Optional<MailToken> latestMailToken(long userIdentifier) {
     return Queries.findManyToOne(entityManager, MailToken.class, MailToken_.user, userIdentifier)
         .stream()
@@ -95,7 +95,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void releaseMailToken(long userId, long tokenIdentifier) {
     Optional<MailToken> maybeMailToken =
         Optional.ofNullable(entityManager.find(MailToken.class, tokenIdentifier));
@@ -111,7 +111,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public Optional<User> getUserByName(String username) {
     CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
     CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
@@ -120,7 +120,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     return entityManager.createQuery(criteriaQuery).getResultList().stream().findFirst();
   }
 
-  @LocalTransaction
+  @WithEntityTransaction
   public Optional<User> getUserByIdentifier(long identifier) {
     // https://stackoverflow.com/a/13569657
     return Optional.ofNullable(entityManager.find(User.class, identifier));
@@ -149,7 +149,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void changeMasterKey(
       long userIdentifier, String salt, String hash, List<KeyPatch> protos) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
@@ -166,7 +166,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void changeUsername(long userIdentifier, String username) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
@@ -191,7 +191,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void createSession(
       long userIdentifier, String key, String ipAddress, String userAgent, String clientVersion) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
@@ -202,7 +202,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public List<Session> readSessions(long userIdentifier) {
     return Queries.findManyToOne(entityManager, Session.class, Session_.user, userIdentifier);
   }
@@ -214,7 +214,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void markAccountAsDeleted(long userIdentifier) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
@@ -224,7 +224,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public OtpParams createOtpParams(
       long userIdentifier, String sharedSecret, List<String> scratchCodes) {
     OtpParams otpParams =
@@ -237,7 +237,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public Optional<OtpParams> getOtpParams(long userId, long otpParamsId) {
     return Queries.findManyToOne(entityManager, OtpParams.class, OtpParams_.user, userId).stream()
         .filter(otpParams -> Objects.equals(otpParams.getId(), otpParamsId))
@@ -259,7 +259,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void acceptOtpParams(long userId, long otpParamsId) {
     Optional<OtpParams> maybeOtpParams =
         Optional.ofNullable(entityManager.find(OtpParams.class, otpParamsId));
@@ -283,7 +283,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void createOtpToken(long userId, String otpToken) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
@@ -293,7 +293,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public Optional<OtpToken> getOtpToken(long userId, String value, boolean mustBeInitial) {
     return Queries.findManyToOne(entityManager, OtpToken.class, OtpToken_.user, userId).stream()
         .filter(
@@ -304,7 +304,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void deleteOtpToken(long userId, long tokenId) {
     Optional<OtpToken> maybeOtpToken =
         Optional.ofNullable(entityManager.find(OtpToken.class, tokenId));
@@ -332,7 +332,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void resetOtp(long userId) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
@@ -350,7 +350,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public Optional<Integer> acquireOtpSpareAttempt(long userId) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
@@ -373,7 +373,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void restoreOtpSpareAttempts(long userId) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
@@ -383,7 +383,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public FeaturePrompts getFeaturePrompts(long userId) {
     Optional<FeaturePrompts> maybeFeaturePrompts =
         Optional.ofNullable(entityManager.find(FeaturePrompts.class, userId));
@@ -394,7 +394,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void ackFeaturePrompt(long userId, FeatureType featureType) {
     FeaturePrompts featurePrompts = getFeaturePrompts(userId);
     Consumer<FeaturePrompts> consumer = FEATURE_PROMPT_ACKERS.get(featureType);
@@ -406,7 +406,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public Tuple2<NudgeStatus, Optional<MailToken>> nudgeMailToken(
       long userId, long tokenId, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant) {
     Optional<MailToken> maybeMailToken = getMailToken(userId, tokenId);

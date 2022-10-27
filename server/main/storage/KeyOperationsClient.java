@@ -8,9 +8,9 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import server.main.aspects.Annotations.EntityController;
-import server.main.aspects.Annotations.LocalTransaction;
+import server.main.aspects.Annotations.ContextualEntityManager;
 import server.main.aspects.Annotations.LockEntity;
+import server.main.aspects.Annotations.WithEntityTransaction;
 import server.main.entities.Key;
 import server.main.entities.Key_;
 import server.main.entities.User;
@@ -19,7 +19,7 @@ import server.main.proto.service.KeyPatch;
 import server.main.proto.service.Password;
 
 public class KeyOperationsClient implements KeyOperationsInterface {
-  @EntityController private EntityManager entityManager;
+  @ContextualEntityManager private EntityManager entityManager;
 
   @LockEntity(name = "user")
   private Key _spawnKey(User user, Password content, KeyAttrs attrs) {
@@ -50,7 +50,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public Key createKey(long userIdentifier, Password content, KeyAttrs attrs) {
     if (!attrs.getIsShadow() && attrs.getParent() != 0) {
       throw new IllegalArgumentException();
@@ -63,7 +63,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public List<Key> readKeys(long userIdentifier) {
     return Queries.findManyToOne(entityManager, Key.class, Key_.user, userIdentifier);
   }
@@ -75,7 +75,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void updateKey(long userIdentifier, KeyPatch patch) {
     Optional<Key> maybeKey =
         Optional.ofNullable(entityManager.find(Key.class, patch.getIdentifier()));
@@ -95,7 +95,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public void deleteKey(long userIdentifier, long keyIdentifier) {
     Optional<Key> maybeKey = Optional.ofNullable(entityManager.find(Key.class, keyIdentifier));
     if (!maybeKey.isPresent()) {
@@ -137,7 +137,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   }
 
   @Override
-  @LocalTransaction
+  @WithEntityTransaction
   public Tuple2<Key, List<Key>> electShadow(long userId, long shadowId) {
     Optional<Key> maybeTarget = Optional.ofNullable(entityManager.find(Key.class, shadowId));
     if (!maybeTarget.isPresent()) {

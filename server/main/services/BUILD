@@ -35,8 +35,8 @@ woven_junit5_test(
     srcs = ["AdministrationServiceTest.java"],
     aop_xml = "//server/main/java/META-INF:aop.xml",
     aspects = [
-        "//server/main/aspects:validate_user_aspect",
         "//server/main/aspects:storage_manager_aspect",
+        "//server/main/aspects:validate_user_aspect",
     ],
     test_package = "server.main.services",
     deps = [
@@ -73,6 +73,7 @@ java_library(
         "//proto:service_java_grpc",
         "//server/main:cryptography",
         "//server/main:mail_client",
+        "//server/main/aspects:annotations",
         "//server/main/entities:key",
         "//server/main/entities:mail_token",
         "//server/main/entities:otp_token",
@@ -91,14 +92,20 @@ java_library(
     ],
 )
 
-junit5_test(
+woven_junit5_test(
     name = "authentication_service_test",
     srcs = ["AuthenticationServiceTest.java"],
+    aop_xml = "//server/main/java/META-INF:aop.xml",
+    aspects = [
+        "//server/main/aspects:storage_manager_aspect",
+        "//server/main/aspects:validate_user_aspect",
+    ],
     test_package = "server.main.services",
     deps = [
         "//proto:service_java_grpc",
         "//server/main:cryptography",
         "//server/main:mail_client",
+        "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:mail_token",
         "//server/main/entities:otp_token",
         "//server/main/entities:user",
@@ -110,7 +117,9 @@ junit5_test(
         "//server/main/storage:key_operations_interface",
         "@maven//:com_warrenstrange_googleauth",
         "@maven//:io_vavr_vavr",
+        "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
+        "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
     ],
 )
