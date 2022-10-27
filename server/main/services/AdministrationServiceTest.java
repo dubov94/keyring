@@ -20,6 +20,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +32,7 @@ import org.mockito.Mock;
 import server.main.Chronometry;
 import server.main.Cryptography;
 import server.main.MailClient;
+import server.main.aspects.StorageManagerAspect;
 import server.main.aspects.ValidateUserAspect;
 import server.main.entities.MailToken;
 import server.main.entities.OtpParams;
@@ -45,6 +48,8 @@ import server.main.storage.KeyOperationsInterface;
 
 @ExtendWith(MockitoExtension.class)
 class AdministrationServiceTest {
+  @Mock private EntityManagerFactory mockEntityManagerFactory;
+  @Mock private EntityManager mockEntityManager;
   @Mock private KeyOperationsInterface mockKeyOperationsInterface;
   @Mock private AccountOperationsInterface mockAccountOperationsInterface;
   @Mock private GeolocationServiceInterface mockGeolocationServiceInterface;
@@ -67,6 +72,7 @@ class AdministrationServiceTest {
 
   @BeforeEach
   void beforeEach() {
+    Aspects.aspectOf(StorageManagerAspect.class).initialize(mockEntityManagerFactory);
     Aspects.aspectOf(ValidateUserAspect.class)
         .initialize(mockSessionAccessor, mockAccountOperationsInterface);
     administrationService =
@@ -80,6 +86,7 @@ class AdministrationServiceTest {
             mockMailClient,
             mockGoogleAuthenticator,
             mockChronometry);
+    when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
     long userIdentifier = user.getIdentifier();
     when(mockSessionAccessor.getUserIdentifier()).thenReturn(userIdentifier);
     when(mockAccountOperationsInterface.getUserByIdentifier(userIdentifier))
