@@ -13,8 +13,9 @@ import server.main.Chronometry;
 import server.main.Cryptography;
 
 public class KeyValueClient {
-  private static final int SESSION_LIFETIME_S = 10 * 60;
-  private static final int AUTHN_LIFETIME_S = 5 * 60;
+  private static final int SESSION_RELATIVE_DURATION_S = 10 * 60;
+  private static final int SESSION_ABSOLUTE_DURATION_H = 2;
+  private static final int AUTHN_DURATION_S = 5 * 60;
 
   private Pool<Jedis> jedisPool;
   private Cryptography cryptography;
@@ -37,7 +38,7 @@ public class KeyValueClient {
           jedis.set(
               convertSessionIdToKey(sessionId),
               gson.toJson(userPointer.setCreationTimeInMs(chronometry.currentTime())),
-              new SetParams().nx().ex(SESSION_LIFETIME_S));
+              new SetParams().nx().ex(SESSION_RELATIVE_DURATION_S));
       if (status == null) {
         throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
       }
@@ -49,14 +50,18 @@ public class KeyValueClient {
     try (Jedis jedis = jedisPool.getResource()) {
       String sessionKey = convertSessionIdToKey(sessionIdentifier);
       Optional<String> maybeUserPointer =
-          Optional.ofNullable(jedis.getEx(sessionKey, new GetExParams().ex(SESSION_LIFETIME_S)));
+          Optional.ofNullable(
+              jedis.getEx(sessionKey, new GetExParams().ex(SESSION_RELATIVE_DURATION_S)));
       return maybeUserPointer
           .map(string -> gson.fromJson(string, UserPointer.class))
           .map(
               userPointer ->
                   chronometry.isBefore(
                           userPointer.getCreationTime(),
-                          chronometry.subtract(chronometry.currentTime(), 1, ChronoUnit.HOURS))
+                          chronometry.subtract(
+                              chronometry.currentTime(),
+                              SESSION_ABSOLUTE_DURATION_H,
+                              ChronoUnit.HOURS))
                       ? null
                       : userPointer);
     }
@@ -79,7 +84,7 @@ public class KeyValueClient {
           jedis.set(
               convertAuthnIdToKey(authnId),
               String.valueOf(userId),
-              new SetParams().nx().ex(AUTHN_LIFETIME_S));
+              new SetParams().nx().ex(AUTHN_DURATION_S));
       if (status == null) {
         throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
       }
