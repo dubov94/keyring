@@ -16,12 +16,15 @@
           {{ isAnalysisOn ? 'Disable' : 'Enable'}}
         </v-btn>
       </v-col>
-      <v-col :cols="12" :md="10" v-if="isAnalysisOn">
+      <v-col v-if="isAnalysisOn" :cols="12" :md="10">
         <v-expansion-panels multiple>
           <duplicate-passwords></duplicate-passwords>
           <compromised-passwords></compromised-passwords>
           <vulnerable-passwords></vulnerable-passwords>
         </v-expansion-panels>
+      </v-col>
+      <v-col v-else :cols="12" class="text-center">
+        <div class="mt-12"><v-icon :size="128">policy</v-icon></div>
       </v-col>
     </v-row>
   </v-container>
