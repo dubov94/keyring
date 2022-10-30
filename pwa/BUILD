@@ -190,6 +190,20 @@ pkg_tar(
     name = "pkg_tar",
     srcs = [":dist"],
     package_dir = "dist",
+    # To enable `If-Modified-Since` and `ETag`.
+    #
+    # Previously NGINX caching had to be disabled as
+    # `ETag` would be virtually constant for certain
+    # assets. That was happening due to:
+    #
+    # - `pkg_tar` having no support of `stamp`, thus
+    #   always yielding `mtime` equal to epoch;
+    # - NGINX computing `ETag` value as concatentation
+    #   of `mtime` and asset length
+    #   (src/http/ngx_http_core_module.c);
+    # - majority of service worker changes being updates
+    #   of the precache manifest fixed-length reference.
+    stamp = 1,
 )
 
 container_image(
