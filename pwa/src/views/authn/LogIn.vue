@@ -67,8 +67,8 @@ import { sessionUsername } from '@/redux/modules/session/selectors'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 import { data } from '@/redux/remote_data'
 import { RootAction } from '@/redux/root_action'
-import Credentials from '@/views/authentication/Credentials.vue'
-import Otp from '@/views/authentication/Otp.vue'
+import Credentials from '@/views/authn/Credentials.vue'
+import Otp from '@/views/authn/Otp.vue'
 
 export default Vue.extend({
   components: {
