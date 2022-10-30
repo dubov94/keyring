@@ -1,6 +1,6 @@
 <style scoped>
   .v-expansion-panels {
-    max-width: var(--max-content-width);
+    max-width: calc(var(--max-content-width) / 2);
     margin: 0 auto;
   }
 </style>

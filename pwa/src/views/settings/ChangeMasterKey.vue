@@ -1,7 +1,14 @@
 <template>
   <v-expansion-panel>
     <v-expansion-panel-header>
-      Change password
+      <div>
+        <div class="text-body-1">
+          Change password
+        </div>
+        <div class="mt-1 text-body-2 text--secondary font-italic">
+          Additionally terminates all other active sessions
+        </div>
+      </div>
     </v-expansion-panel-header>
     <v-expansion-panel-content>
       <v-form @keydown.native.enter.prevent="submit">
