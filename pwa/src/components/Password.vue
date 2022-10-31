@@ -14,10 +14,10 @@
             Unsaved draft!
           </div>
           <v-spacer></v-spacer>
+          <v-btn text @click="discardDraft">Discard</v-btn>
           <v-btn text outlined @click="restoreDraft">
             See <v-icon right small>edit</v-icon>
           </v-btn>
-          <v-btn text @click="discardDraft">Discard</v-btn>
         </v-card-actions>
         <v-divider></v-divider>
       </template>
@@ -44,12 +44,12 @@
           <v-btn text @click="remove" color="error">Yes</v-btn>
         </template>
         <template v-else>
-          <v-btn text @click="save" :loading="saving">Save</v-btn>
+          <v-btn text @click="cancel">Discard</v-btn>
           <v-spacer></v-spacer>
           <v-btn icon @click="requestDel" :loading="deleting" :disabled="hasNoParent">
             <v-icon color="error">delete</v-icon>
           </v-btn>
-          <v-btn text @click="cancel">Discard</v-btn>
+          <v-btn text @click="save" :loading="saving">Save</v-btn>
         </template>
       </v-card-actions>
     </template>
@@ -121,6 +121,7 @@
 <script lang="ts">
 import { function as fn, option } from 'fp-ts'
 import cloneDeep from 'lodash/cloneDeep'
+import isEqual from 'lodash/isEqual'
 import { Subject, of, iif, timer, EMPTY, interval } from 'rxjs'
 import { filter, mapTo, switchMap, takeUntil, take, tap } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
@@ -372,6 +373,10 @@ export default Vue.extend({
       this.generator$.next()
     },
     save () {
+      if (isEqual(extractPassword(this.content), this.baselinePassword)) {
+        this.cancel()
+        return
+      }
       this.saving = true
       this.autosave(AutosaveEventType.IMMEDIATE_UPDATE)
       this.dispatch(integrateClique({
