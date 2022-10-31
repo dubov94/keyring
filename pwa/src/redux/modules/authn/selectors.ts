@@ -25,3 +25,5 @@ export type AuthnViaDepot = RemoteData<AuthnViaDepotFlowIndicator, {}, StandardE
 export const authnViaDepot = (state: RootState): DeepReadonly<AuthnViaDepot> => state.authn.authnViaDepot
 export type AuthnOtpProvision = RemoteData<AuthnOtpProvisionFlowIndicator, {}, StandardError<AuthnOtpProvisionFlowError>>
 export const authnOtpProvision = (state: RootState): DeepReadonly<AuthnOtpProvision> => state.authn.authnOtpProvision
+
+export const backgroundAuthnError = (state: RootState): boolean => state.authn.backgroundAuthnError

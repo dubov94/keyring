@@ -55,8 +55,9 @@
         </password-masonry>
       </v-container>
       <div class="dial">
-        <v-btn fab color="secondary" @click="addKey" :disabled="!canAccessApi">
-          <v-icon>edit</v-icon>
+        <v-btn fab color="secondary" @click="addKey"
+          :disabled="!canAccessApi" :loading="!canAccessApi && !backgroundAuthnError">
+          <v-icon>{{ canAccessApi ? 'edit' : 'wifi_off' }}</v-icon>
         </v-btn>
       </div>
     </v-main>
@@ -78,6 +79,7 @@ import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
 import { getUidService } from '@/cryptography/uid_service'
 import { Key } from '@/redux/domain'
+import { backgroundAuthnError } from '@/redux/modules/authn/selectors'
 import { ackFeaturePrompt } from '@/redux/modules/user/account/actions'
 import { canAccessApi, featurePrompts } from '@/redux/modules/user/account/selectors'
 import { userKeysUpdate } from '@/redux/modules/user/keys/actions'
@@ -111,6 +113,9 @@ export default (Vue as VueConstructor<Vue>).extend({
     }
   },
   computed: {
+    backgroundAuthnError (): boolean {
+      return backgroundAuthnError(this.$data.$state)
+    },
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
     },

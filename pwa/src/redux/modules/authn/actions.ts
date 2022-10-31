@@ -125,3 +125,5 @@ export type RemoteAuthnCompletionData = AuthnViaApiParams & UserData & {
   otpToken: string | null;
 }
 export const remoteAuthnComplete = createAction('authn/remoteAuthnComplete')<DeepReadonly<RemoteAuthnCompletionData>>()
+
+export const backgroundAuthnError = createAction('authn/backgroundAuthnError')()

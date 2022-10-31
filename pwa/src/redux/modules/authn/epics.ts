@@ -29,7 +29,8 @@ import {
   errorToMessage,
   success,
   isActionSuccess2,
-  isActionSuccess
+  isActionSuccess,
+  isSignalError
 } from '@/redux/flow_signal'
 import { isDepotActive } from '@/redux/modules/depot/selectors'
 import { defaultMailVerification, localOtpTokenFailure, remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
@@ -61,7 +62,8 @@ import {
   provideOtp,
   AuthnOtpProvisionFlowIndicator,
   UserData,
-  backgroundOtpProvisionSignal
+  backgroundOtpProvisionSignal,
+  backgroundAuthnError
 } from './actions'
 
 export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
@@ -361,6 +363,16 @@ export const backgroundOtpProvisionEpic: Epic<RootAction, RootAction, RootState>
       )),
       option.getOrElse<Observable<RootAction>>(() => EMPTY)
     )
+  })
+)
+
+export const backgroundAuthnErrorEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+  filter(isActionOf([backgroundRemoteAuthnSignal, backgroundOtpProvisionSignal])),
+  switchMap((action) => {
+    if (isSignalError(action.payload)) {
+      return of(backgroundAuthnError())
+    }
+    return EMPTY
   })
 )
 

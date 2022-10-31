@@ -20,7 +20,8 @@ import {
   authnViaDepotSignal,
   RegistrationFlowIndicator,
   registrationReset,
-  registrationSignal
+  registrationSignal,
+  backgroundAuthnError
 } from './actions'
 import { StandardError } from '@/redux/flow_signal'
 import { isActionOf } from 'typesafe-actions'
@@ -32,12 +33,14 @@ export default createReducer<{
   authnViaApi: RemoteData<AuthnViaApiFlowIndicator, AuthnViaApiFlowResult, StandardError<ServiceGetSaltResponseError | ServiceLogInResponseError>>;
   authnOtpProvision: RemoteData<AuthnOtpProvisionFlowIndicator, {}, StandardError<AuthnOtpProvisionFlowError>>;
   authnViaDepot: RemoteData<AuthnViaDepotFlowIndicator, {}, StandardError<AuthnViaDepotFlowError>>;
+  backgroundAuthnError: boolean;
 }>(
   {
     registration: zero(),
     authnViaApi: zero(),
     authnOtpProvision: zero(),
-    authnViaDepot: zero()
+    authnViaDepot: zero(),
+    backgroundAuthnError: false
   },
   (builder) => builder
     .addMatcher(isActionOf(registrationSignal), (state, action) => {
@@ -79,5 +82,8 @@ export default createReducer<{
     })
     .addMatcher(isActionOf(authnViaDepotReset), (state) => {
       state.authnViaDepot = withNoResult(state.authnViaDepot)
+    })
+    .addMatcher(isActionOf(backgroundAuthnError), (state) => {
+      state.backgroundAuthnError = true
     })
 )
