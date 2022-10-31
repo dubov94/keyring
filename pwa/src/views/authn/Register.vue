@@ -1,3 +1,9 @@
+<style scoped>
+  .password-strength {
+    padding-left: calc(24px + 9px);
+  }
+</style>
+
 <template>
   <page>
     <v-main>
@@ -16,6 +22,18 @@
                     v-model="password" :dirty="$v.password.$dirty" :errors="passwordErrors"
                     @touch="$v.password.$touch()" @reset="$v.password.$reset()">
                   </form-text-field>
+                  <div class="password-strength">
+                    <strength-score :color="assessment.color" :value="assessment.value">
+                    </strength-score>
+                    <div class="mt-2 text-body-2 text--secondary">
+                      Choose
+                      <a href="https://xkcd.com/936/" target="_blank"
+                        rel="noopener noreferrer">a strong passphrase</a>
+                      that you will remember &mdash; all other data will
+                      be encrypted with it, and there is no way to recover
+                      any data if you forget it.
+                    </div>
+                  </div>
                   <form-text-field type="password" label="Repeat password" prepend-icon="repeat"
                     v-model="repeat" :dirty="$v.repeat.$dirty" :errors="repeatErrors"
                     @touch="$v.repeat.$touch()" @reset="$v.repeat.$reset()">
@@ -48,17 +66,20 @@
 </template>
 
 <script lang="ts">
+import { option, function as fn, map, eq } from 'fp-ts'
+import { takeUntil, filter } from 'rxjs/operators'
+import { DeepReadonly } from 'ts-essentials'
+import { container } from 'tsyringe'
 import Vue, { VueConstructor } from 'vue'
 import { email, required, sameAs } from 'vuelidate/lib/validators'
-import Page from '@/components/Page.vue'
 import { ServiceRegisterResponseError } from '@/api/definitions'
+import Page from '@/components/Page.vue'
+import StrengthScore from '@/components/StrengthScore.vue'
+import { remoteDataValidator } from '@/components/form_validators'
+import { Score, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
 import { register, RegistrationFlowIndicator, registrationReset, registrationSignal } from '@/redux/modules/authn/actions'
 import { registration, Registration } from '@/redux/modules/authn/selectors'
-import { DeepReadonly } from 'ts-essentials'
 import { isActionSuccess } from '@/redux/flow_signal'
-import { takeUntil, filter } from 'rxjs/operators'
-import { option, function as fn, map, eq } from 'fp-ts'
-import { remoteDataValidator } from '@/components/form_validators'
 
 const usernameAvailableValidator = remoteDataValidator(ServiceRegisterResponseError.NAMETAKEN)
 
@@ -75,10 +96,12 @@ interface Mixins {
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
-    page: Page
+    page: Page,
+    strengthScore: StrengthScore
   },
   data () {
     return {
+      strengthTestService: container.resolve<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN),
       username: {
         value: '',
         frozen: false
@@ -108,6 +131,12 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     mail: { email, required }
   },
   computed: {
+    assessment (): Score {
+      return this.strengthTestService.score(this.password, [
+        this.username.value,
+        this.mail
+      ])
+    },
     registration (): DeepReadonly<Registration> {
       return registration(this.$data.$state)
     },
