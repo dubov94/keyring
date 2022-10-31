@@ -21,7 +21,7 @@ describe('ChangeMasterKey', () => {
   let $actions: Subject<RootAction>
 
   const getPanelButton = () => wrapper.findAll('button').filter(
-    (button) => button.text() === 'Change password')
+    (button) => button.text().includes('Change password'))
 
   beforeEach(async () => {
     const localVue = setUpLocalVue()

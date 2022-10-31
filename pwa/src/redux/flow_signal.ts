@@ -107,7 +107,7 @@ export const isSignalSuccess = (signal: FlowSignal<unknown, unknown, unknown>): 
   return isKindSuccess(signal.kind)
 }
 
-export const isSignalError = <E>(signal: FlowSignal<unknown, unknown, E>): signal is FlowError<E> => {
+export const isSignalError = (signal: FlowSignal<unknown, unknown, unknown>): signal is FlowError<unknown> => {
   return isKindError(signal.kind)
 }
 

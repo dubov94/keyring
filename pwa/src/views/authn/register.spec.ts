@@ -1,16 +1,19 @@
 import { ActionQueue, drainActionQueue, setUpLocalVue, setUpStateMixin, setUpTranslationMixin, setUpVuetify } from '@/components/testing'
-import { RootAction } from '@/redux/root_action'
-import { reducer, RootState } from '@/redux/root_reducer'
 import { createStore, Store } from '@reduxjs/toolkit'
 import { mount, Wrapper } from '@vue/test-utils'
-import { EMPTY, Subject } from 'rxjs'
-import VueRouter from 'vue-router'
-import Register from './Register.vue'
-import { function as fn } from 'fp-ts'
 import { expect } from 'chai'
-import { register, registrationReset, registrationSignal } from '@/redux/modules/authn/actions'
+import { function as fn } from 'fp-ts'
+import { EMPTY, Subject } from 'rxjs'
+import { container } from 'tsyringe'
+import VueRouter from 'vue-router'
+import { StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
 import { success } from '@/redux/flow_signal'
+import { register, registrationReset, registrationSignal } from '@/redux/modules/authn/actions'
+import { RootAction } from '@/redux/root_action'
+import { reducer, RootState } from '@/redux/root_reducer'
 import { createRegistrationFlowResult } from '@/redux/testing/domain'
+import { PositiveFakeStrengthTestService } from '@/redux/testing/services'
+import Register from './Register.vue'
 
 describe('Register', () => {
   let store: Store<RootState, RootAction>
@@ -20,6 +23,9 @@ describe('Register', () => {
   let router: VueRouter
 
   beforeEach(() => {
+    container.register<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN, {
+      useValue: new PositiveFakeStrengthTestService()
+    })
     const localVue = setUpLocalVue()
     localVue.use(VueRouter)
     store = createStore(reducer)
