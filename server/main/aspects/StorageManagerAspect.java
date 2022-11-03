@@ -1,4 +1,4 @@
-package server.main.aspects;
+package keyring.server.main.aspects;
 
 import com.google.common.base.Preconditions;
 import java.util.Arrays;
@@ -9,17 +9,17 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.LockModeType;
+import keyring.server.main.aspects.Annotations.ContextualEntityManager;
+import keyring.server.main.aspects.Annotations.LockEntity;
+import keyring.server.main.aspects.Annotations.WithEntityManager;
+import keyring.server.main.aspects.Annotations.WithEntityTransaction;
+import keyring.server.main.storage.StorageException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.reflect.MethodSignature;
-import server.main.aspects.Annotations.ContextualEntityManager;
-import server.main.aspects.Annotations.LockEntity;
-import server.main.aspects.Annotations.WithEntityManager;
-import server.main.aspects.Annotations.WithEntityTransaction;
-import server.main.storage.StorageException;
 
 @Aspect
 public class StorageManagerAspect {

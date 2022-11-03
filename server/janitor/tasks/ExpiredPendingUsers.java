@@ -1,4 +1,4 @@
-package server.janitor.tasks;
+package keyring.server.janitor.tasks;
 
 import java.time.temporal.ChronoUnit;
 import javax.inject.Inject;
@@ -6,12 +6,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.Root;
-import server.main.Chronometry;
-import server.main.aspects.Annotations.ContextualEntityManager;
-import server.main.aspects.Annotations.WithEntityManager;
-import server.main.aspects.Annotations.WithEntityTransaction;
-import server.main.entities.User;
-import server.main.entities.User_;
+import keyring.server.main.Chronometry;
+import keyring.server.main.aspects.Annotations.ContextualEntityManager;
+import keyring.server.main.aspects.Annotations.WithEntityManager;
+import keyring.server.main.aspects.Annotations.WithEntityTransaction;
+import keyring.server.main.entities.User;
+import keyring.server.main.entities.User_;
 
 public final class ExpiredPendingUsers implements Runnable {
   private Chronometry chronometry;

@@ -1,4 +1,4 @@
-package server.main.aspects;
+package keyring.server.main.aspects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,6 +9,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.LockModeType;
+import keyring.server.main.aspects.Annotations.LockEntity;
+import keyring.server.main.entities.User;
+import keyring.server.main.storage.StorageException;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -17,9 +20,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import server.main.aspects.Annotations.LockEntity;
-import server.main.entities.User;
-import server.main.storage.StorageException;
 
 @ExtendWith(MockitoExtension.class)
 class StorageManagerAspectTest {

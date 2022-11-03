@@ -1,4 +1,4 @@
-package server.main.storage;
+package keyring.server.main.storage;
 
 import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple;
@@ -8,15 +8,15 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
-import server.main.aspects.Annotations.ContextualEntityManager;
-import server.main.aspects.Annotations.LockEntity;
-import server.main.aspects.Annotations.WithEntityTransaction;
-import server.main.entities.Key;
-import server.main.entities.Key_;
-import server.main.entities.User;
-import server.main.proto.service.KeyAttrs;
-import server.main.proto.service.KeyPatch;
-import server.main.proto.service.Password;
+import keyring.server.main.aspects.Annotations.ContextualEntityManager;
+import keyring.server.main.aspects.Annotations.LockEntity;
+import keyring.server.main.aspects.Annotations.WithEntityTransaction;
+import keyring.server.main.entities.Key;
+import keyring.server.main.entities.Key_;
+import keyring.server.main.entities.User;
+import keyring.server.main.proto.service.KeyAttrs;
+import keyring.server.main.proto.service.KeyPatch;
+import keyring.server.main.proto.service.Password;
 
 public class KeyOperationsClient implements KeyOperationsInterface {
   @ContextualEntityManager private EntityManager entityManager;

@@ -1,4 +1,4 @@
-package server.main.keyvalue;
+package keyring.server.main.keyvalue;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,6 +9,8 @@ import com.google.gson.Gson;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import keyring.server.main.Chronometry;
+import keyring.server.main.Cryptography;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,8 +23,6 @@ import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import server.main.Chronometry;
-import server.main.Cryptography;
 
 @ExtendWith(MockitoExtension.class)
 @Testcontainers
@@ -56,8 +56,7 @@ class KeyValueClientTest {
     String reply = keyValueClient.createSession(new UserPointer().setIdentifier(0L));
 
     assertEquals(identifier, reply);
-    assertEquals(
-        0L, keyValueClient.touchSession(identifier).get().getIdentifier());
+    assertEquals(0L, keyValueClient.touchSession(identifier).get().getIdentifier());
   }
 
   @Test
@@ -79,8 +78,7 @@ class KeyValueClientTest {
   }
 
   @Test
-  void touchSession_findsIdentifier_updatesExpirationTime()
-      throws Exception {
+  void touchSession_findsIdentifier_updatesExpirationTime() throws Exception {
     try (Jedis jedis = jedisPool.getResource()) {
       String identifier = generateUniqueIdentifier();
       when(mockCryptography.generateTts()).thenReturn(identifier);

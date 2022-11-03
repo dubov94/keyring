@@ -1,20 +1,20 @@
-package server.main;
+package keyring.server.main;
 
 import dagger.BindsInstance;
 import dagger.Component;
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
-import server.main.geolocation.GeolocationModule;
-import server.main.interceptors.AgentInterceptor;
-import server.main.interceptors.SessionAccessor;
-import server.main.interceptors.SessionInterceptor;
-import server.main.interceptors.VersionInterceptor;
-import server.main.keyvalue.KeyValueModule;
-import server.main.services.AdministrationService;
-import server.main.services.AuthenticationService;
-import server.main.storage.AccountOperationsInterface;
-import server.main.storage.StorageModule;
-import server.main.templates.TemplatesModule;
+import keyring.server.main.geolocation.GeolocationModule;
+import keyring.server.main.interceptors.AgentInterceptor;
+import keyring.server.main.interceptors.SessionAccessor;
+import keyring.server.main.interceptors.SessionInterceptor;
+import keyring.server.main.interceptors.VersionInterceptor;
+import keyring.server.main.keyvalue.KeyValueModule;
+import keyring.server.main.services.AdministrationService;
+import keyring.server.main.services.AuthenticationService;
+import keyring.server.main.storage.AccountOperationsInterface;
+import keyring.server.main.storage.StorageModule;
+import keyring.server.main.templates.TemplatesModule;
 
 @Component(
     modules = {

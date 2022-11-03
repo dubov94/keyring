@@ -1,16 +1,16 @@
-package server.main.keyvalue;
+package keyring.server.main.keyvalue;
 
 import com.google.common.collect.ImmutableSet;
 import dagger.Module;
 import dagger.Provides;
 import java.net.URI;
 import javax.inject.Singleton;
+import keyring.server.main.Environment;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.Pool;
-import server.main.Environment;
 
 @Module
 public class KeyValueModule {

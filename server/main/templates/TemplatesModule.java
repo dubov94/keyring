@@ -1,4 +1,4 @@
-package server.main.templates;
+package keyring.server.main.templates;
 
 import dagger.Module;
 import dagger.Provides;

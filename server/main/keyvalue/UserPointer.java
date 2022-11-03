@@ -1,8 +1,7 @@
-package server.main.keyvalue;
-
-import server.main.entities.User;
+package keyring.server.main.keyvalue;
 
 import java.time.Instant;
+import keyring.server.main.entities.User;
 
 public class UserPointer {
   private long identifier;

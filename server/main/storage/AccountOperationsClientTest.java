@@ -1,9 +1,9 @@
-package server.main.storage;
+package keyring.server.main.storage;
 
 import static java.util.stream.Collectors.toList;
+import static keyring.server.main.storage.AccountOperationsInterface.NudgeStatus;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static server.main.storage.AccountOperationsInterface.NudgeStatus;
 
 import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple2;
@@ -12,6 +12,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.Persistence;
+import keyring.server.main.Chronometry;
+import keyring.server.main.aspects.Annotations.WithEntityManager;
+import keyring.server.main.aspects.StorageManagerAspect;
+import keyring.server.main.entities.Key;
+import keyring.server.main.entities.MailToken;
+import keyring.server.main.entities.OtpParams;
+import keyring.server.main.entities.Session;
+import keyring.server.main.entities.User;
+import keyring.server.main.proto.service.KeyAttrs;
+import keyring.server.main.proto.service.KeyPatch;
+import keyring.server.main.proto.service.Password;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,17 +30,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import server.main.Chronometry;
-import server.main.aspects.Annotations.WithEntityManager;
-import server.main.aspects.StorageManagerAspect;
-import server.main.entities.Key;
-import server.main.entities.MailToken;
-import server.main.entities.OtpParams;
-import server.main.entities.Session;
-import server.main.entities.User;
-import server.main.proto.service.KeyAttrs;
-import server.main.proto.service.KeyPatch;
-import server.main.proto.service.Password;
 
 @ExtendWith(MockitoExtension.class)
 class AccountOperationsClientTest {

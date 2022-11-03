@@ -1,9 +1,9 @@
-package server.janitor;
+package keyring.server.janitor;
 
 import com.beust.jcommander.JCommander;
 import com.google.common.collect.ImmutableList;
+import keyring.server.main.aspects.StorageManagerAspect;
 import org.aspectj.lang.Aspects;
-import server.main.aspects.StorageManagerAspect;
 
 final class Janitor {
   private AppComponent appComponent;

@@ -1,4 +1,4 @@
-package server.janitor;
+package keyring.server.janitor;
 
 import com.beust.jcommander.Parameter;
 

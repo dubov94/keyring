@@ -1,4 +1,4 @@
-package server.main;
+package keyring.server.main;
 
 import java.sql.Timestamp;
 import java.time.Instant;

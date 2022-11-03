@@ -1,4 +1,4 @@
-package server.main.entities;
+package keyring.server.main.entities;
 
 import javax.persistence.*;
 import org.hibernate.annotations.OnDelete;

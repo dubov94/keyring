@@ -1,10 +1,10 @@
-package server.main.interceptors;
+package keyring.server.main.interceptors;
 
 import io.grpc.*;
 import java.util.Optional;
 import javax.inject.Inject;
-import server.main.keyvalue.KeyValueClient;
-import server.main.keyvalue.UserPointer;
+import keyring.server.main.keyvalue.KeyValueClient;
+import keyring.server.main.keyvalue.UserPointer;
 
 public class SessionInterceptor implements ServerInterceptor {
   private KeyValueClient keyValueClient;
@@ -20,8 +20,7 @@ public class SessionInterceptor implements ServerInterceptor {
     Context context = Context.current();
     String sessionToken = metadata.get(SessionAccessor.METADATA_SESSION_TOKEN_KEY);
     if (sessionToken != null) {
-      Optional<UserPointer> maybeUserPointer =
-          keyValueClient.touchSession(sessionToken);
+      Optional<UserPointer> maybeUserPointer = keyValueClient.touchSession(sessionToken);
       if (maybeUserPointer.isPresent()) {
         return Contexts.interceptCall(
             Context.current()

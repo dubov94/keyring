@@ -1,4 +1,4 @@
-package server.main.aspects;
+package keyring.server.main.aspects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
@@ -9,6 +9,10 @@ import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
+import keyring.server.main.aspects.Annotations.ValidateUser;
+import keyring.server.main.entities.User;
+import keyring.server.main.interceptors.SessionAccessor;
+import keyring.server.main.storage.AccountOperationsInterface;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,10 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import server.main.aspects.Annotations.ValidateUser;
-import server.main.entities.User;
-import server.main.interceptors.SessionAccessor;
-import server.main.storage.AccountOperationsInterface;
 
 @ExtendWith(MockitoExtension.class)
 class ValidateUserAspectTest {

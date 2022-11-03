@@ -1,4 +1,4 @@
-package server.main.storage;
+package keyring.server.main.storage;
 
 import java.util.List;
 import javax.persistence.EntityManager;

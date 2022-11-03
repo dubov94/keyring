@@ -1,4 +1,4 @@
-package server.janitor.tasks;
+package keyring.server.janitor.tasks;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.google.common.collect.ImmutableList;
 import java.util.UUID;
 import javax.persistence.*;
+import keyring.server.main.aspects.StorageManagerAspect;
+import keyring.server.main.entities.Key;
+import keyring.server.main.entities.User;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import server.main.aspects.StorageManagerAspect;
-import server.main.entities.Key;
-import server.main.entities.User;
 
 final class DeletedUsersTest {
   private static final EntityManagerFactory entityManagerFactory =

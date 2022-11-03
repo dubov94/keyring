@@ -1,4 +1,4 @@
-package server.janitor;
+package keyring.server.janitor;
 
 import com.google.common.collect.ImmutableMap;
 import dagger.Module;
@@ -6,8 +6,8 @@ import dagger.Provides;
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import server.main.Arithmetic;
-import server.main.Chronometry;
+import keyring.server.main.Arithmetic;
+import keyring.server.main.Chronometry;
 
 @Module
 class AppModule {

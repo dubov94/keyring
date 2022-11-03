@@ -1,4 +1,4 @@
-package server.main.entities;
+package keyring.server.main.entities;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Utf8;

@@ -1,11 +1,11 @@
-package server.main.services;
+package keyring.server.main.services;
 
+import static keyring.server.main.storage.AccountOperationsInterface.NudgeStatus;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static server.main.storage.AccountOperationsInterface.NudgeStatus;
 
 import com.google.common.collect.ImmutableList;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
@@ -22,6 +22,22 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import keyring.server.main.Chronometry;
+import keyring.server.main.Cryptography;
+import keyring.server.main.MailClient;
+import keyring.server.main.aspects.StorageManagerAspect;
+import keyring.server.main.aspects.ValidateUserAspect;
+import keyring.server.main.entities.MailToken;
+import keyring.server.main.entities.OtpParams;
+import keyring.server.main.entities.OtpToken;
+import keyring.server.main.entities.Session;
+import keyring.server.main.entities.User;
+import keyring.server.main.geolocation.GeolocationServiceInterface;
+import keyring.server.main.interceptors.SessionAccessor;
+import keyring.server.main.keyvalue.KeyValueClient;
+import keyring.server.main.proto.service.*;
+import keyring.server.main.storage.AccountOperationsInterface;
+import keyring.server.main.storage.KeyOperationsInterface;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,22 +45,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import server.main.Chronometry;
-import server.main.Cryptography;
-import server.main.MailClient;
-import server.main.aspects.StorageManagerAspect;
-import server.main.aspects.ValidateUserAspect;
-import server.main.entities.MailToken;
-import server.main.entities.OtpParams;
-import server.main.entities.OtpToken;
-import server.main.entities.Session;
-import server.main.entities.User;
-import server.main.geolocation.GeolocationServiceInterface;
-import server.main.interceptors.SessionAccessor;
-import server.main.keyvalue.KeyValueClient;
-import server.main.proto.service.*;
-import server.main.storage.AccountOperationsInterface;
-import server.main.storage.KeyOperationsInterface;
 
 @ExtendWith(MockitoExtension.class)
 class AdministrationServiceTest {

@@ -1,4 +1,4 @@
-package server.main;
+package keyring.server.main;
 
 import com.beust.jcommander.JCommander;
 import io.grpc.Server;
@@ -6,9 +6,9 @@ import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
 import java.io.IOException;
 import java.util.logging.Logger;
+import keyring.server.main.aspects.StorageManagerAspect;
+import keyring.server.main.aspects.ValidateUserAspect;
 import org.aspectj.lang.Aspects;
-import server.main.aspects.StorageManagerAspect;
-import server.main.aspects.ValidateUserAspect;
 
 class Launcher {
   private static final Logger logger = Logger.getLogger(Launcher.class.getName());

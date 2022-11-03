@@ -1,4 +1,4 @@
-package server.main;
+package keyring.server.main;
 
 public class Arithmetic {
   public int pow(int base, int power) {

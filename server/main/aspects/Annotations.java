@@ -1,10 +1,10 @@
-package server.main.aspects;
+package keyring.server.main.aspects;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import server.main.entities.User;
+import keyring.server.main.entities.User;
 
 public class Annotations {
   @Retention(RetentionPolicy.RUNTIME)

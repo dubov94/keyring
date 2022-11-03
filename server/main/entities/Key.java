@@ -1,4 +1,4 @@
-package server.main.entities;
+package keyring.server.main.entities;
 
 import com.google.common.collect.ImmutableList;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import javax.persistence.*;
+import keyring.server.main.proto.service.KeyAttrs;
+import keyring.server.main.proto.service.KeyProto;
+import keyring.server.main.proto.service.Password;
 import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,9 +17,6 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
-import server.main.proto.service.KeyAttrs;
-import server.main.proto.service.KeyProto;
-import server.main.proto.service.Password;
 
 @Entity
 @Table(name = "keys")

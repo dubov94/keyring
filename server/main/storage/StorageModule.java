@@ -1,4 +1,4 @@
-package server.main.storage;
+package keyring.server.main.storage;
 
 import com.google.common.collect.ImmutableMap;
 import dagger.Module;
@@ -6,8 +6,8 @@ import dagger.Provides;
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import server.main.Chronometry;
-import server.main.Environment;
+import keyring.server.main.Chronometry;
+import keyring.server.main.Environment;
 
 @Module
 public class StorageModule {

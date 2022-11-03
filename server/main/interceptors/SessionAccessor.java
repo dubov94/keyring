@@ -1,8 +1,8 @@
-package server.main.interceptors;
+package keyring.server.main.interceptors;
 
 import io.grpc.Context;
 import io.grpc.Metadata;
-import server.main.keyvalue.UserPointer;
+import keyring.server.main.keyvalue.UserPointer;
 
 public class SessionAccessor {
   static final Metadata.Key<String> METADATA_SESSION_TOKEN_KEY =

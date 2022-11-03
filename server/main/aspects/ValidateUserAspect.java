@@ -1,17 +1,17 @@
-package server.main.aspects;
+package keyring.server.main.aspects;
 
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.util.Arrays;
 import java.util.Optional;
+import keyring.server.main.aspects.Annotations.ValidateUser;
+import keyring.server.main.entities.User;
+import keyring.server.main.interceptors.SessionAccessor;
+import keyring.server.main.storage.AccountOperationsInterface;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclarePrecedence;
-import server.main.aspects.Annotations.ValidateUser;
-import server.main.entities.User;
-import server.main.interceptors.SessionAccessor;
-import server.main.storage.AccountOperationsInterface;
 
 @Aspect
 @DeclarePrecedence("StorageManagerAspect, ValidateUserAspect")

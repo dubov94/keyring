@@ -1,4 +1,4 @@
-package server.main.entities;
+package keyring.server.main.entities;
 
 import com.google.common.base.Preconditions;
 import java.sql.Timestamp;

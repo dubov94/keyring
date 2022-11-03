@@ -1,4 +1,4 @@
-package server.main.templates;
+package keyring.server.main.templates;
 
 interface TemplateRendererFactory {
   TemplateRenderer newRenderer();

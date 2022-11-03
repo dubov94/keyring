@@ -1,4 +1,4 @@
-package server.main.interceptors;
+package keyring.server.main.interceptors;
 
 import io.grpc.*;
 

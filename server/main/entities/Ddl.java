@@ -1,4 +1,4 @@
-package server.main.entities;
+package keyring.server.main.entities;
 
 import java.util.EnumSet;
 import org.hibernate.boot.Metadata;

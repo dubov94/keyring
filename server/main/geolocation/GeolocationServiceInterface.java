@@ -1,6 +1,6 @@
-package server.main.geolocation;
+package keyring.server.main.geolocation;
 
-import server.main.proto.service.Geolocation;
+import keyring.server.main.proto.service.Geolocation;
 
 public interface GeolocationServiceInterface {
   Geolocation getIpInfo(String ip);

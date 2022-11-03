@@ -1,4 +1,4 @@
-package server.main;
+package keyring.server.main;
 
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;

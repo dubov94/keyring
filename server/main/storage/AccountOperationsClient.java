@@ -1,7 +1,7 @@
-package server.main.storage;
+package keyring.server.main.storage;
 
 import static java.util.stream.Collectors.toMap;
-import static server.main.storage.AccountOperationsInterface.NudgeStatus;
+import static keyring.server.main.storage.AccountOperationsInterface.NudgeStatus;
 
 import com.google.common.collect.ImmutableMap;
 import io.vavr.Tuple;
@@ -17,14 +17,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import server.main.Chronometry;
-import server.main.aspects.Annotations.ContextualEntityManager;
-import server.main.aspects.Annotations.LockEntity;
-import server.main.aspects.Annotations.WithEntityTransaction;
-import server.main.entities.*;
-import server.main.proto.service.FeatureType;
-import server.main.proto.service.KeyPatch;
-import server.main.proto.service.Password;
+import keyring.server.main.Chronometry;
+import keyring.server.main.aspects.Annotations.ContextualEntityManager;
+import keyring.server.main.aspects.Annotations.LockEntity;
+import keyring.server.main.aspects.Annotations.WithEntityTransaction;
+import keyring.server.main.entities.*;
+import keyring.server.main.proto.service.FeatureType;
+import keyring.server.main.proto.service.KeyPatch;
+import keyring.server.main.proto.service.Password;
 
 public class AccountOperationsClient implements AccountOperationsInterface {
   private static final int INITIAL_SPARE_ATTEMPTS = 5;

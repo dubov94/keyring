@@ -1,8 +1,8 @@
-package server.main.services;
+package keyring.server.main.services;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.*;
-import static server.main.storage.AccountOperationsInterface.NudgeStatus;
+import static keyring.server.main.storage.AccountOperationsInterface.NudgeStatus;
 
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
@@ -15,25 +15,25 @@ import io.vavr.control.Either;
 import java.util.*;
 import java.util.stream.Stream;
 import javax.inject.Inject;
+import keyring.server.main.Chronometry;
+import keyring.server.main.Cryptography;
+import keyring.server.main.MailClient;
+import keyring.server.main.aspects.Annotations.ValidateUser;
+import keyring.server.main.aspects.Annotations.WithEntityManager;
+import keyring.server.main.entities.Key;
+import keyring.server.main.entities.MailToken;
+import keyring.server.main.entities.OtpParams;
+import keyring.server.main.entities.OtpToken;
+import keyring.server.main.entities.Session;
+import keyring.server.main.entities.User;
+import keyring.server.main.geolocation.GeolocationServiceInterface;
+import keyring.server.main.interceptors.SessionAccessor;
+import keyring.server.main.keyvalue.KeyValueClient;
+import keyring.server.main.keyvalue.UserPointer;
+import keyring.server.main.proto.service.*;
+import keyring.server.main.storage.AccountOperationsInterface;
+import keyring.server.main.storage.KeyOperationsInterface;
 import org.apache.commons.validator.routines.EmailValidator;
-import server.main.Chronometry;
-import server.main.Cryptography;
-import server.main.MailClient;
-import server.main.aspects.Annotations.ValidateUser;
-import server.main.aspects.Annotations.WithEntityManager;
-import server.main.entities.Key;
-import server.main.entities.MailToken;
-import server.main.entities.OtpParams;
-import server.main.entities.OtpToken;
-import server.main.entities.Session;
-import server.main.entities.User;
-import server.main.geolocation.GeolocationServiceInterface;
-import server.main.interceptors.SessionAccessor;
-import server.main.keyvalue.KeyValueClient;
-import server.main.keyvalue.UserPointer;
-import server.main.proto.service.*;
-import server.main.storage.AccountOperationsInterface;
-import server.main.storage.KeyOperationsInterface;
 
 public class AdministrationService extends AdministrationGrpc.AdministrationImplBase {
   private KeyOperationsInterface keyOperationsInterface;

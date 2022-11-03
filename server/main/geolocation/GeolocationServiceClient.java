@@ -1,9 +1,9 @@
-package server.main.geolocation;
+package keyring.server.main.geolocation;
 
-import server.main.proto.service.Geolocation;
-import server.main.proto.geoip.GeoIpServiceGrpc;
-import server.main.proto.geoip.GetIpInfoRequest;
-import server.main.proto.geoip.GetIpInfoResponse;
+import keyring.server.main.proto.geoip.GeoIpServiceGrpc;
+import keyring.server.main.proto.geoip.GetIpInfoRequest;
+import keyring.server.main.proto.geoip.GetIpInfoResponse;
+import keyring.server.main.proto.service.Geolocation;
 
 class GeolocationServiceClient implements GeolocationServiceInterface {
   private GeoIpServiceGrpc.GeoIpServiceBlockingStub stub;

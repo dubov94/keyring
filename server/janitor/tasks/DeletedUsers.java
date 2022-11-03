@@ -1,15 +1,15 @@
-package server.janitor.tasks;
+package keyring.server.janitor.tasks;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.Root;
-import server.main.aspects.Annotations.ContextualEntityManager;
-import server.main.aspects.Annotations.WithEntityManager;
-import server.main.aspects.Annotations.WithEntityTransaction;
-import server.main.entities.User;
-import server.main.entities.User_;
+import keyring.server.main.aspects.Annotations.ContextualEntityManager;
+import keyring.server.main.aspects.Annotations.WithEntityManager;
+import keyring.server.main.aspects.Annotations.WithEntityTransaction;
+import keyring.server.main.entities.User;
+import keyring.server.main.entities.User_;
 
 public final class DeletedUsers implements Runnable {
   @ContextualEntityManager private EntityManager entityManager;

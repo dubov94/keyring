@@ -1,4 +1,4 @@
-package server.main.services;
+package keyring.server.main.services;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -10,25 +10,25 @@ import io.vavr.Tuple;
 import java.util.Optional;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import keyring.server.main.Cryptography;
+import keyring.server.main.MailClient;
+import keyring.server.main.aspects.StorageManagerAspect;
+import keyring.server.main.entities.FeaturePrompts;
+import keyring.server.main.entities.MailToken;
+import keyring.server.main.entities.OtpToken;
+import keyring.server.main.entities.User;
+import keyring.server.main.interceptors.AgentAccessor;
+import keyring.server.main.interceptors.VersionAccessor;
+import keyring.server.main.keyvalue.KeyValueClient;
+import keyring.server.main.proto.service.*;
+import keyring.server.main.storage.AccountOperationsInterface;
+import keyring.server.main.storage.KeyOperationsInterface;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import server.main.Cryptography;
-import server.main.MailClient;
-import server.main.aspects.StorageManagerAspect;
-import server.main.entities.FeaturePrompts;
-import server.main.entities.MailToken;
-import server.main.entities.OtpToken;
-import server.main.entities.User;
-import server.main.interceptors.AgentAccessor;
-import server.main.interceptors.VersionAccessor;
-import server.main.keyvalue.KeyValueClient;
-import server.main.proto.service.*;
-import server.main.storage.AccountOperationsInterface;
-import server.main.storage.KeyOperationsInterface;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {

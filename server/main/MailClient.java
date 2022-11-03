@@ -1,12 +1,12 @@
-package server.main;
+package keyring.server.main;
 
 import java.util.Optional;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import keyring.server.main.templates.MailVcBodyRendererFactory;
+import keyring.server.main.templates.MailVcHeadRendererFactory;
 import net.sargue.mailgun.Configuration;
 import net.sargue.mailgun.Mail;
-import server.main.templates.MailVcBodyRendererFactory;
-import server.main.templates.MailVcHeadRendererFactory;
 
 public class MailClient {
   private static final Logger logger = Logger.getLogger(MailClient.class.getName());

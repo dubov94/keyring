@@ -1,4 +1,4 @@
-package server.main.services;
+package keyring.server.main.services;
 
 import static java.util.stream.Collectors.toList;
 
@@ -13,22 +13,22 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.inject.Inject;
+import keyring.server.main.Cryptography;
+import keyring.server.main.MailClient;
+import keyring.server.main.aspects.Annotations.WithEntityManager;
+import keyring.server.main.entities.FeaturePrompts;
+import keyring.server.main.entities.Key;
+import keyring.server.main.entities.MailToken;
+import keyring.server.main.entities.OtpToken;
+import keyring.server.main.entities.User;
+import keyring.server.main.interceptors.AgentAccessor;
+import keyring.server.main.interceptors.VersionAccessor;
+import keyring.server.main.keyvalue.KeyValueClient;
+import keyring.server.main.keyvalue.UserPointer;
+import keyring.server.main.proto.service.*;
+import keyring.server.main.storage.AccountOperationsInterface;
+import keyring.server.main.storage.KeyOperationsInterface;
 import org.apache.commons.validator.routines.EmailValidator;
-import server.main.Cryptography;
-import server.main.MailClient;
-import server.main.aspects.Annotations.WithEntityManager;
-import server.main.entities.FeaturePrompts;
-import server.main.entities.Key;
-import server.main.entities.MailToken;
-import server.main.entities.OtpToken;
-import server.main.entities.User;
-import server.main.interceptors.AgentAccessor;
-import server.main.interceptors.VersionAccessor;
-import server.main.keyvalue.KeyValueClient;
-import server.main.keyvalue.UserPointer;
-import server.main.proto.service.*;
-import server.main.storage.AccountOperationsInterface;
-import server.main.storage.KeyOperationsInterface;
 
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
   private static FeaturePrompt datalessFeaturePrompt(FeatureType featureType) {

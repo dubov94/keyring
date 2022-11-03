@@ -1,18 +1,18 @@
-package server.main.storage;
+package keyring.server.main.storage;
 
 import io.vavr.Tuple2;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import server.main.entities.FeaturePrompts;
-import server.main.entities.MailToken;
-import server.main.entities.OtpParams;
-import server.main.entities.OtpToken;
-import server.main.entities.Session;
-import server.main.entities.User;
-import server.main.proto.service.FeatureType;
-import server.main.proto.service.KeyPatch;
+import keyring.server.main.entities.FeaturePrompts;
+import keyring.server.main.entities.MailToken;
+import keyring.server.main.entities.OtpParams;
+import keyring.server.main.entities.OtpToken;
+import keyring.server.main.entities.Session;
+import keyring.server.main.entities.User;
+import keyring.server.main.proto.service.FeatureType;
+import keyring.server.main.proto.service.KeyPatch;
 
 public interface AccountOperationsInterface {
   Tuple2<User, MailToken> createUser(

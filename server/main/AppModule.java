@@ -1,4 +1,4 @@
-package server.main;
+package keyring.server.main;
 
 import com.google.gson.Gson;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
@@ -8,11 +8,11 @@ import dagger.Provides;
 import io.paveldubov.turnstile.TurnstileValidator;
 import java.security.SecureRandom;
 import javax.inject.Singleton;
-import server.main.interceptors.AgentAccessor;
-import server.main.interceptors.AgentInterceptor;
-import server.main.interceptors.SessionAccessor;
-import server.main.interceptors.VersionAccessor;
-import server.main.interceptors.VersionInterceptor;
+import keyring.server.main.interceptors.AgentAccessor;
+import keyring.server.main.interceptors.AgentInterceptor;
+import keyring.server.main.interceptors.SessionAccessor;
+import keyring.server.main.interceptors.VersionAccessor;
+import keyring.server.main.interceptors.VersionInterceptor;
 
 @Module
 class AppModule {

@@ -1,4 +1,4 @@
-package server.main.storage;
+package keyring.server.main.storage;
 
 import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,18 +15,18 @@ import java.util.Random;
 import java.util.UUID;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import keyring.server.main.Arithmetic;
+import keyring.server.main.Chronometry;
+import keyring.server.main.aspects.Annotations.WithEntityManager;
+import keyring.server.main.aspects.StorageManagerAspect;
+import keyring.server.main.entities.Key;
+import keyring.server.main.proto.service.KeyAttrs;
+import keyring.server.main.proto.service.KeyPatch;
+import keyring.server.main.proto.service.Password;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import server.main.Arithmetic;
-import server.main.Chronometry;
-import server.main.aspects.Annotations.WithEntityManager;
-import server.main.aspects.StorageManagerAspect;
-import server.main.entities.Key;
-import server.main.proto.service.KeyAttrs;
-import server.main.proto.service.KeyPatch;
-import server.main.proto.service.Password;
 
 class KeyOperationsClientTest {
   private static final EntityManagerFactory entityManagerFactory =

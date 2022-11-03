@@ -1,16 +1,16 @@
-package server.main.keyvalue;
+package keyring.server.main.keyvalue;
 
 import com.google.gson.Gson;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
+import keyring.server.main.Chronometry;
+import keyring.server.main.Cryptography;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.Pool;
-import server.main.Chronometry;
-import server.main.Cryptography;
 
 public class KeyValueClient {
   private static final int SESSION_RELATIVE_DURATION_S = 10 * 60;

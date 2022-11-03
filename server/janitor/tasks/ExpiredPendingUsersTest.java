@@ -1,4 +1,4 @@
-package server.janitor.tasks;
+package keyring.server.janitor.tasks;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,6 +9,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import javax.persistence.*;
+import keyring.server.main.Chronometry;
+import keyring.server.main.aspects.StorageManagerAspect;
+import keyring.server.main.entities.User;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,9 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import server.main.Chronometry;
-import server.main.aspects.StorageManagerAspect;
-import server.main.entities.User;
 
 @ExtendWith(MockitoExtension.class)
 final class ExpiredPendingUsersTest {

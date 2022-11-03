@@ -1,4 +1,4 @@
-package server.main.entities;
+package keyring.server.main.entities;
 
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import java.sql.Timestamp;
