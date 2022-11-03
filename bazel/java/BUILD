@@ -31,3 +31,12 @@ genrule(
     outs = ["aspectjweaver.jar"],
     cmd = "cp $(execpath @org_aspectj_aspectjweaver//jar) $@",
 )
+
+java_plugin(
+    name = "auto_value",
+    generates_api = True,
+    processor_class = "com.google.auto.value.processor.AutoValueProcessor",
+    deps = [
+        "@maven//:com_google_auto_value_auto_value",
+    ],
+)

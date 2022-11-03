@@ -35,6 +35,11 @@ spec:
             secretKeyRef:
               name: redis
               key: redis-password
+        - name: TURNSTILE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: captcha-credentials
+              key: turnstile-secret-key
       initContainers:
       - name: liquibase
         image: dubov94/keyring-liquibase

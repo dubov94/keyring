@@ -74,4 +74,8 @@ public class Environment {
   public String getRedisPassword() {
     return getVariable("REDIS_PASSWORD");
   }
+
+  public String getTurnstileSecretKey() {
+    return getVariable("TURNSTILE_SECRET_KEY");
+  }
 }

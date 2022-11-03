@@ -106,9 +106,13 @@ maven_install(
     artifacts = [
         "com.beust:jcommander:1.78",
         "com.google.code.gson:gson:2.8.2",
+        "com.google.auto.value:auto-value:1.10",
+        "com.google.auto.value:auto-value-annotations:1.10",
         "com.google.dagger:dagger:2.14.1",
         "com.google.dagger:dagger-compiler:2.14.1",
         "com.google.guava:guava:24.0-jre",
+        "com.google.http-client:google-http-client:1.42.3",
+        "com.google.http-client:google-http-client-gson:1.42.3",
         "com.vladmihalcea:hibernate-types-52:2.11.1",
         "com.warrenstrange:googleauth:1.4.0",
         "commons-io:commons-io:2.11.0",

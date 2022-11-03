@@ -5,6 +5,7 @@ import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import dagger.Module;
 import dagger.Provides;
+import io.paveldubov.turnstile.TurnstileValidator;
 import java.security.SecureRandom;
 import javax.inject.Singleton;
 import server.main.interceptors.AgentAccessor;
@@ -75,5 +76,15 @@ class AppModule {
   @Singleton
   static IGoogleAuthenticator provideGoogleAuthenticator() {
     return new GoogleAuthenticator();
+  }
+
+  @Provides
+  @Singleton
+  static TurnstileValidator provideTurnstileValidator(Environment environment) {
+    // https://developers.cloudflare.com/turnstile/frequently-asked-questions/#are-there-sitekeys-and-secret-keys-that-can-be-used-for-testing
+    return TurnstileValidator.newDefaultInstance(
+        environment.isProduction()
+            ? environment.getTurnstileSecretKey()
+            : "1x0000000000000000000000000000000AA");
   }
 }
