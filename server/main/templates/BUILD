@@ -5,7 +5,7 @@ java_library(
 
 java_library(
     name = "mail_verification_code_body_renderer_factory",
-    srcs = ["MailVerificationCodeBodyRendererFactory.java"],
+    srcs = ["MailVcBodyRendererFactory.java"],
     visibility = ["//server:internal"],
     deps = [
         ":template_renderer_factory",
@@ -15,7 +15,7 @@ java_library(
 
 java_library(
     name = "mail_verification_code_head_renderer_factory",
-    srcs = ["MailVerificationCodeHeadRendererFactory.java"],
+    srcs = ["MailVcHeadRendererFactory.java"],
     visibility = ["//server:internal"],
     deps = [
         ":template_renderer_factory",

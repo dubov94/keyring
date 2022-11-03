@@ -86,7 +86,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     String code = cryptography.generateUacs();
     MailToken mailToken = accountOperationsInterface.createMailToken(userIdentifier, mail, code);
-    mailClient.sendMailVerificationCode(mail, code);
+    mailClient.sendMailVc(mail, code);
     return Either.right(builder.setTokenId(mailToken.getIdentifier()).build());
   }
 

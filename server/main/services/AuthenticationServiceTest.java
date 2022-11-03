@@ -101,7 +101,7 @@ class AuthenticationServiceTest {
         .createUser("username", "salt", "hash", "mail@example.com", "0");
     verify(mockAccountOperationsInterface)
         .createSession(1L, "identifier", "127.0.0.1", "Chrome/0.0.0", "version");
-    verify(mockMailClient).sendMailVerificationCode("mail@example.com", "0");
+    verify(mockMailClient).sendMailVc("mail@example.com", "0");
     verify(mockStreamObserver)
         .onNext(
             RegisterResponse.newBuilder().setSessionKey("identifier").setMailTokenId(2L).build());

@@ -100,7 +100,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         agentAccessor.getIpAddress(),
         agentAccessor.getUserAgent(),
         versionAccessor.getVersion());
-    mailClient.sendMailVerificationCode(mail, code);
+    mailClient.sendMailVc(mail, code);
     return Either.right(
         builder.setSessionKey(sessionKey).setMailTokenId(entities._2.getIdentifier()).build());
   }

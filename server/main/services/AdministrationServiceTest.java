@@ -249,7 +249,7 @@ class AdministrationServiceTest {
         AcquireMailTokenRequest.newBuilder().setDigest("digest").setMail("user@mail.com").build(),
         mockStreamObserver);
 
-    verify(mockMailClient).sendMailVerificationCode("user@mail.com", "17");
+    verify(mockMailClient).sendMailVc("user@mail.com", "17");
     verify(mockStreamObserver).onNext(AcquireMailTokenResponse.newBuilder().setTokenId(1L).build());
     verify(mockStreamObserver).onCompleted();
   }

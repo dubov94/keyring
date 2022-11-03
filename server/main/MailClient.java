@@ -5,21 +5,21 @@ import java.util.logging.Logger;
 import javax.inject.Inject;
 import net.sargue.mailgun.Configuration;
 import net.sargue.mailgun.Mail;
-import server.main.templates.MailVerificationCodeBodyRendererFactory;
-import server.main.templates.MailVerificationCodeHeadRendererFactory;
+import server.main.templates.MailVcBodyRendererFactory;
+import server.main.templates.MailVcHeadRendererFactory;
 
 public class MailClient {
   private static final Logger logger = Logger.getLogger(MailClient.class.getName());
   private Environment environment;
   private Optional<Configuration> maybeConfiguration;
-  private MailVerificationCodeHeadRendererFactory mailVerificationCodeHeadRendererFactory;
-  private MailVerificationCodeBodyRendererFactory mailVerificationCodeBodyRendererFactory;
+  private MailVcHeadRendererFactory mailVcHeadRendererFactory;
+  private MailVcBodyRendererFactory mailVcBodyRendererFactory;
 
   @Inject
   MailClient(
       Environment environment,
-      MailVerificationCodeHeadRendererFactory mailVerificationCodeHeadRendererFactory,
-      MailVerificationCodeBodyRendererFactory mailVerificationCodeBodyRendererFactory) {
+      MailVcHeadRendererFactory mailVcHeadRendererFactory,
+      MailVcBodyRendererFactory mailVcBodyRendererFactory) {
     this.environment = environment;
     maybeConfiguration =
         environment.isProduction()
@@ -29,18 +29,18 @@ public class MailClient {
                     .domain(environment.getMailgunDomain())
                     .apiKey(environment.getMailgunApiKey()))
             : Optional.empty();
-    this.mailVerificationCodeHeadRendererFactory = mailVerificationCodeHeadRendererFactory;
-    this.mailVerificationCodeBodyRendererFactory = mailVerificationCodeBodyRendererFactory;
+    this.mailVcHeadRendererFactory = mailVcHeadRendererFactory;
+    this.mailVcBodyRendererFactory = mailVcBodyRendererFactory;
   }
 
-  public void sendMailVerificationCode(String address, String code) {
+  public void sendMailVc(String address, String code) {
     if (!maybeConfiguration.isPresent()) {
-      logger.info(String.format("sendMailVerificationCode: %s", code));
+      logger.info(String.format("sendMailVc: %s", code));
       return;
     }
 
-    String head = mailVerificationCodeHeadRendererFactory.newRenderer().setCode(code).render();
-    String body = mailVerificationCodeBodyRendererFactory.newRenderer().setCode(code).render();
+    String head = mailVcHeadRendererFactory.newRenderer().setCode(code).render();
+    String body = mailVcBodyRendererFactory.newRenderer().setCode(code).render();
     Mail.using(maybeConfiguration.get())
         .from(environment.getEmailFromName(), environment.getEmailFromAddress())
         .to(address)
