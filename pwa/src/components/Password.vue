@@ -22,7 +22,7 @@
         <v-divider></v-divider>
       </template>
       <v-card-actions>
-        <v-btn text :disabled="isValueEmpty" @click="copyText(baselinePassword.value)">
+        <v-btn text :disabled="isValueEmpty" @click="copyText(reprPassword.value)">
           Copy
         </v-btn>
         <v-btn icon :disabled="isValueEmpty" @click="toggleReveal">
@@ -63,15 +63,15 @@
       <div v-if="reveal">
         <v-divider></v-divider>
         <v-card-text>
-          <pre>{{ baselinePassword.value }}</pre>
+          <pre>{{ reprPassword.value }}</pre>
         </v-card-text>
       </div>
     </v-expand-transition>
     <v-expand-transition>
-      <div v-if="!edited && baselinePassword.tags.length > 0">
+      <div v-if="!edited && reprPassword.tags.length > 0">
         <v-divider></v-divider>
         <div class="pa-4">
-          <v-chip v-for="(label, index) in baselinePassword.tags" :key="index"
+          <v-chip v-for="(label, index) in reprPassword.tags" :key="index"
             class="ma-1 elevation-3" outlined @click="copyText(label)">
             <span class="text-truncate">{{ label }}</span>
           </v-chip>
@@ -144,7 +144,12 @@ import {
   cliqueObliterationSignal,
   extractPassword
 } from '@/redux/modules/user/keys/actions'
-import { Clique, getCliqueRepr, getFrontShadow } from '@/redux/modules/user/keys/selectors'
+import {
+  Clique,
+  getCliqueRepr,
+  getFrontShadow,
+  getCliqueRoot
+} from '@/redux/modules/user/keys/selectors'
 import StrengthScore from './StrengthScore.vue'
 
 const EMPTY_PASSWORD: DeepReadonly<Password> = { value: '', tags: [''] }
@@ -302,14 +307,20 @@ export default Vue.extend({
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
     },
-    baselinePassword (): DeepReadonly<Password> {
+    reprPassword (): DeepReadonly<Password> {
       return fn.pipe(
         getCliqueRepr(this.clique),
         option.fold(() => EMPTY_PASSWORD, extractPassword)
       )
     },
+    rootPassword (): DeepReadonly<Password> {
+      return fn.pipe(
+        getCliqueRoot(this.clique),
+        option.fold(() => EMPTY_PASSWORD, extractPassword)
+      )
+    },
     isValueEmpty (): boolean {
-      return this.baselinePassword.value.trim().length === 0
+      return this.reprPassword.value.trim().length === 0
     },
     autosavePrompt (): boolean {
       return this.clique.shadows.length > 0
@@ -373,7 +384,7 @@ export default Vue.extend({
       this.generator$.next()
     },
     save () {
-      if (isEqual(extractPassword(this.content), this.baselinePassword)) {
+      if (isEqual(extractPassword(this.content), this.rootPassword)) {
         this.cancel()
         return
       }
@@ -415,7 +426,7 @@ export default Vue.extend({
       ))
     },
     editBaseline () {
-      this.edit(this.baselinePassword)
+      this.edit(this.reprPassword)
     }
   }
 })
