@@ -68,7 +68,7 @@ woven_java_binary(
         # https://github.com/pgjdbc/pgjdbc/issues/986
         "--add-opens java.base/java.util=ALL-UNNAMED",
     ],
-    main_class = "server.janitor.Janitor",
+    main_class = "keyring.server.janitor.Janitor",
     resources = ["//server/java/META-INF:persistence.xml"],
     visibility = [
         "//:root",

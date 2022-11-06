@@ -136,7 +136,7 @@ woven_java_binary(
         # https://github.com/pgjdbc/pgjdbc/issues/986
         "--add-opens java.base/java.util=ALL-UNNAMED",
     ],
-    main_class = "server.main.Launcher",
+    main_class = "keyring.server.main.Launcher",
     resources = [
         "//server/java/META-INF:persistence.xml",
         "//server/main/java/templates:mail_verification_code.body.twig",
