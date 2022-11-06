@@ -51,6 +51,8 @@ const maxAgeInstant = () => {
   return Date.now() - MAX_AGE_S * 1000;
 };
 
+const isEmergency = true
+
 const isCacheObsolete = async () => {
   const entries = await applicationDatabase
     .swEvents.reverse().sortBy('timestamp');
@@ -74,9 +76,9 @@ const writeSwEvent = async (eventName) => {
   });
 };
 
-const installHandler = async () => {
+const installHandler = async (forceReboot) => {
   await precacheController.install();
-  if (await isCacheObsolete()) {
+  if (forceReboot || await isCacheObsolete()) {
     // Always happens on the initial installation as `isCacheObsolete`
     // returns `true`.
     await scope.skipWaiting();
@@ -85,7 +87,7 @@ const installHandler = async () => {
 };
 
 scope.addEventListener('install', (event) => {
-  event.waitUntil(installHandler());
+  event.waitUntil(installHandler(isEmergency));
 });
 
 const isClientDependent = async (clientId) => {
@@ -128,10 +130,10 @@ const dropObsoleteIndependentClients = async () => {
   }));
 };
 
-const activateHandler = async () => {
+const activateHandler = async (forceReboot) => {
   await precacheController.activate();
   // Primarily for older versions that had an indefinite retention period.
-  if (await isCacheObsolete()) {
+  if (forceReboot || await isCacheObsolete()) {
     await reloadDependentClients();
   }
   await dropObsoleteSwEvents();
@@ -140,7 +142,7 @@ const activateHandler = async () => {
 };
 
 scope.addEventListener('activate', (event) => {
-  event.waitUntil(activateHandler());
+  event.waitUntil(activateHandler(isEmergency));
 });
 
 const isLatestVersion = async () => {
