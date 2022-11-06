@@ -3,14 +3,14 @@
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
     <persistence-unit name="production">
-        <class>server.main.entities.FeaturePrompts</class>
-        <class>server.main.entities.Key</class>
-        <class>server.main.entities.MailToken</class>
-        <class>server.main.entities.OtpParams</class>
-        <class>server.main.entities.OtpToken</class>
-        <class>server.main.entities.Session</class>
-        <class>server.main.entities.Tag</class>
-        <class>server.main.entities.User</class>
+        <class>keyring.server.main.entities.FeaturePrompts</class>
+        <class>keyring.server.main.entities.Key</class>
+        <class>keyring.server.main.entities.MailToken</class>
+        <class>keyring.server.main.entities.OtpParams</class>
+        <class>keyring.server.main.entities.OtpToken</class>
+        <class>keyring.server.main.entities.Session</class>
+        <class>keyring.server.main.entities.Tag</class>
+        <class>keyring.server.main.entities.User</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://postgres-postgresql-ha-pgpool/keyring"/>
@@ -25,14 +25,14 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="development">
-        <class>server.main.entities.FeaturePrompts</class>
-        <class>server.main.entities.Key</class>
-        <class>server.main.entities.MailToken</class>
-        <class>server.main.entities.OtpParams</class>
-        <class>server.main.entities.OtpToken</class>
-        <class>server.main.entities.Session</class>
-        <class>server.main.entities.Tag</class>
-        <class>server.main.entities.User</class>
+        <class>keyring.server.main.entities.FeaturePrompts</class>
+        <class>keyring.server.main.entities.Key</class>
+        <class>keyring.server.main.entities.MailToken</class>
+        <class>keyring.server.main.entities.OtpParams</class>
+        <class>keyring.server.main.entities.OtpToken</class>
+        <class>keyring.server.main.entities.Session</class>
+        <class>keyring.server.main.entities.Tag</class>
+        <class>keyring.server.main.entities.User</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/keyring"/>
@@ -43,14 +43,14 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="testing">
-        <class>server.main.entities.FeaturePrompts</class>
-        <class>server.main.entities.Key</class>
-        <class>server.main.entities.MailToken</class>
-        <class>server.main.entities.OtpParams</class>
-        <class>server.main.entities.OtpToken</class>
-        <class>server.main.entities.Session</class>
-        <class>server.main.entities.Tag</class>
-        <class>server.main.entities.User</class>
+        <class>keyring.server.main.entities.FeaturePrompts</class>
+        <class>keyring.server.main.entities.Key</class>
+        <class>keyring.server.main.entities.MailToken</class>
+        <class>keyring.server.main.entities.OtpParams</class>
+        <class>keyring.server.main.entities.OtpToken</class>
+        <class>keyring.server.main.entities.Session</class>
+        <class>keyring.server.main.entities.Tag</class>
+        <class>keyring.server.main.entities.User</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.testcontainers.jdbc.ContainerDatabaseDriver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:tc:postgresql:///keyring"/>

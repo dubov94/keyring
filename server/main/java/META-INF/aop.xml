@@ -1,11 +1,11 @@
 <aspectj>
     <aspects>
-        <aspect name="server.main.aspects.ValidateUserAspect"/>
-        <aspect name="server.main.aspects.StorageManagerAspect"/>
+        <aspect name="keyring.server.main.aspects.ValidateUserAspect"/>
+        <aspect name="keyring.server.main.aspects.StorageManagerAspect"/>
         <weaver>
-            <include within="server.main.aspects.*"/>
-            <include within="server.main.storage.*"/>
-            <include within="server.main.services.*"/>
+            <include within="keyring.server.main.aspects.*"/>
+            <include within="keyring.server.main.storage.*"/>
+            <include within="keyring.server.main.services.*"/>
         </weaver>
     </aspects>
 </aspectj>
