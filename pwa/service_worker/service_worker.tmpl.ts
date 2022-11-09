@@ -6,8 +6,12 @@ const scope = self as unknown as ServiceWorkerGlobalScope & {
 };
 
 enum SwEventType {
+  // Installation has completed.
   INSTALL = 'install',
+  // Activation has completed.
   ACTIVATE = 'activate',
+  // `isLatestVersion` has been actively verified
+  // on a navigation request.
   NAVIGATE = 'navigate'
 }
 
@@ -51,21 +55,44 @@ const maxAgeInstant = () => {
   return Date.now() - MAX_AGE_S * 1000;
 };
 
-const isEmergency = true
+type OptionalActiveSw = null | {
+  version: string;
+  checkTs: number;
+};
 
-const isCacheObsolete = async () => {
+const getActiveSw = async (): Promise<OptionalActiveSw> => {
   const entries = await applicationDatabase
     .swEvents.reverse().sortBy('timestamp');
   const activated = new Set();
   for (const entry of entries) {
     if (entry.event === SwEventType.NAVIGATE ||
         entry.event === SwEventType.INSTALL && activated.has(entry.version)) {
-      return entry.timestamp < maxAgeInstant();
+      return {
+        version: entry.version,
+        checkTs: entry.timestamp
+      };
     } else if (entry.event === SwEventType.ACTIVATE) {
       activated.add(entry.version);
     }
   }
-  return true;
+  return null;
+};
+
+const mustReboot = (activeSw: OptionalActiveSw) => {
+  if (activeSw === null) {
+    return false;
+  }
+  return [
+    // Fix @ 3daa909.
+    'v0.0.0-980-gd657789'
+  ].includes(activeSw.version);
+};
+
+const isCacheObsolete = (activeSw: OptionalActiveSw) => {
+  if (activeSw === null) {
+    return true;
+  }
+  return activeSw.checkTs < maxAgeInstant();
 };
 
 const writeSwEvent = async (eventName) => {
@@ -76,18 +103,19 @@ const writeSwEvent = async (eventName) => {
   });
 };
 
-const installHandler = async (forceReboot) => {
+const installHandler = async () => {
   await precacheController.install();
-  if (forceReboot || await isCacheObsolete()) {
-    // Always happens on the initial installation as `isCacheObsolete`
-    // returns `true`.
+  const activeSw = await getActiveSw();
+  if (mustReboot(activeSw) || isCacheObsolete(activeSw)) {
+    // Always happens on the initial installation as
+    // `isCacheObsolete` returns `true`.
     await scope.skipWaiting();
   }
   await writeSwEvent(SwEventType.INSTALL);
 };
 
 scope.addEventListener('install', (event) => {
-  event.waitUntil(installHandler(isEmergency));
+  event.waitUntil(installHandler());
 });
 
 const isClientDependent = async (clientId) => {
@@ -102,8 +130,12 @@ const isClientDependent = async (clientId) => {
 };
 
 const reloadDependentClients = async () => {
-  const windowClients = await scope.clients.matchAll({ type: 'window' });
-  // Do not block on `navigate` as it goes through the service worker.
+  const windowClients = await scope.clients.matchAll({
+    type: 'window',
+    includeUncontrolled: false
+  });
+  // Do not block on `navigate` as it goes through
+  // the service worker, which is being activated.
   windowClients.forEach(async (client) => {
     try {
       if (client.type === 'window' && await isClientDependent(client.id)) {
@@ -130,10 +162,12 @@ const dropObsoleteIndependentClients = async () => {
   }));
 };
 
-const activateHandler = async (forceReboot) => {
+const activateHandler = async () => {
   await precacheController.activate();
-  // Primarily for older versions that had an indefinite retention period.
-  if (forceReboot || await isCacheObsolete()) {
+  const activeSw = await getActiveSw();
+  // Checking `isCacheObsolete` for older versions
+  // that had an indefinite retention period.
+  if (mustReboot(activeSw) || isCacheObsolete(activeSw)) {
     await reloadDependentClients();
   }
   await dropObsoleteSwEvents();
@@ -142,7 +176,7 @@ const activateHandler = async (forceReboot) => {
 };
 
 scope.addEventListener('activate', (event) => {
-  event.waitUntil(activateHandler(isEmergency));
+  event.waitUntil(activateHandler());
 });
 
 const isLatestVersion = async () => {
@@ -157,6 +191,7 @@ const isLatestVersion = async () => {
 };
 
 const saveIndependentClient = async (clientId) => {
+  // `clientId` is universally unique.
   await applicationDatabase.independentClients.add({
     clientId: clientId
   });
@@ -165,7 +200,8 @@ const saveIndependentClient = async (clientId) => {
 const fetchHandler = async (event, isNavigationRequest, cacheKey) => {
   if (isNavigationRequest) {
     const isLatestPromise = isLatestVersion();
-    if (await isCacheObsolete() && !await isLatestPromise) {
+    const activeSw = await getActiveSw();
+    if (isCacheObsolete(activeSw) && !await isLatestPromise) {
       await saveIndependentClient(event.clientId);
       // Some of the assets may still come from the cache.
       return fetch(indexCacheKey);
