@@ -384,6 +384,7 @@ export default Vue.extend({
       this.generator$.next()
     },
     save () {
+      // `extractPassword` to omit Vue properties.
       if (isEqual(extractPassword(this.content), this.rootPassword)) {
         this.cancel()
         return
