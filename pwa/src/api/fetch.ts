@@ -1,12 +1,12 @@
 import { FetchAPI } from './definitions'
-import { readFlags } from '@/flags'
+import { getFlags } from '@/flags'
 import { CLIENT_VERSION_HEADER_NAME } from '@/headers'
 import camelcaseKeys from 'camelcase-keys'
 import snakecaseKeys from 'snakecase-keys'
 
 export const fetchFromApi: FetchAPI = async (url: string, init: any = {}): Promise<Response> => {
   const headers = {
-    [CLIENT_VERSION_HEADER_NAME]: readFlags().version,
+    [CLIENT_VERSION_HEADER_NAME]: getFlags().version,
     ...init.headers
   }
   const requestInit = { ...init, headers }

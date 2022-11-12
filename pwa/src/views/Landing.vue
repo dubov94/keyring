@@ -62,7 +62,7 @@
 import Vue, { VueConstructor } from 'vue'
 import trianglify from 'trianglify'
 import Page from '@/components/Page.vue'
-import { readFlags } from '@/flags'
+import { getFlags } from '@/flags'
 import { isAuthenticated } from '@/redux/modules/user/account/selectors'
 
 interface Mixins {
@@ -75,7 +75,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   data () {
     return {
-      version: readFlags().version
+      version: getFlags().version
     }
   },
   computed: {

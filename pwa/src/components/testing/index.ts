@@ -10,7 +10,7 @@ import { Store } from '@reduxjs/toolkit'
 import { RootState } from '@/redux/root_reducer'
 
 Vue.use(Vuetify)
-;(global as any).requestAnimationFrame = (callback: () => {}) => callback()
+;(globalThis as any).requestAnimationFrame = (callback: () => {}) => callback()
 
 export const setUpLocalVue = (): VueConstructor<Vue> => {
   const localVue = createLocalVue()

@@ -3,6 +3,7 @@ import { createStore, Store } from '@reduxjs/toolkit'
 import { mount, Wrapper } from '@vue/test-utils'
 import { expect } from 'chai'
 import { function as fn } from 'fp-ts'
+import 'reflect-metadata'
 import { EMPTY, Subject } from 'rxjs'
 import { container } from 'tsyringe'
 import VueRouter from 'vue-router'
@@ -12,8 +13,11 @@ import { register, registrationReset, registrationSignal } from '@/redux/modules
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { createRegistrationFlowResult } from '@/redux/testing/domain'
-import { PositiveFakeStrengthTestService } from '@/redux/testing/services'
+import { FAKE_FLAGS } from '@/redux/testing/flags'
+import { FakeTurnstileApi, PositiveFakeStrengthTestService } from '@/redux/testing/services'
+import { TURNSTILE_API_TOKEN } from '@/turnstile_di'
 import Register from './Register.vue'
+import { Flags, FLAGS_TOKEN } from '@/flags'
 
 describe('Register', () => {
   let store: Store<RootState, RootAction>
@@ -25,6 +29,12 @@ describe('Register', () => {
   beforeEach(() => {
     container.register<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN, {
       useValue: new PositiveFakeStrengthTestService()
+    })
+    container.register<Turnstile.Api>(TURNSTILE_API_TOKEN, {
+      useValue: new FakeTurnstileApi('widget', 'captchaToken')
+    })
+    container.register<Flags>(FLAGS_TOKEN, {
+      useValue: FAKE_FLAGS
     })
     const localVue = setUpLocalVue()
     localVue.use(VueRouter)
@@ -69,7 +79,8 @@ describe('Register', () => {
       register({
         username: 'username',
         password: 'password',
-        mail: 'mail@example.com'
+        mail: 'mail@example.com',
+        captchaToken: 'captchaToken'
       })
     ])
   })

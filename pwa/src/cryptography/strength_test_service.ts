@@ -1,3 +1,4 @@
+import { container } from 'tsyringe'
 import zxcvbn from 'zxcvbn'
 
 export const STRENGTH_TEST_SERVICE_TOKEN = 'StrengthTestService'
@@ -39,4 +40,8 @@ export class ZxcvbnService implements StrengthTestService {
       color: getColorByScore(score)
     }
   }
+}
+
+export const getStrengthTestService = () => {
+  return container.resolve<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN)
 }

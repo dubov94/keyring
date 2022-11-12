@@ -22,7 +22,7 @@
                     v-model="password" :dirty="$v.password.$dirty" :errors="passwordErrors"
                     @touch="$v.password.$touch()" @reset="$v.password.$reset()">
                   </form-text-field>
-                  <div class="password-strength">
+                  <div class="password-strength my-3">
                     <strength-score :color="assessment.color" :value="assessment.value">
                     </strength-score>
                     <div class="mt-2 text-body-2 text--secondary">
@@ -42,6 +42,9 @@
                     v-model="mail" :dirty="$v.mail.$dirty" :errors="mailErrors"
                     @touch="$v.mail.$touch()" @reset="$v.mail.$reset()">
                   </form-text-field>
+                  <div class="text-center mt-2">
+                    <div class="d-inline-block" ref="captcha"></div>
+                  </div>
                 </v-form>
               </v-card-text>
               <v-card-actions class="px-6">
@@ -69,17 +72,19 @@
 import { option, function as fn, map, eq } from 'fp-ts'
 import { takeUntil, filter } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
-import { container } from 'tsyringe'
 import Vue, { VueConstructor } from 'vue'
 import { email, required, sameAs } from 'vuelidate/lib/validators'
 import { ServiceRegisterResponseError } from '@/api/definitions'
 import Page from '@/components/Page.vue'
 import StrengthScore from '@/components/StrengthScore.vue'
 import { remoteDataValidator } from '@/components/form_validators'
-import { Score, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
+import { Score, getStrengthTestService } from '@/cryptography/strength_test_service'
+import { getFlags } from '@/flags'
 import { register, RegistrationFlowIndicator, registrationReset, registrationSignal } from '@/redux/modules/authn/actions'
 import { registration, Registration } from '@/redux/modules/authn/selectors'
+import { showToast } from '@/redux/modules/ui/toast/actions'
 import { isActionSuccess } from '@/redux/flow_signal'
+import { getTurnstileApi } from '@/turnstile_di'
 
 const usernameAvailableValidator = remoteDataValidator(ServiceRegisterResponseError.NAMETAKEN)
 
@@ -101,7 +106,8 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   data () {
     return {
-      strengthTestService: container.resolve<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN),
+      turnstileWidgetId: '',
+      turnstileToken: '',
       username: {
         value: '',
         frozen: false
@@ -132,7 +138,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   computed: {
     assessment (): Score {
-      return this.strengthTestService.score(this.password, [
+      return getStrengthTestService().score(this.password, [
         this.username.value,
         this.mail
       ])
@@ -179,20 +185,44 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.username.frozen = false
     },
     submit () {
-      if (!this.hasIndicatorMessage) {
-        this.$v.$touch()
-        if (!this.$v.$invalid) {
-          this.username.frozen = true
-          this.dispatch(register({
-            username: this.username.value,
-            password: this.password,
-            mail: this.mail
-          }))
-        }
+      if (this.hasIndicatorMessage) {
+        return
       }
+      this.$v.$touch()
+      if (this.$v.$invalid) {
+        return
+      }
+      if (this.turnstileToken === '') {
+        this.dispatch(showToast({
+          message: 'Please complete the CAPTCHA 🧮'
+        }))
+        return
+      }
+      this.username.frozen = true
+      this.dispatch(register({
+        username: this.username.value,
+        password: this.password,
+        mail: this.mail,
+        captchaToken: this.turnstileToken
+      }))
     }
   },
+  mounted () {
+    this.turnstileWidgetId = getTurnstileApi().render(this.$refs.captcha as HTMLElement, {
+      sitekey: getFlags().turnstileSiteKey,
+      action: 'register',
+      callback: (token) => {
+        this.turnstileToken = token
+      },
+      'expired-callback': () => {
+        this.turnstileToken = ''
+        getTurnstileApi().reset(this.turnstileWidgetId)
+      },
+      'response-field': false
+    })!
+  },
   beforeDestroy () {
+    getTurnstileApi().remove(this.turnstileWidgetId)
     this.dispatch(registrationReset())
   }
 })

@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="keyring-version" content="<%= APP_VERSION %>">
     <meta name="keyring-mode" content="<%= MODE %>">
+    <meta name="keyring-turnstile-site-key" content="<%= TURNSTILE_SITE_KEY %>">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="icon" href="<%= BASE_URL %>favicon.ico">
     <title><%= htmlWebpackPlugin.options.title %></title>
@@ -12,5 +13,6 @@
   <body>
     <noscript>This application requires JavaScript.</noscript>
     <div id="application"></div>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js"></script>
   </body>
 </html>

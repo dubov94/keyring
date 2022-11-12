@@ -125,12 +125,11 @@ import isEqual from 'lodash/isEqual'
 import { Subject, of, iif, timer, EMPTY, interval } from 'rxjs'
 import { filter, mapTo, switchMap, takeUntil, take, tap } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
-import { container } from 'tsyringe'
 import { isActionOf } from 'typesafe-actions'
 import Vue, { PropType } from 'vue'
 import Draggable from 'vuedraggable'
 import { generateInclusiveCombination, createCharacterRange } from '@/combinatorics'
-import { Color, Score, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
+import { Color, Score, getStrengthTestService } from '@/cryptography/strength_test_service'
 import { Password } from '@/redux/domain'
 import { isSignalFinale, isSignalSuccess } from '@/redux/flow_signal'
 import { showToast } from '@/redux/modules/ui/toast/actions'
@@ -214,7 +213,6 @@ export default Vue.extend({
   },
   data () {
     return {
-      strengthTestService: container.resolve<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN),
       reveal: false,
       edited: this.initEdit,
       content: clonePassword(EMPTY_PASSWORD),
@@ -302,7 +300,7 @@ export default Vue.extend({
       if (!this.edited) {
         return { value: 1, color: Color.GREEN }
       }
-      return this.strengthTestService.score(this.content.value, this.content.tags)
+      return getStrengthTestService().score(this.content.value, this.content.tags)
     },
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)

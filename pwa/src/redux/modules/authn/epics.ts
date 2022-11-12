@@ -82,7 +82,8 @@ export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action
                   username: action.payload.username,
                   salt: parametrization,
                   digest: authDigest,
-                  mail: action.payload.mail
+                  mail: action.payload.mail,
+                  captchaToken: action.payload.captchaToken
                 })).pipe(
                   switchMap((response: ServiceRegisterResponse) => {
                     switch (response.error) {

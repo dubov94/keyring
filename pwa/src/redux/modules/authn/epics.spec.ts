@@ -120,7 +120,8 @@ describe('registrationEpic', () => {
       username: 'username',
       salt: 'parametrization',
       digest: 'authDigest',
-      mail: 'mail@example.com'
+      mail: 'mail@example.com',
+      captchaToken: 'captchaToken'
     }))).thenResolve(<ServiceRegisterResponse>{
       error: ServiceRegisterResponseError.NONE,
       sessionKey: 'sessionKey',
@@ -134,7 +135,8 @@ describe('registrationEpic', () => {
     actionSubject.next(register({
       username: 'username',
       password: 'password',
-      mail: 'mail@example.com'
+      mail: 'mail@example.com',
+      captchaToken: 'captchaToken'
     }))
     actionSubject.complete()
     await epicTracker.waitForCompletion()

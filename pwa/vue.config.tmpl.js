@@ -31,6 +31,11 @@ module.exports = {
           const parameters = constructTemplateParameters(compilation, assets, pluginOptions)
           parameters.APP_VERSION = '$STABLE_GIT_REVISION'
           parameters.MODE = process.env.NODE_ENV
+          // https://developers.cloudflare.com/turnstile/frequently-asked-questions/#are-there-sitekeys-and-secret-keys-that-can-be-used-for-testing
+          parameters.TURNSTILE_SITE_KEY = '1x00000000000000000000AA'
+          if (parameters.MODE === 'production') {
+            parameters.TURNSTILE_SITE_KEY = '0x4AAAAAAABCphzck0J8mHyD'
+          }
           return parameters
         }
         return args

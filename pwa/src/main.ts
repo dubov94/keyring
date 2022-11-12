@@ -34,11 +34,17 @@ import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from '@/cryptogr
 import SodiumWorker from './cryptography/sodium.worker.ts'
 import { StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN, ZxcvbnService } from '@/cryptography/strength_test_service'
 import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
+import { Flags, FLAGS_TOKEN, readFlagsFromPage } from '@/flags'
 import { getVueI18n } from '@/i18n'
 import { store, state$, action$ } from '@/redux'
 import { injectionsSetUp } from '@/redux/actions'
 import { Router } from '@/router'
+import { TURNSTILE_API_TOKEN } from '@/turnstile_di'
 import { VUE_CONSTRUCTOR_TOKEN } from '@/vue_di'
+
+container.register<Flags>(FLAGS_TOKEN, {
+  useValue: readFlagsFromPage()
+})
 
 container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
   useValue: SodiumWorker<SodiumWorkerInterface>()
@@ -70,6 +76,10 @@ container.register<QrcEncoder>(QRC_ENCODER_TOKEN, {
 
 container.register<UidService>(UID_SERVICE_TOKEN, {
   useValue: { v4 }
+})
+
+container.register<Turnstile.Api>(TURNSTILE_API_TOKEN, {
+  useValue: (globalThis as any).turnstile
 })
 
 Vue.config.productionTip = false

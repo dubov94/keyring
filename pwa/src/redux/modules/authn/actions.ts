@@ -28,6 +28,7 @@ export const register = createAction('authn/register')<DeepReadonly<{
   username: string;
   password: string;
   mail: string;
+  captchaToken: string;
 }>>()
 export const registrationSignal = createAction('authn/registration/signal')<DeepReadonly<
   FlowSignal<RegistrationFlowIndicator, RegistrationFlowResult, StandardError<ServiceRegisterResponseError>>

@@ -1,4 +1,5 @@
 import { expect } from 'chai'
+import 'reflect-metadata'
 import { HaveIBeenPwnedService } from './pwned_service'
 
 describe('HaveIBeenPwnedService', () => {

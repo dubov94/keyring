@@ -1,3 +1,5 @@
+import { container } from 'tsyringe'
+
 export const PWNED_SERVICE_TOKEN = 'PwnedService'
 
 export interface PwnedService {
@@ -42,4 +44,8 @@ export class HaveIBeenPwnedService implements PwnedService {
     const suffix = hash.slice(this.PREFIX_LENGTH)
     return (await this.getOrFetch(prefix)).includes(suffix)
   }
+}
+
+export const getPwnedService = () => {
+  return container.resolve<PwnedService>(PWNED_SERVICE_TOKEN)
 }

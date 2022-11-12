@@ -3,15 +3,14 @@ import { Epic } from 'redux-observable'
 import { concat, EMPTY, forkJoin, from, Observable, of } from 'rxjs'
 import { catchError, defaultIfEmpty, filter, map, switchMap, withLatestFrom } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
-import { container } from 'tsyringe'
 import { isActionOf } from 'typesafe-actions'
 import { getAdministrationApi } from '@/api/api_di'
 import {
   GetRecentSessionsResponseSession,
   ServiceGetRecentSessionsResponse
 } from '@/api/definitions'
-import { PwnedService, PWNED_SERVICE_TOKEN } from '@/cryptography/pwned_service'
-import { Color, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
+import { getPwnedService } from '@/cryptography/pwned_service'
+import { Color, getStrengthTestService } from '@/cryptography/strength_test_service'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { Session, Password } from '@/redux/domain'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
@@ -121,7 +120,7 @@ export const duplicateGroupsSearchEpic: Epic<RootAction, RootAction, RootState> 
 )
 
 const getExposedCliqueIds = (items: DeepReadonly<Clique[]>): Observable<DeepReadonly<string[]>> => {
-  const pwnedService = container.resolve<PwnedService>(PWNED_SERVICE_TOKEN)
+  const pwnedService = getPwnedService()
   return forkJoin(mapCliquesToPasswords(items).map(async ({ cliqueId, password }) => ({
     cliqueId,
     pwned: await pwnedService.checkKey(password.value)
@@ -160,7 +159,7 @@ export const exposedCliqueIdsSearchEpic: Epic<RootAction, RootAction, RootState>
 export const displayExposedCliqueIdsSearchExceptionsEpic = createDisplayExceptionsEpic(exposedCliqueIdsSearchSignal)
 
 const getVulnerableCliques = (items: DeepReadonly<Clique[]>): Observable<DeepReadonly<ScoredClique[]>> => {
-  const strengthTestService = container.resolve<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN)
+  const strengthTestService = getStrengthTestService()
   return of(fn.pipe(
     mapCliquesToPasswords(items),
     readonlyArray.map(({ cliqueId, password }) => <ScoredClique>({

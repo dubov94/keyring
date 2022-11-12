@@ -12,6 +12,7 @@ message RegisterRequest {
     string salt = 2;
     string digest = 3;
     string mail = 4;
+    string captcha_token = 5;
 }
 
 message RegisterResponse {
