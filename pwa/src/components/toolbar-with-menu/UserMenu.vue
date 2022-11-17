@@ -10,7 +10,7 @@
           Dashboard
         </v-list-item-content>
       </v-list-item>
-      <v-list-item to="/security">
+      <v-list-item to="/security" :disabled="!canAccessApi">
         <v-list-item-action>
           <v-icon>shield</v-icon>
         </v-list-item-action>
@@ -24,9 +24,15 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import { canAccessApi } from '@/redux/modules/user/account/selectors'
 
 export default Vue.extend({
   props: ['value'],
+  computed: {
+    canAccessApi (): boolean {
+      return canAccessApi(this.$data.$state)
+    }
+  },
   methods: {
     input (value: boolean) {
       this.$emit('input', value)
