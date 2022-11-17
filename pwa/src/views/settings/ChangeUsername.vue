@@ -33,13 +33,13 @@ import { filter, takeUntil } from 'rxjs/operators'
 import { hasIndicator } from '@/redux/remote_data'
 import { DeepReadonly } from 'ts-essentials'
 import { showToast } from '@/redux/modules/ui/toast/actions'
-import { remoteDataValidator } from '@/components/form_validators'
+import { remoteDataErrorIndicator } from '@/components/form_validators'
 
-const usernameAvailableValidator = remoteDataValidator(ServiceChangeUsernameResponseError.NAMETAKEN)
-const passwordCorrectValidator = remoteDataValidator(ServiceChangeUsernameResponseError.INVALIDDIGEST)
+const usernameTakenIndicator = remoteDataErrorIndicator(ServiceChangeUsernameResponseError.NAMETAKEN)
+const passwordIncorrectIndicator = remoteDataErrorIndicator(ServiceChangeUsernameResponseError.INVALIDDIGEST)
 
 interface Mixins {
-  frozen: boolean;
+  untouchedSinceDispatch: boolean;
   usernameChange: DeepReadonly<UsernameChange>;
 }
 
@@ -48,12 +48,12 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     username: {
       required,
       isAvailable () {
-        return !usernameAvailableValidator(this.usernameChange, this.frozen)
+        return !usernameTakenIndicator(this.usernameChange, this.untouchedSinceDispatch)
       }
     },
     password: {
       correct () {
-        return !passwordCorrectValidator(this.usernameChange, this.frozen)
+        return !passwordIncorrectIndicator(this.usernameChange, this.untouchedSinceDispatch)
       }
     }
   },
@@ -61,7 +61,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     return {
       username: '',
       password: '',
-      frozen: false
+      untouchedSinceDispatch: false
     }
   },
   created () {
@@ -71,7 +71,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     ).subscribe(() => {
       this.username = ''
       this.password = ''
-      this.frozen = false
+      this.untouchedSinceDispatch = false
       this.$v.$reset()
       this.dispatch(usernameChangeReset())
       this.dispatch(showToast({ message: this.$t('DONE') as string }))
@@ -106,17 +106,17 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   methods: {
     setUsername (value: string) {
       this.username = value
-      this.frozen = false
+      this.untouchedSinceDispatch = false
     },
     setPassword (value: string) {
       this.password = value
-      this.frozen = false
+      this.untouchedSinceDispatch = false
     },
     submit () {
       if (this.canAccessApi && !this.inProgress) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
-          this.frozen = true
+          this.untouchedSinceDispatch = true
           this.dispatch(changeUsername({
             username: this.username,
             password: this.password

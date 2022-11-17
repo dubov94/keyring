@@ -51,9 +51,9 @@ import { filter, takeUntil } from 'rxjs/operators'
 import { isActionSuccess } from '@/redux/flow_signal'
 import { DeepReadonly } from 'ts-essentials'
 import { showToast } from '@/redux/modules/ui/toast/actions'
-import { remoteDataValidator } from '@/components/form_validators'
+import { remoteDataErrorIndicator } from '@/components/form_validators'
 
-const currentCorrectValidator = remoteDataValidator(ServiceChangeMasterKeyResponseError.INVALIDCURRENTDIGEST)
+const currentIncorrectIndicator = remoteDataErrorIndicator(ServiceChangeMasterKeyResponseError.INVALIDCURRENTDIGEST)
 
 const INDICATOR_TO_MESSAGE = new Map<MasterKeyChangeFlowIndicator, string>([
   [MasterKeyChangeFlowIndicator.REENCRYPTING, 'Re-encrypting'],
@@ -61,7 +61,7 @@ const INDICATOR_TO_MESSAGE = new Map<MasterKeyChangeFlowIndicator, string>([
 ])
 
 interface Mixins {
-  frozen: boolean;
+  untouchedSinceDispatch: boolean;
   masterKeyChange: DeepReadonly<MasterKeyChange>;
 }
 
@@ -71,13 +71,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       current: '',
       renewal: '',
       repeat: '',
-      frozen: false
+      untouchedSinceDispatch: false
     }
   },
   validations: {
     current: {
       correct () {
-        return !currentCorrectValidator(this.masterKeyChange, this.frozen)
+        return !currentIncorrectIndicator(this.masterKeyChange, this.untouchedSinceDispatch)
       }
     },
     renewal: { required },
@@ -91,7 +91,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.current = ''
       this.renewal = ''
       this.repeat = ''
-      this.frozen = false
+      this.untouchedSinceDispatch = false
       this.$v.$reset()
       this.dispatch(masterKeyChangeReset())
       this.dispatch(showToast({ message: this.$t('DONE') as string }))
@@ -136,21 +136,21 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   methods: {
     setCurrent (value: string) {
       this.current = value
-      this.frozen = false
+      this.untouchedSinceDispatch = false
     },
     setRenewal (value: string) {
       this.renewal = value
-      this.frozen = false
+      this.untouchedSinceDispatch = false
     },
     setRepeat (value: string) {
       this.repeat = value
-      this.frozen = false
+      this.untouchedSinceDispatch = false
     },
     submit () {
       if (this.canAccessApi && !this.hasIndicatorMessage) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
-          this.frozen = true
+          this.untouchedSinceDispatch = true
           this.dispatch(changeMasterKey({
             current: this.current,
             renewal: this.renewal

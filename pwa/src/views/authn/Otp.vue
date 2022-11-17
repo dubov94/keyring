@@ -29,10 +29,10 @@ import Vue, { VueConstructor } from 'vue'
 import { ServiceProvideOtpResponseError } from '@/api/definitions'
 import { AuthnOtpProvisionFlowIndicator } from '@/redux/modules/authn/actions'
 import { AuthnOtpProvision } from '@/redux/modules/authn/selectors'
-import { remoteDataValidator } from '@/components/form_validators'
+import { remoteDataErrorIndicator } from '@/components/form_validators'
 
-const otpCorrectValidator = remoteDataValidator(ServiceProvideOtpResponseError.INVALIDCODE)
-const otpLenientValidator = remoteDataValidator(ServiceProvideOtpResponseError.ATTEMPTSEXHAUSTED)
+const otpIncorrectIndicator = remoteDataErrorIndicator(ServiceProvideOtpResponseError.INVALIDCODE)
+const otpMustRecoverIndicator = remoteDataErrorIndicator(ServiceProvideOtpResponseError.ATTEMPTSEXHAUSTED)
 
 const INDICATOR_TO_MESSAGE = new Map<AuthnOtpProvisionFlowIndicator, string>([
   [AuthnOtpProvisionFlowIndicator.MAKING_REQUEST, 'Making request'],
@@ -40,7 +40,7 @@ const INDICATOR_TO_MESSAGE = new Map<AuthnOtpProvisionFlowIndicator, string>([
 ])
 
 interface Mixins {
-  frozen: boolean;
+  untouchedSinceDispatch: boolean;
   authnOtpProvision: DeepReadonly<AuthnOtpProvision>;
 }
 
@@ -48,16 +48,16 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   props: ['otp', 'authnOtpProvision'],
   data () {
     return {
-      frozen: false
+      untouchedSinceDispatch: false
     }
   },
   validations: {
     otp: {
       correct () {
-        return !otpCorrectValidator(this.authnOtpProvision, this.frozen)
+        return !otpIncorrectIndicator(this.authnOtpProvision, this.untouchedSinceDispatch)
       },
       lenient () {
-        return !otpLenientValidator(this.authnOtpProvision, this.frozen)
+        return !otpMustRecoverIndicator(this.authnOtpProvision, this.untouchedSinceDispatch)
       }
     }
   },
@@ -82,13 +82,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   methods: {
     setOtp (value: string) {
       this.$emit('otp', value)
-      this.frozen = false
+      this.untouchedSinceDispatch = false
     },
     submit () {
       if (!this.hasIndicatorMessage) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
-          this.frozen = true
+          this.untouchedSinceDispatch = true
           this.$emit('submit')
         }
       }

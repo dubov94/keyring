@@ -77,7 +77,7 @@ import { email, required, sameAs } from 'vuelidate/lib/validators'
 import { ServiceRegisterResponseError } from '@/api/definitions'
 import Page from '@/components/Page.vue'
 import StrengthScore from '@/components/StrengthScore.vue'
-import { remoteDataValidator } from '@/components/form_validators'
+import { remoteDataErrorIndicator } from '@/components/form_validators'
 import { Score, getStrengthTestService } from '@/cryptography/strength_test_service'
 import { getFlags } from '@/flags'
 import { register, RegistrationFlowIndicator, registrationReset, registrationSignal } from '@/redux/modules/authn/actions'
@@ -86,7 +86,7 @@ import { showToast } from '@/redux/modules/ui/toast/actions'
 import { isActionSuccess } from '@/redux/flow_signal'
 import { getTurnstileApi } from '@/turnstile_di'
 
-const usernameAvailableValidator = remoteDataValidator(ServiceRegisterResponseError.NAMETAKEN)
+const usernameTakenIndicator = remoteDataErrorIndicator(ServiceRegisterResponseError.NAMETAKEN)
 
 const INDICATOR_TO_MESSAGE = new Map<RegistrationFlowIndicator, string>([
   [RegistrationFlowIndicator.GENERATING_PARAMETRIZATION, 'Generating salt'],
@@ -95,7 +95,7 @@ const INDICATOR_TO_MESSAGE = new Map<RegistrationFlowIndicator, string>([
 ])
 
 interface Mixins {
-  username: { frozen: boolean };
+  username: { untouchedSinceDispatch: boolean };
   registration: DeepReadonly<Registration>;
 }
 
@@ -110,7 +110,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       turnstileToken: '',
       username: {
         value: '',
-        frozen: false
+        untouchedSinceDispatch: false
       },
       password: '',
       repeat: '',
@@ -129,7 +129,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     username: {
       required,
       isAvailable () {
-        return !usernameAvailableValidator(this.registration, this.username.frozen)
+        return !usernameTakenIndicator(this.registration, this.username.untouchedSinceDispatch)
       }
     },
     password: { required },
@@ -182,7 +182,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   methods: {
     setUsername (value: string) {
       this.username.value = value
-      this.username.frozen = false
+      this.username.untouchedSinceDispatch = false
     },
     submit () {
       if (this.hasIndicatorMessage) {
@@ -198,7 +198,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         }))
         return
       }
-      this.username.frozen = true
+      this.username.untouchedSinceDispatch = true
       this.dispatch(register({
         username: this.username.value,
         password: this.password,

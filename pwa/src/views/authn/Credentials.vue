@@ -54,7 +54,7 @@ const INDICATOR_TO_MESSAGE = new Map<AuthnViaApiFlowIndicator | AuthnViaDepotFlo
 ])
 
 interface Mixins {
-  frozen: boolean;
+  untouchedSinceDispatch: boolean;
   authnViaApi: DeepReadonly<AuthnViaApi>;
   authnViaDepot: DeepReadonly<AuthnViaDepot>;
 }
@@ -63,7 +63,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   props: ['username', 'password', 'persist', 'authnViaApi', 'authnViaDepot', 'usernameMatchesDepot'],
   data () {
     return {
-      frozen: false
+      untouchedSinceDispatch: false
     }
   },
   validations: {
@@ -88,7 +88,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
             )
           ],
           array.findFirst<option.Option<unknown>>(option.isSome),
-          option.map(() => !this.frozen),
+          option.map(() => !this.untouchedSinceDispatch),
           option.getOrElse<boolean>(() => true)
         )
       }
@@ -126,11 +126,11 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   methods: {
     setUsername (value: string) {
       this.$emit('username', value)
-      this.frozen = false
+      this.untouchedSinceDispatch = false
     },
     setPassword (value: string) {
       this.$emit('password', value)
-      this.frozen = false
+      this.untouchedSinceDispatch = false
     },
     setPersist (value: boolean) {
       this.$emit('persist', value)
@@ -139,7 +139,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       if (!this.hasIndicatorMessage) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
-          this.frozen = true
+          this.untouchedSinceDispatch = true
           this.$emit('submit')
         }
       }

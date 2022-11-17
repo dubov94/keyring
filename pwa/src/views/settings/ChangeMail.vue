@@ -89,16 +89,16 @@ import {
   accountMail
 } from '@/redux/modules/user/account/selectors'
 import { hasIndicator, hasData, data } from '@/redux/remote_data'
-import { remoteDataValidator } from '@/components/form_validators'
+import { remoteDataErrorIndicator } from '@/components/form_validators'
 
-const passwordCorrectValidator = remoteDataValidator(ServiceAcquireMailTokenResponseError.INVALIDDIGEST)
-const codeNotExpiredValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.INVALIDTOKENID)
-const codeCorrectValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.INVALIDCODE)
-const codeNotThrottledValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.TOOMANYREQUESTS)
+const passwordIncorrectIndicator = remoteDataErrorIndicator(ServiceAcquireMailTokenResponseError.INVALIDDIGEST)
+const codeExpiredIndicator = remoteDataErrorIndicator(ServiceReleaseMailTokenResponseError.INVALIDTOKENID)
+const codeIncorrectIndicator = remoteDataErrorIndicator(ServiceReleaseMailTokenResponseError.INVALIDCODE)
+const codeThrottledValidator = remoteDataErrorIndicator(ServiceReleaseMailTokenResponseError.TOOMANYREQUESTS)
 
 interface Mixins {
-  requestGroup: { password: { frozen: boolean } };
-  code: { frozen: boolean };
+  requestGroup: { password: { untouchedSinceDispatch: boolean } };
+  code: { untouchedSinceDispatch: boolean };
   mailTokenAcquisition: DeepReadonly<MailTokenAcquisition>;
   mailTokenRelease: DeepReadonly<MailTokenRelease>;
 }
@@ -110,12 +110,12 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         mail: '',
         password: {
           value: '',
-          frozen: false
+          untouchedSinceDispatch: false
         }
       },
       code: {
         value: '',
-        frozen: false
+        untouchedSinceDispatch: false
       }
     }
   },
@@ -124,21 +124,21 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       mail: { email, required },
       password: {
         correct () {
-          return !passwordCorrectValidator(this.mailTokenAcquisition, this.requestGroup.password.frozen)
+          return !passwordIncorrectIndicator(this.mailTokenAcquisition, this.requestGroup.password.untouchedSinceDispatch)
         }
       }
     },
     code: {
       nonRetryable: {
         notExpired () {
-          return !codeNotExpiredValidator(this.mailTokenRelease, this.code.frozen)
+          return !codeExpiredIndicator(this.mailTokenRelease, this.code.untouchedSinceDispatch)
         },
         correct () {
-          return !codeCorrectValidator(this.mailTokenRelease, this.code.frozen)
+          return !codeIncorrectIndicator(this.mailTokenRelease, this.code.untouchedSinceDispatch)
         }
       },
       notThrottled () {
-        return !codeNotThrottledValidator(this.mailTokenRelease, this.code.frozen)
+        return !codeThrottledValidator(this.mailTokenRelease, this.code.untouchedSinceDispatch)
       }
     }
   },
@@ -150,12 +150,12 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       // Acquisition.
       this.requestGroup.mail = ''
       this.requestGroup.password.value = ''
-      this.requestGroup.password.frozen = false
+      this.requestGroup.password.untouchedSinceDispatch = false
       this.$v.requestGroup.$reset()
       this.dispatch(mailTokenAcquisitionReset())
       // Release.
       this.code.value = ''
-      this.code.frozen = false
+      this.code.untouchedSinceDispatch = false
       this.$v.code.$reset()
       this.dispatch(mailTokenReleaseReset())
       this.dispatch(showToast({ message: this.$t('DONE') as string }))
@@ -224,17 +224,17 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   methods: {
     setPassword (value: string) {
       this.requestGroup.password.value = value
-      this.requestGroup.password.frozen = false
+      this.requestGroup.password.untouchedSinceDispatch = false
     },
     setCode (value: string) {
       this.code.value = value
-      this.code.frozen = false
+      this.code.untouchedSinceDispatch = false
     },
     acquireToken () {
       if (this.canAccessApi && !this.acquisitionInProgress) {
         this.$v.requestGroup.$touch()
         if (!this.$v.requestGroup.$invalid) {
-          this.requestGroup.password.frozen = true
+          this.requestGroup.password.untouchedSinceDispatch = true
           this.dispatch(acquireMailToken({
             mail: this.requestGroup.mail,
             password: this.requestGroup.password.value
@@ -246,7 +246,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       if (this.canAccessApi && !this.releaseInProgress) {
         this.$v.code.$touch()
         if (!this.$v.code.nonRetryable!.$invalid) {
-          this.code.frozen = true
+          this.code.untouchedSinceDispatch = true
           this.dispatch(releaseMailToken({
             tokenId: this.acquisitionData !== null
               ? this.acquisitionData.tokenId

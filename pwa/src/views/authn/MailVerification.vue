@@ -54,17 +54,17 @@ import { isActionSuccess } from '@/redux/flow_signal'
 import { releaseMailToken, mailTokenReleaseReset, mailTokenReleaseSignal } from '@/redux/modules/user/account/actions'
 import { takeUntil, filter } from 'rxjs/operators'
 import { option } from 'fp-ts'
-import { remoteDataValidator } from '@/components/form_validators'
+import { remoteDataErrorIndicator } from '@/components/form_validators'
 
 interface Mixins {
-  code: { frozen: boolean };
+  code: { untouchedSinceDispatch: boolean };
   mailTokenRelease: DeepReadonly<MailTokenRelease>;
   mailVerificationTokenId: string;
 }
 
-const codeNotExpiredValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.INVALIDTOKENID)
-const codeCorrectValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.INVALIDCODE)
-const codeNotThrottledValidator = remoteDataValidator(ServiceReleaseMailTokenResponseError.TOOMANYREQUESTS)
+const codeExpiredIndicator = remoteDataErrorIndicator(ServiceReleaseMailTokenResponseError.INVALIDTOKENID)
+const codeIncorrectIndicator = remoteDataErrorIndicator(ServiceReleaseMailTokenResponseError.INVALIDCODE)
+const codeThrottledIndicator = remoteDataErrorIndicator(ServiceReleaseMailTokenResponseError.TOOMANYREQUESTS)
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
@@ -74,7 +74,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     return {
       code: {
         value: '',
-        frozen: false
+        untouchedSinceDispatch: false
       }
     }
   },
@@ -90,14 +90,14 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     code: {
       nonRetryable: {
         notExpired () {
-          return !codeNotExpiredValidator(this.mailTokenRelease, this.code.frozen)
+          return !codeExpiredIndicator(this.mailTokenRelease, this.code.untouchedSinceDispatch)
         },
         correct () {
-          return !codeCorrectValidator(this.mailTokenRelease, this.code.frozen)
+          return !codeIncorrectIndicator(this.mailTokenRelease, this.code.untouchedSinceDispatch)
         }
       },
       notThrottled () {
-        return !codeNotThrottledValidator(this.mailTokenRelease, this.code.frozen)
+        return !codeThrottledIndicator(this.mailTokenRelease, this.code.untouchedSinceDispatch)
       }
     }
   },
@@ -122,13 +122,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   methods: {
     setCode (value: string) {
       this.code.value = value
-      this.code.frozen = false
+      this.code.untouchedSinceDispatch = false
     },
     submit () {
       if (!this.inProgress) {
         this.$v.$touch()
         if (!this.$v.code.nonRetryable!.$invalid) {
-          this.code.frozen = true
+          this.code.untouchedSinceDispatch = true
           this.dispatch(releaseMailToken({
             tokenId: this.mailVerificationTokenId,
             code: this.code.value

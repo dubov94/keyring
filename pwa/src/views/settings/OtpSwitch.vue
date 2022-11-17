@@ -115,14 +115,14 @@ import {
   otpReset
 } from '@/redux/modules/user/account/selectors'
 import { hasIndicator, data } from '@/redux/remote_data'
-import { remoteDataValidator } from '@/components/form_validators'
+import { remoteDataErrorIndicator } from '@/components/form_validators'
 
-const activationCorrectValidator = remoteDataValidator(ServiceAcceptOtpParamsResponseError.INVALIDCODE)
-const deactivationCorrectValidator = remoteDataValidator(ServiceResetOtpResponseError.INVALIDCODE)
+const activationIncorrectValidator = remoteDataErrorIndicator(ServiceAcceptOtpParamsResponseError.INVALIDCODE)
+const deactivationIncorrectValidator = remoteDataErrorIndicator(ServiceResetOtpResponseError.INVALIDCODE)
 
 interface Mixins {
-  activation: { frozen: boolean };
-  deactivation: { frozen: boolean };
+  activation: { untouchedSinceDispatch: boolean };
+  deactivation: { untouchedSinceDispatch: boolean };
   otpParamsAcceptance: DeepReadonly<OtpParamsAcceptance>;
   otpReset: DeepReadonly<OtpReset>;
 }
@@ -133,23 +133,23 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       seedView: 0,
       activation: {
         otp: '',
-        frozen: false
+        untouchedSinceDispatch: false
       },
       deactivation: {
         otp: '',
-        frozen: false
+        untouchedSinceDispatch: false
       }
     }
   },
   validations: {
     activation: {
       correct () {
-        return !activationCorrectValidator(this.otpParamsAcceptance, this.activation.frozen)
+        return !activationIncorrectValidator(this.otpParamsAcceptance, this.activation.untouchedSinceDispatch)
       }
     },
     deactivation: {
       correct () {
-        return !deactivationCorrectValidator(this.otpReset, this.deactivation.frozen)
+        return !deactivationIncorrectValidator(this.otpReset, this.deactivation.untouchedSinceDispatch)
       }
     }
   },
@@ -198,7 +198,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       takeUntil(this.$data.$destruction)
     ).subscribe(() => {
       this.activation.otp = ''
-      this.activation.frozen = false
+      this.activation.untouchedSinceDispatch = false
       this.$v.activation.$reset()
       this.dispatch(otpParamsGenerationReset())
       this.dispatch(otpParamsAcceptanceReset())
@@ -208,7 +208,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       takeUntil(this.$data.$destruction)
     ).subscribe(() => {
       this.deactivation.otp = ''
-      this.deactivation.frozen = false
+      this.deactivation.untouchedSinceDispatch = false
       this.$v.deactivation.$reset()
       this.dispatch(cancelOtpReset())
     })
@@ -224,13 +224,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     setActivationOtp (value: string) {
       this.activation.otp = value
-      this.activation.frozen = false
+      this.activation.untouchedSinceDispatch = false
     },
     activate () {
       if (this.canAccessApi && !this.otpParamsAcceptanceInProgress) {
         this.$v.activation.$touch()
         if (!this.$v.activation.$invalid) {
-          this.activation.frozen = true
+          this.activation.untouchedSinceDispatch = true
           if (!this.maybeOtpParams) {
             throw new Error('`otpParamsGeneration` has no data')
           }
@@ -243,13 +243,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     setDeactivationOtp (value: string) {
       this.deactivation.otp = value
-      this.deactivation.frozen = false
+      this.deactivation.untouchedSinceDispatch = false
     },
     deactivate () {
       if (this.canAccessApi && !this.otpResetInProgress) {
         this.$v.deactivation.$touch()
         if (!this.$v.deactivation.$invalid) {
-          this.deactivation.frozen = true
+          this.deactivation.untouchedSinceDispatch = true
           this.dispatch(resetOtp({
             otp: this.deactivation.otp
           }))

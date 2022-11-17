@@ -24,12 +24,12 @@ import { canAccessApi, accountDeletion, AccountDeletion } from '@/redux/modules/
 import { deleteAccount, accountDeletionReset } from '@/redux/modules/user/account/actions'
 import { hasIndicator } from '@/redux/remote_data'
 import { DeepReadonly } from 'ts-essentials'
-import { remoteDataValidator } from '@/components/form_validators'
+import { remoteDataErrorIndicator } from '@/components/form_validators'
 
-const passwordCorrectValidator = remoteDataValidator(ServiceDeleteAccountResponseError.INVALIDDIGEST)
+const passwordIncorrectIndicator = remoteDataErrorIndicator(ServiceDeleteAccountResponseError.INVALIDDIGEST)
 
 interface Mixins {
-  frozen: boolean;
+  untouchedSinceDispatch: boolean;
   accountDeletion: DeepReadonly<AccountDeletion>;
 }
 
@@ -37,14 +37,14 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   validations: {
     password: {
       correct () {
-        return !passwordCorrectValidator(this.accountDeletion, this.frozen)
+        return !passwordIncorrectIndicator(this.accountDeletion, this.untouchedSinceDispatch)
       }
     }
   },
   data () {
     return {
       password: '',
-      frozen: false
+      untouchedSinceDispatch: false
     }
   },
   computed: {
@@ -66,13 +66,13 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   methods: {
     setPassword (value: string) {
       this.password = value
-      this.frozen = false
+      this.untouchedSinceDispatch = false
     },
     submit () {
       if (this.canAccessApi && !this.inProgress) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
-          this.frozen = true
+          this.untouchedSinceDispatch = true
           this.dispatch(deleteAccount({
             password: this.password
           }))
