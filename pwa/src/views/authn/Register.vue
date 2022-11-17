@@ -23,7 +23,7 @@
                     @touch="$v.password.$touch()" @reset="$v.password.$reset()">
                   </form-text-field>
                   <div class="password-strength my-3">
-                    <strength-score :color="assessment.color" :value="assessment.value">
+                    <strength-score :color="passwordStrength.color" :value="passwordStrength.value">
                     </strength-score>
                     <div class="mt-2 text-body-2 text--secondary">
                       Choose
@@ -137,7 +137,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     mail: { email, required }
   },
   computed: {
-    assessment (): Score {
+    passwordStrength (): Score {
       return getStrengthTestService().score(this.password, [
         this.username.value,
         this.mail

@@ -99,7 +99,7 @@
     <v-expand-transition>
       <div v-if="edited">
         <v-divider></v-divider>
-        <strength-score :color="assessment.color" :value="assessment.value">
+        <strength-score :color="passwordStrength.color" :value="passwordStrength.value">
         </strength-score>
         <div class="pa-4">
           <v-textarea solo hide-details :value="content.value" :rows="3"
@@ -296,7 +296,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    assessment (): Score {
+    passwordStrength (): Score {
       if (!this.edited) {
         return { value: 1, color: Color.GREEN }
       }
