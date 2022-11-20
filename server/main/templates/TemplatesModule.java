@@ -10,16 +10,14 @@ public class TemplatesModule {
   @Provides
   @Singleton
   static MailVcHeadRendererFactory provideMailVcHeadRendererFactory() {
-    JtwigTemplate template =
-        JtwigTemplate.classpathTemplate("/templates/mail_verification_code.head.twig");
+    JtwigTemplate template = JtwigTemplate.classpathTemplate("/templates/mail_vc.head.twig");
     return new MailVcHeadRendererFactory(template);
   }
 
   @Provides
   @Singleton
   static MailVcBodyRendererFactory provideMailVcBodyRendererFactory() {
-    JtwigTemplate template =
-        JtwigTemplate.classpathTemplate("/templates/mail_verification_code.body.twig");
+    JtwigTemplate template = JtwigTemplate.classpathTemplate("/templates/mail_vc.body.twig");
     return new MailVcBodyRendererFactory(template);
   }
 }

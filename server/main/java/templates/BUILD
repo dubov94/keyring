@@ -1,4 +1,4 @@
 exports_files([
-    "mail_verification_code.head.twig",
-    "mail_verification_code.body.twig",
+    "mail_vc.head.twig",
+    "mail_vc.body.twig",
 ])

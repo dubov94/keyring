@@ -53,8 +53,8 @@ java_library(
     visibility = ["//server:internal"],
     deps = [
         ":environment",
-        "//server/main/templates:mail_verification_code_body_renderer_factory",
-        "//server/main/templates:mail_verification_code_head_renderer_factory",
+        "//server/main/templates:mail_vc_body_renderer_factory",
+        "//server/main/templates:mail_vc_head_renderer_factory",
         "@maven//:javax_inject_javax_inject",
         "@maven//:net_sargue_mailgun",
     ],
@@ -139,8 +139,8 @@ woven_java_binary(
     main_class = "keyring.server.main.Launcher",
     resources = [
         "//server/java/META-INF:persistence.xml",
-        "//server/main/java/templates:mail_verification_code.body.twig",
-        "//server/main/java/templates:mail_verification_code.head.twig",
+        "//server/main/java/templates:mail_vc.body.twig",
+        "//server/main/java/templates:mail_vc.head.twig",
     ],
     visibility = [
         "//:root",
