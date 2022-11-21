@@ -24,6 +24,7 @@ java_library(
     plugins = [
         "//bazel/java:auto_value",
     ],
+    visibility = ["//server:internal"],
     deps = [
         "@maven//:com_google_auto_value_auto_value_annotations",
         "@maven//:com_google_guava_guava",
@@ -38,6 +39,7 @@ java_library(
     plugins = [
         "//bazel/java:auto_value",
     ],
+    visibility = ["//server:internal"],
     deps = [
         "@maven//:com_google_auto_value_auto_value_annotations",
     ],

@@ -1,11 +1,17 @@
 package keyring.server.main.services;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
+import io.grpc.Status;
+import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
+import io.paveldubov.turnstile.TurnstileRequest;
+import io.paveldubov.turnstile.TurnstileResponse;
+import io.paveldubov.turnstile.TurnstileValidator;
 import io.vavr.Tuple;
 import java.util.Optional;
 import javax.persistence.EntityManager;
@@ -28,6 +34,7 @@ import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +50,7 @@ class AuthenticationServiceTest {
   @Mock private VersionAccessor mockVersionAccessor;
   @Mock private StreamObserver mockStreamObserver;
   @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
+  @Mock private TurnstileValidator mockTurnstileValidator;
 
   private AuthenticationService authenticationService;
 
@@ -58,17 +66,37 @@ class AuthenticationServiceTest {
             mockKeyValueClient,
             mockAgentAccessor,
             mockVersionAccessor,
-            mockGoogleAuthenticator);
+            mockGoogleAuthenticator,
+            mockTurnstileValidator);
     when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
   }
 
   @Test
+  void register_invalidCaptcha_repliesUnauthenticated() {
+    when(mockTurnstileValidator.validate(
+            TurnstileRequest.newBuilder().setResponse("random").build()))
+        .thenReturn(TurnstileResponse.newBuilder().setSuccess(false).build());
+
+    authenticationService.register(
+        RegisterRequest.newBuilder().setCaptchaToken("random").build(), mockStreamObserver);
+
+    verifyOnError(Status.UNAUTHENTICATED);
+  }
+
+  @Test
   void register_duplicateUsername_repliesWithError() {
+    when(mockTurnstileValidator.validate(
+            TurnstileRequest.newBuilder().setResponse("captcha").build()))
+        .thenReturn(TurnstileResponse.newBuilder().setSuccess(true).build());
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(Optional.of(new User()));
 
     authenticationService.register(
-        RegisterRequest.newBuilder().setUsername("username").setMail("mail@example.com").build(),
+        RegisterRequest.newBuilder()
+            .setCaptchaToken("captcha")
+            .setUsername("username")
+            .setMail("mail@example.com")
+            .build(),
         mockStreamObserver);
 
     verify(mockStreamObserver)
@@ -77,6 +105,9 @@ class AuthenticationServiceTest {
 
   @Test
   void register_getsValidRequest_persistsAndSendsMail() {
+    when(mockTurnstileValidator.validate(
+            TurnstileRequest.newBuilder().setResponse("captcha").build()))
+        .thenReturn(TurnstileResponse.newBuilder().setSuccess(true).build());
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
     when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockCryptography.generateUacs()).thenReturn("0");
@@ -90,6 +121,7 @@ class AuthenticationServiceTest {
 
     authenticationService.register(
         RegisterRequest.newBuilder()
+            .setCaptchaToken("captcha")
             .setUsername("username")
             .setSalt("salt")
             .setDigest("digest")
@@ -364,5 +396,11 @@ class AuthenticationServiceTest {
                             MailVerification.newBuilder().setRequired(true).setTokenId(97L)))
                 .build());
     verify(mockStreamObserver).onCompleted();
+  }
+
+  private void verifyOnError(Status status) {
+    ArgumentCaptor<StatusException> argumentCaptor = ArgumentCaptor.forClass(StatusException.class);
+    verify(mockStreamObserver).onError(argumentCaptor.capture());
+    assertEquals(status, argumentCaptor.getValue().getStatus());
   }
 }

@@ -171,7 +171,7 @@ class AdministrationServiceTest {
 
     administrationService.createKey(CreateKeyRequest.getDefaultInstance(), mockStreamObserver);
 
-    verifyOnErrorUnauthenticated();
+    verifyOnError(Status.UNAUTHENTICATED);
   }
 
   @Test
@@ -446,9 +446,9 @@ class AdministrationServiceTest {
     verify(mockStreamObserver).onCompleted();
   }
 
-  private void verifyOnErrorUnauthenticated() {
+  private void verifyOnError(Status status) {
     ArgumentCaptor<StatusException> argumentCaptor = ArgumentCaptor.forClass(StatusException.class);
     verify(mockStreamObserver).onError(argumentCaptor.capture());
-    assertEquals(Status.UNAUTHENTICATED, argumentCaptor.getValue().getStatus());
+    assertEquals(status, argumentCaptor.getValue().getStatus());
   }
 }

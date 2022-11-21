@@ -7,6 +7,9 @@ import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
+import io.paveldubov.turnstile.TurnstileRequest;
+import io.paveldubov.turnstile.TurnstileResponse;
+import io.paveldubov.turnstile.TurnstileValidator;
 import io.vavr.Tuple2;
 import io.vavr.control.Either;
 import java.util.Objects;
@@ -55,6 +58,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private AgentAccessor agentAccessor;
   private VersionAccessor versionAccessor;
   private IGoogleAuthenticator googleAuthenticator;
+  private TurnstileValidator turnstileValidator;
 
   @Inject
   AuthenticationService(
@@ -65,7 +69,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       KeyValueClient keyValueClient,
       AgentAccessor agentAccessor,
       VersionAccessor versionAccessor,
-      IGoogleAuthenticator googleAuthenticator) {
+      IGoogleAuthenticator googleAuthenticator,
+      TurnstileValidator turnstileValidator) {
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
     this.cryptography = cryptography;
@@ -74,10 +79,17 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.agentAccessor = agentAccessor;
     this.versionAccessor = versionAccessor;
     this.googleAuthenticator = googleAuthenticator;
+    this.turnstileValidator = turnstileValidator;
   }
 
   @WithEntityManager
   private Either<StatusException, RegisterResponse> _register(RegisterRequest request) {
+    TurnstileRequest turnstileRequest =
+        TurnstileRequest.newBuilder().setResponse(request.getCaptchaToken()).build();
+    TurnstileResponse turnstileResponse = turnstileValidator.validate(turnstileRequest);
+    if (!turnstileResponse.success()) {
+      return Either.left(new StatusException(Status.UNAUTHENTICATED));
+    }
     String username = request.getUsername();
     String mail = request.getMail();
     if (username.trim().isEmpty() || !EmailValidator.getInstance().isValid(mail)) {

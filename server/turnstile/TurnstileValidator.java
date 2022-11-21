@@ -10,6 +10,7 @@ import com.google.api.client.util.Key;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ public final class TurnstileValidator {
     return newBuilder().build(siteSecretKey);
   }
 
-  private static final class ResponseGson {
+  public static final class ResponseGson {
     @Key private boolean success;
 
     @Key private String challenge_ts;
@@ -48,15 +49,17 @@ public final class TurnstileValidator {
 
     @Key private String cdata;
 
-    private ResponseGson() {}
-
-    private TurnstileResponse toTurnstileResponse() {
+    public TurnstileResponse toTurnstileResponse() {
       return TurnstileResponse.newBuilder()
           .setSuccess(success)
           .setChallengeTs(Instant.parse(challenge_ts))
           .setHostname(hostname == null ? "" : hostname)
           .setErrorCodes(
-              error_codes.stream().map(TurnstileError::fromString).collect(Collectors.toList()))
+              error_codes == null
+                  ? Collections.emptyList()
+                  : error_codes.stream()
+                      .map(TurnstileError::fromString)
+                      .collect(Collectors.toList()))
           .setAction(action == null ? "" : action)
           .setCdata(action == null ? "" : cdata)
           .build();
