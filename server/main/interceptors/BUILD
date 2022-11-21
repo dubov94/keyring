@@ -40,6 +40,7 @@ java_library(
         "//server/main/keyvalue:user_pointer",
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_context",
+        "@maven//:io_vavr_vavr",
         "@maven//:javax_inject_javax_inject",
     ],
 )
@@ -60,7 +61,10 @@ java_library(
     visibility = ["//server:internal"],
     deps = [
         ":version_accessor",
+        "//server/main:environment",
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_context",
+        "@maven//:io_vavr_vavr",
+        "@maven//:javax_inject_javax_inject",
     ],
 )

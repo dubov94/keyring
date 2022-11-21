@@ -1,24 +1,31 @@
 import Dexie from 'dexie';
 
 const APP_VERSION = '$STABLE_GIT_REVISION';
+// Earliest acceptable version.
+const MRGN_VERSION = '$STABLE_MRGN_REVISION';
 const scope = self as unknown as ServiceWorkerGlobalScope & {
   __precacheManifest: { url: string; revision: string }[]
+};
+workbox.core.setCacheNameDetails({ prefix: 'keyring.pwa' });
+const precacheController = new workbox.precaching.PrecacheController();
+precacheController.addToCacheList(scope.__precacheManifest);
+
+const singleton = <T>(ctr: () => T): () => T => {
+  let instance: null | T = null;
+  return () => {
+    if (instance === null) {
+      instance = ctr();
+    }
+    return instance;
+  }
 };
 
 enum SwEventType {
   // Installation has completed.
   INSTALL = 'install',
   // Activation has completed.
-  ACTIVATE = 'activate',
-  // `isLatestVersion` has been actively verified
-  // on a navigation request.
-  NAVIGATE = 'navigate'
+  ACTIVATE = 'activate'
 }
-
-workbox.core.setCacheNameDetails({ prefix: 'keyring.pwa' });
-
-const precacheController = new workbox.precaching.PrecacheController();
-precacheController.addToCacheList(scope.__precacheManifest);
 
 interface SwEvent {
   id?: number;
@@ -27,33 +34,32 @@ interface SwEvent {
   timestamp: number;
 }
 
-interface IndependentClient {
-  id?: number;
-  clientId: string;
+enum ClientOrigin {
+  NETWORK = 'network',
+  CACHE = 'cache'
 }
 
-class ApplicationDatabase extends Dexie {
+interface ClientRecord {
+  id?: number;
+  clientId: string;
+  origin: ClientOrigin;
+}
+
+class Database extends Dexie {
   swEvents: Dexie.Table<SwEvent, number>;
-  independentClients: Dexie.Table<IndependentClient, number>;
+  clients: Dexie.Table<ClientRecord, number>;
 
   constructor() {
     super('application');
 
-    this.version(2).stores({
+    this.version(3).stores({
       swEvents: '++id, version, event, timestamp',
-      independentClients: '++id, clientId'
+      clients: '++id, clientId, origin'
     });
   }
 }
-const applicationDatabase = new ApplicationDatabase();
 
-const MAX_AGE_S = 7 * 24 * 60 * 60;
-const precacheName = workbox.core.cacheNames.precache;
-const indexCacheKey = precacheController.getCacheKeyForURL('/index.html');
-
-const maxAgeInstant = () => {
-  return Date.now() - MAX_AGE_S * 1000;
-};
+const getDatabase = singleton(() => new Database());
 
 type OptionalActiveSw = null | {
   version: string;
@@ -61,12 +67,12 @@ type OptionalActiveSw = null | {
 };
 
 const getActiveSw = async (): Promise<OptionalActiveSw> => {
-  const entries = await applicationDatabase
+  const entries = await getDatabase()
     .swEvents.reverse().sortBy('timestamp');
   const activated = new Set();
   for (const entry of entries) {
-    if (entry.event === SwEventType.NAVIGATE ||
-        entry.event === SwEventType.INSTALL && activated.has(entry.version)) {
+    if (entry.event === SwEventType.INSTALL &&
+        activated.has(entry.version)) {
       return {
         version: entry.version,
         checkTs: entry.timestamp
@@ -78,25 +84,28 @@ const getActiveSw = async (): Promise<OptionalActiveSw> => {
   return null;
 };
 
-const mustReboot = (activeSw: OptionalActiveSw) => {
+const versionToOrdinal = (version: string): null | number => {
+  const regex = /^v0.0.0-(?<version>\d+)-g[0-9a-z]{7}$/;
+  const match = regex.exec(version);
+  return match === null ? null : Number(match.groups!.version);
+}
+
+const isSwOutdated = (activeSw: OptionalActiveSw) => {
   if (activeSw === null) {
+    // No worker detected.
     return false;
   }
-  return [
-    // Fix @ 3daa909.
-    'v0.0.0-980-gd657789'
-  ].includes(activeSw.version);
-};
-
-const isCacheObsolete = (activeSw: OptionalActiveSw) => {
-  if (activeSw === null) {
+  const activeOrdinal = versionToOrdinal(activeSw.version);
+  if (activeOrdinal === null) {
+    // Fail-safe option.
     return true;
   }
-  return activeSw.checkTs < maxAgeInstant();
+  const mrgnOrdinal = versionToOrdinal(MRGN_VERSION)!;
+  return activeOrdinal < mrgnOrdinal;
 };
 
 const writeSwEvent = async (eventName) => {
-  await applicationDatabase.swEvents.add({
+  await getDatabase().swEvents.add({
     version: APP_VERSION,
     event: eventName,
     timestamp: Date.now()
@@ -105,10 +114,7 @@ const writeSwEvent = async (eventName) => {
 
 const installHandler = async () => {
   await precacheController.install();
-  const activeSw = await getActiveSw();
-  if (mustReboot(activeSw) || isCacheObsolete(activeSw)) {
-    // Always happens on the initial installation as
-    // `isCacheObsolete` returns `true`.
+  if (isSwOutdated(await getActiveSw())) {
     await scope.skipWaiting();
   }
   await writeSwEvent(SwEventType.INSTALL);
@@ -118,18 +124,15 @@ scope.addEventListener('install', (event) => {
   event.waitUntil(installHandler());
 });
 
-const isClientDependent = async (clientId) => {
-  try {
-    const entries = await applicationDatabase.independentClients
-      .where('clientId').equals(clientId).toArray();
-    return entries.length === 0;
-  } catch (error) {
-    console.warn(error);
-    return true;
+const getClientById = async (clientId: string): Promise<null | ClientRecord> => {
+  const record = await getDatabase().clients.get({ clientId });
+  if (record === undefined) {
+    return null;
   }
+  return record;
 };
 
-const reloadDependentClients = async () => {
+const reloadCachedClients = async () => {
   const windowClients = await scope.clients.matchAll({
     type: 'window',
     includeUncontrolled: false
@@ -138,7 +141,9 @@ const reloadDependentClients = async () => {
   // the service worker, which is being activated.
   windowClients.forEach(async (client) => {
     try {
-      if (client.type === 'window' && await isClientDependent(client.id)) {
+      const record = await getClientById(client.id);
+      if (record === null ||
+          record.origin === ClientOrigin.CACHE) {
         await (client as WindowClient).navigate(client.url);
       }
     } catch (error) {
@@ -147,31 +152,28 @@ const reloadDependentClients = async () => {
   });
 };
 
-const dropObsoleteSwEvents = async () => {
-  await applicationDatabase.swEvents
-    .where('timestamp').below(maxAgeInstant())
+const deleteObsoleteSwEvents = async () => {
+  await getDatabase().swEvents
+    .where('version').notEqual(APP_VERSION)
     .delete();
 };
 
-const dropObsoleteIndependentClients = async () => {
-  const entries = await applicationDatabase.independentClients.toArray();
-  await Promise.all(entries.map(async (entry) => {
-    if (!await scope.clients.get(entry.clientId)) {
-      await applicationDatabase.independentClients.delete(entry.id);
+const deleteObsoleteClients = async () => {
+  const records = await getDatabase().clients.toArray();
+  await Promise.all(records.map(async (record) => {
+    if (!await scope.clients.get(record.clientId)) {
+      await getDatabase().clients.delete(record.id!);
     }
   }));
 };
 
 const activateHandler = async () => {
   await precacheController.activate();
-  const activeSw = await getActiveSw();
-  // Checking `isCacheObsolete` for older versions
-  // that had an indefinite retention period.
-  if (mustReboot(activeSw) || isCacheObsolete(activeSw)) {
-    await reloadDependentClients();
+  if (isSwOutdated(await getActiveSw())) {
+    await reloadCachedClients();
   }
-  await dropObsoleteSwEvents();
-  await dropObsoleteIndependentClients();
+  await deleteObsoleteSwEvents();
+  await deleteObsoleteClients();
   await writeSwEvent(SwEventType.ACTIVATE);
 };
 
@@ -179,52 +181,72 @@ scope.addEventListener('activate', (event) => {
   event.waitUntil(activateHandler());
 });
 
-const isLatestVersion = async () => {
-  try {
-    const response = await fetch('/metadata.json');
-    const json = await response.json();
-    return APP_VERSION === json.version;
-  } catch (error) {
-    console.warn(error);
-    return false;
+const getFromPrecache = async (cacheKey: string): Promise<Response> => {
+  const precacheName = workbox.core.cacheNames.precache;
+  const precache = await scope.caches.open(precacheName);
+  const response = await precache.match(cacheKey);
+  if (response === undefined) {
+    throw new Error(`${precacheName} does not contain ${cacheKey}`);
   }
+  return response!;
 };
 
-const saveIndependentClient = async (clientId) => {
+const saveClient = async (clientId: string, origin: ClientOrigin) => {
   // `clientId` is universally unique.
-  await applicationDatabase.independentClients.add({
-    clientId: clientId
+  await getDatabase().clients.add({
+    clientId,
+    origin
   });
 };
 
-const fetchHandler = async (event, isNavigationRequest, cacheKey) => {
-  if (isNavigationRequest) {
-    const isLatestPromise = isLatestVersion();
-    const activeSw = await getActiveSw();
-    if (isCacheObsolete(activeSw) && !await isLatestPromise) {
-      await saveIndependentClient(event.clientId);
-      // Some of the assets may still come from the cache.
-      return fetch(indexCacheKey);
+const loadEntryPoint = async (clientId: string): Promise<Response> => {
+  const indexCacheKey = precacheController.getCacheKeyForURL('/index.html');
+  // `workbox-precaching` fetches by `indexCacheKey`.
+  const networkPromise: Promise<Response> = fetch(indexCacheKey);
+  const timeoutPromise: Promise<null> = new Promise((resolve) => {
+    setTimeout(() => resolve(null), 2 * 1000);
+  });
+  try {
+    const result = await Promise.race([
+      networkPromise,
+      timeoutPromise
+    ]);
+    if (result !== null && result.ok) {
+      await saveClient(clientId, ClientOrigin.NETWORK);
+      return result;
     }
-    event.waitUntil((async () => {
-      if (await isLatestPromise) {
-        await writeSwEvent(SwEventType.NAVIGATE);
-      }
-    })());
+  } catch (error) {
+    console.warn(error);
   }
-  const precache = await scope.caches.open(precacheName);
-  const response = await precache.match(cacheKey);
-  return response ? response : fetch(cacheKey);
+  const response = await getFromPrecache(indexCacheKey);
+  await saveClient(clientId, ClientOrigin.CACHE);
+  return response;
 };
+
+const router = new workbox.routing.Router();
+router.registerRoute(new workbox.routing.RegExpRoute(
+  new RegExp('^https://challenges.cloudflare.com/turnstile/v0/api.js$'),
+  new workbox.strategies.StaleWhileRevalidate()
+));
 
 scope.addEventListener('fetch', (event) => {
   // https://fetch.spec.whatwg.org/#dom-requestmode-navigate
-  const isNavigationRequest = event.request.mode === 'navigate';
-  const cacheKey = isNavigationRequest ? (
-    indexCacheKey
-  ) : precacheController.getCacheKeyForURL(event.request.url);
+  if (event.request.mode === 'navigate') {
+    event.respondWith(loadEntryPoint(event.resultingClientId));
+    return;
+  }
+  const cacheKey = precacheController.getCacheKeyForURL(event.request.url);
   if (cacheKey) {
-    event.respondWith(fetchHandler(event, isNavigationRequest, cacheKey));
+    event.respondWith(getFromPrecache(cacheKey));
+    return;
+  }
+  const routerPromise = router.handleRequest({
+    event: event,
+    request: event.request
+  });
+  if (routerPromise) {
+    event.respondWith(routerPromise);
+    return;
   }
 });
 

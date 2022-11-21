@@ -56,12 +56,6 @@ filegroup_copy(
     ],
 )
 
-status_vars_template(
-    name = "metadata_json",
-    output = "public/metadata.json",
-    template = "metadata.tmpl.json",
-)
-
 filegroup_copy(
     name = "package_json",
     srcs = ["package.json"],
@@ -75,7 +69,6 @@ SOURCES = [
     ":configs",
     ":package_json",
     ":public",
-    ":metadata_json",
     ":src",
     ":vue_config",
     "//pwa/service_worker",

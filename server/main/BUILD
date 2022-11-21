@@ -75,7 +75,6 @@ java_library(
         "//server/main/interceptors:agent_interceptor",
         "//server/main/interceptors:session_accessor",
         "//server/main/interceptors:version_accessor",
-        "//server/main/interceptors:version_interceptor",
         "//server/turnstile",
         "@maven//:com_google_code_gson_gson",
         "@maven//:com_google_dagger_dagger",
@@ -120,6 +119,7 @@ java_binary(
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/aspects:validate_user_aspect",
         "@maven//:com_beust_jcommander",
+        "@maven//:com_google_guava_guava",
         "@maven//:io_grpc_grpc_api",
         "@maven//:org_aspectj_aspectjrt",
     ],
@@ -139,6 +139,7 @@ woven_java_binary(
     main_class = "keyring.server.main.Launcher",
     resources = [
         "//server/java/META-INF:persistence.xml",
+        "//server/main/java:mrgn_version",
         "//server/main/java/templates:mail_vc.body.twig",
         "//server/main/java/templates:mail_vc.head.twig",
     ],

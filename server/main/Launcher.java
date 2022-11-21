@@ -1,10 +1,13 @@
 package keyring.server.main;
 
 import com.beust.jcommander.JCommander;
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptors;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.logging.Logger;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.aspects.ValidateUserAspect;
@@ -16,7 +19,12 @@ class Launcher {
   private AppComponent appComponent;
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    Environment environment = new Environment();
+    String mrgnVersion =
+        CharStreams.toString(
+                new InputStreamReader(
+                    Launcher.class.getResourceAsStream("/mrgn_version.txt"), Charsets.UTF_8))
+            .trim();
+    Environment environment = new Environment(mrgnVersion);
     JCommander.newBuilder().addObject(environment).build().parse(args);
     Launcher launcher = new Launcher();
     launcher.initialize(environment);

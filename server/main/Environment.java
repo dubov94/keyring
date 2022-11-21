@@ -27,6 +27,12 @@ public class Environment {
   @Parameter(names = "--email_from_address")
   private String emailFromAddress = "";
 
+  private String mrgnVersion = "";
+
+  public Environment(String mrgnVersion) {
+    this.mrgnVersion = mrgnVersion;
+  }
+
   private String getVariable(String key) {
     return System.getenv(key);
   }
@@ -77,5 +83,9 @@ public class Environment {
 
   public String getTurnstileSecretKey() {
     return getVariable("TURNSTILE_SECRET_KEY");
+  }
+
+  public String getMrgnVersion() {
+    return mrgnVersion;
   }
 }

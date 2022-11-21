@@ -12,7 +12,6 @@ import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.AgentInterceptor;
 import keyring.server.main.interceptors.SessionAccessor;
 import keyring.server.main.interceptors.VersionAccessor;
-import keyring.server.main.interceptors.VersionInterceptor;
 
 @Module
 class AppModule {
@@ -58,12 +57,6 @@ class AppModule {
   @Singleton
   static Chronometry provideChronometry(Arithmetic arithmetic) {
     return new Chronometry(arithmetic);
-  }
-
-  @Provides
-  @Singleton
-  static VersionInterceptor provideVersionInterceptor() {
-    return new VersionInterceptor();
   }
 
   @Provides
