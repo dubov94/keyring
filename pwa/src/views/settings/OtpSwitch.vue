@@ -67,8 +67,9 @@
       </div>
       <div v-else>
         <p>
-          <a href="https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html" target="_blank" rel="noopener noreferrer">Two-factor authentication</a>
-          additionally protects your account by requesting a time-based smartphone-generated token for each authentication attempt unless 'Remember me' is switched on, making the device trusted.
+          <tfa-docs-link>Two-factor authentication</tfa-docs-link> additionally protects your account
+          by requesting a time-based smartphone-generated token for each authentication attempt
+          unless 'Remember me' is switched on, making the device trusted.
         </p>
         <div class="mx-4">
           <v-btn block color="primary" @click="generate" :disabled="!canAccessApi" :loading="otpParamsGenerationInProgress">
@@ -90,6 +91,7 @@ import {
   ServiceAcceptOtpParamsResponseError,
   ServiceResetOtpResponseError
 } from '@/api/definitions'
+import TfaDocsLink from '@/components/TfaDocsLink.vue'
 import { isActionSuccess } from '@/redux/flow_signal'
 import {
   ackFeaturePrompt,
@@ -121,13 +123,22 @@ const activationIncorrectValidator = remoteDataErrorIndicator(ServiceAcceptOtpPa
 const deactivationIncorrectValidator = remoteDataErrorIndicator(ServiceResetOtpResponseError.INVALIDCODE)
 
 interface Mixins {
-  activation: { untouchedSinceDispatch: boolean };
-  deactivation: { untouchedSinceDispatch: boolean };
+  canAccessApi: boolean;
+  otpPrompt: boolean;
+  activation: { untouchedSinceDispatch: boolean; otp: string };
+  deactivation: { untouchedSinceDispatch: boolean; otp: string };
+  otpParamsGeneration: DeepReadonly<OtpParamsGeneration>;
+  maybeOtpParams: DeepReadonly<OtpParams> | null;
   otpParamsAcceptance: DeepReadonly<OtpParamsAcceptance>;
+  otpParamsAcceptanceInProgress: boolean;
   otpReset: DeepReadonly<OtpReset>;
+  otpResetInProgress: boolean;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
+  components: {
+    tfaDocsLink: TfaDocsLink
+  },
   data () {
     return {
       seedView: 0,

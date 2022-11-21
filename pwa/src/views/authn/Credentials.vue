@@ -12,8 +12,18 @@
           :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
           @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
           :autofocus="!usernameIsEmpty"></form-text-field>
-        <v-switch hide-details color="primary" label="Remember me"
-          :input-value="persist" @change="setPersist" class="mt-2"></v-switch>
+        <v-switch class="mt-2" hide-details color="primary"
+          :input-value="persist" @change="setPersist">
+          <template v-slot:label>
+            <div>
+              <div>Remember me</div>
+              <div class="mt-1 text-body-2 text--secondary font-italic">
+                Enables offline access and, if applicable,
+                <tfa-docs-link>2FA</tfa-docs-link> seamless completion.
+              </div>
+            </div>
+          </template>
+        </v-switch>
       </v-form>
     </div>
     <div class="py-2 px-6">
@@ -35,6 +45,7 @@ import { DeepReadonly } from 'ts-essentials'
 import Vue, { VueConstructor } from 'vue'
 import { required } from 'vuelidate/lib/validators'
 import { ServiceLogInResponseError, ServiceGetSaltResponseError } from '@/api/definitions'
+import TfaDocsLink from '@/components/TfaDocsLink.vue'
 import { isFailureOf } from '@/redux/flow_signal'
 import {
   AuthnViaApiFlowIndicator,
@@ -57,10 +68,22 @@ interface Mixins {
   untouchedSinceDispatch: boolean;
   authnViaApi: DeepReadonly<AuthnViaApi>;
   authnViaDepot: DeepReadonly<AuthnViaDepot>;
+  indicatorMessage: string | null;
+  hasIndicatorMessage: boolean;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
-  props: ['username', 'password', 'persist', 'authnViaApi', 'authnViaDepot', 'usernameMatchesDepot'],
+  components: {
+    tfaDocsLink: TfaDocsLink
+  },
+  props: [
+    'username',
+    'password',
+    'persist',
+    'authnViaApi',
+    'authnViaDepot',
+    'usernameMatchesDepot'
+  ],
   data () {
     return {
       untouchedSinceDispatch: false

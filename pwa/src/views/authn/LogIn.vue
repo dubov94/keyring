@@ -174,7 +174,7 @@ export default Vue.extend({
     setPersist (value: boolean) {
       if (value) {
         this.persist = true
-        this.dispatch(showToast({ message: 'Okay, we will store your data encrypted on this device. Try it offline!' }))
+        this.dispatch(showToast({ message: 'Okay, we will store your data encrypted on this device.' }))
       } else {
         this.dispatch(clearDepot())
         this.dispatch(showToast({ message: 'Alright, we wiped out all saved data on this device.' }))
