@@ -37,17 +37,17 @@ public final class TurnstileValidator {
   }
 
   public static final class ResponseGson {
-    @Key private boolean success;
+    @Key public boolean success;
 
-    @Key private String challenge_ts;
+    @Key public String challenge_ts;
 
-    @Key private String hostname;
+    @Key public String hostname;
 
-    @Key private List<String> error_codes;
+    @Key public List<String> error_codes;
 
-    @Key private String action;
+    @Key public String action;
 
-    @Key private String cdata;
+    @Key public String cdata;
 
     public TurnstileResponse toTurnstileResponse() {
       return TurnstileResponse.newBuilder()
