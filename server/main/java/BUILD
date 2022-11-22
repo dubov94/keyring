@@ -4,5 +4,5 @@ status_vars_template(
     name = "mrgn_version",
     output = "mrgn_version.txt",
     template = "mrgn_version.tmpl.txt",
-	visibility = ["//server:internal"],
+    visibility = ["//server:internal"],
 )
