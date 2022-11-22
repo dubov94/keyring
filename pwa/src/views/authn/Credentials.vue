@@ -15,7 +15,7 @@
         <v-switch class="mt-2" hide-details color="primary"
           :input-value="persist" @change="setPersist">
           <template v-slot:label>
-            <div>
+            <div class="ml-1">
               <div>Remember me</div>
               <div class="mt-1 text-body-2 text--secondary font-italic">
                 Enables offline access and, if applicable,

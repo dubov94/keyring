@@ -30,7 +30,7 @@ describe('Register', () => {
     container.register<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN, {
       useValue: new PositiveFakeStrengthTestService()
     })
-    container.register<Turnstile.Api>(TURNSTILE_API_TOKEN, {
+    container.register<OptionalTurnstileApi>(TURNSTILE_API_TOKEN, {
       useValue: new FakeTurnstileApi('widget', 'captchaToken')
     })
     container.register<Flags>(FLAGS_TOKEN, {

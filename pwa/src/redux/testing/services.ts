@@ -29,9 +29,9 @@ export class FakeTurnstileApi implements Turnstile.Api {
   _container: null | HTMLElement
 
   constructor (widgetId: string, token: string) {
-    this._container = null
     this._widgetId = widgetId
     this._token = token
+    this._container = null
   }
 
   render (container: HTMLElement, params: Turnstile.RenderParameters) {

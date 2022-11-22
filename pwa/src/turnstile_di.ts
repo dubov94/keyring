@@ -2,4 +2,4 @@ import { container } from 'tsyringe'
 
 export const TURNSTILE_API_TOKEN = 'TurnstileApiToken'
 
-export const getTurnstileApi = () => container.resolve<Turnstile.Api>(TURNSTILE_API_TOKEN)
+export const getTurnstileApi = () => container.resolve<OptionalTurnstileApi>(TURNSTILE_API_TOKEN)

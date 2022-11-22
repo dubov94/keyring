@@ -2,6 +2,27 @@
   .password-strength {
     padding-left: calc(24px + 9px);
   }
+
+  /* https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/#widget-size */
+  .captcha {
+    position: relative;
+    width: 300px;
+    height: 65px;
+    margin: 0 auto;
+  }
+
+  .captcha__layer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  .captcha__layer--widget {
+    /* To be above `v-skeleton-loader` animation. */
+    z-index: 1;
+  }
 </style>
 
 <template>
@@ -42,8 +63,13 @@
                     v-model="mail" :dirty="$v.mail.$dirty" :errors="mailErrors"
                     @touch="$v.mail.$touch()" @reset="$v.mail.$reset()">
                   </form-text-field>
-                  <div class="text-center mt-2">
-                    <div class="d-inline-block" ref="captcha"></div>
+                  <div class="mt-2">
+                    <div class="captcha">
+                      <div class="captcha__layer">
+                        <v-skeleton-loader type="paragraph"></v-skeleton-loader>
+                      </div>
+                      <div class="captcha__layer captcha__layer--widget" ref="captcha"></div>
+                    </div>
                   </div>
                 </v-form>
               </v-card-text>
@@ -205,24 +231,42 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         mail: this.mail,
         captchaToken: this.turnstileToken
       }))
+    },
+    mountTurnstile () {
+      const turnstileApi = getTurnstileApi()
+      if (turnstileApi === null) {
+        return
+      }
+      this.turnstileWidgetId = turnstileApi.render(
+        this.$refs.captcha as HTMLElement,
+        {
+          sitekey: getFlags().turnstileSiteKey,
+          action: 'register',
+          callback: (token) => {
+            this.turnstileToken = token
+          },
+          'expired-callback': () => {
+            this.turnstileToken = ''
+            turnstileApi.reset(this.turnstileWidgetId)
+          },
+          'response-field': false,
+          size: 'normal'
+        }
+      )!
+    },
+    unmountTurnstile () {
+      const turnstileApi = getTurnstileApi()
+      if (turnstileApi === null) {
+        return
+      }
+      turnstileApi.reset(this.turnstileWidgetId)
     }
   },
   mounted () {
-    this.turnstileWidgetId = getTurnstileApi().render(this.$refs.captcha as HTMLElement, {
-      sitekey: getFlags().turnstileSiteKey,
-      action: 'register',
-      callback: (token) => {
-        this.turnstileToken = token
-      },
-      'expired-callback': () => {
-        this.turnstileToken = ''
-        getTurnstileApi().reset(this.turnstileWidgetId)
-      },
-      'response-field': false
-    })!
+    this.mountTurnstile()
   },
   beforeDestroy () {
-    getTurnstileApi().remove(this.turnstileWidgetId)
+    this.unmountTurnstile()
     this.dispatch(registrationReset())
   }
 })

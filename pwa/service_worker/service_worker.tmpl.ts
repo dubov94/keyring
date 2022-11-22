@@ -168,6 +168,7 @@ const deleteObsoleteClients = async () => {
 };
 
 const activateHandler = async () => {
+  await caches.delete(workbox.core.cacheNames.runtime);
   await precacheController.activate();
   if (isSwOutdated(await getActiveSw())) {
     await reloadCachedClients();
@@ -223,11 +224,8 @@ const loadEntryPoint = async (clientId: string): Promise<Response> => {
   return response;
 };
 
+// Currently empty.
 const router = new workbox.routing.Router();
-router.registerRoute(new workbox.routing.RegExpRoute(
-  new RegExp('^https://challenges.cloudflare.com/turnstile/v0/api.js$'),
-  new workbox.strategies.StaleWhileRevalidate()
-));
 
 scope.addEventListener('fetch', (event) => {
   // https://fetch.spec.whatwg.org/#dom-requestmode-navigate

@@ -21,3 +21,5 @@ declare namespace Turnstile {
     getResponse(widgetId: string): string | undefined;
   }
 }
+
+type OptionalTurnstileApi = null | Turnstile.Api;
