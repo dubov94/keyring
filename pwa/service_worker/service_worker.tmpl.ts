@@ -92,12 +92,10 @@ const versionToOrdinal = (version: string): null | number => {
 
 const isSwOutdated = (activeSw: OptionalActiveSw) => {
   if (activeSw === null) {
-    // No worker detected.
-    return false;
+    return true;
   }
   const activeOrdinal = versionToOrdinal(activeSw.version);
   if (activeOrdinal === null) {
-    // Fail-safe option.
     return true;
   }
   const mrgnOrdinal = versionToOrdinal(MRGN_VERSION)!;
