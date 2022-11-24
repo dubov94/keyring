@@ -14,7 +14,7 @@ def ts_swagger_api(name, spec):
         name = archive_target_name,
         # Requires 'portable-fetch' and 'url'.
         language = "typescript-fetch",
-        spec = "//grpc_gateway:swagger_specification",
+        spec = spec,
     )
 
     native.genrule(

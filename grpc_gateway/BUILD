@@ -9,7 +9,7 @@ gateway_grpc_library(
 )
 
 gateway_openapiv2_compile(
-    name = "swagger_specification",
+    name = "swagger_spec",
     visibility = ["//pwa/src/api/definitions:__pkg__"],
     deps = ["//proto:service_proto"],
 )
