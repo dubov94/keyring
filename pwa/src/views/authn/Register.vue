@@ -103,7 +103,7 @@ import { email, required, sameAs } from 'vuelidate/lib/validators'
 import { ServiceRegisterResponseError } from '@/api/definitions'
 import Page from '@/components/Page.vue'
 import StrengthScore from '@/components/StrengthScore.vue'
-import { remoteDataErrorIndicator } from '@/components/form_validators'
+import { remoteDataErrorIndicator, checkUsername } from '@/components/form_validators'
 import { Score, getStrengthTestService } from '@/cryptography/strength_test_service'
 import { getFlags } from '@/flags'
 import { register, RegistrationFlowIndicator, registrationReset, registrationSignal } from '@/redux/modules/authn/actions'
@@ -124,13 +124,6 @@ interface Mixins {
   username: { untouchedSinceDispatch: boolean };
   registration: DeepReadonly<Registration>;
 }
-
-// if_change(username_pattern)
-const USERNAME_PATTERN = /^\w{3,64}$/
-// then_change(
-//   pwa/src/i18n.ts:username_pattern_mismatch,
-//   server/main/services/AuthenticationService.java:username_pattern,
-// )
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
@@ -164,7 +157,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         return value.trim().length > 0
       },
       matchesPattern ({ value }) {
-        return USERNAME_PATTERN.test(value)
+        return checkUsername(value)
       },
       isAvailable () {
         return !usernameTakenIndicator(this.registration, this.username.untouchedSinceDispatch)

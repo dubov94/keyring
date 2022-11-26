@@ -15,7 +15,6 @@ import io.vavr.control.Either;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 import javax.inject.Inject;
 import keyring.server.main.Cryptography;
 import keyring.server.main.MailClient;
@@ -50,9 +49,6 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
                   featurePrompts.getFuzzySearch()
                       ? Optional.of(datalessFeaturePrompt(FeatureType.FUZZY_SEARCH))
                       : Optional.empty());
-  // if_change(username_pattern)
-  private static final Pattern USERNAME_PATTERN = Pattern.compile("^\\w{3,64}$");
-  // then_change(pwa/src/views/authn/Register.vue:username_pattern)
 
   private AccountOperationsInterface accountOperationsInterface;
   private KeyOperationsInterface keyOperationsInterface;
@@ -93,7 +89,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     if (!turnstileResponse.success()) {
       return Optional.of(new StatusException(Status.UNAUTHENTICATED));
     }
-    if (!USERNAME_PATTERN.matcher(request.getUsername()).matches()) {
+    if (!Validators.checkUsername(request.getUsername())) {
       return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
     }
     if (!cryptography.validateA2p(request.getSalt())) {

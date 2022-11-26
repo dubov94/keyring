@@ -6,6 +6,7 @@ java_library(
     srcs = ["AdministrationService.java"],
     visibility = ["//server:internal"],
     deps = [
+        ":validators",
         "//proto:service_java_grpc",
         "//server/main:chronometry",
         "//server/main:cryptography",
@@ -72,6 +73,7 @@ java_library(
     srcs = ["AuthenticationService.java"],
     visibility = ["//server:internal"],
     deps = [
+        ":validators",
         "//proto:service_java_grpc",
         "//server/main:cryptography",
         "//server/main:mail_client",
@@ -130,4 +132,9 @@ woven_junit5_test(
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
     ],
+)
+
+java_library(
+    name = "validators",
+    srcs = ["Validators.java"],
 )

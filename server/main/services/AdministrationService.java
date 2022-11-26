@@ -249,11 +249,18 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
   }
 
+  private Optional<StatusException> validateChangeUsernameRequest(ChangeUsernameRequest request) {
+    if (!Validators.checkUsername(request.getUsername())) {
+      return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
+    }
+    return Optional.empty();
+  }
+
   private Either<StatusException, ChangeUsernameResponse> _changeUsername(
       ChangeUsernameRequest request) {
-    String username = request.getUsername();
-    if (username.trim().isEmpty()) {
-      return Either.left(new StatusException(Status.INVALID_ARGUMENT));
+    Optional<StatusException> validation = validateChangeUsernameRequest(request);
+    if (validation.isPresent()) {
+      return Either.left(validation.get());
     }
     long userIdentifier = sessionAccessor.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);

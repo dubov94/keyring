@@ -16,3 +16,14 @@ export const remoteDataErrorIndicator = <E>(apiError: E) => {
     )
   }
 }
+
+// if_change(username_pattern)
+const USERNAME_PATTERN = /^\w{3,64}$/
+// then_change(
+//   pwa/src/i18n.ts:username_pattern_mismatch,
+//   server/main/services/Validators.java:username_pattern,
+// )
+
+export const checkUsername = (username: string): boolean => {
+  return USERNAME_PATTERN.test(username)
+}

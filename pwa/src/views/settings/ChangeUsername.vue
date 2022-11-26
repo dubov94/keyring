@@ -33,20 +33,25 @@ import { filter, takeUntil } from 'rxjs/operators'
 import { hasIndicator } from '@/redux/remote_data'
 import { DeepReadonly } from 'ts-essentials'
 import { showToast } from '@/redux/modules/ui/toast/actions'
-import { remoteDataErrorIndicator } from '@/components/form_validators'
+import { remoteDataErrorIndicator, checkUsername } from '@/components/form_validators'
 
 const usernameTakenIndicator = remoteDataErrorIndicator(ServiceChangeUsernameResponseError.NAMETAKEN)
 const passwordIncorrectIndicator = remoteDataErrorIndicator(ServiceChangeUsernameResponseError.INVALIDDIGEST)
 
 interface Mixins {
+  username: string;
+  password: string;
   untouchedSinceDispatch: boolean;
+  canAccessApi: boolean;
   usernameChange: DeepReadonly<UsernameChange>;
+  inProgress: boolean;
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   validations: {
     username: {
       required,
+      matchesPattern: checkUsername,
       isAvailable () {
         return !usernameTakenIndicator(this.usernameChange, this.untouchedSinceDispatch)
       }
@@ -94,6 +99,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     usernameErrors (): { [key: string]: boolean } {
       return {
         [this.$t('USERNAME_CANNOT_BE_EMPTY') as string]: !this.$v.username.required,
+        [this.$t('USERNAME_PATTERN_MISMATCH') as string]: !this.$v.username.matchesPattern,
         [this.$t('USERNAME_IS_ALREADY_TAKEN') as string]: !this.$v.username.isAvailable
       }
     },
