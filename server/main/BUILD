@@ -9,6 +9,7 @@ java_library(
     name = "arithmetic",
     srcs = ["Arithmetic.java"],
     visibility = ["//server:internal"],
+    deps = ["@maven//:com_google_guava_guava"],
 )
 
 java_library(
