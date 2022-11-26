@@ -210,8 +210,23 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     response.onCompleted();
   }
 
+  private Optional<StatusException> validateChangeMasterKeyRequest(ChangeMasterKeyRequest request) {
+    ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
+    if (!cryptography.validateA2p(renewal.getSalt())) {
+      return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
+    }
+    if (!cryptography.validateDigest(renewal.getDigest())) {
+      return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
+    }
+    return Optional.empty();
+  }
+
   private Either<StatusException, ChangeMasterKeyResponse> _changeMasterKey(
       ChangeMasterKeyRequest request) {
+    Optional<StatusException> validation = validateChangeMasterKeyRequest(request);
+    if (validation.isPresent()) {
+      return Either.left(validation.get());
+    }
     long identifier = sessionAccessor.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(identifier);
     if (!maybeUser.isPresent()) {

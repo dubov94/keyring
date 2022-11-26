@@ -176,6 +176,8 @@ class AdministrationServiceTest {
 
   @Test
   void changeMasterKey_digestDoesNotMatchHash_repliesWithError() {
+    when(mockCryptography.validateA2p("")).thenReturn(true);
+    when(mockCryptography.validateDigest("")).thenReturn(true);
     when(mockCryptography.doesDigestMatchHash("random", "hash")).thenReturn(false);
 
     administrationService.changeMasterKey(
@@ -192,6 +194,8 @@ class AdministrationServiceTest {
   @Test
   void changeMasterKey_digestsMatch_repliesWithDefault() {
     KeyPatch keyPatch = KeyPatch.newBuilder().setIdentifier(0L).build();
+    when(mockCryptography.validateA2p("prefix")).thenReturn(true);
+    when(mockCryptography.validateDigest("suffix")).thenReturn(true);
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.computeHash("suffix")).thenReturn("xiffus");
     when(mockAccountOperationsInterface.readSessions(7L))
