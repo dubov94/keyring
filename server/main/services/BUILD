@@ -38,7 +38,7 @@ woven_junit5_test(
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/aspects:validate_user_aspect",
     ],
-    test_package = "server.main.services",
+    test_package = "keyring.server.main.services",
     deps = [
         "//proto:service_java_grpc",
         "//server/main:chronometry",
@@ -105,7 +105,7 @@ woven_junit5_test(
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/aspects:validate_user_aspect",
     ],
-    test_package = "server.main.services",
+    test_package = "keyring.server.main.services",
     deps = [
         "//proto:service_java_grpc",
         "//server/main:cryptography",

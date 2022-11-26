@@ -49,7 +49,7 @@ java_library(
 java_binary(
     name = "main",
     srcs = ["Janitor.java"],
-    main_class = "server.janitor.Janitor",
+    main_class = "keyring.server.janitor.Janitor",
     deps = [
         ":app_component",
         ":environment",

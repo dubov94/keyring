@@ -47,7 +47,7 @@ java_library(
 junit5_test(
     name = "key_value_client_test",
     srcs = ["KeyValueClientTest.java"],
-    test_package = "server.main.keyvalue",
+    test_package = "keyring.server.main.keyvalue",
     runtime_deps = [
         "@maven//:org_slf4j_slf4j_simple",
     ],

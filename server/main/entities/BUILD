@@ -108,7 +108,7 @@ java_library(
 java_binary(
     name = "ddl",
     srcs = ["Ddl.java"],
-    main_class = "server.main.entities.Ddl",
+    main_class = "keyring.server.main.entities.Ddl",
     resources = ["//server/main/entities/java:hibernate.cfg.xml"],
     runtime_deps = ["@maven//:org_slf4j_slf4j_simple"],
     deps = [

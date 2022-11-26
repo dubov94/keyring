@@ -51,7 +51,7 @@ woven_junit5_test(
         "//server/main/aspects:validate_user_aspect",
     ],
     resources = ["//server/java/META-INF:persistence.xml"],
-    test_package = "server.main.storage",
+    test_package = "keyring.server.main.storage",
     runtime_deps = [
         "@maven//:org_postgresql_postgresql",
         "@maven//:org_testcontainers_postgresql",
@@ -116,7 +116,7 @@ woven_junit5_test(
         "//server/main/aspects:validate_user_aspect",
     ],
     resources = ["//server/java/META-INF:persistence.xml"],
-    test_package = "server.main.storage",
+    test_package = "keyring.server.main.storage",
     runtime_deps = [
         "@maven//:org_postgresql_postgresql",
         "@maven//:org_testcontainers_postgresql",

@@ -19,7 +19,7 @@ woven_junit5_test(
     aop_xml = "//server/janitor/java/META-INF:aop.xml",
     aspects = ["//server/main/aspects:storage_manager_aspect"],
     resources = ["//server/java/META-INF:persistence.xml"],
-    test_package = "server.janitor.tasks",
+    test_package = "keyring.server.janitor.tasks",
     runtime_deps = [
         "@maven//:org_postgresql_postgresql",
         "@maven//:org_testcontainers_postgresql",
@@ -65,7 +65,7 @@ woven_junit5_test(
     aop_xml = "//server/janitor/java/META-INF:aop.xml",
     aspects = ["//server/main/aspects:storage_manager_aspect"],
     resources = ["//server/java/META-INF:persistence.xml"],
-    test_package = "server.janitor.tasks",
+    test_package = "keyring.server.janitor.tasks",
     runtime_deps = [
         "@maven//:org_postgresql_postgresql",
         "@maven//:org_testcontainers_postgresql",

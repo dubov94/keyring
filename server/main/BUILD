@@ -32,7 +32,7 @@ java_library(
 junit5_test(
     name = "cryptography_test",
     srcs = ["CryptographyTest.java"],
-    test_package = "server.main",
+    test_package = "keyring.server.main",
     deps = [
         ":arithmetic",
         "//server/main:cryptography",
@@ -113,7 +113,7 @@ java_library(
 java_binary(
     name = "launcher",
     srcs = ["Launcher.java"],
-    main_class = "server.main.Launcher",
+    main_class = "keyring.server.main.Launcher",
     deps = [
         ":app_component",
         ":environment",

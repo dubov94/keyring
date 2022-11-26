@@ -23,7 +23,7 @@ java_library(
 junit5_test(
     name = "storage_manager_aspect_test",
     srcs = ["StorageManagerAspectTest.java"],
-    test_package = "server.main.aspects",
+    test_package = "keyring.server.main.aspects",
     deps = [
         ":annotations",
         "//server/main/aspects:storage_manager_aspect",
@@ -54,7 +54,7 @@ java_library(
 junit5_test(
     name = "validate_user_aspect_test",
     srcs = ["ValidateUserAspectTest.java"],
-    test_package = "server.main.aspects",
+    test_package = "keyring.server.main.aspects",
     deps = [
         "//server/main/aspects:annotations",
         "//server/main/aspects:validate_user_aspect",
