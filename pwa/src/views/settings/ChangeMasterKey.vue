@@ -2,7 +2,7 @@
   <v-expansion-panel>
     <v-expansion-panel-header>
       <div>
-        <div class="text-body-1">
+        <div>
           Change password
         </div>
         <div class="mt-1 text-body-2 text--secondary font-italic">
