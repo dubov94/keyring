@@ -1,5 +1,6 @@
 package keyring.server.main.entities;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import java.sql.Timestamp;
@@ -85,6 +86,7 @@ public class Key {
   }
 
   public Key setTags(List<String> tags) {
+    Preconditions.checkArgument(tags.size() <= 32);
     tags.forEach((tag) -> Validators.checkStringSize(FileUtils.ONE_KB, tag));
     this.labels = tags.stream().toArray(String[]::new);
     return this;
