@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public final class TurnstileValidator {
+public class TurnstileValidator {
   private static final String TURNSTILE_VERIFICATION_URL =
       "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
