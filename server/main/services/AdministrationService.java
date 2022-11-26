@@ -46,6 +46,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private IGoogleAuthenticator googleAuthenticator;
   private Chronometry chronometry;
 
+  private static final int OTP_TTS_COUNT = 5;
+  private static final String OTP_ISSUER = "parolica.com";
+
   @Inject
   AdministrationService(
       KeyOperationsInterface keyOperationsInterface,
@@ -383,7 +386,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     GoogleAuthenticatorKey credentials = googleAuthenticator.createCredentials();
     String sharedSecret = credentials.getKey();
     List<String> scratchCodes =
-        Stream.generate(cryptography::generateTts).limit(5).collect(toList());
+        Stream.generate(cryptography::generateTts).limit(OTP_TTS_COUNT).collect(toList());
     OtpParams otpParams =
         accountOperationsInterface.createOtpParams(
             user.getIdentifier(), sharedSecret, scratchCodes);
@@ -393,7 +396,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
             .setSharedSecret(sharedSecret)
             .setKeyUri(
                 GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(
-                    "parolica.com", user.getUsername(), credentials))
+                    OTP_ISSUER, user.getUsername(), credentials))
             .addAllScratchCodes(scratchCodes)
             .build());
   }
