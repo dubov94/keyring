@@ -88,6 +88,8 @@ class AuthenticationServiceTest {
     when(mockTurnstileValidator.validate(
             TurnstileRequest.newBuilder().setResponse("captcha").build()))
         .thenReturn(TurnstileResponse.newBuilder().setSuccess(true).build());
+    when(mockCryptography.validateA2p("")).thenReturn(true);
+    when(mockCryptography.validateDigest("")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(Optional.of(new User()));
 
@@ -108,6 +110,8 @@ class AuthenticationServiceTest {
     when(mockTurnstileValidator.validate(
             TurnstileRequest.newBuilder().setResponse("captcha").build()))
         .thenReturn(TurnstileResponse.newBuilder().setSuccess(true).build());
+    when(mockCryptography.validateA2p("salt")).thenReturn(true);
+    when(mockCryptography.validateDigest("digest")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
     when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockCryptography.generateUacs()).thenReturn("0");
@@ -129,6 +133,8 @@ class AuthenticationServiceTest {
             .build(),
         mockStreamObserver);
 
+    verify(mockCryptography).validateA2p("salt");
+    verify(mockCryptography).validateDigest("digest");
     verify(mockAccountOperationsInterface)
         .createUser("username", "salt", "hash", "mail@example.com", "0");
     verify(mockAccountOperationsInterface)

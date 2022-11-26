@@ -125,6 +125,13 @@ interface Mixins {
   registration: DeepReadonly<Registration>;
 }
 
+// if_change(username_pattern)
+const USERNAME_PATTERN = /^\w{3,64}$/
+// then_change(
+//   pwa/src/i18n.ts:username_pattern_mismatch,
+//   server/main/services/AuthenticationService.java:username_pattern,
+// )
+
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
   components: {
     page: Page,
@@ -153,14 +160,19 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   },
   validations: {
     username: {
-      required,
+      required ({ value }) {
+        return value.trim().length > 0
+      },
+      matchesPattern ({ value }) {
+        return USERNAME_PATTERN.test(value)
+      },
       isAvailable () {
         return !usernameTakenIndicator(this.registration, this.username.untouchedSinceDispatch)
       }
     },
     password: { required },
     repeat: { sameAs: sameAs('password') },
-    mail: { email, required }
+    mail: { required, email }
   },
   computed: {
     passwordStrength (): Score {
@@ -175,6 +187,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     usernameErrors (): { [key: string]: boolean } {
       return {
         [this.$t('USERNAME_CANNOT_BE_EMPTY') as string]: !this.$v.username.required,
+        [this.$t('USERNAME_PATTERN_MISMATCH') as string]: !this.$v.username.matchesPattern,
         [this.$t('USERNAME_IS_ALREADY_TAKEN') as string]: !this.$v.username.isAvailable
       }
     },

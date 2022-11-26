@@ -21,6 +21,9 @@ const MESSAGES: LocaleMessages = {
     USERNAME_CANNOT_BE_EMPTY: 'Username cannot be empty',
     USERNAME_IS_ALREADY_TAKEN: 'Username is already taken',
     USERNAME_IS_REQUIRED: 'Username is required',
+    // if_change(username_pattern_mismatch)
+    USERNAME_PATTERN_MISMATCH: 'Username can only contain latin letters, numbers and underscores, and must be between 3 and 64 characters long',
+    // then_change
     OTP_ATTEMPTS_EXHAUSTED: 'Please enter one of the recovery codes'
   }
 }

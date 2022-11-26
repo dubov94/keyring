@@ -19,4 +19,8 @@
   .flex-1 {
     flex: 1;
   }
+
+  .v-messages__message {
+    line-height: 16px;
+  }
 </style>

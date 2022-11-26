@@ -15,6 +15,7 @@ import io.vavr.control.Either;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import javax.inject.Inject;
 import keyring.server.main.Cryptography;
 import keyring.server.main.MailClient;
@@ -49,6 +50,9 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
                   featurePrompts.getFuzzySearch()
                       ? Optional.of(datalessFeaturePrompt(FeatureType.FUZZY_SEARCH))
                       : Optional.empty());
+  // if_change(username_pattern)
+  private static final Pattern USERNAME_PATTERN = Pattern.compile("^\\w{3,64}$");
+  // then_change(pwa/src/views/authn/Register.vue:username_pattern)
 
   private AccountOperationsInterface accountOperationsInterface;
   private KeyOperationsInterface keyOperationsInterface;
@@ -82,25 +86,42 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.turnstileValidator = turnstileValidator;
   }
 
-  @WithEntityManager
-  private Either<StatusException, RegisterResponse> _register(RegisterRequest request) {
+  private Optional<StatusException> validateRegisterRequest(RegisterRequest request) {
     TurnstileRequest turnstileRequest =
         TurnstileRequest.newBuilder().setResponse(request.getCaptchaToken()).build();
     TurnstileResponse turnstileResponse = turnstileValidator.validate(turnstileRequest);
     if (!turnstileResponse.success()) {
-      return Either.left(new StatusException(Status.UNAUTHENTICATED));
+      return Optional.of(new StatusException(Status.UNAUTHENTICATED));
     }
-    String username = request.getUsername();
-    String mail = request.getMail();
-    if (username.trim().isEmpty() || !EmailValidator.getInstance().isValid(mail)) {
-      return Either.left(new StatusException(Status.INVALID_ARGUMENT));
+    if (!USERNAME_PATTERN.matcher(request.getUsername()).matches()) {
+      return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
+    }
+    if (!cryptography.validateA2p(request.getSalt())) {
+      return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
+    }
+    if (!cryptography.validateDigest(request.getDigest())) {
+      return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
+    }
+    if (!EmailValidator.getInstance().isValid(request.getMail())) {
+      return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
+    }
+    return Optional.empty();
+  }
+
+  @WithEntityManager
+  private Either<StatusException, RegisterResponse> _register(RegisterRequest request) {
+    Optional<StatusException> validation = validateRegisterRequest(request);
+    if (validation.isPresent()) {
+      return Either.left(validation.get());
     }
     RegisterResponse.Builder builder = RegisterResponse.newBuilder();
+    String username = request.getUsername();
     if (accountOperationsInterface.getUserByName(username).isPresent()) {
       return Either.right(builder.setError(RegisterResponse.Error.NAME_TAKEN).build());
     }
     String salt = request.getSalt();
     String hash = cryptography.computeHash(request.getDigest());
+    String mail = request.getMail();
     String code = cryptography.generateUacs();
     Tuple2<User, MailToken> entities =
         accountOperationsInterface.createUser(username, salt, hash, mail, code);
