@@ -21,6 +21,7 @@ import keyring.server.main.proto.service.Password;
 public class KeyOperationsClient implements KeyOperationsInterface {
   @ContextualEntityManager private EntityManager entityManager;
 
+  // Locks `User` for `AccountOperationsInterface::changeMasterKey`.
   @LockEntity(name = "user")
   private Key _spawnKey(User user, Password content, KeyAttrs attrs) {
     Key newKey = new Key().mergeFromPassword(content).setUser(user);
@@ -68,7 +69,6 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     return Queries.findManyToOne(entityManager, Key.class, Key_.user, userIdentifier);
   }
 
-  @LockEntity(name = "key")
   private void _updateKey(Key key, KeyPatch patch) {
     key.mergeFromPassword(patch.getPassword());
     entityManager.persist(key);
@@ -89,7 +89,6 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     _updateKey(key, patch);
   }
 
-  @LockEntity(name = "key")
   private void _deleteKey(Key key) {
     entityManager.remove(key);
   }
@@ -110,7 +109,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
 
   @LockEntity(name = "parent")
   private List<Key> _deleteShadows(Key parent) {
-    // Shadow creation is guarded by `parent` lock.
+    // `Key` creation is guarded by `parent` lock.
     List<Key> shadows =
         Queries.findManyToOne(entityManager, Key.class, Key_.parent, parent.getIdentifier());
     shadows.forEach((item) -> entityManager.remove(item));

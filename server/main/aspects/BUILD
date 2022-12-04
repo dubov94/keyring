@@ -4,7 +4,7 @@ java_library(
     name = "annotations",
     srcs = ["Annotations.java"],
     visibility = ["//server:internal"],
-    deps = ["//server/main/entities:user"],
+    deps = ["//server/main/entities:columns_java_proto"],
 )
 
 java_library(
@@ -58,6 +58,7 @@ junit5_test(
     deps = [
         "//server/main/aspects:annotations",
         "//server/main/aspects:validate_user_aspect",
+        "//server/main/entities:columns_java_proto",
         "//server/main/entities:user",
         "//server/main/interceptors:session_accessor",
         "//server/main/storage:account_operations_interface",

@@ -19,7 +19,9 @@ final class Ddl {
     metadataSources.addAnnotatedClass(OtpParams.class);
     metadataSources.addAnnotatedClass(OtpToken.class);
     metadataSources.addAnnotatedClass(Session.class);
+    metadataSources.addAnnotatedClass(SessionStageConverter.class);
     metadataSources.addAnnotatedClass(User.class);
+    metadataSources.addAnnotatedClass(UserStateConverter.class);
     Metadata metadata = metadataSources.buildMetadata();
     SchemaExport schemaExport = new SchemaExport();
     schemaExport.setFormat(true);

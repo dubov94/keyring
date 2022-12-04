@@ -168,3 +168,19 @@ ALTER TABLE
     "public"."feature_prompts"
 ADD
     CONSTRAINT "fkstt2d96538kdhgl2qhiouhep3" FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier") ON UPDATE NO ACTION ON DELETE CASCADE;
+
+-- changeset liquibase:17
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'sessions' and column_name = 'version'
+ALTER TABLE
+    "public"."sessions"
+ADD
+    "version" BIGINT NOT NULL;
+
+-- changeset liquibase:18
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'sessions' and column_name = 'stage'
+ALTER TABLE
+    "public"."sessions"
+ADD
+    "stage" INTEGER;

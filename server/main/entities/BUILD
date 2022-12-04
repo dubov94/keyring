@@ -1,3 +1,5 @@
+load("@rules_proto_grpc//java:defs.bzl", "java_proto_library")
+
 java_library(
     name = "user",
     srcs = [
@@ -7,6 +9,8 @@ java_library(
     plugins = ["//bazel/java:hibernate_jpamodelgen"],
     visibility = ["//server:internal"],
     deps = [
+        ":columns_java_proto",
+        ":user_state_converter",
         ":validators",
         "@maven//:com_google_guava_guava",
         "@maven//:commons_io_commons_io",
@@ -55,6 +59,8 @@ java_library(
     plugins = ["//bazel/java:hibernate_jpamodelgen"],
     visibility = ["//server:internal"],
     deps = [
+        ":columns_java_proto",
+        ":session_stage_converter",
         ":user",
         ":validators",
         "@maven//:com_google_guava_guava",
@@ -101,7 +107,9 @@ java_library(
         ":otp_params",
         ":otp_token",
         ":session",
+        ":session_stage_converter",
         ":user",
+        ":user_state_converter",
     ],
 )
 
@@ -123,4 +131,32 @@ java_library(
     deps = [
         "@maven//:com_google_guava_guava",
     ],
+)
+proto_library(
+    name = "columns_proto",
+    srcs = ["columns.proto"],
+)
+
+java_proto_library(
+    name = "columns_java_proto",
+    visibility = ["//server:internal"],
+    protos = [":columns_proto"],
+)
+
+java_library(
+    name = "user_state_converter",
+    srcs = ["UserStateConverter.java"],
+    deps = [
+        ":columns_java_proto",
+        "@maven//:javax_persistence_javax_persistence_api",
+    ]
+)
+
+java_library(
+    name = "session_stage_converter",
+    srcs = ["SessionStageConverter.java"],
+    deps = [
+        ":columns_java_proto",
+        "@maven//:javax_persistence_javax_persistence_api",
+    ]
 )

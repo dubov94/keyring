@@ -1,6 +1,5 @@
 package keyring.server.main;
 
-import com.google.gson.Gson;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
 import dagger.Module;
@@ -27,12 +26,6 @@ class AppModule {
   @Singleton
   static Cryptography provideCryptography(Arithmetic arithmetic) {
     return new Cryptography(new SecureRandom(), arithmetic, UACS_LENGTH);
-  }
-
-  @Provides
-  @Singleton
-  static Gson provideGson() {
-    return new Gson();
   }
 
   @Provides
