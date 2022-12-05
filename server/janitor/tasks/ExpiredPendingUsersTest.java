@@ -12,6 +12,7 @@ import javax.persistence.*;
 import keyring.server.main.Chronometry;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.entities.User;
+import keyring.server.main.entities.columns.UserState;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,7 +43,7 @@ final class ExpiredPendingUsersTest {
 
   @Test
   void oldActiveUser_keeps() {
-    User user = new User().setState(User.State.ACTIVE).setUsername(createUniqueUsername());
+    User user = new User().setState(UserState.ACTIVE).setUsername(createUniqueUsername());
     persistEntity(user);
     when(mockChronometry.pastTimestamp(15, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.now()));
@@ -54,7 +55,7 @@ final class ExpiredPendingUsersTest {
 
   @Test
   void oldPendingUser_removes() {
-    User user = new User().setState(User.State.PENDING).setUsername(createUniqueUsername());
+    User user = new User().setState(UserState.PENDING).setUsername(createUniqueUsername());
     persistEntity(user);
     when(mockChronometry.pastTimestamp(15, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.now()));

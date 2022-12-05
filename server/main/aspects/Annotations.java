@@ -4,13 +4,13 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import keyring.server.main.entities.User;
+import keyring.server.main.entities.columns.UserState;
 
 public class Annotations {
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface ValidateUser {
-    User.State[] states() default {User.State.ACTIVE};
+    UserState[] states() default {UserState.ACTIVE};
   }
 
   @Retention(RetentionPolicy.RUNTIME)

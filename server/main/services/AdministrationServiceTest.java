@@ -1,6 +1,6 @@
 package keyring.server.main.services;
 
-import static keyring.server.main.storage.AccountOperationsInterface.NudgeStatus;
+import static keyring.server.main.storage.AccountOperationsInterface.MtNudgeStatus;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -14,7 +14,6 @@ import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import io.vavr.Tuple;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,9 +31,11 @@ import keyring.server.main.entities.OtpParams;
 import keyring.server.main.entities.OtpToken;
 import keyring.server.main.entities.Session;
 import keyring.server.main.entities.User;
+import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.geolocation.GeolocationServiceInterface;
 import keyring.server.main.interceptors.SessionAccessor;
 import keyring.server.main.keyvalue.KeyValueClient;
+import keyring.server.main.keyvalue.values.KvSession;
 import keyring.server.main.proto.service.*;
 import keyring.server.main.storage.AccountOperationsInterface;
 import keyring.server.main.storage.KeyOperationsInterface;
@@ -64,10 +65,12 @@ class AdministrationServiceTest {
   private User user =
       new User()
           .setIdentifier(7L)
-          .setState(User.State.ACTIVE)
+          .setState(UserState.ACTIVE)
           .setUsername("username")
           .setSalt("salt")
           .setHash("hash");
+  private KvSession kvSession =
+      KvSession.newBuilder().setUserId(user.getIdentifier()).setSessionEntityId(8L).build();
   private AdministrationService administrationService;
 
   @BeforeEach
@@ -87,9 +90,9 @@ class AdministrationServiceTest {
             mockGoogleAuthenticator,
             mockChronometry);
     when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
-    long userIdentifier = user.getIdentifier();
-    when(mockSessionAccessor.getUserIdentifier()).thenReturn(userIdentifier);
-    when(mockAccountOperationsInterface.getUserByIdentifier(userIdentifier))
+    when(mockSessionAccessor.getUserId()).thenReturn(kvSession.getUserId());
+    when(mockSessionAccessor.getKvSession()).thenReturn(kvSession);
+    when(mockAccountOperationsInterface.getUserByIdentifier(user.getIdentifier()))
         .thenAnswer(invocation -> Optional.of(user));
   }
 
@@ -97,7 +100,7 @@ class AdministrationServiceTest {
   void releaseMailToken_tokenDoesNotExist_repliesWithError() {
     when(mockAccountOperationsInterface.nudgeMailToken(
             eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
-        .thenReturn(Tuple.of(NudgeStatus.NOT_FOUND, Optional.empty()));
+        .thenReturn(Tuple.of(MtNudgeStatus.NOT_FOUND, Optional.empty()));
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("0").build(),
@@ -114,7 +117,7 @@ class AdministrationServiceTest {
   void releaseMailToken_tooEarly_repliesWithError() {
     when(mockAccountOperationsInterface.nudgeMailToken(
             eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
-        .thenReturn(Tuple.of(NudgeStatus.NOT_AVAILABLE_YET, Optional.empty()));
+        .thenReturn(Tuple.of(MtNudgeStatus.NOT_AVAILABLE_YET, Optional.empty()));
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),
@@ -132,7 +135,8 @@ class AdministrationServiceTest {
     when(mockAccountOperationsInterface.nudgeMailToken(
             eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
         .thenReturn(
-            Tuple.of(NudgeStatus.OK, Optional.of(new MailToken().setIdentifier(1L).setCode("X"))));
+            Tuple.of(
+                MtNudgeStatus.OK, Optional.of(new MailToken().setIdentifier(1L).setCode("X"))));
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),
@@ -151,7 +155,7 @@ class AdministrationServiceTest {
     when(mockAccountOperationsInterface.nudgeMailToken(eq(userId), eq(1L), any(BiFunction.class)))
         .thenReturn(
             Tuple.of(
-                NudgeStatus.OK,
+                MtNudgeStatus.OK,
                 Optional.of(
                     new MailToken().setIdentifier(1L).setCode("A").setMail("mail@example.com"))));
 
@@ -167,7 +171,7 @@ class AdministrationServiceTest {
 
   @Test
   void createKey_userNotActive_repliesUnauthenticated() {
-    user.setState(User.State.PENDING);
+    user.setState(UserState.PENDING);
 
     administrationService.createKey(CreateKeyRequest.getDefaultInstance(), mockStreamObserver);
 
@@ -198,11 +202,16 @@ class AdministrationServiceTest {
     when(mockCryptography.validateDigest("suffix")).thenReturn(true);
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.computeHash("suffix")).thenReturn("xiffus");
-    when(mockAccountOperationsInterface.readSessions(7L))
-        .thenReturn(
-            ImmutableList.of(new Session().setKey("random"), new Session().setKey("session")));
-    when(mockSessionAccessor.getSessionIdentifier()).thenReturn("session");
-    when(mockKeyValueClient.createSession(any())).thenReturn("identifier");
+    String oldSessionToken = "old-session-token";
+    ImmutableList<Session> sessions =
+        ImmutableList.of(new Session().setKey("random"), new Session().setKey(oldSessionToken));
+    when(mockAccountOperationsInterface.readSessions(7L)).thenReturn(sessions);
+    when(mockSessionAccessor.getSessionToken()).thenReturn(oldSessionToken);
+    String newSessionToken = "new-session-token";
+    when(mockCryptography.generateTts()).thenReturn(newSessionToken);
+    when(mockKeyValueClient.createSession(
+            newSessionToken, user.getIdentifier(), kvSession.getSessionEntityId()))
+        .thenReturn(KvSession.newBuilder().setSessionToken(newSessionToken).build());
 
     administrationService.changeMasterKey(
         ChangeMasterKeyRequest.newBuilder()
@@ -218,9 +227,9 @@ class AdministrationServiceTest {
 
     verify(mockAccountOperationsInterface)
         .changeMasterKey(7L, "prefix", "xiffus", ImmutableList.of(keyPatch));
-    verify(mockKeyValueClient).dropSessions(ImmutableList.of("random", "session"));
+    verify(mockKeyValueClient).safelyDeleteSeRefs(sessions);
     verify(mockStreamObserver)
-        .onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey("identifier").build());
+        .onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey("new-session-token").build());
     verify(mockStreamObserver).onCompleted();
   }
 
@@ -321,14 +330,14 @@ class AdministrationServiceTest {
 
   @Test
   void deleteAccount_digestsMatch_repliesWithDefault() {
+    ImmutableList<Session> sessions = ImmutableList.of(new Session().setKey("session"));
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
-    when(mockAccountOperationsInterface.readSessions(7L))
-        .thenReturn(ImmutableList.of(new Session().setKey("session")));
+    when(mockAccountOperationsInterface.readSessions(7L)).thenReturn(sessions);
 
     administrationService.deleteAccount(
         DeleteAccountRequest.newBuilder().setDigest("digest").build(), mockStreamObserver);
 
-    verify(mockKeyValueClient).dropSessions(ImmutableList.of("session"));
+    verify(mockKeyValueClient).safelyDeleteSeRefs(sessions);
     verify(mockAccountOperationsInterface).markAccountAsDeleted(7L);
     verify(mockStreamObserver).onNext(DeleteAccountResponse.getDefaultInstance());
     verify(mockStreamObserver).onCompleted();
@@ -339,7 +348,7 @@ class AdministrationServiceTest {
     Function<Instant, Session> createDatabaseSession =
         instant ->
             new Session()
-                .setTimestamp(Timestamp.from(instant))
+                .setTimestamp(instant)
                 .setIpAddress("127.0.0.1")
                 .setUserAgent("Chrome/0.0.0");
     when(mockAccountOperationsInterface.readSessions(7L))

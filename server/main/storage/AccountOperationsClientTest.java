@@ -1,12 +1,13 @@
 package keyring.server.main.storage;
 
 import static java.util.stream.Collectors.toList;
-import static keyring.server.main.storage.AccountOperationsInterface.NudgeStatus;
+import static keyring.server.main.storage.AccountOperationsInterface.MtNudgeStatus;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple2;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,8 @@ import keyring.server.main.entities.MailToken;
 import keyring.server.main.entities.OtpParams;
 import keyring.server.main.entities.Session;
 import keyring.server.main.entities.User;
+import keyring.server.main.entities.columns.SessionStage;
+import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.proto.service.KeyAttrs;
 import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
@@ -60,7 +63,7 @@ class AccountOperationsClientTest {
     assertEquals("0", mailToken.getCode());
     assertEquals("mail@example.com", mailToken.getMail());
     User user = tuple._1;
-    assertEquals(User.State.PENDING, user.getState());
+    assertEquals(UserState.PENDING, user.getState());
     assertEquals(username, user.getUsername());
     assertEquals("salt", user.getSalt());
     assertEquals("hash", user.getHash());
@@ -117,7 +120,7 @@ class AccountOperationsClientTest {
     assertFalse(accountOperationsClient.getMailToken(userId, mailTokenId).isPresent());
     User user = accountOperationsClient.getUserByIdentifier(userId).get();
     assertEquals("mail@domain.com", user.getMail());
-    assertEquals(User.State.ACTIVE, user.getState());
+    assertEquals(UserState.ACTIVE, user.getState());
   }
 
   @Test
@@ -178,21 +181,52 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void createSession_putsSession() {
-    Instant instant = Instant.ofEpochSecond(1);
-    when(mockChronometry.currentTime()).thenReturn(instant);
-    long userIdentifier = createActiveUser();
-    accountOperationsClient.createSession(
-        userIdentifier, "key", "127.0.0.1", "Chrome/0.0.0", "version");
+    long userId = createActiveUser();
+    long sessionId =
+        accountOperationsClient
+            .createSession(userId, "127.0.0.1", "Chrome/0.0.0", "version")
+            .getIdentifier();
 
-    List<Session> list = accountOperationsClient.readSessions(userIdentifier);
-    assertEquals(1, list.size());
-    Session session = list.get(0);
-    assertEquals("key", session.getKey());
+    Session session = accountOperationsClient.mustGetSession(userId, sessionId);
+    assertEquals(SessionStage.UNKNOWN_SESSION_STAGE, session.getStage());
     assertEquals("127.0.0.1", session.getIpAddress());
     assertEquals("Chrome/0.0.0", session.getUserAgent());
     assertEquals("version", session.getClientVersion());
-    User user = accountOperationsClient.getUserByIdentifier(userIdentifier).get();
-    assertEquals(instant, user.getLastSession());
+  }
+
+  @Test
+  @WithEntityManager
+  void initiateSession_setsSession() {
+    long userId = createActiveUser();
+    long sessionId =
+        accountOperationsClient
+            .createSession(userId, "127.0.0.1", "Chrome/0.0.0", "version")
+            .getIdentifier();
+
+    accountOperationsClient.initiateSession(userId, sessionId, "initiation-key");
+
+    Session session = accountOperationsClient.mustGetSession(userId, sessionId);
+    assertEquals("initiation-key", session.getKey());
+    assertEquals(SessionStage.INITIATED, session.getStage());
+  }
+
+  @Test
+  @WithEntityManager
+  void activateSession_setsSession() {
+    long userId = createActiveUser();
+    long sessionId =
+        accountOperationsClient
+            .createSession(userId, "127.0.0.1", "Chrome/0.0.0", "version")
+            .getIdentifier();
+    accountOperationsClient.initiateSession(userId, sessionId, "initiation-key");
+
+    accountOperationsClient.activateSession(userId, sessionId, "activation-key");
+
+    Session session = accountOperationsClient.mustGetSession(userId, sessionId);
+    assertEquals("activation-key", session.getKey());
+    assertEquals(SessionStage.ACTIVATED, session.getStage());
+    assertTrue(
+        Duration.between(session.getUser().getLastSession(), Instant.now()).getSeconds() < 4);
   }
 
   @Test
@@ -245,7 +279,7 @@ class AccountOperationsClientTest {
     Optional<User> maybeUser = accountOperationsClient.getUserByIdentifier(userIdentifier);
     assertTrue(maybeUser.isPresent());
     User user = maybeUser.get();
-    assertEquals(User.State.DELETED, user.getState());
+    assertEquals(UserState.DELETED, user.getState());
   }
 
   @Test
@@ -331,11 +365,11 @@ class AccountOperationsClientTest {
   void nudgeMailToken_absentToken_returnsEmpty() {
     long userId = createActiveUser();
 
-    Tuple2<NudgeStatus, Optional<MailToken>> nudgeResult =
+    Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsClient.nudgeMailToken(
             userId, 8L, (lastAttempt, attemptCount) -> lastAttempt.plusSeconds(attemptCount));
 
-    assertEquals(NudgeStatus.NOT_FOUND, nudgeResult._1);
+    assertEquals(MtNudgeStatus.NOT_FOUND, nudgeResult._1);
   }
 
   @Test
@@ -349,11 +383,11 @@ class AccountOperationsClientTest {
     when(mockChronometry.currentTime()).thenReturn(epochPlusTwo);
     when(mockChronometry.isBefore(epochPlusFour, epochPlusTwo)).thenReturn(false);
 
-    Tuple2<NudgeStatus, Optional<MailToken>> nudgeResult =
+    Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsClient.nudgeMailToken(
             userId, mailTokenId, (lastAttempt, attemptCount) -> epochPlusFour);
 
-    assertEquals(NudgeStatus.NOT_AVAILABLE_YET, nudgeResult._1);
+    assertEquals(MtNudgeStatus.NOT_AVAILABLE_YET, nudgeResult._1);
   }
 
   @Test
@@ -367,11 +401,11 @@ class AccountOperationsClientTest {
     when(mockChronometry.currentTime()).thenReturn(epochPlusTwo);
     when(mockChronometry.isBefore(epochPlusOne, epochPlusTwo)).thenReturn(true);
 
-    Tuple2<NudgeStatus, Optional<MailToken>> nudgeResult =
+    Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsClient.nudgeMailToken(
             userId, mailTokenId, (lastAttempt, attemptCount) -> epochPlusOne);
 
-    assertEquals(NudgeStatus.OK, nudgeResult._1);
+    assertEquals(MtNudgeStatus.OK, nudgeResult._1);
     assertTrue(nudgeResult._2.isPresent());
     MailToken mailToken = accountOperationsClient.getMailToken(userId, mailTokenId).get();
     assertEquals(epochPlusTwo, mailToken.getLastAttempt());

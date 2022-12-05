@@ -11,6 +11,7 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 import keyring.server.main.aspects.Annotations.ValidateUser;
 import keyring.server.main.entities.User;
+import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.interceptors.SessionAccessor;
 import keyring.server.main.storage.AccountOperationsInterface;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
@@ -38,7 +39,7 @@ class ValidateUserAspectTest {
 
   @Test
   void executeUserValidation_getsAbsentUser_returnsUnauthenticated() throws Throwable {
-    when(mockSessionAccessor.getUserIdentifier()).thenReturn(0L);
+    when(mockSessionAccessor.getUserId()).thenReturn(0L);
     when(mockAccountOperationsInterface.getUserByIdentifier(0L)).thenReturn(Optional.empty());
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
@@ -52,9 +53,9 @@ class ValidateUserAspectTest {
 
   @Test
   void executeUserValidation_getsStatePending_returnsUnauthenticated() throws Throwable {
-    when(mockSessionAccessor.getUserIdentifier()).thenReturn(0L);
+    when(mockSessionAccessor.getUserId()).thenReturn(0L);
     when(mockAccountOperationsInterface.getUserByIdentifier(0L))
-        .thenReturn(Optional.of(new User().setState(User.State.PENDING)));
+        .thenReturn(Optional.of(new User().setState(UserState.PENDING)));
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
     validateUserAspect.executeUserValidation(
@@ -67,9 +68,9 @@ class ValidateUserAspectTest {
 
   @Test
   void executeUserValidation_getsStateActive_callsJoinPoint() throws Throwable {
-    when(mockSessionAccessor.getUserIdentifier()).thenReturn(0L);
+    when(mockSessionAccessor.getUserId()).thenReturn(0L);
     when(mockAccountOperationsInterface.getUserByIdentifier(0L))
-        .thenReturn(Optional.of(new User().setState(User.State.ACTIVE)));
+        .thenReturn(Optional.of(new User().setState(UserState.ACTIVE)));
 
     validateUserAspect.executeUserValidation(
         createValidateUserAnnotation(), mockProceedingJoinPoint);
@@ -85,8 +86,8 @@ class ValidateUserAspectTest {
       }
 
       @Override
-      public User.State[] states() {
-        return new User.State[] {User.State.ACTIVE};
+      public UserState[] states() {
+        return new UserState[] {UserState.ACTIVE};
       }
     };
   }

@@ -2,7 +2,9 @@ package keyring.server.main.entities;
 
 import com.google.common.base.Preconditions;
 import java.sql.Timestamp;
+import java.time.Instant;
 import javax.persistence.*;
+import keyring.server.main.entities.columns.SessionStage;
 import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
@@ -15,6 +17,8 @@ public class Session {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
 
+  @Version private long version;
+
   @ManyToOne
   @OnDelete(action = OnDeleteAction.CASCADE)
   private User user;
@@ -25,6 +29,9 @@ public class Session {
   @Column(columnDefinition = "text")
   private String key;
 
+  @Convert(converter = SessionStageConverter.class)
+  private SessionStage stage;
+
   @Column(name = "ip_address", columnDefinition = "text")
   private String ipAddress;
 
@@ -34,17 +41,30 @@ public class Session {
   @Column(name = "client_version", columnDefinition = "text")
   private String clientVersion;
 
+  public long getIdentifier() {
+    return identifier;
+  }
+
+  public Session setIdentifier(long identifier) {
+    this.identifier = identifier;
+    return this;
+  }
+
+  public User getUser() {
+    return user;
+  }
+
   public Session setUser(User user) {
     this.user = user;
     return this;
   }
 
-  public Timestamp getTimestamp() {
-    return timestamp;
+  public Instant getTimestamp() {
+    return timestamp.toInstant();
   }
 
-  public Session setTimestamp(Timestamp timestamp) {
-    this.timestamp = timestamp;
+  public Session setTimestamp(Instant instant) {
+    this.timestamp = Timestamp.from(instant);
     return this;
   }
 
@@ -55,6 +75,15 @@ public class Session {
   public Session setKey(String key) {
     Validators.checkStringSize(FileUtils.ONE_KB, key);
     this.key = key;
+    return this;
+  }
+
+  public SessionStage getStage() {
+    return stage;
+  }
+
+  public Session setStage(SessionStage stage) {
+    this.stage = stage;
     return this;
   }
 

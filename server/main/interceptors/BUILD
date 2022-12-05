@@ -24,7 +24,7 @@ java_library(
     srcs = ["SessionAccessor.java"],
     visibility = ["//server:internal"],
     deps = [
-        "//server/main/keyvalue:user_pointer",
+        "//server/main/keyvalue:values_java_proto",
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_context",
     ],
@@ -37,7 +37,7 @@ java_library(
     deps = [
         ":session_accessor",
         "//server/main/keyvalue:key_value_client",
-        "//server/main/keyvalue:user_pointer",
+        "//server/main/keyvalue:values_java_proto",
         "@maven//:io_grpc_grpc_api",
         "@maven//:io_grpc_grpc_context",
         "@maven//:io_vavr_vavr",

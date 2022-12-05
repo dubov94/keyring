@@ -9,6 +9,7 @@ import javax.persistence.*;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.entities.Key;
 import keyring.server.main.entities.User;
+import keyring.server.main.entities.columns.UserState;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,7 @@ final class DeletedUsersTest {
 
   @Test
   void activeUser_keeps() {
-    User user = new User().setState(User.State.ACTIVE).setUsername(createUniqueUsername());
+    User user = new User().setState(UserState.ACTIVE).setUsername(createUniqueUsername());
     persistEntity(user);
     Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of("tag"));
     persistEntity(key);
@@ -46,7 +47,7 @@ final class DeletedUsersTest {
 
   @Test
   void deletedUser_removes() {
-    User user = new User().setState(User.State.DELETED).setUsername(createUniqueUsername());
+    User user = new User().setState(UserState.DELETED).setUsername(createUniqueUsername());
     persistEntity(user);
     Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of("tag"));
     persistEntity(key);
