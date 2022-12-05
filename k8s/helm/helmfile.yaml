@@ -16,10 +16,12 @@ releases:
     - cert_manager_values.yaml
   - name: redis
     chart: bitnami/redis
+    version: ^17.1.8
     values:
     - redis_values.yaml
   - name: postgres
     chart: bitnami/postgresql-ha
+    version: ^9.4.11
     values:
     - postgres_values.yaml
   
