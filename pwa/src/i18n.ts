@@ -24,6 +24,7 @@ const MESSAGES: LocaleMessages = {
     // if_change(username_pattern_mismatch)
     USERNAME_PATTERN_MISMATCH: 'Username can only contain latin letters, numbers and underscores, and must be between 3 and 64 characters long',
     // then_change
+    OTP_CODE_INCORRECT: 'The code is incorrect',
     OTP_ATTEMPTS_EXHAUSTED: 'Please enter one of the recovery codes'
   }
 }

@@ -27,12 +27,13 @@ import { eq, function as fn, map, option } from 'fp-ts'
 import { DeepReadonly } from 'ts-essentials'
 import Vue, { VueConstructor } from 'vue'
 import { ServiceProvideOtpResponseError } from '@/api/definitions'
-import { AuthnOtpProvisionFlowIndicator } from '@/redux/modules/authn/actions'
+import { AuthnOtpProvisionFlowIndicator, AuthnOtpProvisionFlowError } from '@/redux/modules/authn/actions'
 import { AuthnOtpProvision } from '@/redux/modules/authn/selectors'
-import { remoteDataErrorIndicator } from '@/components/form_validators'
+import { remoteDataMappedErrorIndicator } from '@/components/form_validators'
 
-const otpIncorrectIndicator = remoteDataErrorIndicator(ServiceProvideOtpResponseError.INVALIDCODE)
-const otpMustRecoverIndicator = remoteDataErrorIndicator(ServiceProvideOtpResponseError.ATTEMPTSEXHAUSTED)
+const fromDomainError = (error: DeepReadonly<AuthnOtpProvisionFlowError>): DeepReadonly<ServiceProvideOtpResponseError> => error.error
+const otpIncorrectIndicator = remoteDataMappedErrorIndicator(ServiceProvideOtpResponseError.INVALIDCODE, fromDomainError)
+const otpMustRecoverIndicator = remoteDataMappedErrorIndicator(ServiceProvideOtpResponseError.ATTEMPTSEXHAUSTED, fromDomainError)
 
 const INDICATOR_TO_MESSAGE = new Map<AuthnOtpProvisionFlowIndicator, string>([
   [AuthnOtpProvisionFlowIndicator.MAKING_REQUEST, 'Making request'],
@@ -64,7 +65,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   computed: {
     otpErrors () {
       return {
-        [this.$t('INVALID_CODE') as string]: !this.$v.otp.correct,
+        [this.$t('OTP_CODE_INCORRECT') as string]: !this.$v.otp.correct,
         [this.$t('OTP_ATTEMPTS_EXHAUSTED') as string]: !this.$v.otp.lenient
       }
     },
