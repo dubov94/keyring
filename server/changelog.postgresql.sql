@@ -170,17 +170,19 @@ ADD
     CONSTRAINT "fkstt2d96538kdhgl2qhiouhep3" FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier") ON UPDATE NO ACTION ON DELETE CASCADE;
 
 -- changeset liquibase:17
--- preconditions onFail:MARK_RAN
--- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'sessions' and column_name = 'version'
-ALTER TABLE
-    "public"."sessions"
-ADD
-    "version" BIGINT NOT NULL;
+-- comment Upgrades from `enum` to `UserState`.
+UPDATE "public"."users" SET "state" = "state" + 1;
 
 -- changeset liquibase:18
 -- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'sessions' and column_name = 'version'
+ALTER TABLE "public"."sessions" ADD COLUMN "version" BIGINT;
+UPDATE "public"."sessions" SET "version" = 1;
+ALTER TABLE "public"."sessions" ALTER COLUMN "version" SET NOT NULL;
+
+-- changeset liquibase:19
+-- comment Defaults `SessionStage` to `ACTIVATED`.
+-- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'sessions' and column_name = 'stage'
-ALTER TABLE
-    "public"."sessions"
-ADD
-    "stage" INTEGER;
+ALTER TABLE "public"."sessions" ADD COLUMN "stage" INTEGER;
+UPDATE "public"."sessions" SET "stage" = 2;
