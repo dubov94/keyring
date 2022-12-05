@@ -1,7 +1,7 @@
 package keyring.server.main.storage;
 
 import static java.util.stream.Collectors.toMap;
-import static keyring.server.main.storage.AccountOperationsInterface.MtNudgeStatus;
+import static keyring.server.main.storage.AccountOperationsInterface.NudgeStatus;
 
 import com.google.common.collect.ImmutableMap;
 import io.vavr.Tuple;
@@ -22,8 +22,6 @@ import keyring.server.main.aspects.Annotations.ContextualEntityManager;
 import keyring.server.main.aspects.Annotations.LockEntity;
 import keyring.server.main.aspects.Annotations.WithEntityTransaction;
 import keyring.server.main.entities.*;
-import keyring.server.main.entities.columns.SessionStage;
-import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.proto.service.FeatureType;
 import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
@@ -49,7 +47,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public Tuple2<User, MailToken> createUser(
       String username, String salt, String hash, String mail, String code) {
     User user =
-        new User().setState(UserState.PENDING).setUsername(username).setSalt(salt).setHash(hash);
+        new User().setState(User.State.PENDING).setUsername(username).setSalt(salt).setHash(hash);
     FeaturePrompts featurePrompts = new FeaturePrompts().setUser(user);
     MailToken mailToken = new MailToken().setUser(user).setMail(mail).setCode(code);
     entityManager.persist(user);
@@ -86,10 +84,11 @@ public class AccountOperationsClient implements AccountOperationsInterface {
         .max((left, right) -> left.getTimestamp().compareTo(right.getTimestamp()));
   }
 
+  @LockEntity(name = "user")
   private void _releaseMailToken(User user, MailToken mailToken) {
     user.setMail(mailToken.getMail());
     if (user.isActivated()) {
-      user.setState(UserState.ACTIVE);
+      user.setState(User.State.ACTIVE);
     }
     entityManager.persist(user);
     entityManager.remove(mailToken);
@@ -132,7 +131,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     user.setSalt(salt);
     user.setHash(hash);
     entityManager.persist(user);
-    // `Key` creation is guarded by `User` lock.
+    // Key creation is guarded by `User` lock.
     List<Key> keys =
         Queries.findManyToOne(entityManager, Key.class, Key_.user, user.getIdentifier());
     Map<Long, Password> keyIdToPatch =
@@ -160,6 +159,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _changeMasterKey(maybeUser.get(), salt, hash, protos);
   }
 
+  @LockEntity(name = "user")
   private void _changeUsername(User user, String username) {
     user.setUsername(username);
     entityManager.persist(user);
@@ -175,99 +175,41 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _changeUsername(maybeUser.get(), username);
   }
 
-  // Locks `User` for `readSessions`.
   @LockEntity(name = "user")
-  private Session _createSession(
-      User user, String ipAddress, String userAgent, String clientVersion) {
+  private void _createSession(
+      User user, String key, String ipAddress, String userAgent, String clientVersion) {
+    user.setLastSession(chronometry.currentTime());
+    entityManager.persist(user);
     Session session =
         new Session()
             .setUser(user)
-            .setStage(SessionStage.UNKNOWN_SESSION_STAGE)
+            .setKey(key)
             .setIpAddress(ipAddress)
             .setUserAgent(userAgent)
             .setClientVersion(clientVersion);
     entityManager.persist(session);
-    return session;
   }
 
   @Override
   @WithEntityTransaction
-  public Session createSession(
-      long userIdentifier, String ipAddress, String userAgent, String clientVersion) {
+  public void createSession(
+      long userIdentifier, String key, String ipAddress, String userAgent, String clientVersion) {
     Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
-    return _createSession(maybeUser.get(), ipAddress, userAgent, clientVersion);
+    _createSession(maybeUser.get(), key, ipAddress, userAgent, clientVersion);
   }
 
   @Override
   @WithEntityTransaction
-  public Session mustGetSession(long userId, long sessionId) {
-    Optional<Session> maybeSession =
-        Optional.ofNullable(entityManager.find(Session.class, sessionId));
-    if (!maybeSession.isPresent()) {
-      throw new IllegalArgumentException();
-    }
-    Session session = maybeSession.get();
-    User user = session.getUser();
-    if (!Objects.equals(user.getIdentifier(), userId)) {
-      throw new IllegalArgumentException();
-    }
-    return session;
-  }
-
-  private void _initiateSession(Session session, String key) {
-    session.setKey(key);
-    session.setStage(SessionStage.INITIATED);
-    entityManager.persist(session);
-  }
-
-  @Override
-  @WithEntityTransaction
-  public void initiateSession(long userId, long sessionId, String key) {
-    Session session = mustGetSession(userId, sessionId);
-    _initiateSession(session, key);
-  }
-
-  private void _activateSession(Session session, String key) {
-    session.setKey(key);
-    session.setStage(SessionStage.ACTIVATED);
-    entityManager.persist(session);
-  }
-
-  private void _updateLastSession(User user, Instant instant) {
-    user.setLastSession(instant);
-    entityManager.persist(user);
-  }
-
-  @Override
-  @WithEntityTransaction
-  public void activateSession(long userId, long sessionId, String key) {
-    Session session = mustGetSession(userId, sessionId);
-    _activateSession(session, key);
-    _updateLastSession(session.getUser(), session.getTimestamp());
+  public List<Session> readSessions(long userIdentifier) {
+    return Queries.findManyToOne(entityManager, Session.class, Session_.user, userIdentifier);
   }
 
   @LockEntity(name = "user")
-  private List<Session> _readSessions(User user) {
-    long userId = user.getIdentifier();
-    // `Session` creation is guarded by `User` lock.
-    return Queries.findManyToOne(entityManager, Session.class, Session_.user, userId);
-  }
-
-  @Override
-  @WithEntityTransaction
-  public List<Session> readSessions(long userId) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
-    if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
-    }
-    return _readSessions(maybeUser.get());
-  }
-
   private void _markAccountAsDeleted(User user) {
-    user.setState(UserState.DELETED);
+    user.setState(User.State.DELETED);
     entityManager.persist(user);
   }
 
@@ -332,7 +274,6 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _acceptOtpParams(user, otpParams);
   }
 
-  // Locks `User` for `resetOtp`.
   @LockEntity(name = "user")
   private void _createOtpToken(User user, String otpToken) {
     if (user.getOtpSharedSecret() == null) {
@@ -382,7 +323,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     user.setOtpSharedSecret(null);
     user.setOtpSpareAttempts(0);
     entityManager.persist(user);
-    // `OtpToken` creation is guarded by `User` lock.
+    // Token creation is guarded by `User` lock.
     List<OtpToken> otpTokens =
         Queries.findManyToOne(entityManager, OtpToken.class, OtpToken_.user, user.getIdentifier());
     for (OtpToken otpToken : otpTokens) {
@@ -464,29 +405,24 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     entityManager.persist(featurePrompts);
   }
 
-  @LockEntity(name = "mailToken")
-  private Tuple2<MtNudgeStatus, Optional<MailToken>> _nudgeMailToken(
-      MailToken mailToken, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant) {
+  @Override
+  @WithEntityTransaction
+  public Tuple2<NudgeStatus, Optional<MailToken>> nudgeMailToken(
+      long userId, long tokenId, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant) {
+    Optional<MailToken> maybeMailToken = getMailToken(userId, tokenId);
+    if (!maybeMailToken.isPresent()) {
+      return Tuple.of(NudgeStatus.NOT_FOUND, Optional.empty());
+    }
+    MailToken mailToken = maybeMailToken.get();
     Instant availabilityInstant =
         nextAvailabilityInstant.apply(mailToken.getLastAttempt(), mailToken.getAttemptCount());
     Instant currentTime = chronometry.currentTime();
     if (!chronometry.isBefore(availabilityInstant, currentTime)) {
-      return Tuple.of(MtNudgeStatus.NOT_AVAILABLE_YET, Optional.empty());
+      return Tuple.of(NudgeStatus.NOT_AVAILABLE_YET, Optional.empty());
     }
     mailToken.setLastAttempt(currentTime);
     mailToken.incrementAttemptCount();
     entityManager.persist(mailToken);
-    return Tuple.of(MtNudgeStatus.OK, Optional.of(mailToken));
-  }
-
-  @Override
-  @WithEntityTransaction
-  public Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeMailToken(
-      long userId, long tokenId, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant) {
-    Optional<MailToken> maybeMailToken = getMailToken(userId, tokenId);
-    if (!maybeMailToken.isPresent()) {
-      return Tuple.of(MtNudgeStatus.NOT_FOUND, Optional.empty());
-    }
-    return _nudgeMailToken(maybeMailToken.get(), nextAvailabilityInstant);
+    return Tuple.of(NudgeStatus.OK, Optional.of(mailToken));
   }
 }

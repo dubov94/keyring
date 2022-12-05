@@ -23,13 +23,11 @@ import keyring.server.main.entities.FeaturePrompts;
 import keyring.server.main.entities.Key;
 import keyring.server.main.entities.MailToken;
 import keyring.server.main.entities.OtpToken;
-import keyring.server.main.entities.Session;
 import keyring.server.main.entities.User;
-import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.VersionAccessor;
 import keyring.server.main.keyvalue.KeyValueClient;
-import keyring.server.main.keyvalue.values.KvAuthn;
+import keyring.server.main.keyvalue.UserPointer;
 import keyring.server.main.proto.service.*;
 import keyring.server.main.storage.AccountOperationsInterface;
 import keyring.server.main.storage.KeyOperationsInterface;
@@ -124,20 +122,16 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     Tuple2<User, MailToken> entities =
         accountOperationsInterface.createUser(username, salt, hash, mail, code);
     User user = entities._1;
-    long userId = user.getIdentifier();
-    String sessionToken = cryptography.generateTts();
-    Session session =
-        accountOperationsInterface.createSession(
-            userId,
-            agentAccessor.getIpAddress(),
-            agentAccessor.getUserAgent(),
-            versionAccessor.getVersion());
-    long sessionId = session.getIdentifier();
-    accountOperationsInterface.activateSession(userId, sessionId, sessionToken);
-    keyValueClient.createSession(sessionToken, userId, sessionId);
+    String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
+    accountOperationsInterface.createSession(
+        user.getIdentifier(),
+        sessionKey,
+        agentAccessor.getIpAddress(),
+        agentAccessor.getUserAgent(),
+        versionAccessor.getVersion());
     mailClient.sendMailVc(mail, code);
     return Either.right(
-        builder.setSessionKey(sessionToken).setMailTokenId(entities._2.getIdentifier()).build());
+        builder.setSessionKey(sessionKey).setMailTokenId(entities._2.getIdentifier()).build());
   }
 
   @Override
@@ -167,10 +161,17 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     response.onCompleted();
   }
 
-  private UserData newUserData(String sessionToken, User user) {
+  private UserData newSessionUserData(User user) {
     long userId = user.getIdentifier();
+    String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
+    accountOperationsInterface.createSession(
+        userId,
+        sessionKey,
+        agentAccessor.getIpAddress(),
+        agentAccessor.getUserAgent(),
+        versionAccessor.getVersion());
     UserData.Builder userDataBuilder = UserData.newBuilder();
-    userDataBuilder.setSessionKey(sessionToken);
+    userDataBuilder.setSessionKey(sessionKey);
     FeaturePrompts featurePrompts = accountOperationsInterface.getFeaturePrompts(userId);
     userDataBuilder.addAllFeaturePrompts(
         FEATURE_PROMPT_MAPPERS.stream()
@@ -202,32 +203,19 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
     User user = maybeUser.get();
     if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())
-        || Objects.equals(user.getState(), UserState.DELETED)) {
+        || Objects.equals(user.getState(), User.State.DELETED)) {
       return builder.setError(LogInResponse.Error.INVALID_CREDENTIALS).build();
     }
-    long userId = user.getIdentifier();
-    Session session =
-        accountOperationsInterface.createSession(
-            userId,
-            agentAccessor.getIpAddress(),
-            agentAccessor.getUserAgent(),
-            versionAccessor.getVersion());
-    long sessionId = session.getIdentifier();
     if (user.getOtpSharedSecret() != null) {
-      String authnToken = cryptography.generateTts();
-      accountOperationsInterface.initiateSession(userId, sessionId, authnToken);
-      keyValueClient.createAuthn(authnToken, userId, sessionId);
+      String authnKey = keyValueClient.createAuthn(user.getIdentifier());
       return builder
           .setOtpContext(
               OtpContext.newBuilder()
-                  .setAuthnKey(authnToken)
+                  .setAuthnKey(authnKey)
                   .setAttemptsLeft(user.getOtpSpareAttempts()))
           .build();
     }
-    String sessionToken = cryptography.generateTts();
-    accountOperationsInterface.activateSession(userId, sessionId, sessionToken);
-    keyValueClient.createSession(sessionToken, userId, sessionId);
-    return builder.setUserData(newUserData(sessionToken, user)).build();
+    return builder.setUserData(newSessionUserData(user)).build();
   }
 
   @Override
@@ -240,12 +228,11 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private Either<StatusException, ProvideOtpResponse> _provideOtp(ProvideOtpRequest request) {
     ProvideOtpResponse.Builder builder = ProvideOtpResponse.newBuilder();
     String authnKey = request.getAuthnKey();
-    Optional<KvAuthn> maybeKvAuthn = keyValueClient.getKvAuthn(authnKey);
-    if (!maybeKvAuthn.isPresent()) {
+    Optional<Long> maybeUserId = keyValueClient.getUserByAuthn(authnKey);
+    if (!maybeUserId.isPresent()) {
       return Either.left(new StatusException(Status.UNAUTHENTICATED));
     }
-    KvAuthn kvAuthn = maybeKvAuthn.get();
-    long userId = kvAuthn.getUserId();
+    long userId = maybeUserId.get();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
@@ -277,18 +264,14 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       }
       accountOperationsInterface.deleteOtpToken(userId, maybeOtpToken.get().getId());
     }
-    keyValueClient.deleteAuthn(authnKey);
+    keyValueClient.dropAuthn(authnKey);
     accountOperationsInterface.restoreOtpSpareAttempts(userId);
     if (request.getYieldTrustedToken()) {
       String otpToken = cryptography.generateTts();
       accountOperationsInterface.createOtpToken(userId, otpToken);
       builder.setTrustedToken(otpToken);
     }
-    long sessionEntityId = kvAuthn.getSessionEntityId();
-    String sessionToken = cryptography.generateTts();
-    accountOperationsInterface.activateSession(userId, sessionEntityId, sessionToken);
-    keyValueClient.createSession(sessionToken, userId, sessionEntityId);
-    return Either.right(builder.setUserData(newUserData(sessionToken, user)).build());
+    return Either.right(builder.setUserData(newSessionUserData(user)).build());
   }
 
   @Override

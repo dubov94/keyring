@@ -34,16 +34,10 @@ public interface AccountOperationsInterface {
 
   void changeUsername(long userIdentifier, String username);
 
-  Session createSession(
-      long userIdentifier, String ipAddress, String userAgent, String clientVersion);
+  void createSession(
+      long userIdentifier, String key, String ipAddress, String userAgent, String clientVersion);
 
-  Session mustGetSession(long userId, long sessionId);
-
-  void initiateSession(long userId, long sessionId, String key);
-
-  void activateSession(long userId, long sessionId, String key);
-
-  List<Session> readSessions(long userId);
+  List<Session> readSessions(long userIdentifier);
 
   void markAccountAsDeleted(long userIdentifier);
 
@@ -69,12 +63,12 @@ public interface AccountOperationsInterface {
 
   void ackFeaturePrompt(long userId, FeatureType featureType);
 
-  public enum MtNudgeStatus {
+  public enum NudgeStatus {
     OK,
     NOT_FOUND,
     NOT_AVAILABLE_YET
   }
 
-  Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeMailToken(
+  Tuple2<NudgeStatus, Optional<MailToken>> nudgeMailToken(
       long userId, long tokenId, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant);
 }

@@ -2,7 +2,7 @@ package keyring.server.main.services;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.*;
-import static keyring.server.main.storage.AccountOperationsInterface.MtNudgeStatus;
+import static keyring.server.main.storage.AccountOperationsInterface.NudgeStatus;
 
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
@@ -26,11 +26,10 @@ import keyring.server.main.entities.OtpParams;
 import keyring.server.main.entities.OtpToken;
 import keyring.server.main.entities.Session;
 import keyring.server.main.entities.User;
-import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.geolocation.GeolocationServiceInterface;
 import keyring.server.main.interceptors.SessionAccessor;
 import keyring.server.main.keyvalue.KeyValueClient;
-import keyring.server.main.keyvalue.values.KvSession;
+import keyring.server.main.keyvalue.UserPointer;
 import keyring.server.main.proto.service.*;
 import keyring.server.main.storage.AccountOperationsInterface;
 import keyring.server.main.storage.KeyOperationsInterface;
@@ -78,8 +77,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (!EmailValidator.getInstance().isValid(mail)) {
       return Either.left(new StatusException(Status.INVALID_ARGUMENT));
     }
-    long userId = sessionAccessor.getUserId();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    long userIdentifier = sessionAccessor.getUserIdentifier();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -89,7 +88,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       return Either.right(builder.setError(AcquireMailTokenResponse.Error.INVALID_DIGEST).build());
     }
     String code = cryptography.generateUacs();
-    MailToken mailToken = accountOperationsInterface.createMailToken(userId, mail, code);
+    MailToken mailToken = accountOperationsInterface.createMailToken(userIdentifier, mail, code);
     mailClient.sendMailVc(mail, code);
     return Either.right(builder.setTokenId(mailToken.getIdentifier()).build());
   }
@@ -109,19 +108,19 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   private ReleaseMailTokenResponse _releaseMailToken(ReleaseMailTokenRequest request) {
-    long userId = sessionAccessor.getUserId();
+    long userId = sessionAccessor.getUserIdentifier();
     ReleaseMailTokenResponse.Builder builder = ReleaseMailTokenResponse.newBuilder();
-    Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
+    Tuple2<NudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsInterface.nudgeMailToken(
             userId,
             request.getTokenId(),
             (lastAttempt, attemptCount) ->
                 chronometry.nextAttempt(
                     lastAttempt, attemptCount, /* baseDelayS */ 1, /* graceCount */ 3));
-    if (Objects.equals(MtNudgeStatus.NOT_FOUND, nudgeResult._1)) {
+    if (Objects.equals(NudgeStatus.NOT_FOUND, nudgeResult._1)) {
       return builder.setError(ReleaseMailTokenResponse.Error.INVALID_TOKEN_ID).build();
     }
-    if (Objects.equals(MtNudgeStatus.NOT_AVAILABLE_YET, nudgeResult._1)) {
+    if (Objects.equals(NudgeStatus.NOT_AVAILABLE_YET, nudgeResult._1)) {
       return builder.setError(ReleaseMailTokenResponse.Error.TOO_MANY_REQUESTS).build();
     }
     if (!nudgeResult._2.isPresent()) {
@@ -137,7 +136,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   @Override
   @WithEntityManager
-  @ValidateUser(states = {UserState.PENDING, UserState.ACTIVE})
+  @ValidateUser(states = {User.State.PENDING, User.State.ACTIVE})
   public void releaseMailToken(
       ReleaseMailTokenRequest request, StreamObserver<ReleaseMailTokenResponse> response) {
     response.onNext(_releaseMailToken(request));
@@ -156,7 +155,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void createKey(CreateKeyRequest request, StreamObserver<CreateKeyResponse> response) {
     Key key =
         keyOperationsInterface.createKey(
-            sessionAccessor.getUserId(), request.getPassword(), request.getAttrs());
+            sessionAccessor.getUserIdentifier(), request.getPassword(), request.getAttrs());
     CreateKeyResponse.Builder builder = CreateKeyResponse.newBuilder();
     builder.setIdentifier(key.getIdentifier());
     key.getCreationTimestamp()
@@ -173,7 +172,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void readKeys(ReadKeysRequest request, StreamObserver<ReadKeysResponse> response) {
     List<KeyProto> keys =
-        keyOperationsInterface.readKeys(sessionAccessor.getUserId()).stream()
+        keyOperationsInterface.readKeys(sessionAccessor.getUserIdentifier()).stream()
             .map(Key::toKeyProto)
             .collect(toList());
     response.onNext(ReadKeysResponse.newBuilder().addAllKeys(keys).build());
@@ -184,7 +183,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @WithEntityManager
   @ValidateUser
   public void updateKey(UpdateKeyRequest request, StreamObserver<UpdateKeyResponse> response) {
-    keyOperationsInterface.updateKey(sessionAccessor.getUserId(), request.getKey());
+    keyOperationsInterface.updateKey(sessionAccessor.getUserIdentifier(), request.getKey());
     response.onNext(UpdateKeyResponse.getDefaultInstance());
     response.onCompleted();
   }
@@ -193,7 +192,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @WithEntityManager
   @ValidateUser
   public void deleteKey(DeleteKeyRequest request, StreamObserver<DeleteKeyResponse> response) {
-    keyOperationsInterface.deleteKey(sessionAccessor.getUserId(), request.getIdentifier());
+    keyOperationsInterface.deleteKey(sessionAccessor.getUserIdentifier(), request.getIdentifier());
     response.onNext(DeleteKeyResponse.getDefaultInstance());
     response.onCompleted();
   }
@@ -204,7 +203,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void electShadow(
       ElectShadowRequest request, StreamObserver<ElectShadowResponse> response) {
     Tuple2<Key, List<Key>> election =
-        keyOperationsInterface.electShadow(sessionAccessor.getUserId(), request.getIdentifier());
+        keyOperationsInterface.electShadow(
+            sessionAccessor.getUserIdentifier(), request.getIdentifier());
     response.onNext(
         ElectShadowResponse.newBuilder()
             .setParent(election._1.getIdentifier())
@@ -230,9 +230,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (validation.isPresent()) {
       return Either.left(validation.get());
     }
-    KvSession oldKvSession = sessionAccessor.getKvSession();
-    long userId = oldKvSession.getUserId();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    long identifier = sessionAccessor.getUserIdentifier();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(identifier);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -244,14 +243,14 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
     accountOperationsInterface.changeMasterKey(
-        userId,
+        identifier,
         renewal.getSalt(),
         cryptography.computeHash(renewal.getDigest()),
         renewal.getKeysList());
-    keyValueClient.safelyDeleteSeRefs(accountOperationsInterface.readSessions(userId));
-    String sessionToken = cryptography.generateTts();
-    keyValueClient.createSession(sessionToken, userId, oldKvSession.getSessionEntityId());
-    return Either.right(builder.setSessionKey(sessionToken).build());
+    List<Session> sessions = accountOperationsInterface.readSessions(identifier);
+    keyValueClient.dropSessions(sessions.stream().map(Session::getKey).collect(toList()));
+    String sessionKey = keyValueClient.createSession(UserPointer.fromUser(user));
+    return Either.right(builder.setSessionKey(sessionKey).build());
   }
 
   @Override
@@ -281,8 +280,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (validation.isPresent()) {
       return Either.left(validation.get());
     }
-    long userId = sessionAccessor.getUserId();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    long userIdentifier = sessionAccessor.getUserIdentifier();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -294,7 +293,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (accountOperationsInterface.getUserByName(request.getUsername()).isPresent()) {
       return Either.right(builder.setError(ChangeUsernameResponse.Error.NAME_TAKEN).build());
     }
-    accountOperationsInterface.changeUsername(userId, request.getUsername());
+    accountOperationsInterface.changeUsername(userIdentifier, request.getUsername());
     return Either.right(builder.build());
   }
 
@@ -314,8 +313,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, DeleteAccountResponse> _deleteAccount(
       DeleteAccountRequest request) {
-    long userId = sessionAccessor.getUserId();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    long userIdentifier = sessionAccessor.getUserIdentifier();
+    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userIdentifier);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -324,8 +323,11 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())) {
       return Either.right(builder.setError(DeleteAccountResponse.Error.INVALID_DIGEST).build());
     }
-    keyValueClient.safelyDeleteSeRefs(accountOperationsInterface.readSessions(userId));
-    accountOperationsInterface.markAccountAsDeleted(userId);
+    keyValueClient.dropSessions(
+        accountOperationsInterface.readSessions(userIdentifier).stream()
+            .map(Session::getKey)
+            .collect(toList()));
+    accountOperationsInterface.markAccountAsDeleted(userIdentifier);
     return Either.right(builder.build());
   }
 
@@ -348,9 +350,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void getRecentSessions(
       GetRecentSessionsRequest request, StreamObserver<GetRecentSessionsResponse> response) {
-    long userId = sessionAccessor.getUserId();
+    long userIdentifier = sessionAccessor.getUserIdentifier();
     List<Session> sessions =
-        accountOperationsInterface.readSessions(userId).stream()
+        accountOperationsInterface.readSessions(userIdentifier).stream()
             .sorted(Comparator.comparing(Session::getTimestamp).reversed())
             .collect(toList());
     Set<String> ipAddressSet = sessions.stream().map(Session::getIpAddress).collect(toSet());
@@ -363,7 +365,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
                     .map(
                         session ->
                             GetRecentSessionsResponse.Session.newBuilder()
-                                .setCreationTimeInMillis(session.getTimestamp().toEpochMilli())
+                                .setCreationTimeInMillis(session.getTimestamp().getTime())
                                 .setIpAddress(session.getIpAddress())
                                 .setUserAgent(session.getUserAgent())
                                 .setGeolocation(ipToGeolocation.get(session.getIpAddress()))
@@ -376,7 +378,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private Either<StatusException, GenerateOtpParamsResponse> _generateOtpParams(
       GenerateOtpParamsRequest request) {
     Optional<User> maybeUser =
-        accountOperationsInterface.getUserByIdentifier(sessionAccessor.getUserId());
+        accountOperationsInterface.getUserByIdentifier(sessionAccessor.getUserIdentifier());
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -415,7 +417,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, AcceptOtpParamsResponse> _acceptOtpParams(
       AcceptOtpParamsRequest request) {
-    long userId = sessionAccessor.getUserId();
+    long userId = sessionAccessor.getUserIdentifier();
     Optional<OtpParams> maybeOtpParams =
         accountOperationsInterface.getOtpParams(userId, Long.valueOf(request.getOtpParamsId()));
     if (!maybeOtpParams.isPresent()) {
@@ -452,7 +454,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   private Either<StatusException, ResetOtpResponse> _resetOtp(ResetOtpRequest request) {
-    long userId = sessionAccessor.getUserId();
+    long userId = sessionAccessor.getUserIdentifier();
     Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
@@ -500,7 +502,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void ackFeaturePrompt(
       AckFeaturePromptRequest request, StreamObserver<AckFeaturePromptResponse> response) {
     accountOperationsInterface.ackFeaturePrompt(
-        sessionAccessor.getUserId(), request.getFeatureType());
+        sessionAccessor.getUserIdentifier(), request.getFeatureType());
     response.onNext(AckFeaturePromptResponse.getDefaultInstance());
     response.onCompleted();
   }

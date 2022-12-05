@@ -5,12 +5,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import com.google.gson.Gson;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import keyring.server.main.Chronometry;
-import keyring.server.main.keyvalue.values.KvAuthn;
-import keyring.server.main.keyvalue.values.KvSession;
+import keyring.server.main.Cryptography;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +32,8 @@ class KeyValueClientTest {
       new GenericContainer(DockerImageName.parse("redis")).withExposedPorts(6379);
 
   private static JedisPool jedisPool;
+  private static Gson gson;
+  @Mock private Cryptography mockCryptography;
   @Mock private Chronometry mockChronometry;
   private KeyValueClient keyValueClient;
 
@@ -40,66 +42,70 @@ class KeyValueClientTest {
     jedisPool =
         new JedisPool(
             new JedisPoolConfig(), redisContainer.getHost(), redisContainer.getFirstMappedPort());
-    keyValueClient = new KeyValueClient(jedisPool, mockChronometry);
+    gson = new Gson();
+    keyValueClient = new KeyValueClient(jedisPool, mockCryptography, gson, mockChronometry);
     when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
     when(mockChronometry.isBefore(eq(Instant.EPOCH), any(Instant.class))).thenReturn(false);
   }
 
   @Test
-  void createSession_getsUniqueToken_putsKeyToKvSession() {
-    String sessionToken = generateUniqueToken();
+  void createSession_getsUniqueIdentifier_putsSessionToUser() {
+    String identifier = generateUniqueIdentifier();
+    when(mockCryptography.generateTts()).thenReturn(identifier);
 
-    KvSession kvSession = keyValueClient.createSession(sessionToken, 1L, 7L);
+    String reply = keyValueClient.createSession(new UserPointer().setIdentifier(0L));
 
-    assertEquals(sessionToken, kvSession.getSessionToken());
-    assertEquals(1L, kvSession.getUserId());
-    assertEquals(7L, kvSession.getSessionEntityId());
-    assertEquals(Optional.of(kvSession), keyValueClient.getExSession(sessionToken));
+    assertEquals(identifier, reply);
+    assertEquals(0L, keyValueClient.touchSession(identifier).get().getIdentifier());
   }
 
   @Test
-  void createSession_getsDuplicateToken_throwsException() {
-    String sessionToken = generateUniqueToken();
-    keyValueClient.createSession(sessionToken, 1L, 7L);
+  void createSession_getsDuplicateIdentifier_throwsException() {
+    String identifier = generateUniqueIdentifier();
+    when(mockCryptography.generateTts()).thenReturn(identifier);
+    keyValueClient.createSession(new UserPointer().setIdentifier(0L));
 
     assertThrows(
-        KeyValueException.class, () -> keyValueClient.createSession(sessionToken, 2L, 14L));
+        KeyValueException.class,
+        () -> keyValueClient.createSession(new UserPointer().setIdentifier(1L)));
   }
 
   @Test
-  void getExSession_noSuchToken_returnsEmpty() {
-    assertFalse(keyValueClient.getExSession(generateUniqueToken()).isPresent());
+  void touchSession_noSuchIdentifier_returnsEmpty() {
+    String identifier = generateUniqueIdentifier();
+
+    assertFalse(keyValueClient.touchSession(identifier).isPresent());
   }
 
   @Test
-  void getExSession_findToken_updatesExpirationTime() throws Exception {
+  void touchSession_findsIdentifier_updatesExpirationTime() throws Exception {
     try (Jedis jedis = jedisPool.getResource()) {
-      String sessionToken = generateUniqueToken();
-      keyValueClient.createSession(sessionToken, 1L, 7L);
-      Thread.sleep(8 + 2);
-      long ttlBefore = jedis.pttl("session:" + sessionToken);
+      String identifier = generateUniqueIdentifier();
+      when(mockCryptography.generateTts()).thenReturn(identifier);
+      keyValueClient.createSession(new UserPointer().setIdentifier(0L));
+      Thread.sleep(10);
+      long ttlBefore = jedis.pttl("session:" + identifier);
 
-      Optional<KvSession> storedKvSession = keyValueClient.getExSession(sessionToken);
-      long ttlAfter = jedis.pttl("session:" + sessionToken);
+      Optional<UserPointer> reply = keyValueClient.touchSession(identifier);
+      long ttlAfter = jedis.pttl("session:" + identifier);
 
-      assertEquals(1L, storedKvSession.get().getUserId());
+      assertEquals(0L, reply.get().getIdentifier());
       assertTrue(ttlAfter > ttlBefore);
     }
   }
 
   @Test
-  void createAuthn_getsUniqueToken_putsKeyToKvAuthn() {
-    String authnToken = generateUniqueToken();
+  void createAuthn_getsUniqueId_putsAuthnToUserId() {
+    String authnId = generateUniqueIdentifier();
+    when(mockCryptography.generateTts()).thenReturn(authnId);
 
-    KvAuthn kvAuthn = keyValueClient.createAuthn(authnToken, 1L, 7L);
+    String reply = keyValueClient.createAuthn(7L);
 
-    assertEquals(authnToken, kvAuthn.getAuthnToken());
-    assertEquals(1L, kvAuthn.getUserId());
-    assertEquals(7L, kvAuthn.getSessionEntityId());
-    assertEquals(Optional.of(kvAuthn), keyValueClient.getKvAuthn(authnToken));
+    assertEquals(authnId, reply);
+    assertEquals(Optional.of(7L), keyValueClient.getUserByAuthn(authnId));
   }
 
-  private String generateUniqueToken() {
+  private String generateUniqueIdentifier() {
     return UUID.randomUUID().toString();
   }
 }

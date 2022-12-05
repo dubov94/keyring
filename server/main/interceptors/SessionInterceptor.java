@@ -5,7 +5,7 @@ import io.vavr.control.Either;
 import java.util.Optional;
 import javax.inject.Inject;
 import keyring.server.main.keyvalue.KeyValueClient;
-import keyring.server.main.keyvalue.values.KvSession;
+import keyring.server.main.keyvalue.UserPointer;
 
 public class SessionInterceptor implements ServerInterceptor {
   private KeyValueClient keyValueClient;
@@ -20,14 +20,14 @@ public class SessionInterceptor implements ServerInterceptor {
     if (sessionToken == null) {
       return Either.left(Status.UNAUTHENTICATED);
     }
-    Optional<KvSession> kvSession = keyValueClient.getExSession(sessionToken);
-    if (!kvSession.isPresent()) {
+    Optional<UserPointer> userPointer = keyValueClient.touchSession(sessionToken);
+    if (!userPointer.isPresent()) {
       return Either.left(Status.UNAUTHENTICATED);
     }
     Context context =
         Context.current()
             .withValue(SessionAccessor.CONTEXT_SESSION_TOKEN_KEY, sessionToken)
-            .withValue(SessionAccessor.CONTEXT_KV_SESSION_KEY, kvSession.get());
+            .withValue(SessionAccessor.CONTEXT_USER_POINTER_KEY, userPointer.get());
     return Either.right(context);
   }
 

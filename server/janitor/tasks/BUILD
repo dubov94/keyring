@@ -7,7 +7,6 @@ java_library(
     srcs = ["DeletedUsers.java"],
     deps = [
         "//server/main/aspects:annotations",
-        "//server/main/entities:columns_java_proto",
         "//server/main/entities:user",
         "@maven//:javax_inject_javax_inject",
         "@maven//:javax_persistence_javax_persistence_api",
@@ -28,7 +27,6 @@ woven_junit5_test(
     deps = [
         ":deleted_users",
         "//server/main/aspects:storage_manager_aspect",
-        "//server/main/entities:columns_java_proto",
         "//server/main/entities:key",
         "//server/main/entities:user",
         "@maven//:com_google_guava_guava",
@@ -55,7 +53,6 @@ java_library(
     deps = [
         "//server/main:chronometry",
         "//server/main/aspects:annotations",
-        "//server/main/entities:columns_java_proto",
         "//server/main/entities:user",
         "@maven//:javax_inject_javax_inject",
         "@maven//:javax_persistence_javax_persistence_api",
@@ -77,7 +74,6 @@ woven_junit5_test(
         ":expired_pending_users",
         "//server/main:chronometry",
         "//server/main/aspects:storage_manager_aspect",
-        "//server/main/entities:columns_java_proto",
         "//server/main/entities:key",
         "//server/main/entities:user",
         "@maven//:com_google_guava_guava",

@@ -9,10 +9,8 @@
         <class>keyring.server.main.entities.OtpParams</class>
         <class>keyring.server.main.entities.OtpToken</class>
         <class>keyring.server.main.entities.Session</class>
-        <class>keyring.server.main.entities.SessionStageConverter</class>
         <class>keyring.server.main.entities.Tag</class>
         <class>keyring.server.main.entities.User</class>
-        <class>keyring.server.main.entities.UserStateConverter</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://postgres-postgresql-ha-pgpool/keyring"/>
@@ -33,10 +31,8 @@
         <class>keyring.server.main.entities.OtpParams</class>
         <class>keyring.server.main.entities.OtpToken</class>
         <class>keyring.server.main.entities.Session</class>
-        <class>keyring.server.main.entities.SessionStageConverter</class>
         <class>keyring.server.main.entities.Tag</class>
         <class>keyring.server.main.entities.User</class>
-        <class>keyring.server.main.entities.UserStateConverter</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://localhost/keyring"/>
@@ -53,10 +49,8 @@
         <class>keyring.server.main.entities.OtpParams</class>
         <class>keyring.server.main.entities.OtpToken</class>
         <class>keyring.server.main.entities.Session</class>
-        <class>keyring.server.main.entities.SessionStageConverter</class>
         <class>keyring.server.main.entities.Tag</class>
         <class>keyring.server.main.entities.User</class>
-        <class>keyring.server.main.entities.UserStateConverter</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.testcontainers.jdbc.ContainerDatabaseDriver"/>
             <property name="javax.persistence.jdbc.url" value="jdbc:tc:postgresql:///keyring"/>

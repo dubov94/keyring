@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import java.sql.Timestamp;
 import java.time.Instant;
 import javax.persistence.*;
-import keyring.server.main.entities.columns.UserState;
 import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
@@ -20,8 +19,13 @@ public class User {
 
   @Version private long version;
 
-  @Convert(converter = UserStateConverter.class)
-  private UserState state;
+  public enum State {
+    PENDING,
+    ACTIVE,
+    DELETED
+  }
+
+  @Enumerated private State state;
 
   @Column(columnDefinition = "text", unique = true)
   private String username;
@@ -54,11 +58,11 @@ public class User {
     return this;
   }
 
-  public UserState getState() {
+  public State getState() {
     return state;
   }
 
-  public User setState(UserState state) {
+  public User setState(State state) {
     this.state = state;
     return this;
   }

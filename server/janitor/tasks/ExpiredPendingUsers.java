@@ -12,7 +12,6 @@ import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.aspects.Annotations.WithEntityTransaction;
 import keyring.server.main.entities.User;
 import keyring.server.main.entities.User_;
-import keyring.server.main.entities.columns.UserState;
 
 public final class ExpiredPendingUsers implements Runnable {
   private Chronometry chronometry;
@@ -32,7 +31,7 @@ public final class ExpiredPendingUsers implements Runnable {
     Root<User> userRoot = criteriaDelete.from(User.class);
     criteriaDelete.where(
         criteriaBuilder.and(
-            criteriaBuilder.equal(userRoot.get(User_.state), UserState.PENDING),
+            criteriaBuilder.equal(userRoot.get(User_.state), User.State.PENDING),
             criteriaBuilder.lessThan(
                 userRoot.get(User_.timestamp), chronometry.pastTimestamp(15, ChronoUnit.MINUTES))));
     entityManager.createQuery(criteriaDelete).executeUpdate();

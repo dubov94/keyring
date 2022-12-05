@@ -105,6 +105,7 @@ ASPECTJ_VERSION = "1.9.5"
 maven_install(
     artifacts = [
         "com.beust:jcommander:1.78",
+        "com.google.code.gson:gson:2.8.2",
         "com.google.auto.value:auto-value:1.10",
         "com.google.auto.value:auto-value-annotations:1.10",
         "com.google.dagger:dagger:2.14.1",
