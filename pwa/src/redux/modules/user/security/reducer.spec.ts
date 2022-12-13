@@ -1,4 +1,5 @@
 import { Color } from '@/cryptography/strength_test_service'
+import { SessionStatus } from '@/redux/domain'
 import { success } from '@/redux/flow_signal'
 import { hasData } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
@@ -19,7 +20,8 @@ describe('recentSessions', () => {
     creationTimeInMillis: 0,
     ipAddress: '127.0.0.1',
     userAgent: 'agent',
-    geolocation: {}
+    geolocation: {},
+    status: SessionStatus.ACTIVATED
   }]))
 
   describe('recentSessionRetrievalSignal', () => {

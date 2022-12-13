@@ -5,13 +5,14 @@ import { container } from 'tsyringe'
 import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
 import {
   AdministrationApi,
+  GetRecentSessionsResponseSessionStatus,
   ServiceGetRecentSessionsResponse
 } from '@/api/definitions'
 import { PwnedService, PWNED_SERVICE_TOKEN } from '@/cryptography/pwned_service'
 import { Color, StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN } from '@/cryptography/strength_test_service'
 import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { Key } from '@/redux/domain'
+import { Key, SessionStatus } from '@/redux/domain'
 import { cancel, exception, indicator, success } from '@/redux/flow_signal'
 import { registrationSignal } from '@/redux/modules/authn/actions'
 import { creationSignal, emplace, userKeysUpdate } from '@/redux/modules/user/keys/actions'
@@ -53,7 +54,8 @@ describe('fetchRecentSessionsEpic', () => {
       sessions: [{
         creationTimeInMillis: '0',
         ipAddress: '127.0.0.1',
-        userAgent: 'agent'
+        userAgent: 'agent',
+        status: GetRecentSessionsResponseSessionStatus.ACTIVATED
       }]
     })
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
@@ -71,7 +73,8 @@ describe('fetchRecentSessionsEpic', () => {
         creationTimeInMillis: 0,
         ipAddress: '127.0.0.1',
         userAgent: 'agent',
-        geolocation: {}
+        geolocation: {},
+        status: SessionStatus.ACTIVATED
       }]))
     ])
   })

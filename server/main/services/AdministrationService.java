@@ -26,6 +26,7 @@ import keyring.server.main.entities.OtpParams;
 import keyring.server.main.entities.OtpToken;
 import keyring.server.main.entities.Session;
 import keyring.server.main.entities.User;
+import keyring.server.main.entities.columns.SessionStage;
 import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.geolocation.GeolocationServiceInterface;
 import keyring.server.main.interceptors.SessionAccessor;
@@ -343,6 +344,20 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
   }
 
+  private GetRecentSessionsResponse.Session.Status convertSessionStage(SessionStage stage) {
+    switch (stage) {
+      case UNKNOWN_SESSION_STAGE:
+        return GetRecentSessionsResponse.Session.Status.UNKNOWN_STATUS;
+      case INITIATED:
+        return GetRecentSessionsResponse.Session.Status.AWAITING_2FA;
+      case ACTIVATED:
+        return GetRecentSessionsResponse.Session.Status.ACTIVATED;
+      default:
+        throw new IllegalArgumentException(
+            String.format("Unknown `SessionStage`: %s", stage.getValueDescriptor().getName()));
+    }
+  }
+
   @Override
   @WithEntityManager
   @ValidateUser
@@ -367,6 +382,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
                                 .setIpAddress(session.getIpAddress())
                                 .setUserAgent(session.getUserAgent())
                                 .setGeolocation(ipToGeolocation.get(session.getIpAddress()))
+                                .setStatus(convertSessionStage(session.getStage()))
                                 .build())
                     .collect(toList()))
             .build());

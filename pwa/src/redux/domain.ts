@@ -30,9 +30,16 @@ export interface Geolocation {
   city?: string;
 }
 
+export enum SessionStatus {
+  UNKNOWN_STATUS = 'UNKNOWN_STATUS',
+  AWAITING_2FA = 'AWAITING_2FA',
+  ACTIVATED = 'ACTIVATED'
+}
+
 export interface Session {
   creationTimeInMillis: number;
   ipAddress: string;
   userAgent: string;
   geolocation: Geolocation;
+  status: SessionStatus;
 }

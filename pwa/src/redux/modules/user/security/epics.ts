@@ -7,12 +7,13 @@ import { isActionOf } from 'typesafe-actions'
 import { getAdministrationApi } from '@/api/api_di'
 import {
   GetRecentSessionsResponseSession,
+  GetRecentSessionsResponseSessionStatus,
   ServiceGetRecentSessionsResponse
 } from '@/api/definitions'
 import { getPwnedService } from '@/cryptography/pwned_service'
 import { Color, getStrengthTestService } from '@/cryptography/strength_test_service'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { Session, Password } from '@/redux/domain'
+import { Session, SessionStatus, Password } from '@/redux/domain'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { cancel, exception, indicator, errorToMessage, success } from '@/redux/flow_signal'
 import { extractPassword, userKeysUpdate } from '@/redux/modules/user/keys/actions'
@@ -33,12 +34,26 @@ import {
 } from './actions'
 import { Clique, cliques, getCliqueRoot } from '../keys/selectors'
 
+const convertSessionStatus = (status: GetRecentSessionsResponseSessionStatus): SessionStatus => {
+  switch (status) {
+    case GetRecentSessionsResponseSessionStatus.UNKNOWNSTATUS:
+      return SessionStatus.UNKNOWN_STATUS
+    case GetRecentSessionsResponseSessionStatus.AWAITING2FA:
+      return SessionStatus.AWAITING_2FA
+    case GetRecentSessionsResponseSessionStatus.ACTIVATED:
+      return SessionStatus.ACTIVATED
+    default:
+      throw new Error(`Unknown \`GetRecentSessionsResponseSessionStatus\`: ${status}`)
+  }
+}
+
 const convertMessageToSession = (message: GetRecentSessionsResponseSession): Session => ({
   // `int64`.
   creationTimeInMillis: Number(message.creationTimeInMillis!),
   ipAddress: message.ipAddress!,
   userAgent: message.userAgent!,
-  geolocation: message.geolocation || {}
+  geolocation: message.geolocation || {},
+  status: convertSessionStatus(message.status!)
 })
 
 export const fetchRecentSessionsEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(

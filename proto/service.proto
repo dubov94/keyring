@@ -290,10 +290,17 @@ message Geolocation {
 
 message GetRecentSessionsResponse {
     message Session {
+        enum Status {
+            UNKNOWN_STATUS = 0;
+            AWAITING_2FA = 1;
+            ACTIVATED = 2;
+        }
+
         int64 creation_time_in_millis = 1;
         string ip_address = 2;
         string user_agent = 3;
         Geolocation geolocation = 4;
+        Status status = 5;
     }
 
     repeated Session sessions = 1;

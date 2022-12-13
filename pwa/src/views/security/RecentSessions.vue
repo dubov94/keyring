@@ -14,6 +14,11 @@
                 {{ item.browser.name }}
                 {{ item.browser.version }}
               </td>
+              <td>
+                <v-chip :color="item.status.color">
+                  {{ item.status.text }}
+                </v-chip>
+              </td>
             </tr>
           </template>
         </v-data-table>
@@ -23,24 +28,36 @@
 </template>
 
 <script lang="ts">
-import Vue from 'vue'
-import { UAParser } from 'ua-parser-js'
-import { recentSessions, RecentSessions } from '@/redux/modules/user/security/selectors'
-import { fetchRecentSessions, recentSessionsRetrievalReset } from '@/redux/modules/user/security/actions'
-import { hasIndicator, data } from '@/redux/remote_data'
 import { function as fn, option } from 'fp-ts'
-import { Session } from '@/redux/domain'
 import { DeepReadonly } from 'ts-essentials'
+import { UAParser } from 'ua-parser-js'
+import Vue from 'vue'
+import { Session, SessionStatus } from '@/redux/domain'
+import { fetchRecentSessions, recentSessionsRetrievalReset } from '@/redux/modules/user/security/actions'
+import { recentSessions, RecentSessions } from '@/redux/modules/user/security/selectors'
+import { hasIndicator, data } from '@/redux/remote_data'
+
+interface ItemStatus {
+  text: string;
+  color?: 'warning' | 'success';
+}
 
 interface Item {
   moment: string;
   location: string;
   browser: { name?: string; version?: string };
+  status: ItemStatus;
 }
 
-const convertSessionToItem = ({ creationTimeInMillis, ipAddress, userAgent, geolocation }: DeepReadonly<Session>): Item => {
+const convertSessionToItem = ({
+  creationTimeInMillis,
+  ipAddress,
+  userAgent,
+  geolocation,
+  status
+}: DeepReadonly<Session>): Item => {
   const moment = new Date(creationTimeInMillis).toLocaleString()
-  let area = null
+  let area: string | null = null
   if (geolocation.country) {
     if (geolocation.city) {
       area = `${geolocation.city}, ${geolocation.country}`
@@ -50,7 +67,13 @@ const convertSessionToItem = ({ creationTimeInMillis, ipAddress, userAgent, geol
   }
   const location = area === null ? ipAddress : `${ipAddress}, ${area}`
   const browser = new UAParser(userAgent).getBrowser()
-  return { moment, location, browser }
+  let itemStatus: ItemStatus = { text: 'Unknown' }
+  if (status === SessionStatus.AWAITING_2FA) {
+    itemStatus = { text: 'Awaiting 2FA', color: 'warning' }
+  } else if (status === SessionStatus.ACTIVATED) {
+    itemStatus = { text: 'Activated', color: 'success' }
+  }
+  return { moment, location, browser, status: itemStatus }
 }
 
 export default Vue.extend({
@@ -65,7 +88,8 @@ export default Vue.extend({
       return [
         { text: 'Timestamp', value: 'moment' },
         { text: 'IP address', value: 'location' },
-        { text: 'User agent', value: 'browser' }
+        { text: 'User agent', value: 'browser' },
+        { text: 'Status', value: 'status' }
       ]
     },
     items (): Item[] {

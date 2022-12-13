@@ -31,6 +31,7 @@ import keyring.server.main.entities.OtpParams;
 import keyring.server.main.entities.OtpToken;
 import keyring.server.main.entities.Session;
 import keyring.server.main.entities.User;
+import keyring.server.main.entities.columns.SessionStage;
 import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.geolocation.GeolocationServiceInterface;
 import keyring.server.main.interceptors.SessionAccessor;
@@ -350,7 +351,8 @@ class AdministrationServiceTest {
             new Session()
                 .setTimestamp(instant)
                 .setIpAddress("127.0.0.1")
-                .setUserAgent("Chrome/0.0.0");
+                .setUserAgent("Chrome/0.0.0")
+                .setStage(SessionStage.ACTIVATED);
     when(mockAccountOperationsInterface.readSessions(7L))
         .thenReturn(
             ImmutableList.of(
@@ -370,6 +372,7 @@ class AdministrationServiceTest {
                 .setUserAgent("Chrome/0.0.0")
                 .setGeolocation(
                     Geolocation.newBuilder().setCountry("Country").setCity("City").build())
+                .setStatus(GetRecentSessionsResponse.Session.Status.ACTIVATED)
                 .build();
     verify(mockStreamObserver)
         .onNext(
