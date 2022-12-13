@@ -1,5 +1,5 @@
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image", "container_layer")
 load("@redirection_npm//react-scripts:index.bzl", "react_scripts")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("//bazel:files.bzl", "filegroup_copy")
@@ -98,13 +98,27 @@ pkg_tar(
     stamp = 1,
 )
 
+container_layer(
+    name = "dist_layer",
+    directory = "/root",
+    tars = [":pkg_tar"],
+    enable_mtime_preservation = True,
+)
+
+container_layer(
+    name = "nginx_layer",
+    directory = "/root",
+    files = ["nginx.conf"],
+    symlinks = {"/etc/nginx/nginx.conf": "/root/nginx.conf"},
+)
+
 container_image(
     name = "redirection",
     base = "@io_docker_index_library_nginx//image",
-    directory = "/root",
-    files = ["nginx.conf"],
+    layers = [
+        ":dist_layer",
+        ":nginx_layer",
+    ],
     ports = ["8080"],
-    symlinks = {"/etc/nginx/nginx.conf": "/root/nginx.conf"},
-    tars = [":pkg_tar"],
     workdir = "/root",
 )

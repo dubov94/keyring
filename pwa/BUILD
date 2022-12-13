@@ -1,4 +1,4 @@
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image", "container_layer")
 load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher", "vue_cli_launcher_test")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
@@ -190,7 +190,7 @@ pkg_tar(
     # assets. That was happening due to:
     #
     # - `pkg_tar` having no support of `stamp`, thus
-    #   always yielding `mtime` equal to epoch;
+    #   always yielding constant `mtime`;
     # - NGINX computing `ETag` value as concatentation
     #   of `mtime` and asset length
     #   (src/http/ngx_http_core_module.c);
@@ -199,13 +199,27 @@ pkg_tar(
     stamp = 1,
 )
 
+container_layer(
+    name = "dist_layer",
+    directory = "/root",
+    tars = [":pkg_tar"],
+    enable_mtime_preservation = True,
+)
+
+container_layer(
+    name = "nginx_layer",
+    directory = "/root",
+    files = ["nginx.conf"],
+    symlinks = {"/etc/nginx/nginx.conf": "/root/nginx.conf"},
+)
+
 container_image(
     name = "pwa",
     base = "@io_docker_index_library_nginx//image",
-    directory = "/root",
-    files = ["nginx.conf"],
+    layers = [
+        ":dist_layer",
+        ":nginx_layer",
+    ],
     ports = ["8080"],
-    symlinks = {"/etc/nginx/nginx.conf": "/root/nginx.conf"},
-    tars = [":pkg_tar"],
     workdir = "/root",
 )
