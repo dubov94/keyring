@@ -32,7 +32,6 @@ java_library(
         "@maven//:com_google_guava_guava",
         "@maven//:com_vladmihalcea_hibernate_types_52",
         "@maven//:commons_io_commons_io",
-        "@maven//:javax_annotation_javax_annotation_api",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_hibernate_hibernate_core",
     ],
@@ -132,6 +131,7 @@ java_library(
         "@maven//:com_google_guava_guava",
     ],
 )
+
 proto_library(
     name = "columns_proto",
     srcs = ["columns.proto"],
@@ -139,8 +139,8 @@ proto_library(
 
 java_proto_library(
     name = "columns_java_proto",
-    visibility = ["//server:internal"],
     protos = [":columns_proto"],
+    visibility = ["//server:internal"],
 )
 
 java_library(
@@ -149,7 +149,7 @@ java_library(
     deps = [
         ":columns_java_proto",
         "@maven//:javax_persistence_javax_persistence_api",
-    ]
+    ],
 )
 
 java_library(
@@ -158,5 +158,5 @@ java_library(
     deps = [
         ":columns_java_proto",
         "@maven//:javax_persistence_javax_persistence_api",
-    ]
+    ],
 )
