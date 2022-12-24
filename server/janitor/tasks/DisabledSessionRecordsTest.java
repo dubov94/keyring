@@ -42,6 +42,7 @@ final class DisabledSessionRecordsTest {
   void beforeEach() {
     entityManager = entityManagerFactory.createEntityManager();
     disabledSessionRecords = new DisabledSessionRecords(mockChronometry);
+    when(mockChronometry.currentTime()).thenReturn(Instant.now());
   }
 
   @Test
