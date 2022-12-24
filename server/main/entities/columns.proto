@@ -16,4 +16,5 @@ enum SessionStage {
     UNKNOWN_SESSION_STAGE = 0;
     INITIATED = 1;
     ACTIVATED = 2;
+    DISABLED = 3;
 }

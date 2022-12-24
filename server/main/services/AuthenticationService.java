@@ -129,11 +129,13 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     Session session =
         accountOperationsInterface.createSession(
             userId,
+            user.getVersion(),
             agentAccessor.getIpAddress(),
             agentAccessor.getUserAgent(),
             versionAccessor.getVersion());
     long sessionId = session.getIdentifier();
-    accountOperationsInterface.activateSession(userId, sessionId, sessionToken);
+    accountOperationsInterface.activateSession(
+        userId, sessionId, keyValueClient.convertSessionTokenToKey(sessionToken));
     keyValueClient.createSession(sessionToken, userId, sessionId);
     mailClient.sendMailVc(mail, code);
     return Either.right(
@@ -167,7 +169,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     response.onCompleted();
   }
 
-  private UserData newUserData(String sessionToken, User user) {
+  private UserData newUserData(long sessionEntityId, String sessionToken, User user) {
     long userId = user.getIdentifier();
     UserData.Builder userDataBuilder = UserData.newBuilder();
     userDataBuilder.setSessionKey(sessionToken);
@@ -189,7 +191,9 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       userDataBuilder.setMail(user.getMail());
     }
     userDataBuilder.addAllUserKeys(
-        keyOperationsInterface.readKeys(userId).stream().map(Key::toKeyProto).collect(toList()));
+        keyOperationsInterface.readKeys(sessionEntityId).stream()
+            .map(Key::toKeyProto)
+            .collect(toList()));
     return userDataBuilder.build();
   }
 
@@ -209,14 +213,16 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     Session session =
         accountOperationsInterface.createSession(
             userId,
+            user.getVersion(),
             agentAccessor.getIpAddress(),
             agentAccessor.getUserAgent(),
             versionAccessor.getVersion());
-    long sessionId = session.getIdentifier();
+    long sessionEntityId = session.getIdentifier();
     if (user.getOtpSharedSecret() != null) {
       String authnToken = cryptography.generateTts();
-      accountOperationsInterface.initiateSession(userId, sessionId, authnToken);
-      keyValueClient.createAuthn(authnToken, userId, sessionId);
+      accountOperationsInterface.initiateSession(
+          userId, sessionEntityId, keyValueClient.convertAuthnTokenToKey(authnToken));
+      keyValueClient.createAuthn(authnToken, userId, sessionEntityId);
       return builder
           .setOtpContext(
               OtpContext.newBuilder()
@@ -225,9 +231,10 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
           .build();
     }
     String sessionToken = cryptography.generateTts();
-    accountOperationsInterface.activateSession(userId, sessionId, sessionToken);
-    keyValueClient.createSession(sessionToken, userId, sessionId);
-    return builder.setUserData(newUserData(sessionToken, user)).build();
+    accountOperationsInterface.activateSession(
+        userId, sessionEntityId, keyValueClient.convertSessionTokenToKey(sessionToken));
+    keyValueClient.createSession(sessionToken, userId, sessionEntityId);
+    return builder.setUserData(newUserData(sessionEntityId, sessionToken, user)).build();
   }
 
   @Override
@@ -286,9 +293,11 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
     long sessionEntityId = kvAuthn.getSessionEntityId();
     String sessionToken = cryptography.generateTts();
-    accountOperationsInterface.activateSession(userId, sessionEntityId, sessionToken);
+    accountOperationsInterface.activateSession(
+        userId, sessionEntityId, keyValueClient.convertSessionTokenToKey(sessionToken));
     keyValueClient.createSession(sessionToken, userId, sessionEntityId);
-    return Either.right(builder.setUserData(newUserData(sessionToken, user)).build());
+    return Either.right(
+        builder.setUserData(newUserData(sessionEntityId, sessionToken, user)).build());
   }
 
   @Override

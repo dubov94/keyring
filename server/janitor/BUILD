@@ -35,6 +35,7 @@ java_library(
         ":app_module",
         ":environment",
         "//server/janitor/tasks:deleted_users",
+        "//server/janitor/tasks:disabled_session_records",
         "//server/janitor/tasks:expired_mail_tokens",
         "//server/janitor/tasks:expired_otp_params",
         "//server/janitor/tasks:expired_otp_tokens",

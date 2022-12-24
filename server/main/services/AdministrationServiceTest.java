@@ -198,21 +198,32 @@ class AdministrationServiceTest {
 
   @Test
   void changeMasterKey_digestsMatch_repliesWithDefault() {
+    long userId = user.getIdentifier();
     KeyPatch keyPatch = KeyPatch.newBuilder().setIdentifier(0L).build();
     when(mockCryptography.validateA2p("prefix")).thenReturn(true);
     when(mockCryptography.validateDigest("suffix")).thenReturn(true);
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.computeHash("suffix")).thenReturn("xiffus");
-    String oldSessionToken = "old-session-token";
+    String oldSessionKey = "prefix:old-session-token";
+    Session oldSession = new Session().setKey(oldSessionKey);
     ImmutableList<Session> sessions =
-        ImmutableList.of(new Session().setKey("random"), new Session().setKey(oldSessionToken));
-    when(mockAccountOperationsInterface.readSessions(7L)).thenReturn(sessions);
-    when(mockSessionAccessor.getSessionToken()).thenReturn(oldSessionToken);
+        ImmutableList.of(new Session().setKey("prefix:random"), oldSession);
+    when(mockAccountOperationsInterface.changeMasterKey(
+            userId, "prefix", "xiffus", ImmutableList.of(keyPatch)))
+        .thenReturn(sessions);
+    when(mockAccountOperationsInterface.mustGetSession(userId, kvSession.getSessionEntityId()))
+        .thenReturn(oldSession);
+    when(mockAccountOperationsInterface.createSession(
+            userId,
+            0L,
+            oldSession.getIpAddress(),
+            oldSession.getUserAgent(),
+            oldSession.getClientVersion()))
+        .thenReturn(new Session().setIdentifier(12L));
     String newSessionToken = "new-session-token";
     when(mockCryptography.generateTts()).thenReturn(newSessionToken);
-    when(mockKeyValueClient.createSession(
-            newSessionToken, user.getIdentifier(), kvSession.getSessionEntityId()))
-        .thenReturn(KvSession.newBuilder().setSessionToken(newSessionToken).build());
+    String newSessionKey = "prefix:new-session-key";
+    when(mockKeyValueClient.convertSessionTokenToKey(newSessionToken)).thenReturn(newSessionKey);
 
     administrationService.changeMasterKey(
         ChangeMasterKeyRequest.newBuilder()
@@ -229,6 +240,8 @@ class AdministrationServiceTest {
     verify(mockAccountOperationsInterface)
         .changeMasterKey(7L, "prefix", "xiffus", ImmutableList.of(keyPatch));
     verify(mockKeyValueClient).safelyDeleteSeRefs(sessions);
+    verify(mockAccountOperationsInterface).activateSession(userId, 12L, newSessionKey);
+    verify(mockKeyValueClient).createSession(newSessionToken, userId, 12L);
     verify(mockStreamObserver)
         .onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey("new-session-token").build());
     verify(mockStreamObserver).onCompleted();
@@ -331,9 +344,11 @@ class AdministrationServiceTest {
 
   @Test
   void deleteAccount_digestsMatch_repliesWithDefault() {
-    ImmutableList<Session> sessions = ImmutableList.of(new Session().setKey("session"));
+    ImmutableList<Session> sessions = ImmutableList.of(new Session().setKey("prefix:session"));
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
-    when(mockAccountOperationsInterface.readSessions(7L)).thenReturn(sessions);
+    when(mockAccountOperationsInterface.readSessions(
+            7L, Optional.of(ImmutableList.of(SessionStage.DISABLED))))
+        .thenReturn(sessions);
 
     administrationService.deleteAccount(
         DeleteAccountRequest.newBuilder().setDigest("digest").build(), mockStreamObserver);
@@ -352,8 +367,8 @@ class AdministrationServiceTest {
                 .setTimestamp(instant)
                 .setIpAddress("127.0.0.1")
                 .setUserAgent("Chrome/0.0.0")
-                .setStage(SessionStage.ACTIVATED);
-    when(mockAccountOperationsInterface.readSessions(7L))
+                .setStage(SessionStage.ACTIVATED, instant);
+    when(mockAccountOperationsInterface.readSessions(7L, Optional.empty()))
         .thenReturn(
             ImmutableList.of(
                 createDatabaseSession.apply(Instant.ofEpochSecond(1)),

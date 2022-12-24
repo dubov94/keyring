@@ -42,6 +42,7 @@ public class User {
   @Column(columnDefinition = "text")
   private String mail;
 
+  // Latest stage change to `ACTIVATED`.
   @Column(name = "last_session")
   private Timestamp lastSession;
 
@@ -52,6 +53,10 @@ public class User {
   public User setIdentifier(long identifier) {
     this.identifier = identifier;
     return this;
+  }
+
+  public long getVersion() {
+    return version;
   }
 
   public UserState getState() {

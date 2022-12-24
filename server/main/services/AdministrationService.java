@@ -4,6 +4,7 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.*;
 import static keyring.server.main.storage.AccountOperationsInterface.MtNudgeStatus;
 
+import com.google.common.collect.ImmutableList;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import com.warrenstrange.googleauth.GoogleAuthenticatorQRGenerator;
 import com.warrenstrange.googleauth.IGoogleAuthenticator;
@@ -157,7 +158,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void createKey(CreateKeyRequest request, StreamObserver<CreateKeyResponse> response) {
     Key key =
         keyOperationsInterface.createKey(
-            sessionAccessor.getUserId(), request.getPassword(), request.getAttrs());
+            sessionAccessor.getSessionEntityId(), request.getPassword(), request.getAttrs());
     CreateKeyResponse.Builder builder = CreateKeyResponse.newBuilder();
     builder.setIdentifier(key.getIdentifier());
     key.getCreationTimestamp()
@@ -174,7 +175,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void readKeys(ReadKeysRequest request, StreamObserver<ReadKeysResponse> response) {
     List<KeyProto> keys =
-        keyOperationsInterface.readKeys(sessionAccessor.getUserId()).stream()
+        keyOperationsInterface.readKeys(sessionAccessor.getSessionEntityId()).stream()
             .map(Key::toKeyProto)
             .collect(toList());
     response.onNext(ReadKeysResponse.newBuilder().addAllKeys(keys).build());
@@ -185,7 +186,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @WithEntityManager
   @ValidateUser
   public void updateKey(UpdateKeyRequest request, StreamObserver<UpdateKeyResponse> response) {
-    keyOperationsInterface.updateKey(sessionAccessor.getUserId(), request.getKey());
+    keyOperationsInterface.updateKey(sessionAccessor.getSessionEntityId(), request.getKey());
     response.onNext(UpdateKeyResponse.getDefaultInstance());
     response.onCompleted();
   }
@@ -194,7 +195,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @WithEntityManager
   @ValidateUser
   public void deleteKey(DeleteKeyRequest request, StreamObserver<DeleteKeyResponse> response) {
-    keyOperationsInterface.deleteKey(sessionAccessor.getUserId(), request.getIdentifier());
+    keyOperationsInterface.deleteKey(sessionAccessor.getSessionEntityId(), request.getIdentifier());
     response.onNext(DeleteKeyResponse.getDefaultInstance());
     response.onCompleted();
   }
@@ -205,7 +206,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   public void electShadow(
       ElectShadowRequest request, StreamObserver<ElectShadowResponse> response) {
     Tuple2<Key, List<Key>> election =
-        keyOperationsInterface.electShadow(sessionAccessor.getUserId(), request.getIdentifier());
+        keyOperationsInterface.electShadow(
+            sessionAccessor.getSessionEntityId(), request.getIdentifier());
     response.onNext(
         ElectShadowResponse.newBuilder()
             .setParent(election._1.getIdentifier())
@@ -243,16 +245,31 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       return Either.right(
           builder.setError(ChangeMasterKeyResponse.Error.INVALID_CURRENT_DIGEST).build());
     }
+
     ChangeMasterKeyRequest.Renewal renewal = request.getRenewal();
-    accountOperationsInterface.changeMasterKey(
-        userId,
-        renewal.getSalt(),
-        cryptography.computeHash(renewal.getDigest()),
-        renewal.getKeysList());
-    keyValueClient.safelyDeleteSeRefs(accountOperationsInterface.readSessions(userId));
-    String sessionToken = cryptography.generateTts();
-    keyValueClient.createSession(sessionToken, userId, oldKvSession.getSessionEntityId());
-    return Either.right(builder.setSessionKey(sessionToken).build());
+    List<Session> disabledSessions =
+        accountOperationsInterface.changeMasterKey(
+            userId,
+            renewal.getSalt(),
+            cryptography.computeHash(renewal.getDigest()),
+            renewal.getKeysList());
+    keyValueClient.safelyDeleteSeRefs(disabledSessions);
+
+    Session oldSessionRecord =
+        accountOperationsInterface.mustGetSession(userId, oldKvSession.getSessionEntityId());
+    Session newSessionRecord =
+        accountOperationsInterface.createSession(
+            userId,
+            user.getVersion(),
+            oldSessionRecord.getIpAddress(),
+            oldSessionRecord.getUserAgent(),
+            oldSessionRecord.getClientVersion());
+    long newSessionId = newSessionRecord.getIdentifier();
+    String newSessionToken = cryptography.generateTts();
+    accountOperationsInterface.activateSession(
+        userId, newSessionId, keyValueClient.convertSessionTokenToKey(newSessionToken));
+    keyValueClient.createSession(newSessionToken, userId, newSessionId);
+    return Either.right(builder.setSessionKey(newSessionToken).build());
   }
 
   @Override
@@ -325,7 +342,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())) {
       return Either.right(builder.setError(DeleteAccountResponse.Error.INVALID_DIGEST).build());
     }
-    keyValueClient.safelyDeleteSeRefs(accountOperationsInterface.readSessions(userId));
+    keyValueClient.safelyDeleteSeRefs(
+        accountOperationsInterface.readSessions(
+            userId, Optional.of(ImmutableList.of(SessionStage.DISABLED))));
     accountOperationsInterface.markAccountAsDeleted(userId);
     return Either.right(builder.build());
   }
@@ -352,6 +371,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         return GetRecentSessionsResponse.Session.Status.AWAITING_2FA;
       case ACTIVATED:
         return GetRecentSessionsResponse.Session.Status.ACTIVATED;
+      case DISABLED:
+        return GetRecentSessionsResponse.Session.Status.DISABLED;
       default:
         throw new IllegalArgumentException(
             String.format("Unknown `SessionStage`: %s", stage.getValueDescriptor().getName()));
@@ -365,7 +386,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       GetRecentSessionsRequest request, StreamObserver<GetRecentSessionsResponse> response) {
     long userId = sessionAccessor.getUserId();
     List<Session> sessions =
-        accountOperationsInterface.readSessions(userId).stream()
+        accountOperationsInterface.readSessions(userId, Optional.empty()).stream()
             .sorted(Comparator.comparing(Session::getTimestamp).reversed())
             .collect(toList());
     Set<String> ipAddressSet = sessions.stream().map(Session::getIpAddress).collect(toSet());

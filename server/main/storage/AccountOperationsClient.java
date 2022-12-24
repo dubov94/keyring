@@ -3,6 +3,7 @@ package keyring.server.main.storage;
 import static java.util.stream.Collectors.toMap;
 import static keyring.server.main.storage.AccountOperationsInterface.MtNudgeStatus;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -86,7 +87,11 @@ public class AccountOperationsClient implements AccountOperationsInterface {
         .max((left, right) -> left.getTimestamp().compareTo(right.getTimestamp()));
   }
 
+  @LockEntity(name = "user")
   private void _releaseMailToken(User user, MailToken mailToken) {
+    if (!ImmutableList.of(UserState.PENDING, UserState.ACTIVE).contains(user.getState())) {
+      throw new IllegalArgumentException();
+    }
     user.setMail(mailToken.getMail());
     if (user.isActivated()) {
       user.setState(UserState.ACTIVE);
@@ -97,9 +102,9 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public void releaseMailToken(long userId, long tokenIdentifier) {
+  public void releaseMailToken(long userId, long tokenId) {
     Optional<MailToken> maybeMailToken =
-        Optional.ofNullable(entityManager.find(MailToken.class, tokenIdentifier));
+        Optional.ofNullable(entityManager.find(MailToken.class, tokenId));
     if (!maybeMailToken.isPresent()) {
       throw new IllegalArgumentException();
     }
@@ -128,13 +133,22 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @LockEntity(name = "user")
-  private void _changeMasterKey(User user, String salt, String hash, List<KeyPatch> patches) {
+  private List<Session> _changeMasterKey(
+      User user, String salt, String hash, List<KeyPatch> patches) {
+    long userId = user.getIdentifier();
+    // Concurrent `Session` creation is blocked by `User` version update.
+    List<Session> sessions =
+        readSessions(userId, Optional.of(ImmutableList.of(SessionStage.DISABLED)));
+    Instant now = chronometry.currentTime();
+    for (Session session : sessions) {
+      session.setStage(SessionStage.DISABLED, now);
+      entityManager.persist(session);
+    }
     user.setSalt(salt);
     user.setHash(hash);
     entityManager.persist(user);
-    // `Key` creation is guarded by `User` lock.
-    List<Key> keys =
-        Queries.findManyToOne(entityManager, Key.class, Key_.user, user.getIdentifier());
+    // Concurrent `Key` creation is blocked by `Session` invalidation.
+    List<Key> keys = Queries.findManyToOne(entityManager, Key.class, Key_.user, userId);
     Map<Long, Password> keyIdToPatch =
         patches.stream().collect(toMap(KeyPatch::getIdentifier, KeyPatch::getPassword));
     for (Key key : keys) {
@@ -143,21 +157,21 @@ public class AccountOperationsClient implements AccountOperationsInterface {
         throw new IllegalArgumentException();
       }
       Password patch = maybePatch.get();
-      // Implicitly causes version increment.
       key.mergeFromPassword(patch);
       entityManager.persist(key);
     }
+    return sessions;
   }
 
   @Override
   @WithEntityTransaction
-  public void changeMasterKey(
-      long userIdentifier, String salt, String hash, List<KeyPatch> protos) {
-    Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
+  public List<Session> changeMasterKey(
+      long userId, String salt, String hash, List<KeyPatch> protos) {
+    Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
-    _changeMasterKey(maybeUser.get(), salt, hash, protos);
+    return _changeMasterKey(maybeUser.get(), salt, hash, protos);
   }
 
   private void _changeUsername(User user, String username) {
@@ -167,22 +181,24 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public void changeUsername(long userIdentifier, String username) {
-    Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
+  public void changeUsername(long userId, String username) {
+    Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
     _changeUsername(maybeUser.get(), username);
   }
 
-  // Locks `User` for `readSessions`.
   @LockEntity(name = "user")
   private Session _createSession(
-      User user, String ipAddress, String userAgent, String clientVersion) {
+      User user, long version, String ipAddress, String userAgent, String clientVersion) {
+    if (user.getVersion() != version) {
+      throw new IllegalArgumentException();
+    }
     Session session =
         new Session()
             .setUser(user)
-            .setStage(SessionStage.UNKNOWN_SESSION_STAGE)
+            .setStage(SessionStage.UNKNOWN_SESSION_STAGE, chronometry.currentTime())
             .setIpAddress(ipAddress)
             .setUserAgent(userAgent)
             .setClientVersion(clientVersion);
@@ -193,12 +209,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public Session createSession(
-      long userIdentifier, String ipAddress, String userAgent, String clientVersion) {
-    Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
+      long userId, long userVersion, String ipAddress, String userAgent, String clientVersion) {
+    Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
-    return _createSession(maybeUser.get(), ipAddress, userAgent, clientVersion);
+    return _createSession(maybeUser.get(), userVersion, ipAddress, userAgent, clientVersion);
   }
 
   @Override
@@ -217,9 +233,13 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     return session;
   }
 
+  @LockEntity(name = "session")
   private void _initiateSession(Session session, String key) {
+    if (session.getStage() != SessionStage.UNKNOWN_SESSION_STAGE) {
+      throw new IllegalArgumentException();
+    }
     session.setKey(key);
-    session.setStage(SessionStage.INITIATED);
+    session.setStage(SessionStage.INITIATED, chronometry.currentTime());
     entityManager.persist(session);
   }
 
@@ -230,9 +250,14 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _initiateSession(session, key);
   }
 
+  @LockEntity(name = "session")
   private void _activateSession(Session session, String key) {
+    if (!ImmutableList.of(SessionStage.UNKNOWN_SESSION_STAGE, SessionStage.INITIATED)
+        .contains(session.getStage())) {
+      throw new IllegalArgumentException();
+    }
     session.setKey(key);
-    session.setStage(SessionStage.ACTIVATED);
+    session.setStage(SessionStage.ACTIVATED, chronometry.currentTime());
     entityManager.persist(session);
   }
 
@@ -249,21 +274,31 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _updateLastSession(session.getUser(), session.getTimestamp());
   }
 
-  @LockEntity(name = "user")
-  private List<Session> _readSessions(User user) {
+  private List<Session> _readSessions(User user, Optional<List<SessionStage>> exceptStages) {
     long userId = user.getIdentifier();
-    // `Session` creation is guarded by `User` lock.
-    return Queries.findManyToOne(entityManager, Session.class, Session_.user, userId);
+    List<Session> allSessions =
+        Queries.findManyToOne(entityManager, Session.class, Session_.user, userId);
+    if (!exceptStages.isPresent()) {
+      return allSessions;
+    }
+    List<SessionStage> exclusions = exceptStages.get();
+    ImmutableList.Builder<Session> listBuilder = ImmutableList.builder();
+    for (Session session : allSessions) {
+      if (!exclusions.contains(session.getStage())) {
+        listBuilder.add(session);
+      }
+    }
+    return listBuilder.build();
   }
 
   @Override
   @WithEntityTransaction
-  public List<Session> readSessions(long userId) {
+  public List<Session> readSessions(long userId, Optional<List<SessionStage>> exceptStages) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
-    return _readSessions(maybeUser.get());
+    return _readSessions(maybeUser.get(), exceptStages);
   }
 
   private void _markAccountAsDeleted(User user) {
@@ -273,8 +308,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public void markAccountAsDeleted(long userIdentifier) {
-    Optional<User> maybeUser = getUserByIdentifier(userIdentifier);
+  public void markAccountAsDeleted(long userId) {
+    Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException();
     }
@@ -283,11 +318,11 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public OtpParams createOtpParams(
-      long userIdentifier, String sharedSecret, List<String> scratchCodes) {
+  public OtpParams createOtpParams(long userId, String sharedSecret, List<String> scratchCodes) {
     OtpParams otpParams =
         new OtpParams()
-            .setUser(entityManager.getReference(User.class, userIdentifier))
+            // Currently allowed even if `User` already has `otpSharedSecret`.
+            .setUser(entityManager.getReference(User.class, userId))
             .setOtpSharedSecret(sharedSecret)
             .setScratchCodes(scratchCodes);
     entityManager.persist(otpParams);
@@ -332,7 +367,6 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _acceptOtpParams(user, otpParams);
   }
 
-  // Locks `User` for `resetOtp`.
   @LockEntity(name = "user")
   private void _createOtpToken(User user, String otpToken) {
     if (user.getOtpSharedSecret() == null) {
@@ -382,7 +416,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     user.setOtpSharedSecret(null);
     user.setOtpSpareAttempts(0);
     entityManager.persist(user);
-    // `OtpToken` creation is guarded by `User` lock.
+    // Concurrent `OtpToken` creation is blocked by `otpSharedSecret` set to `null`.
     List<OtpToken> otpTokens =
         Queries.findManyToOne(entityManager, OtpToken.class, OtpToken_.user, user.getIdentifier());
     for (OtpToken otpToken : otpTokens) {
@@ -402,6 +436,9 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @LockEntity(name = "user")
   private Optional<Integer> _acquireOtpSpareAttempt(User user) {
+    if (user.getOtpSharedSecret() == null) {
+      throw new IllegalArgumentException();
+    }
     int attemptsLeft = user.getOtpSpareAttempts();
     user.decrementOtpSpareAttempts();
     entityManager.persist(user);

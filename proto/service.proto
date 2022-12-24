@@ -294,6 +294,7 @@ message GetRecentSessionsResponse {
             UNKNOWN_STATUS = 0;
             AWAITING_2FA = 1;
             ACTIVATED = 2;
+            DISABLED = 3;
         }
 
         int64 creation_time_in_millis = 1;

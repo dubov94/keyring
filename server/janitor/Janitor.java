@@ -23,6 +23,7 @@ final class Janitor {
     tasks =
         ImmutableList.of(
             appComponent.deletedUsers(),
+            appComponent.disabledSessionRecords(),
             appComponent.expiredMailTokens(),
             appComponent.expiredOtpParams(),
             appComponent.expiredOtpTokens(),

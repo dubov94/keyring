@@ -38,6 +38,45 @@ woven_junit5_test(
 )
 
 java_library(
+    name = "disabled_session_records",
+    srcs = ["DisabledSessionRecords.java"],
+    deps = [
+        "//server/main:chronometry",
+        "//server/main/aspects:annotations",
+        "//server/main/entities:columns_java_proto",
+        "//server/main/entities:session",
+        "//server/main/entities:user",
+        "@maven//:javax_inject_javax_inject",
+        "@maven//:javax_persistence_javax_persistence_api",
+    ],
+)
+
+woven_junit5_test(
+    name = "disabled_session_records_test",
+    srcs = ["DisabledSessionRecordsTest.java"],
+    aop_xml = "//server/janitor/java/META-INF:aop.xml",
+    aspects = ["//server/main/aspects:storage_manager_aspect"],
+    resources = ["//server/java/META-INF:persistence.xml"],
+    test_package = "keyring.server.janitor.tasks",
+    runtime_deps = [
+        "@maven//:org_postgresql_postgresql",
+        "@maven//:org_testcontainers_postgresql",
+    ],
+    deps = [
+        ":disabled_session_records",
+        "//server/main:chronometry",
+        "//server/main/aspects:storage_manager_aspect",
+        "//server/main/entities:columns_java_proto",
+        "//server/main/entities:session",
+        "//server/main/entities:user",
+        "@maven//:javax_persistence_javax_persistence_api",
+        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
+        "@maven//:org_aspectj_aspectjrt",
+        "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+java_library(
     name = "expired_mail_tokens",
     srcs = ["ExpiredMailTokens.java"],
     deps = [

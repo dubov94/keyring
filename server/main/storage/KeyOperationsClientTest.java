@@ -20,6 +20,7 @@ import keyring.server.main.Chronometry;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.entities.Key;
+import keyring.server.main.entities.User;
 import keyring.server.main.proto.service.KeyAttrs;
 import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
@@ -49,16 +50,14 @@ class KeyOperationsClientTest {
   @Test
   @WithEntityManager
   void createKey() {
-    long userIdentifier = createUniqueUser();
+    long sessionId = createActiveSession(createUniqueUser());
     Password password =
         Password.newBuilder().setValue("password").addAllTags(ImmutableList.of("tag")).build();
 
-    keyOperationsClient.createKey(userIdentifier, password, KeyAttrs.getDefaultInstance());
+    keyOperationsClient.createKey(sessionId, password, KeyAttrs.getDefaultInstance());
 
     List<Password> passwords =
-        keyOperationsClient.readKeys(userIdentifier).stream()
-            .map(Key::toPassword)
-            .collect(toList());
+        keyOperationsClient.readKeys(sessionId).stream().map(Key::toPassword).collect(toList());
     assertEquals(1, passwords.size());
     assertEquals(password, passwords.get(0));
   }
@@ -66,21 +65,23 @@ class KeyOperationsClientTest {
   @Test
   @WithEntityManager
   void createKey_withParent() {
-    long userId = createUniqueUser();
+    long sessionId = createActiveSession(createUniqueUser());
     Password parent = Password.newBuilder().setValue("parent").build();
     long parentId =
         keyOperationsClient
-            .createKey(userId, parent, KeyAttrs.getDefaultInstance())
+            .createKey(sessionId, parent, KeyAttrs.getDefaultInstance())
             .getIdentifier();
     Password child = Password.newBuilder().setValue("child").build();
 
     long childId =
         keyOperationsClient
             .createKey(
-                userId, child, KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
+                sessionId,
+                child,
+                KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
             .getIdentifier();
 
-    List<Key> keys = keyOperationsClient.readKeys(userId);
+    List<Key> keys = keyOperationsClient.readKeys(sessionId);
     assertEquals(2, keys.size());
     Optional<Key> maybeChildKey =
         keys.stream().filter(key -> Objects.equals(key.getIdentifier(), childId)).findAny();
@@ -93,23 +94,25 @@ class KeyOperationsClientTest {
   @Test
   @WithEntityManager
   void createKey_nonShadowWithParent_throws() {
-    long userId = createUniqueUser();
+    long sessionId = createActiveSession(createUniqueUser());
 
     assertThrows(
         StorageException.class,
         () ->
             keyOperationsClient.createKey(
-                userId, Password.getDefaultInstance(), KeyAttrs.newBuilder().setParent(1).build()));
+                sessionId,
+                Password.getDefaultInstance(),
+                KeyAttrs.newBuilder().setParent(1).build()));
   }
 
   @Test
   @WithEntityManager
   void createKey_foreignParent_throws() {
-    long userA = createUniqueUser();
-    long userB = createUniqueUser();
+    long sessionA = createActiveSession(createUniqueUser());
+    long sessionB = createActiveSession(createUniqueUser());
     long foreignParentId =
         keyOperationsClient
-            .createKey(userB, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
+            .createKey(sessionB, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
             .getIdentifier();
 
     StorageException thrown =
@@ -117,7 +120,7 @@ class KeyOperationsClientTest {
             StorageException.class,
             () ->
                 keyOperationsClient.createKey(
-                    userA,
+                    sessionA,
                     Password.getDefaultInstance(),
                     KeyAttrs.newBuilder().setIsShadow(true).setParent(foreignParentId).build()));
     assertTrue(
@@ -129,11 +132,11 @@ class KeyOperationsClientTest {
   @Test
   @WithEntityManager
   void createKey_shadowForShadow_throws() {
-    long userId = createUniqueUser();
+    long sessionId = createActiveSession(createUniqueUser());
     Password parent = Password.newBuilder().setValue("parent").build();
     long parentId =
         keyOperationsClient
-            .createKey(userId, parent, KeyAttrs.newBuilder().setIsShadow(true).build())
+            .createKey(sessionId, parent, KeyAttrs.newBuilder().setIsShadow(true).build())
             .getIdentifier();
 
     StorageException thrown =
@@ -141,7 +144,7 @@ class KeyOperationsClientTest {
             StorageException.class,
             () ->
                 keyOperationsClient.createKey(
-                    userId,
+                    sessionId,
                     Password.getDefaultInstance(),
                     KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build()));
 
@@ -152,11 +155,11 @@ class KeyOperationsClientTest {
   @Test
   @WithEntityManager
   void updateKey() {
-    long userIdentifier = createUniqueUser();
-    long keyIdentifier =
+    long sessionId = createActiveSession(createUniqueUser());
+    long keyId =
         keyOperationsClient
             .createKey(
-                userIdentifier,
+                sessionId,
                 Password.newBuilder().setValue("x").addAllTags(ImmutableList.of("a", "b")).build(),
                 KeyAttrs.getDefaultInstance())
             .getIdentifier();
@@ -164,13 +167,10 @@ class KeyOperationsClientTest {
         Password.newBuilder().setValue("y").addAllTags(ImmutableList.of("c", "d")).build();
 
     keyOperationsClient.updateKey(
-        userIdentifier,
-        KeyPatch.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build());
+        sessionId, KeyPatch.newBuilder().setIdentifier(keyId).setPassword(password).build());
 
     List<Password> passwords =
-        keyOperationsClient.readKeys(userIdentifier).stream()
-            .map(Key::toPassword)
-            .collect(toList());
+        keyOperationsClient.readKeys(sessionId).stream().map(Key::toPassword).collect(toList());
     assertEquals(1, passwords.size());
     assertEquals(password, passwords.get(0));
   }
@@ -178,32 +178,32 @@ class KeyOperationsClientTest {
   @Test
   @WithEntityManager
   void deleteKey() {
-    long userIdentifier = createUniqueUser();
-    long keyIdentifier =
+    long sessionId = createActiveSession(createUniqueUser());
+    long keyId =
         keyOperationsClient
-            .createKey(userIdentifier, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
+            .createKey(sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
             .getIdentifier();
-    assertEquals(1, keyOperationsClient.readKeys(userIdentifier).size());
+    assertEquals(1, keyOperationsClient.readKeys(sessionId).size());
 
-    keyOperationsClient.deleteKey(userIdentifier, keyIdentifier);
+    keyOperationsClient.deleteKey(sessionId, keyId);
 
-    assertTrue(keyOperationsClient.readKeys(userIdentifier).isEmpty());
+    assertTrue(keyOperationsClient.readKeys(sessionId).isEmpty());
   }
 
   @Test
   @WithEntityManager
   void electShadow_createParent() {
-    long userId = createUniqueUser();
+    long sessionId = createActiveSession(createUniqueUser());
     Password password =
         Password.newBuilder().setValue("foo").addAllTags(ImmutableList.of("bar")).build();
     long shadowId =
         keyOperationsClient
-            .createKey(userId, password, KeyAttrs.newBuilder().setIsShadow(true).build())
+            .createKey(sessionId, password, KeyAttrs.newBuilder().setIsShadow(true).build())
             .getIdentifier();
 
-    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(userId, shadowId);
+    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(sessionId, shadowId);
 
-    List<Key> allKeys = keyOperationsClient.readKeys(userId);
+    List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
     Optional<Key> maybeParent = getKeyFromList(allKeys, election._1.getIdentifier());
     assertTrue(maybeParent.isPresent());
     assertEquals(password, maybeParent.get().toPassword());
@@ -215,22 +215,24 @@ class KeyOperationsClientTest {
   @Test
   @WithEntityManager
   void electShadow_updateParent() {
-    long userId = createUniqueUser();
+    long sessionId = createActiveSession(createUniqueUser());
     long parentId =
         keyOperationsClient
-            .createKey(userId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
+            .createKey(sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
             .getIdentifier();
     Password update =
         Password.newBuilder().setValue("foo").addAllTags(ImmutableList.of("bar")).build();
     long shadowId =
         keyOperationsClient
             .createKey(
-                userId, update, KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
+                sessionId,
+                update,
+                KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
             .getIdentifier();
 
-    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(userId, shadowId);
+    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(sessionId, shadowId);
 
-    List<Key> allKeys = keyOperationsClient.readKeys(userId);
+    List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
     Optional<Key> maybeParent = getKeyFromList(allKeys, parentId);
     assertTrue(maybeParent.isPresent());
     assertEquals(update, maybeParent.get().toPassword());
@@ -242,30 +244,30 @@ class KeyOperationsClientTest {
   @Test
   @WithEntityManager
   void electShadow_nonShadow_deletesDependants() {
-    long userId = createUniqueUser();
+    long sessionId = createActiveSession(createUniqueUser());
     long parentId =
         keyOperationsClient
-            .createKey(userId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
+            .createKey(sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
             .getIdentifier();
     long fstShadowId =
         keyOperationsClient
             .createKey(
-                userId,
+                sessionId,
                 Password.getDefaultInstance(),
                 KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
             .getIdentifier();
     long sndShadowId =
         keyOperationsClient
             .createKey(
-                userId,
+                sessionId,
                 Password.getDefaultInstance(),
                 KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
             .getIdentifier();
 
-    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(userId, parentId);
+    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(sessionId, parentId);
 
     assertEquals(2, election._2.size());
-    List<Key> allKeys = keyOperationsClient.readKeys(userId);
+    List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
     assertFalse(getKeyFromList(allKeys, fstShadowId).isPresent());
     assertFalse(getKeyFromList(allKeys, sndShadowId).isPresent());
   }
@@ -274,10 +276,24 @@ class KeyOperationsClientTest {
     return allKeys.stream().filter(key -> Objects.equals(key.getIdentifier(), keyId)).findAny();
   }
 
-  private long createUniqueUser() {
-    return accountOperationsClient
-        .createUser(UUID.randomUUID().toString(), "", "", "", "")
-        ._1
-        .getIdentifier();
+  private String newRandomUuid() {
+    return UUID.randomUUID().toString();
+  }
+
+  private User createUniqueUser() {
+    return accountOperationsClient.createUser(newRandomUuid(), "", "", "", "")._1;
+  }
+
+  private long createActiveSession(User user) {
+    long userId = user.getIdentifier();
+    long sessionId =
+        accountOperationsClient
+            .createSession(userId, user.getVersion(), "127.0.0.1", "Chrome/0.0.0", "version")
+            .getIdentifier();
+    accountOperationsClient.initiateSession(
+        userId, sessionId, String.format("authn:%s", newRandomUuid()));
+    accountOperationsClient.activateSession(
+        userId, sessionId, String.format("session:%s", newRandomUuid()));
+    return sessionId;
   }
 }

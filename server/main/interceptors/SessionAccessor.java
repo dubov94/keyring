@@ -22,4 +22,8 @@ public class SessionAccessor {
   public long getUserId() {
     return getKvSession().getUserId();
   }
+
+  public long getSessionEntityId() {
+    return getKvSession().getSessionEntityId();
+  }
 }

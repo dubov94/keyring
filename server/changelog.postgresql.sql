@@ -186,3 +186,14 @@ ALTER TABLE "public"."sessions" ALTER COLUMN "version" SET NOT NULL;
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'sessions' and column_name = 'stage'
 ALTER TABLE "public"."sessions" ADD COLUMN "stage" INTEGER;
 UPDATE "public"."sessions" SET "stage" = 2;
+
+-- changeset liquibase:20
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'sessions' and column_name = 'last_stage_change'
+ALTER TABLE "public"."sessions" ADD COLUMN "last_stage_change" TIMESTAMP WITHOUT TIME ZONE;
+UPDATE "public"."sessions" SET "last_stage_change" = "timestamp";
+
+-- changeset liquibase:21
+-- comment Prepends key prefixes, `INITIATED` ≡ 1, `ACTIVATED` ≡ 2.
+UPDATE "public"."sessions" SET "key" = concat('authn:', "key") WHERE "stage" = 1;
+UPDATE "public"."sessions" SET "key" = concat('session:', "key") WHERE "stage" = 2;

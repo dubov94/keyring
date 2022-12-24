@@ -39,7 +39,7 @@ import { hasIndicator, data } from '@/redux/remote_data'
 
 interface ItemStatus {
   text: string;
-  color?: 'warning' | 'success';
+  color?: 'warning' | 'success' | 'error';
 }
 
 interface Item {
@@ -72,6 +72,8 @@ const convertSessionToItem = ({
     itemStatus = { text: 'Awaiting 2FA', color: 'warning' }
   } else if (status === SessionStatus.ACTIVATED) {
     itemStatus = { text: 'Activated', color: 'success' }
+  } else if (status === SessionStatus.DISABLED) {
+    itemStatus = { text: 'Disabled', color: 'error' }
   }
   return { moment, location, browser, status: itemStatus }
 }

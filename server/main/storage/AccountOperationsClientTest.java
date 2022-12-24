@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import java.time.Duration;
 import java.time.Instant;
@@ -55,7 +56,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void createUser_getsUniqueUsername_postsUserAndMailToken() {
-    String username = createUniqueUsername();
+    String username = newRandomUuid();
     Tuple2<User, MailToken> tuple =
         accountOperationsClient.createUser(username, "salt", "hash", "mail@example.com", "0");
 
@@ -73,7 +74,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void createUser_getsExistingUsername_throwsException() {
-    String username = createUniqueUsername();
+    String username = newRandomUuid();
     accountOperationsClient.createUser(username, "", "", "", "0");
 
     assertThrows(
@@ -84,7 +85,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void getMailToken_foreignToken_returnsEmpty() {
-    String username = createUniqueUsername();
+    String username = newRandomUuid();
     Tuple2<User, MailToken> user = accountOperationsClient.createUser(username, "", "", "", "A");
 
     assertFalse(
@@ -96,7 +97,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void latestMailToken_sortsByCreationTime() {
-    long userId = createActiveUser();
+    long userId = createActiveUser()._1;
 
     accountOperationsClient.createMailToken(userId, "fst@domain.com", "fst");
     accountOperationsClient.createMailToken(userId, "snd@domain.com", "snd");
@@ -109,7 +110,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void releaseMailToken_removesTokenSetsMailActivatesUser() {
-    String username = createUniqueUsername();
+    String username = newRandomUuid();
     Tuple2<User, MailToken> tuple =
         accountOperationsClient.createUser(username, "", "", "mail@domain.com", "0");
     long userId = tuple._1.getIdentifier();
@@ -138,28 +139,36 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void changeMasterKey_updatesSaltHashAndKeys() {
-    long userIdentifier = createActiveUser();
-    long keyIdentifier =
+    Tuple2<Long, Long> userRefs = createActiveUser();
+    long userId = userRefs._1;
+    when(mockChronometry.currentTime()).thenReturn(Instant.now());
+    long sessionId = createActiveSession(userId, userRefs._2);
+    long keyId =
         keyOperationsClient
             .createKey(
-                userIdentifier,
+                sessionId,
                 Password.newBuilder().setValue("").addTags("").build(),
                 KeyAttrs.getDefaultInstance())
             .getIdentifier();
 
     Password password = Password.newBuilder().setValue("value").addTags("tag").build();
-    accountOperationsClient.changeMasterKey(
-        userIdentifier,
-        "salt",
-        "hash",
-        ImmutableList.of(
-            KeyPatch.newBuilder().setIdentifier(keyIdentifier).setPassword(password).build()));
+    List<Session> disabledSessions =
+        accountOperationsClient.changeMasterKey(
+            userId,
+            "salt",
+            "hash",
+            ImmutableList.of(
+                KeyPatch.newBuilder().setIdentifier(keyId).setPassword(password).build()));
 
-    User user = accountOperationsClient.getUserByIdentifier(userIdentifier).get();
+    assertEquals(1, disabledSessions.size());
+    Session deletedSession = disabledSessions.get(0);
+    assertEquals(sessionId, deletedSession.getIdentifier());
+    assertEquals(SessionStage.DISABLED, deletedSession.getStage());
+    User user = accountOperationsClient.getUserByIdentifier(userId).get();
     assertEquals("salt", user.getSalt());
     assertEquals("hash", user.getHash());
     List<Password> passwords =
-        keyOperationsClient.readKeys(userIdentifier).stream()
+        keyOperationsClient.readKeys(createActiveSession(userId, user.getVersion())).stream()
             .map(Key::toPassword)
             .collect(toList());
     assertEquals(1, passwords.size());
@@ -169,22 +178,27 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void changeMasterKey_lacksKeyUpdates_throwsException() {
-    long userIdentifier = createActiveUser();
+    Tuple2<Long, Long> userRefs = createActiveUser();
+    long userId = userRefs._1;
+    when(mockChronometry.currentTime()).thenReturn(Instant.now());
+    long sessionId = createActiveSession(userId, userRefs._2);
     keyOperationsClient.createKey(
-        userIdentifier, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance());
+        sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance());
 
     assertThrows(
         StorageException.class,
-        () -> accountOperationsClient.changeMasterKey(userIdentifier, "", "", ImmutableList.of()));
+        () -> accountOperationsClient.changeMasterKey(userId, "", "", ImmutableList.of()));
   }
 
   @Test
   @WithEntityManager
   void createSession_putsSession() {
-    long userId = createActiveUser();
+    Tuple2<Long, Long> userRefs = createActiveUser();
+    long userId = userRefs._1;
+    when(mockChronometry.currentTime()).thenReturn(Instant.now());
     long sessionId =
         accountOperationsClient
-            .createSession(userId, "127.0.0.1", "Chrome/0.0.0", "version")
+            .createSession(userId, userRefs._2, "127.0.0.1", "Chrome/0.0.0", "version")
             .getIdentifier();
 
     Session session = accountOperationsClient.mustGetSession(userId, sessionId);
@@ -197,33 +211,37 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void initiateSession_setsSession() {
-    long userId = createActiveUser();
+    Tuple2<Long, Long> userRefs = createActiveUser();
+    long userId = userRefs._1;
+    when(mockChronometry.currentTime()).thenReturn(Instant.now());
     long sessionId =
         accountOperationsClient
-            .createSession(userId, "127.0.0.1", "Chrome/0.0.0", "version")
+            .createSession(userId, userRefs._2, "127.0.0.1", "Chrome/0.0.0", "version")
             .getIdentifier();
 
-    accountOperationsClient.initiateSession(userId, sessionId, "initiation-key");
+    accountOperationsClient.initiateSession(userId, sessionId, "prefix:initiation-key");
 
     Session session = accountOperationsClient.mustGetSession(userId, sessionId);
-    assertEquals("initiation-key", session.getKey());
+    assertEquals("prefix:initiation-key", session.getKey());
     assertEquals(SessionStage.INITIATED, session.getStage());
   }
 
   @Test
   @WithEntityManager
   void activateSession_setsSession() {
-    long userId = createActiveUser();
+    Tuple2<Long, Long> userRefs = createActiveUser();
+    long userId = userRefs._1;
+    when(mockChronometry.currentTime()).thenReturn(Instant.now());
     long sessionId =
         accountOperationsClient
-            .createSession(userId, "127.0.0.1", "Chrome/0.0.0", "version")
+            .createSession(userId, userRefs._2, "127.0.0.1", "Chrome/0.0.0", "version")
             .getIdentifier();
-    accountOperationsClient.initiateSession(userId, sessionId, "initiation-key");
+    accountOperationsClient.initiateSession(userId, sessionId, "before:initiation-key");
 
-    accountOperationsClient.activateSession(userId, sessionId, "activation-key");
+    accountOperationsClient.activateSession(userId, sessionId, "after:activation-key");
 
     Session session = accountOperationsClient.mustGetSession(userId, sessionId);
-    assertEquals("activation-key", session.getKey());
+    assertEquals("after:activation-key", session.getKey());
     assertEquals(SessionStage.ACTIVATED, session.getStage());
     assertTrue(
         Duration.between(session.getUser().getLastSession(), Instant.now()).getSeconds() < 4);
@@ -232,7 +250,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void createMailToken_putsMailToken() {
-    long userId = createActiveUser();
+    long userId = createActiveUser()._1;
 
     long mailTokenId =
         accountOperationsClient.createMailToken(userId, "user@mail.com", "0").getIdentifier();
@@ -247,23 +265,22 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void changeUsername_getsExistingUsername_throwsException() {
-    long userIdentifier = createActiveUser();
-    String username = createUniqueUsername();
+    long userId = createActiveUser()._1;
+    String username = newRandomUuid();
     accountOperationsClient.createUser(username, "", "", "", "");
 
     assertThrows(
-        StorageException.class,
-        () -> accountOperationsClient.changeUsername(userIdentifier, username));
+        StorageException.class, () -> accountOperationsClient.changeUsername(userId, username));
   }
 
   @Test
   @WithEntityManager
   void changeUsername_getsUniqueUsername_updatesUsername() {
-    long userIdentifier = createActiveUser();
+    long userId = createActiveUser()._1;
 
-    accountOperationsClient.changeUsername(userIdentifier, "username");
+    accountOperationsClient.changeUsername(userId, "username");
 
-    Optional<User> maybeUser = accountOperationsClient.getUserByIdentifier(userIdentifier);
+    Optional<User> maybeUser = accountOperationsClient.getUserByIdentifier(userId);
     assertTrue(maybeUser.isPresent());
     User user = maybeUser.get();
     assertEquals("username", user.getUsername());
@@ -272,11 +289,11 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void markAccountAsDeleted_updatesState() {
-    long userIdentifier = createActiveUser();
+    long userId = createActiveUser()._1;
 
-    accountOperationsClient.markAccountAsDeleted(userIdentifier);
+    accountOperationsClient.markAccountAsDeleted(userId);
 
-    Optional<User> maybeUser = accountOperationsClient.getUserByIdentifier(userIdentifier);
+    Optional<User> maybeUser = accountOperationsClient.getUserByIdentifier(userId);
     assertTrue(maybeUser.isPresent());
     User user = maybeUser.get();
     assertEquals(UserState.DELETED, user.getState());
@@ -285,7 +302,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void createOtpParams_putsOtpParams() {
-    long userId = createActiveUser();
+    long userId = createActiveUser()._1;
 
     long otpParamsId =
         accountOperationsClient
@@ -302,7 +319,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void acceptOtpParams_persistsOtpData() {
-    long userId = createActiveUser();
+    long userId = createActiveUser()._1;
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of("a", "b"));
 
@@ -319,7 +336,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void createOtpToken_putsOtpToken() {
-    long userId = createActiveUser();
+    long userId = createActiveUser()._1;
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of());
     accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
@@ -332,7 +349,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void deleteOtpToken_removesOtpToken() {
-    long userId = createActiveUser();
+    long userId = createActiveUser()._1;
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of());
     accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
@@ -347,7 +364,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void resetOtp_removesOtpData() {
-    long userId = createActiveUser();
+    long userId = createActiveUser()._1;
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of("token"));
     accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
@@ -363,7 +380,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void nudgeMailToken_absentToken_returnsEmpty() {
-    long userId = createActiveUser();
+    long userId = createActiveUser()._1;
 
     Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsClient.nudgeMailToken(
@@ -375,7 +392,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void nudgeMailToken_notAvailable_returnsFalse() {
-    long userId = createActiveUser();
+    long userId = createActiveUser()._1;
     long mailTokenId =
         accountOperationsClient.createMailToken(userId, "mail@domain.com", "A").getIdentifier();
     Instant epochPlusFour = Instant.ofEpochSecond(4);
@@ -393,7 +410,7 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void nudgeMailToken_available_updatesTrail() {
-    long userId = createActiveUser();
+    long userId = createActiveUser()._1;
     long mailTokenId =
         accountOperationsClient.createMailToken(userId, "mail@domain.com", "A").getIdentifier();
     Instant epochPlusOne = Instant.ofEpochSecond(1);
@@ -412,15 +429,27 @@ class AccountOperationsClientTest {
     assertEquals(1, mailToken.getAttemptCount());
   }
 
-  private long createActiveUser() {
-    String username = createUniqueUsername();
+  private String newRandomUuid() {
+    return UUID.randomUUID().toString();
+  }
+
+  private Tuple2<Long, Long> createActiveUser() {
+    String username = newRandomUuid();
     Tuple2<User, MailToken> user = accountOperationsClient.createUser(username, "", "", "", "");
     long userId = user._1.getIdentifier();
     accountOperationsClient.releaseMailToken(userId, user._2.getIdentifier());
-    return userId;
+    return Tuple.of(userId, user._1.getVersion());
   }
 
-  private String createUniqueUsername() {
-    return UUID.randomUUID().toString();
+  private long createActiveSession(long userId, long userVersion) {
+    long sessionId =
+        accountOperationsClient
+            .createSession(userId, userVersion, "127.0.0.1", "Chrome/0.0.0", "version")
+            .getIdentifier();
+    accountOperationsClient.initiateSession(
+        userId, sessionId, String.format("authn:%s", newRandomUuid()));
+    accountOperationsClient.activateSession(
+        userId, sessionId, String.format("session:%s", newRandomUuid()));
+    return sessionId;
   }
 }

@@ -42,6 +42,8 @@ const convertSessionStatus = (status: GetRecentSessionsResponseSessionStatus): S
       return SessionStatus.AWAITING_2FA
     case GetRecentSessionsResponseSessionStatus.ACTIVATED:
       return SessionStatus.ACTIVATED
+    case GetRecentSessionsResponseSessionStatus.DISABLED:
+      return SessionStatus.DISABLED
     default:
       throw new Error(`Unknown \`GetRecentSessionsResponseSessionStatus\`: ${status}`)
   }

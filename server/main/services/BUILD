@@ -24,6 +24,7 @@ java_library(
         "//server/main/keyvalue:values_java_proto",
         "//server/main/storage:account_operations_interface",
         "//server/main/storage:key_operations_interface",
+        "@maven//:com_google_guava_guava",
         "@maven//:com_warrenstrange_googleauth",
         "@maven//:commons_validator_commons_validator",
         "@maven//:io_vavr_vavr",

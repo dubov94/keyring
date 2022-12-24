@@ -1,5 +1,6 @@
 package keyring.server.main.entities;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -13,6 +14,10 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 @Table(name = "sessions")
 public class Session {
+  public static final int SESSION_RELATIVE_DURATION_S = 10 * 60;
+  public static final int SESSION_ABSOLUTE_DURATION_H = 2;
+  public static final int AUTHN_DURATION_S = 5 * 60;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
@@ -24,6 +29,9 @@ public class Session {
   private User user;
 
   @CreationTimestamp private Timestamp timestamp;
+
+  @Column(name = "last_stage_change")
+  private Timestamp lastStageChange;
 
   // Not unique as it's theoretically possible to have two equal expired keys.
   @Column(columnDefinition = "text")
@@ -68,12 +76,17 @@ public class Session {
     return this;
   }
 
+  public Instant getLastStageChange() {
+    return lastStageChange.toInstant();
+  }
+
   public String getKey() {
     return key;
   }
 
   public Session setKey(String key) {
     Validators.checkStringSize(FileUtils.ONE_KB, key);
+    Preconditions.checkArgument(CharMatcher.is(':').countIn(key) == 1);
     this.key = key;
     return this;
   }
@@ -82,9 +95,14 @@ public class Session {
     return stage;
   }
 
-  public Session setStage(SessionStage stage) {
+  public Session setStage(SessionStage stage, Instant instant) {
+    this.lastStageChange = Timestamp.from(instant);
     this.stage = stage;
     return this;
+  }
+
+  public boolean isActivated() {
+    return stage == SessionStage.ACTIVATED;
   }
 
   public String getIpAddress() {

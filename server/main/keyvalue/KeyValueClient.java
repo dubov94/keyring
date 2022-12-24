@@ -17,9 +17,7 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.Pool;
 
 public class KeyValueClient {
-  private static final int SESSION_RELATIVE_DURATION_S = 10 * 60;
-  private static final int SESSION_ABSOLUTE_DURATION_H = 2;
-  private static final int AUTHN_DURATION_S = 5 * 60;
+  private static final String DELETED_VALUE = "";
 
   private Pool<Jedis> jedisPool;
   private Chronometry chronometry;
@@ -47,7 +45,7 @@ public class KeyValueClient {
           jedis.set(
               convertSessionTokenToKey(sessionToken),
               base64Encoder.encodeToString(kvSession.toByteArray()),
-              new SetParams().nx().ex(SESSION_RELATIVE_DURATION_S));
+              new SetParams().nx().ex(Session.SESSION_RELATIVE_DURATION_S));
       if (status == null) {
         throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
       }
@@ -60,14 +58,17 @@ public class KeyValueClient {
       String sessionKey = convertSessionTokenToKey(sessionToken);
       Optional<String> serializedKvSession =
           Optional.ofNullable(
-              jedis.getEx(sessionKey, new GetExParams().ex(SESSION_RELATIVE_DURATION_S)));
+              jedis.getEx(sessionKey, new GetExParams().ex(Session.SESSION_RELATIVE_DURATION_S)));
       return serializedKvSession
           .map(
               string -> {
                 try {
+                  if (DELETED_VALUE.equals(string)) {
+                    throw new KeyValueException("`KvSession` has been deleted");
+                  }
                   return KvSession.parseFrom(base64Decoder.decode(string));
-                } catch (InvalidProtocolBufferException e) {
-                  throw new KeyValueException(e);
+                } catch (InvalidProtocolBufferException exception) {
+                  throw new KeyValueException(exception);
                 }
               })
           .map(
@@ -76,14 +77,14 @@ public class KeyValueClient {
                           Instant.ofEpochMilli(kvSession.getCreationTimeMillis()),
                           chronometry.subtract(
                               chronometry.currentTime(),
-                              SESSION_ABSOLUTE_DURATION_H,
+                              Session.SESSION_ABSOLUTE_DURATION_H,
                               ChronoUnit.HOURS))
                       ? null
                       : kvSession);
     }
   }
 
-  private String convertSessionTokenToKey(String sessionToken) {
+  public String convertSessionTokenToKey(String sessionToken) {
     return String.format("session:%s", sessionToken);
   }
 
@@ -100,7 +101,7 @@ public class KeyValueClient {
           jedis.set(
               convertAuthnTokenToKey(authnToken),
               base64Encoder.encodeToString(kvAuthn.toByteArray()),
-              new SetParams().nx().ex(AUTHN_DURATION_S));
+              new SetParams().nx().ex(Session.AUTHN_DURATION_S));
       if (status == null) {
         throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
       }
@@ -115,6 +116,9 @@ public class KeyValueClient {
           .map(
               string -> {
                 try {
+                  if (DELETED_VALUE.equals(string)) {
+                    throw new KeyValueException("`KvAuthn` has been deleted");
+                  }
                   return KvAuthn.parseFrom(base64Decoder.decode(string));
                 } catch (InvalidProtocolBufferException exception) {
                   throw new KeyValueException(exception);
@@ -129,28 +133,8 @@ public class KeyValueClient {
     }
   }
 
-  private String convertAuthnTokenToKey(String authnToken) {
+  public String convertAuthnTokenToKey(String authnToken) {
     return String.format("authn:%s", authnToken);
-  }
-
-  private String newEncodedKvAuthnBlock(String token) {
-    return base64Encoder.encodeToString(
-        KvAuthn.newBuilder()
-            .setAuthnToken(token)
-            .setUserId(-1L)
-            .setSessionEntityId(-1L)
-            .build()
-            .toByteArray());
-  }
-
-  private String newEncodedKvSessionBlock(String token) {
-    return base64Encoder.encodeToString(
-        KvSession.newBuilder()
-            .setSessionToken(token)
-            .setUserId(-1L)
-            .setSessionEntityId(-1L)
-            .build()
-            .toByteArray());
   }
 
   public void safelyDeleteSeRefs(List<Session> entities) {
@@ -159,19 +143,9 @@ public class KeyValueClient {
 
     try (Jedis jedis = jedisPool.getResource()) {
       for (Session entity : entities) {
-        switch (entity.getStage()) {
-          case INITIATED:
-            String authnToken = convertAuthnTokenToKey(entity.getKey());
-            jedis.set(authnToken, newEncodedKvAuthnBlock(authnToken), setParams);
-            break;
-          case ACTIVATED:
-            String sessionToken = convertSessionTokenToKey(entity.getKey());
-            jedis.set(sessionToken, newEncodedKvSessionBlock(sessionToken), setParams);
-            break;
-          case UNKNOWN_SESSION_STAGE:
-            break;
-          default:
-            throw new IllegalArgumentException();
+        Optional<String> maybeKey = Optional.ofNullable(entity.getKey());
+        if (maybeKey.isPresent()) {
+          jedis.set(maybeKey.get(), DELETED_VALUE, setParams);
         }
       }
     }

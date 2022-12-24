@@ -8,13 +8,13 @@ import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
 
 public interface KeyOperationsInterface {
-  Key createKey(long userIdentifier, Password content, KeyAttrs attrs);
+  Key createKey(long sessionId, Password content, KeyAttrs attrs);
 
-  List<Key> readKeys(long userIdentifier);
+  List<Key> readKeys(long sessionId);
 
-  void updateKey(long userIdentifier, KeyPatch proto);
+  void updateKey(long sessionId, KeyPatch proto);
 
-  void deleteKey(long userIdentifier, long keyIdentifier);
+  void deleteKey(long sessionId, long keyId);
 
-  Tuple2<Key, List<Key>> electShadow(long userId, long shadowId);
+  Tuple2<Key, List<Key>> electShadow(long sessionId, long shadowId);
 }

@@ -33,7 +33,8 @@ export interface Geolocation {
 export enum SessionStatus {
   UNKNOWN_STATUS = 'UNKNOWN_STATUS',
   AWAITING_2FA = 'AWAITING_2FA',
-  ACTIVATED = 'ACTIVATED'
+  ACTIVATED = 'ACTIVATED',
+  DISABLED = 'DISABLED'
 }
 
 export interface Session {

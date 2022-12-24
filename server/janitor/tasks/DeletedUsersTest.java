@@ -34,7 +34,7 @@ final class DeletedUsersTest {
 
   @Test
   void activeUser_keeps() {
-    User user = new User().setState(UserState.ACTIVE).setUsername(createUniqueUsername());
+    User user = new User().setState(UserState.ACTIVE).setUsername(newRandomUuid());
     persistEntity(user);
     Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of("tag"));
     persistEntity(key);
@@ -47,7 +47,7 @@ final class DeletedUsersTest {
 
   @Test
   void deletedUser_removes() {
-    User user = new User().setState(UserState.DELETED).setUsername(createUniqueUsername());
+    User user = new User().setState(UserState.DELETED).setUsername(newRandomUuid());
     persistEntity(user);
     Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of("tag"));
     persistEntity(key);
@@ -58,7 +58,7 @@ final class DeletedUsersTest {
     assertFalse(isEntityInStorage(user));
   }
 
-  private String createUniqueUsername() {
+  private String newRandomUuid() {
     return UUID.randomUUID().toString();
   }
 

@@ -11,6 +11,7 @@ import keyring.server.main.entities.OtpParams;
 import keyring.server.main.entities.OtpToken;
 import keyring.server.main.entities.Session;
 import keyring.server.main.entities.User;
+import keyring.server.main.entities.columns.SessionStage;
 import keyring.server.main.proto.service.FeatureType;
 import keyring.server.main.proto.service.KeyPatch;
 
@@ -24,18 +25,18 @@ public interface AccountOperationsInterface {
 
   Optional<MailToken> latestMailToken(long userIdentifier);
 
-  void releaseMailToken(long userId, long tokenIdentifier);
+  void releaseMailToken(long userId, long tokenId);
 
   Optional<User> getUserByName(String username);
 
   Optional<User> getUserByIdentifier(long identifier);
 
-  void changeMasterKey(long userIdentifier, String salt, String hash, List<KeyPatch> protos);
+  List<Session> changeMasterKey(long userId, String salt, String hash, List<KeyPatch> protos);
 
-  void changeUsername(long userIdentifier, String username);
+  void changeUsername(long userId, String username);
 
   Session createSession(
-      long userIdentifier, String ipAddress, String userAgent, String clientVersion);
+      long userId, long userVersion, String ipAddress, String userAgent, String clientVersion);
 
   Session mustGetSession(long userId, long sessionId);
 
@@ -43,11 +44,11 @@ public interface AccountOperationsInterface {
 
   void activateSession(long userId, long sessionId, String key);
 
-  List<Session> readSessions(long userId);
+  List<Session> readSessions(long userId, Optional<List<SessionStage>> exceptStages);
 
-  void markAccountAsDeleted(long userIdentifier);
+  void markAccountAsDeleted(long userId);
 
-  OtpParams createOtpParams(long userIdentifier, String sharedSecret, List<String> scratchCodes);
+  OtpParams createOtpParams(long userId, String sharedSecret, List<String> scratchCodes);
 
   Optional<OtpParams> getOtpParams(long userId, long otpParamsId);
 

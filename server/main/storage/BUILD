@@ -12,6 +12,7 @@ java_library(
     visibility = ["//server:internal"],
     deps = [
         "//proto:service_java_grpc",
+        "//server/main/entities:columns_java_proto",
         "//server/main/entities:mail_token",
         "//server/main/entities:otp_params",
         "//server/main/entities:otp_token",
@@ -102,6 +103,7 @@ java_library(
         "//proto:service_java_grpc",
         "//server/main/aspects:annotations",
         "//server/main/entities:key",
+        "//server/main/entities:session",
         "//server/main/entities:user",
         "@maven//:com_google_guava_guava",
         "@maven//:io_vavr_vavr",
@@ -130,6 +132,7 @@ woven_junit5_test(
         "//server/main/aspects:annotations",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:key",
+        "//server/main/entities:user",
         "//server/main/storage:account_operations_client",
         "//server/main/storage:key_operations_client",
         "//server/main/storage:storage_exception",
