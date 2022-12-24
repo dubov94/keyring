@@ -1,5 +1,6 @@
 package keyring.server.janitor.tasks;
 
+import java.sql.Timestamp;
 import java.time.temporal.ChronoUnit;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -31,7 +32,11 @@ public final class DisabledSessionRecords implements Runnable {
     CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
     CriteriaUpdate<Session> criteriaUpdate = criteriaBuilder.createCriteriaUpdate(Session.class);
     Root<Session> sessionRoot = criteriaUpdate.from(Session.class);
+    // if_change(session_disablement)
     criteriaUpdate.set(sessionRoot.get(Session_.stage), SessionStage.DISABLED);
+    criteriaUpdate.set(
+        sessionRoot.get(Session_.lastStageChange), Timestamp.from(chronometry.currentTime()));
+    // then_change
     Predicate predicateForInitiated =
         criteriaBuilder.and(
             criteriaBuilder.equal(sessionRoot.get(Session_.stage), SessionStage.INITIATED),
