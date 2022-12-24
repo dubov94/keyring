@@ -118,7 +118,7 @@ public class User {
 
   public void decrementOtpSpareAttempts() {
     if (otpSpareAttempts == 0) {
-      throw new IllegalStateException();
+      throw new IllegalStateException(String.format("User %d has no spare attempts", identifier));
     }
     otpSpareAttempts -= 1;
   }

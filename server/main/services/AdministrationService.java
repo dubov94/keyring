@@ -127,7 +127,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       return builder.setError(ReleaseMailTokenResponse.Error.TOO_MANY_REQUESTS).build();
     }
     if (!nudgeResult._2.isPresent()) {
-      throw new IllegalStateException();
+      throw new IllegalStateException(
+          String.format("`MailToken` is not present, `MtNudgeStatus` is %s", nudgeResult._1));
     }
     MailToken mailToken = nudgeResult._2.get();
     if (!Objects.equals(mailToken.getCode(), request.getCode())) {

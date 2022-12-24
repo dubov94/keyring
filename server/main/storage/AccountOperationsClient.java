@@ -89,8 +89,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @LockEntity(name = "user")
   private void _releaseMailToken(User user, MailToken mailToken) {
-    if (!ImmutableList.of(UserState.PENDING, UserState.ACTIVE).contains(user.getState())) {
-      throw new IllegalArgumentException();
+    UserState userState = user.getState();
+    if (!ImmutableList.of(UserState.PENDING, UserState.ACTIVE).contains(userState)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "User %d cannot `releaseMailToken`, their state is %s",
+              user.getIdentifier(), userState));
     }
     user.setMail(mailToken.getMail());
     if (user.isActivated()) {
@@ -106,12 +110,13 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     Optional<MailToken> maybeMailToken =
         Optional.ofNullable(entityManager.find(MailToken.class, tokenId));
     if (!maybeMailToken.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`MailToken` %d does not exist", tokenId));
     }
     MailToken mailToken = maybeMailToken.get();
     User user = mailToken.getUser();
     if (!Objects.equals(user.getIdentifier(), userId)) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("`MailToken` %d does not belong to user %d", tokenId, userId));
     }
     _releaseMailToken(user, mailToken);
   }
@@ -152,9 +157,10 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     Map<Long, Password> keyIdToPatch =
         patches.stream().collect(toMap(KeyPatch::getIdentifier, KeyPatch::getPassword));
     for (Key key : keys) {
-      Optional<Password> maybePatch = Optional.ofNullable(keyIdToPatch.get(key.getIdentifier()));
+      long keyId = key.getIdentifier();
+      Optional<Password> maybePatch = Optional.ofNullable(keyIdToPatch.get(keyId));
       if (!maybePatch.isPresent()) {
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException(String.format("Missing `KeyPatch` for key %d", keyId));
       }
       Password patch = maybePatch.get();
       key.mergeFromPassword(patch);
@@ -169,7 +175,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
       long userId, String salt, String hash, List<KeyPatch> protos) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
     return _changeMasterKey(maybeUser.get(), salt, hash, protos);
   }
@@ -184,7 +190,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public void changeUsername(long userId, String username) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
     _changeUsername(maybeUser.get(), username);
   }
@@ -192,8 +198,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @LockEntity(name = "user")
   private Session _createSession(
       User user, long version, String ipAddress, String userAgent, String clientVersion) {
-    if (user.getVersion() != version) {
-      throw new IllegalArgumentException();
+    long actualVersion = user.getVersion();
+    if (actualVersion != version) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Version mismatch for user %d: %d (given) is not %d (actual)",
+              user.getIdentifier(), version, actualVersion));
     }
     Session session =
         new Session()
@@ -212,7 +222,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
       long userId, long userVersion, String ipAddress, String userAgent, String clientVersion) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
     return _createSession(maybeUser.get(), userVersion, ipAddress, userAgent, clientVersion);
   }
@@ -223,12 +233,13 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     Optional<Session> maybeSession =
         Optional.ofNullable(entityManager.find(Session.class, sessionId));
     if (!maybeSession.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`Session` %d does not exist", sessionId));
     }
     Session session = maybeSession.get();
     User user = session.getUser();
     if (!Objects.equals(user.getIdentifier(), userId)) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("Session %d does not belong to user %d", sessionId, userId));
     }
     return session;
   }
@@ -236,7 +247,10 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @LockEntity(name = "session")
   private void _initiateSession(Session session, String key) {
     if (session.getStage() != SessionStage.UNKNOWN_SESSION_STAGE) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format(
+              "Session %d cannot be initiated, `SessionStage` is %s",
+              session.getIdentifier(), session.getStage().getValueDescriptor().getName()));
     }
     session.setKey(key);
     session.setStage(SessionStage.INITIATED, chronometry.currentTime());
@@ -254,7 +268,10 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   private void _activateSession(Session session, String key) {
     if (!ImmutableList.of(SessionStage.UNKNOWN_SESSION_STAGE, SessionStage.INITIATED)
         .contains(session.getStage())) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format(
+              "Session %d cannot be activated, `SessionStage` is %s",
+              session.getIdentifier(), session.getStage().getValueDescriptor().getName()));
     }
     session.setKey(key);
     session.setStage(SessionStage.ACTIVATED, chronometry.currentTime());
@@ -296,7 +313,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public List<Session> readSessions(long userId, Optional<List<SessionStage>> exceptStages) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
     return _readSessions(maybeUser.get(), exceptStages);
   }
@@ -311,7 +328,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public void markAccountAsDeleted(long userId) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
     _markAccountAsDeleted(maybeUser.get());
   }
@@ -340,7 +357,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @LockEntity(name = "user")
   private void _acceptOtpParams(User user, OtpParams otpParams) {
     if (user.getOtpSharedSecret() != null) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("User %d already has 2FA enabled", user.getIdentifier()));
     }
     user.setOtpSharedSecret(otpParams.getOtpSharedSecret());
     user.setOtpSpareAttempts(INITIAL_SPARE_ATTEMPTS);
@@ -357,12 +375,13 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     Optional<OtpParams> maybeOtpParams =
         Optional.ofNullable(entityManager.find(OtpParams.class, otpParamsId));
     if (!maybeOtpParams.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`OtpParams` %d do not exist", otpParamsId));
     }
     OtpParams otpParams = maybeOtpParams.get();
     User user = otpParams.getUser();
     if (!Objects.equals(user.getIdentifier(), userId)) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("`OtpParams` %d do not belong to user %d", otpParamsId, userId));
     }
     _acceptOtpParams(user, otpParams);
   }
@@ -370,7 +389,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @LockEntity(name = "user")
   private void _createOtpToken(User user, String otpToken) {
     if (user.getOtpSharedSecret() == null) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("User %d does not have 2FA enabled", user.getIdentifier()));
     }
     entityManager.persist(new OtpToken().setUser(user).setIsInitial(false).setValue(otpToken));
   }
@@ -380,7 +400,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public void createOtpToken(long userId, String otpToken) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
     _createOtpToken(maybeUser.get(), otpToken);
   }
@@ -402,11 +422,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     Optional<OtpToken> maybeOtpToken =
         Optional.ofNullable(entityManager.find(OtpToken.class, tokenId));
     if (!maybeOtpToken.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`OtpToken` %d does not exist", tokenId));
     }
     OtpToken otpToken = maybeOtpToken.get();
     if (!Objects.equals(otpToken.getUser().getIdentifier(), userId)) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("`OtpToken` %d does not belong to user %d", tokenId, userId));
     }
     entityManager.remove(otpToken);
   }
@@ -429,7 +450,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public void resetOtp(long userId) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
     _resetOtp(maybeUser.get());
   }
@@ -437,7 +458,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @LockEntity(name = "user")
   private Optional<Integer> _acquireOtpSpareAttempt(User user) {
     if (user.getOtpSharedSecret() == null) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("User %d does not have 2FA enabled", user.getIdentifier()));
     }
     int attemptsLeft = user.getOtpSpareAttempts();
     user.decrementOtpSpareAttempts();
@@ -450,7 +472,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public Optional<Integer> acquireOtpSpareAttempt(long userId) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
     User user = maybeUser.get();
     if (user.getOtpSpareAttempts() == 0) {
@@ -462,7 +484,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @LockEntity(name = "user")
   private void _restoreOtpSpareAttempts(User user) {
     if (user.getOtpSharedSecret() == null) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("User %d does not have 2FA enabled", user.getIdentifier()));
     }
     user.setOtpSpareAttempts(INITIAL_SPARE_ATTEMPTS);
     entityManager.persist(user);
@@ -473,7 +496,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public void restoreOtpSpareAttempts(long userId) {
     Optional<User> maybeUser = getUserByIdentifier(userId);
     if (!maybeUser.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
     _restoreOtpSpareAttempts(maybeUser.get());
   }
@@ -484,7 +507,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     Optional<FeaturePrompts> maybeFeaturePrompts =
         Optional.ofNullable(entityManager.find(FeaturePrompts.class, userId));
     if (!maybeFeaturePrompts.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("`FeaturePrompts` for user %d do not exist", userId));
     }
     return maybeFeaturePrompts.get();
   }
@@ -495,7 +519,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     FeaturePrompts featurePrompts = getFeaturePrompts(userId);
     Consumer<FeaturePrompts> consumer = FEATURE_PROMPT_ACKERS.get(featureType);
     if (consumer == null) {
-      throw new IllegalStateException();
+      throw new IllegalStateException(String.format("Unknown `FeatureType` %s", featureType));
     }
     consumer.accept(featurePrompts);
     entityManager.persist(featurePrompts);

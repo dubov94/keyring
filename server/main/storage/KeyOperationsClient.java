@@ -25,7 +25,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     Optional<Session> maybeSession =
         Optional.ofNullable(entityManager.find(Session.class, sessionId));
     if (!maybeSession.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`Session` %d does not exist", sessionId));
     }
     return maybeSession.get();
   }
@@ -33,14 +33,15 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   private Key mustGetKey(long keyId) {
     Optional<Key> maybeKey = Optional.ofNullable(entityManager.find(Key.class, keyId));
     if (!maybeKey.isPresent()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("`Key` %d does not exist", keyId));
     }
     return maybeKey.get();
   }
 
   private void validateSession(Session session) {
     if (!session.isActivated()) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(
+          String.format("`Session` %d is not `ACTIVATED`", session.getIdentifier()));
     }
   }
 
@@ -77,7 +78,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   @WithEntityTransaction
   public Key createKey(long sessionId, Password content, KeyAttrs attrs) {
     if (!attrs.getIsShadow() && attrs.getParent() != 0) {
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(String.format("Shadows must have a non-nil parent"));
     }
     Session session = mustGetSession(sessionId);
     return _spawnKey(session, content, attrs);
@@ -104,8 +105,10 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   public void updateKey(long sessionId, KeyPatch patch) {
     Session session = mustGetSession(sessionId);
     Key key = mustGetKey(patch.getIdentifier());
-    if (!Objects.equals(key.getUser().getIdentifier(), session.getUser().getIdentifier())) {
-      throw new IllegalArgumentException();
+    long requesterId = session.getUser().getIdentifier();
+    if (!Objects.equals(key.getUser().getIdentifier(), requesterId)) {
+      throw new IllegalArgumentException(
+          String.format("`Key` %d does not belong to user %d", key.getIdentifier(), requesterId));
     }
     _updateKey(session, key, patch);
   }
@@ -121,8 +124,10 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   public void deleteKey(long sessionId, long keyId) {
     Session session = mustGetSession(sessionId);
     Key key = mustGetKey(keyId);
-    if (!Objects.equals(key.getUser().getIdentifier(), session.getUser().getIdentifier())) {
-      throw new IllegalArgumentException();
+    long requesterId = session.getUser().getIdentifier();
+    if (!Objects.equals(key.getUser().getIdentifier(), requesterId)) {
+      throw new IllegalArgumentException(
+          String.format("`Key` %d does not belong to user %d", key.getIdentifier(), requesterId));
     }
     _deleteKey(session, key);
   }
@@ -159,8 +164,11 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   public Tuple2<Key, List<Key>> electShadow(long sessionId, long shadowId) {
     Session session = mustGetSession(sessionId);
     Key target = mustGetKey(shadowId);
-    if (!Objects.equals(target.getUser().getIdentifier(), session.getUser().getIdentifier())) {
-      throw new IllegalArgumentException();
+    long requesterId = session.getUser().getIdentifier();
+    if (!Objects.equals(target.getUser().getIdentifier(), requesterId)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "`Key` %d does not belong to user %d", target.getIdentifier(), requesterId));
     }
     return _electShadow(session, target);
   }
