@@ -116,6 +116,7 @@ woven_junit5_test(
     srcs = ["KeyOperationsClientTest.java"],
     aop_xml = "//server/main/java/META-INF:aop.xml",
     aspects = [
+        "//server/main/aspects:activated_session_aspect",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/aspects:validate_user_aspect",
     ],

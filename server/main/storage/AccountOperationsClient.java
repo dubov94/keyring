@@ -142,17 +142,19 @@ public class AccountOperationsClient implements AccountOperationsInterface {
       User user, String salt, String hash, List<KeyPatch> patches) {
     long userId = user.getIdentifier();
     // Concurrent `Session` creation is blocked by `User` version update.
+    // `createSession` requires both `userId` and `userVersion`.
     List<Session> sessions =
         readSessions(userId, Optional.of(ImmutableList.of(SessionStage.DISABLED)));
     Instant now = chronometry.currentTime();
     for (Session session : sessions) {
+      // Implicitly causes version increment.
       session.setStage(SessionStage.DISABLED, now);
       entityManager.persist(session);
     }
     user.setSalt(salt);
     user.setHash(hash);
     entityManager.persist(user);
-    // Concurrent `Key` creation is blocked by `Session` invalidation.
+    // Concurrent `Key` creation is blocked by `Session` invalidation above.
     List<Key> keys = Queries.findManyToOne(entityManager, Key.class, Key_.user, userId);
     Map<Long, Password> keyIdToPatch =
         patches.stream().collect(toMap(KeyPatch::getIdentifier, KeyPatch::getPassword));

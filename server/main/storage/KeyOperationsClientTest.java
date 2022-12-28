@@ -154,6 +154,23 @@ class KeyOperationsClientTest {
 
   @Test
   @WithEntityManager
+  void createKey_invalidSession_throws() {
+    User user = createUniqueUser();
+    long sessionId = createNewSession(user.getIdentifier(), user.getVersion());
+
+    StorageException thrown =
+        assertThrows(
+            StorageException.class,
+            () ->
+                keyOperationsClient.createKey(
+                    sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance()));
+
+    assertTrue(
+        thrown.getMessage().contains(String.format("`Session` %d is not `ACTIVATED`", sessionId)));
+  }
+
+  @Test
+  @WithEntityManager
   void updateKey() {
     long sessionId = createActiveSession(createUniqueUser());
     long keyId =
@@ -284,12 +301,15 @@ class KeyOperationsClientTest {
     return accountOperationsClient.createUser(newRandomUuid(), "", "", "", "")._1;
   }
 
+  private long createNewSession(long userId, long userVersion) {
+    return accountOperationsClient
+        .createSession(userId, userVersion, "127.0.0.1", "Chrome/0.0.0", "version")
+        .getIdentifier();
+  }
+
   private long createActiveSession(User user) {
     long userId = user.getIdentifier();
-    long sessionId =
-        accountOperationsClient
-            .createSession(userId, user.getVersion(), "127.0.0.1", "Chrome/0.0.0", "version")
-            .getIdentifier();
+    long sessionId = createNewSession(userId, user.getVersion());
     accountOperationsClient.initiateSession(
         userId, sessionId, String.format("authn:%s", newRandomUuid()));
     accountOperationsClient.activateSession(

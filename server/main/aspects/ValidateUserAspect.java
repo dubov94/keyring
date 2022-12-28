@@ -26,7 +26,7 @@ public class ValidateUserAspect {
   }
 
   @Around("@annotation(validateUser) && execution(* *(..))")
-  public void executeUserValidation(ValidateUser validateUser, ProceedingJoinPoint joinPoint)
+  public void executeValidateUser(ValidateUser validateUser, ProceedingJoinPoint joinPoint)
       throws Throwable {
     Optional<User> user =
         accountOperationsInterface.getUserByIdentifier(sessionAccessor.getUserId());

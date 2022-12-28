@@ -14,6 +14,12 @@ public class Annotations {
   }
 
   @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.METHOD)
+  public @interface ActivatedSession {
+    String name();
+  }
+
+  @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.FIELD)
   public @interface ContextualEntityManager {}
 

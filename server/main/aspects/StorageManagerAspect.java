@@ -1,8 +1,6 @@
 package keyring.server.main.aspects;
 
 import com.google.common.base.Preconditions;
-import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.persistence.EntityManager;
@@ -19,7 +17,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.reflect.MethodSignature;
 
 @Aspect
 public class StorageManagerAspect {
@@ -90,15 +87,7 @@ public class StorageManagerAspect {
 
   @Before("@annotation(lockEntity) && execution(* *(..))")
   public void executeLockEntity(LockEntity lockEntity, JoinPoint joinPoint) throws Throwable {
-    MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
-    List<String> parameterNames = Arrays.asList(methodSignature.getParameterNames());
-    String name = lockEntity.name();
-    int index = parameterNames.indexOf(name);
-    if (index == -1) {
-      throw new IllegalStateException(String.format("Parameter `%s` does not exist", name));
-    }
-    threadLocalEntityManager
-        .get()
-        .lock(joinPoint.getArgs()[index], LockModeType.OPTIMISTIC_FORCE_INCREMENT);
+    Object entity = Reflection.getArgByName(joinPoint, lockEntity.name());
+    threadLocalEntityManager.get().lock(entity, LockModeType.OPTIMISTIC_FORCE_INCREMENT);
   }
 }

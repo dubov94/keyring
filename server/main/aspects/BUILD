@@ -8,11 +8,20 @@ java_library(
 )
 
 java_library(
+    name = "reflection",
+    srcs = ["Reflection.java"],
+    deps = [
+        "@maven//:org_aspectj_aspectjrt",
+    ],
+)
+
+java_library(
     name = "storage_manager_aspect",
     srcs = ["StorageManagerAspect.java"],
     visibility = ["//server:internal"],
     deps = [
         ":annotations",
+        ":reflection",
         "//server/main/storage:storage_exception",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_persistence_javax_persistence_api",
@@ -67,5 +76,17 @@ junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
+    ],
+)
+
+java_library(
+    name = "activated_session_aspect",
+    srcs = ["ActivatedSessionAspect.java"],
+    visibility = ["//server:internal"],
+    deps = [
+        ":annotations",
+        ":reflection",
+        "//server/main/entities:session",
+        "@maven//:org_aspectj_aspectjrt",
     ],
 )

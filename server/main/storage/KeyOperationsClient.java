@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.persistence.EntityManager;
+import keyring.server.main.aspects.Annotations.ActivatedSession;
 import keyring.server.main.aspects.Annotations.ContextualEntityManager;
 import keyring.server.main.aspects.Annotations.LockEntity;
 import keyring.server.main.aspects.Annotations.WithEntityTransaction;
@@ -38,16 +39,9 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     return maybeKey.get();
   }
 
-  private void validateSession(Session session) {
-    if (!session.isActivated()) {
-      throw new IllegalArgumentException(
-          String.format("`Session` %d is not `ACTIVATED`", session.getIdentifier()));
-    }
-  }
-
   @LockEntity(name = "session")
+  @ActivatedSession(name = "session")
   private Key _spawnKey(Session session, Password content, KeyAttrs attrs) {
-    validateSession(session);
     User user = session.getUser();
     Key newKey = new Key().mergeFromPassword(content).setUser(user);
     if (attrs.getIsShadow()) {
@@ -84,18 +78,21 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     return _spawnKey(session, content, attrs);
   }
 
-  @Override
-  @WithEntityTransaction
-  public List<Key> readKeys(long sessionId) {
-    Session session = mustGetSession(sessionId);
-    validateSession(session);
+  @ActivatedSession(name = "session")
+  public List<Key> _readKeys(Session session) {
     return Queries.findManyToOne(
         entityManager, Key.class, Key_.user, session.getUser().getIdentifier());
   }
 
+  @Override
+  @WithEntityTransaction
+  public List<Key> readKeys(long sessionId) {
+    return _readKeys(mustGetSession(sessionId));
+  }
+
   @LockEntity(name = "session")
+  @ActivatedSession(name = "session")
   private void _updateKey(Session session, Key key, KeyPatch patch) {
-    validateSession(session);
     key.mergeFromPassword(patch.getPassword());
     entityManager.persist(key);
   }
@@ -114,8 +111,8 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   }
 
   @LockEntity(name = "session")
+  @ActivatedSession(name = "session")
   private void _deleteKey(Session session, Key key) {
-    validateSession(session);
     entityManager.remove(key);
   }
 
@@ -141,8 +138,8 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   }
 
   @LockEntity(name = "session")
+  @ActivatedSession(name = "session")
   private Tuple2<Key, List<Key>> _electShadow(Session session, Key target) {
-    validateSession(session);
     if (!target.getIsShadow()) {
       return Tuple.of(target, _deleteShadows(target));
     }

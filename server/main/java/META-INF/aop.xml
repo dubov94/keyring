@@ -1,5 +1,6 @@
 <aspectj>
     <aspects>
+        <aspect name="keyring.server.main.aspects.ActivatedSessionAspect"/>
         <aspect name="keyring.server.main.aspects.ValidateUserAspect"/>
         <aspect name="keyring.server.main.aspects.StorageManagerAspect"/>
         <weaver>

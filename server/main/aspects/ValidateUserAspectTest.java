@@ -38,13 +38,12 @@ class ValidateUserAspectTest {
   }
 
   @Test
-  void executeUserValidation_getsAbsentUser_returnsUnauthenticated() throws Throwable {
+  void executeValidateUser_getsAbsentUser_returnsUnauthenticated() throws Throwable {
     when(mockSessionAccessor.getUserId()).thenReturn(0L);
     when(mockAccountOperationsInterface.getUserByIdentifier(0L)).thenReturn(Optional.empty());
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
-    validateUserAspect.executeUserValidation(
-        createValidateUserAnnotation(), mockProceedingJoinPoint);
+    validateUserAspect.executeValidateUser(createValidateUserAnnotation(), mockProceedingJoinPoint);
 
     ArgumentCaptor<StatusException> argumentCaptor = ArgumentCaptor.forClass(StatusException.class);
     verify(mockStreamObserver).onError(argumentCaptor.capture());
@@ -52,14 +51,13 @@ class ValidateUserAspectTest {
   }
 
   @Test
-  void executeUserValidation_getsStatePending_returnsUnauthenticated() throws Throwable {
+  void executeValidateUser_getsStatePending_returnsUnauthenticated() throws Throwable {
     when(mockSessionAccessor.getUserId()).thenReturn(0L);
     when(mockAccountOperationsInterface.getUserByIdentifier(0L))
         .thenReturn(Optional.of(new User().setState(UserState.PENDING)));
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
-    validateUserAspect.executeUserValidation(
-        createValidateUserAnnotation(), mockProceedingJoinPoint);
+    validateUserAspect.executeValidateUser(createValidateUserAnnotation(), mockProceedingJoinPoint);
 
     ArgumentCaptor<StatusException> argumentCaptor = ArgumentCaptor.forClass(StatusException.class);
     verify(mockStreamObserver).onError(argumentCaptor.capture());
@@ -67,13 +65,12 @@ class ValidateUserAspectTest {
   }
 
   @Test
-  void executeUserValidation_getsStateActive_callsJoinPoint() throws Throwable {
+  void executeValidateUser_getsStateActive_callsJoinPoint() throws Throwable {
     when(mockSessionAccessor.getUserId()).thenReturn(0L);
     when(mockAccountOperationsInterface.getUserByIdentifier(0L))
         .thenReturn(Optional.of(new User().setState(UserState.ACTIVE)));
 
-    validateUserAspect.executeUserValidation(
-        createValidateUserAnnotation(), mockProceedingJoinPoint);
+    validateUserAspect.executeValidateUser(createValidateUserAnnotation(), mockProceedingJoinPoint);
 
     verify(mockProceedingJoinPoint).proceed();
   }
