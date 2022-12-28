@@ -93,7 +93,7 @@ class AdministrationServiceTest {
     when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
     when(mockSessionAccessor.getUserId()).thenReturn(kvSession.getUserId());
     when(mockSessionAccessor.getKvSession()).thenReturn(kvSession);
-    when(mockAccountOperationsInterface.getUserByIdentifier(user.getIdentifier()))
+    when(mockAccountOperationsInterface.getUserById(user.getIdentifier()))
         .thenAnswer(invocation -> Optional.of(user));
   }
 

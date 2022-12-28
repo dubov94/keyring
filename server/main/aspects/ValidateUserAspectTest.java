@@ -40,7 +40,7 @@ class ValidateUserAspectTest {
   @Test
   void executeValidateUser_getsAbsentUser_returnsUnauthenticated() throws Throwable {
     when(mockSessionAccessor.getUserId()).thenReturn(0L);
-    when(mockAccountOperationsInterface.getUserByIdentifier(0L)).thenReturn(Optional.empty());
+    when(mockAccountOperationsInterface.getUserById(0L)).thenReturn(Optional.empty());
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
     validateUserAspect.executeValidateUser(createValidateUserAnnotation(), mockProceedingJoinPoint);
@@ -53,7 +53,7 @@ class ValidateUserAspectTest {
   @Test
   void executeValidateUser_getsStatePending_returnsUnauthenticated() throws Throwable {
     when(mockSessionAccessor.getUserId()).thenReturn(0L);
-    when(mockAccountOperationsInterface.getUserByIdentifier(0L))
+    when(mockAccountOperationsInterface.getUserById(0L))
         .thenReturn(Optional.of(new User().setState(UserState.PENDING)));
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
@@ -67,7 +67,7 @@ class ValidateUserAspectTest {
   @Test
   void executeValidateUser_getsStateActive_callsJoinPoint() throws Throwable {
     when(mockSessionAccessor.getUserId()).thenReturn(0L);
-    when(mockAccountOperationsInterface.getUserByIdentifier(0L))
+    when(mockAccountOperationsInterface.getUserById(0L))
         .thenReturn(Optional.of(new User().setState(UserState.ACTIVE)));
 
     validateUserAspect.executeValidateUser(createValidateUserAnnotation(), mockProceedingJoinPoint);

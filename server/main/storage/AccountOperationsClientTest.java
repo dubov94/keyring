@@ -119,7 +119,7 @@ class AccountOperationsClientTest {
     accountOperationsClient.releaseMailToken(userId, mailTokenId);
 
     assertFalse(accountOperationsClient.getMailToken(userId, mailTokenId).isPresent());
-    User user = accountOperationsClient.getUserByIdentifier(userId).get();
+    User user = accountOperationsClient.getUserById(userId).get();
     assertEquals("mail@domain.com", user.getMail());
     assertEquals(UserState.ACTIVE, user.getState());
   }
@@ -132,8 +132,8 @@ class AccountOperationsClientTest {
 
   @Test
   @WithEntityManager
-  void getUserByIdentifier_userDoesNotExist_returnsEmpty() {
-    assertEquals(Optional.empty(), accountOperationsClient.getUserByIdentifier(Long.MAX_VALUE));
+  void getUserById_userDoesNotExist_returnsEmpty() {
+    assertEquals(Optional.empty(), accountOperationsClient.getUserById(Long.MAX_VALUE));
   }
 
   @Test
@@ -164,7 +164,7 @@ class AccountOperationsClientTest {
     Session deletedSession = disabledSessions.get(0);
     assertEquals(sessionId, deletedSession.getIdentifier());
     assertEquals(SessionStage.DISABLED, deletedSession.getStage());
-    User user = accountOperationsClient.getUserByIdentifier(userId).get();
+    User user = accountOperationsClient.getUserById(userId).get();
     assertEquals("salt", user.getSalt());
     assertEquals("hash", user.getHash());
     List<Password> passwords =
@@ -280,7 +280,7 @@ class AccountOperationsClientTest {
 
     accountOperationsClient.changeUsername(userId, "username");
 
-    Optional<User> maybeUser = accountOperationsClient.getUserByIdentifier(userId);
+    Optional<User> maybeUser = accountOperationsClient.getUserById(userId);
     assertTrue(maybeUser.isPresent());
     User user = maybeUser.get();
     assertEquals("username", user.getUsername());
@@ -293,7 +293,7 @@ class AccountOperationsClientTest {
 
     accountOperationsClient.markAccountAsDeleted(userId);
 
-    Optional<User> maybeUser = accountOperationsClient.getUserByIdentifier(userId);
+    Optional<User> maybeUser = accountOperationsClient.getUserById(userId);
     assertTrue(maybeUser.isPresent());
     User user = maybeUser.get();
     assertEquals(UserState.DELETED, user.getState());
@@ -326,7 +326,7 @@ class AccountOperationsClientTest {
     accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
 
     assertEquals(Optional.empty(), accountOperationsClient.getOtpParams(userId, otpParams.getId()));
-    User user = accountOperationsClient.getUserByIdentifier(userId).get();
+    User user = accountOperationsClient.getUserById(userId).get();
     assertEquals("secret", user.getOtpSharedSecret());
     assertEquals(5, user.getOtpSpareAttempts());
     assertTrue(accountOperationsClient.getOtpToken(userId, "a", true).isPresent());
@@ -371,7 +371,7 @@ class AccountOperationsClientTest {
 
     accountOperationsClient.resetOtp(userId);
 
-    User user = accountOperationsClient.getUserByIdentifier(userId).get();
+    User user = accountOperationsClient.getUserById(userId).get();
     assertNull(user.getOtpSharedSecret());
     assertEquals(0, user.getOtpSpareAttempts());
     assertFalse(accountOperationsClient.getOtpToken(userId, "token", true).isPresent());

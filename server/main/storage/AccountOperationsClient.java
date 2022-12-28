@@ -132,7 +132,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @WithEntityTransaction
-  public Optional<User> getUserByIdentifier(long identifier) {
+  public Optional<User> getUserById(long identifier) {
     // https://stackoverflow.com/a/13569657
     return Optional.ofNullable(entityManager.find(User.class, identifier));
   }
@@ -175,7 +175,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @WithEntityTransaction
   public List<Session> changeMasterKey(
       long userId, String salt, String hash, List<KeyPatch> protos) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
+    Optional<User> maybeUser = getUserById(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
@@ -190,7 +190,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public void changeUsername(long userId, String username) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
+    Optional<User> maybeUser = getUserById(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
@@ -222,7 +222,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @WithEntityTransaction
   public Session createSession(
       long userId, long userVersion, String ipAddress, String userAgent, String clientVersion) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
+    Optional<User> maybeUser = getUserById(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
@@ -313,7 +313,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public List<Session> readSessions(long userId, Optional<List<SessionStage>> exceptStages) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
+    Optional<User> maybeUser = getUserById(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
@@ -328,7 +328,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public void markAccountAsDeleted(long userId) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
+    Optional<User> maybeUser = getUserById(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
@@ -400,7 +400,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public void createOtpToken(long userId, String otpToken) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
+    Optional<User> maybeUser = getUserById(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
@@ -450,7 +450,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public void resetOtp(long userId) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
+    Optional<User> maybeUser = getUserById(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
@@ -472,7 +472,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public Optional<Integer> acquireOtpSpareAttempt(long userId) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
+    Optional<User> maybeUser = getUserById(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
@@ -496,7 +496,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public void restoreOtpSpareAttempts(long userId) {
-    Optional<User> maybeUser = getUserByIdentifier(userId);
+    Optional<User> maybeUser = getUserById(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }

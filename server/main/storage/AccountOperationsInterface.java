@@ -29,7 +29,7 @@ public interface AccountOperationsInterface {
 
   Optional<User> getUserByName(String username);
 
-  Optional<User> getUserByIdentifier(long identifier);
+  Optional<User> getUserById(long identifier);
 
   List<Session> changeMasterKey(long userId, String salt, String hash, List<KeyPatch> protos);
 

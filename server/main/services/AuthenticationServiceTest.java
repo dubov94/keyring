@@ -290,7 +290,7 @@ class AuthenticationServiceTest {
   void provideOtp_outOfAttempts_repliesWithError() {
     when(mockKeyValueClient.getKvAuthn("authn"))
         .thenReturn(Optional.of(KvAuthn.newBuilder().setUserId(1L).build()));
-    when(mockAccountOperationsInterface.getUserByIdentifier(1L))
+    when(mockAccountOperationsInterface.getUserById(1L))
         .thenReturn(Optional.of(new User().setIdentifier(1L)));
     when(mockCryptography.convertTotp("otp")).thenReturn(Optional.of(42));
     when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(Optional.empty());
@@ -311,7 +311,7 @@ class AuthenticationServiceTest {
   void provideOtp_otpUnauthorized_repliesWithError() {
     when(mockKeyValueClient.getKvAuthn("authn"))
         .thenReturn(Optional.of(KvAuthn.newBuilder().setUserId(1L).build()));
-    when(mockAccountOperationsInterface.getUserByIdentifier(1L))
+    when(mockAccountOperationsInterface.getUserById(1L))
         .thenReturn(
             Optional.of(
                 new User().setIdentifier(1L).setOtpSharedSecret("secret").setOtpSpareAttempts(3)));
@@ -336,7 +336,7 @@ class AuthenticationServiceTest {
   void provideOtp_otpAuthorized_repliesWithUserData() {
     when(mockKeyValueClient.getKvAuthn("authn"))
         .thenReturn(Optional.of(KvAuthn.newBuilder().setUserId(1L).setSessionEntityId(3L).build()));
-    when(mockAccountOperationsInterface.getUserByIdentifier(1L))
+    when(mockAccountOperationsInterface.getUserById(1L))
         .thenReturn(
             Optional.of(
                 new User().setIdentifier(1L).setOtpSharedSecret("secret").setOtpSpareAttempts(3)));
@@ -376,7 +376,7 @@ class AuthenticationServiceTest {
   void provideOtp_tokenAbsent_repliesWithError() {
     when(mockKeyValueClient.getKvAuthn("authn"))
         .thenReturn(Optional.of(KvAuthn.newBuilder().setUserId(1L).build()));
-    when(mockAccountOperationsInterface.getUserByIdentifier(1L))
+    when(mockAccountOperationsInterface.getUserById(1L))
         .thenReturn(Optional.of(new User().setIdentifier(1L).setOtpSpareAttempts(3)));
     when(mockCryptography.convertTotp("otp")).thenReturn(Optional.empty());
     when(mockAccountOperationsInterface.getOtpToken(1L, "otp", false)).thenReturn(Optional.empty());
@@ -398,7 +398,7 @@ class AuthenticationServiceTest {
   void provideOtp_tokenPresent_deletesAndReplies() {
     when(mockKeyValueClient.getKvAuthn("authn"))
         .thenReturn(Optional.of(KvAuthn.newBuilder().setUserId(1L).setSessionEntityId(3L).build()));
-    when(mockAccountOperationsInterface.getUserByIdentifier(1L))
+    when(mockAccountOperationsInterface.getUserById(1L))
         .thenReturn(Optional.of(new User().setIdentifier(1L)));
     when(mockCryptography.convertTotp("otp")).thenReturn(Optional.empty());
     when(mockAccountOperationsInterface.getOtpToken(1L, "otp", false))

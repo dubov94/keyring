@@ -81,7 +81,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       return Either.left(new StatusException(Status.INVALID_ARGUMENT));
     }
     long userId = sessionAccessor.getUserId();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    Optional<User> maybeUser = accountOperationsInterface.getUserById(userId);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -236,7 +236,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     KvSession oldKvSession = sessionAccessor.getKvSession();
     long userId = oldKvSession.getUserId();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    Optional<User> maybeUser = accountOperationsInterface.getUserById(userId);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -301,7 +301,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       return Either.left(validation.get());
     }
     long userId = sessionAccessor.getUserId();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    Optional<User> maybeUser = accountOperationsInterface.getUserById(userId);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -334,7 +334,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private Either<StatusException, DeleteAccountResponse> _deleteAccount(
       DeleteAccountRequest request) {
     long userId = sessionAccessor.getUserId();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    Optional<User> maybeUser = accountOperationsInterface.getUserById(userId);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -413,8 +413,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, GenerateOtpParamsResponse> _generateOtpParams(
       GenerateOtpParamsRequest request) {
-    Optional<User> maybeUser =
-        accountOperationsInterface.getUserByIdentifier(sessionAccessor.getUserId());
+    Optional<User> maybeUser = accountOperationsInterface.getUserById(sessionAccessor.getUserId());
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }
@@ -491,7 +490,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   private Either<StatusException, ResetOtpResponse> _resetOtp(ResetOtpRequest request) {
     long userId = sessionAccessor.getUserId();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    Optional<User> maybeUser = accountOperationsInterface.getUserById(userId);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }

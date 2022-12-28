@@ -253,7 +253,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
     KvAuthn kvAuthn = maybeKvAuthn.get();
     long userId = kvAuthn.getUserId();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByIdentifier(userId);
+    Optional<User> maybeUser = accountOperationsInterface.getUserById(userId);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
     }

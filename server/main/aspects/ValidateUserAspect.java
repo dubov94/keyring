@@ -28,8 +28,7 @@ public class ValidateUserAspect {
   @Around("@annotation(validateUser) && execution(* *(..))")
   public void executeValidateUser(ValidateUser validateUser, ProceedingJoinPoint joinPoint)
       throws Throwable {
-    Optional<User> user =
-        accountOperationsInterface.getUserByIdentifier(sessionAccessor.getUserId());
+    Optional<User> user = accountOperationsInterface.getUserById(sessionAccessor.getUserId());
     if (user.isPresent() && Arrays.asList(validateUser.states()).contains(user.get().getState())) {
       joinPoint.proceed();
     } else {
