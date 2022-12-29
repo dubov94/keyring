@@ -442,7 +442,7 @@ class AdministrationServiceTest {
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface).acceptOtpParams(user.getIdentifier(), 1L);
-    verify(mockAccountOperationsInterface).createOtpToken(7L, "token");
+    verify(mockAccountOperationsInterface).createTrustedToken(7L, "token");
     verify(mockStreamObserver)
         .onNext(AcceptOtpParamsResponse.newBuilder().setTrustedToken("token").build());
     verify(mockStreamObserver).onCompleted();

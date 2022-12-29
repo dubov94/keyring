@@ -24,12 +24,24 @@ public class StorageModule {
   }
 
   @Provides
-  static AccountOperationsInterface provideAccountOperationsInterface(Chronometry chronometry) {
-    return new AccountOperationsClient(chronometry);
+  @Singleton
+  static Limiters provideLimiters() {
+    return new Limiters(
+        /* approxMaxKeysPerUser */ 2048,
+        /* approxMaxMailTokensPerUser */ 4,
+        /* approxMaxMailTokensPerAddress */ 2,
+        /* approxMaxRecentSessionsPerUser */ 15,
+        /* approxMaxOtpParamsPerUser */ 4);
   }
 
   @Provides
-  static KeyOperationsInterface provideKeyOperationsInterface() {
-    return new KeyOperationsClient();
+  static AccountOperationsInterface provideAccountOperationsInterface(
+      Chronometry chronometry, Limiters limiters) {
+    return new AccountOperationsClient(chronometry, limiters, /* initialSpareAttempts */ 5);
+  }
+
+  @Provides
+  static KeyOperationsInterface provideKeyOperationsInterface(Limiters limiters) {
+    return new KeyOperationsClient(limiters);
   }
 }

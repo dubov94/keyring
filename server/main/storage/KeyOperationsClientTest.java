@@ -43,8 +43,17 @@ class KeyOperationsClientTest {
 
   @BeforeEach
   void beforeEach() {
-    accountOperationsClient = new AccountOperationsClient(new Chronometry(new Arithmetic()));
-    keyOperationsClient = new KeyOperationsClient();
+    Limiters limiters =
+        new Limiters(
+            /* approxMaxKeysPerUser */ 8,
+            /* approxMaxMailTokensPerUser */ 4,
+            /* approxMaxMailTokensPerAddress */ 2,
+            /* approxMaxRecentSessionsPerUser */ 15,
+            /* approxMaxOtpParamsPerUser */ 4);
+    accountOperationsClient =
+        new AccountOperationsClient(
+            new Chronometry(new Arithmetic()), limiters, /* initialSpareAttempts */ 5);
+    keyOperationsClient = new KeyOperationsClient(limiters);
   }
 
   @Test

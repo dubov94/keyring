@@ -468,7 +468,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     accountOperationsInterface.acceptOtpParams(userId, otpParams.getId());
     if (request.getYieldTrustedToken()) {
       String otpToken = cryptography.generateTts();
-      accountOperationsInterface.createOtpToken(userId, otpToken);
+      accountOperationsInterface.createTrustedToken(userId, otpToken);
       builder.setTrustedToken(otpToken);
     }
     return Either.right(builder.build());

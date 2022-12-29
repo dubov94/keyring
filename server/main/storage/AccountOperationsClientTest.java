@@ -49,8 +49,16 @@ class AccountOperationsClientTest {
 
   @BeforeEach
   void beforeEach() {
-    accountOperationsClient = new AccountOperationsClient(mockChronometry);
-    keyOperationsClient = new KeyOperationsClient();
+    Limiters limiters =
+        new Limiters(
+            /* approxMaxKeysPerUser */ 8,
+            /* approxMaxMailTokensPerUser */ 4,
+            /* approxMaxMailTokensPerAddress */ 2,
+            /* approxMaxRecentSessionsPerUser */ 15,
+            /* approxMaxOtpParamsPerUser */ 4);
+    accountOperationsClient =
+        new AccountOperationsClient(mockChronometry, limiters, /* initialSpareAttempts */ 5);
+    keyOperationsClient = new KeyOperationsClient(limiters);
   }
 
   @Test
@@ -335,13 +343,13 @@ class AccountOperationsClientTest {
 
   @Test
   @WithEntityManager
-  void createOtpToken_putsOtpToken() {
+  void createTrustedToken_putsOtpToken() {
     long userId = createActiveUser()._1;
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of());
     accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
 
-    accountOperationsClient.createOtpToken(userId, "value");
+    accountOperationsClient.createTrustedToken(userId, "value");
 
     assertTrue(accountOperationsClient.getOtpToken(userId, "value", false).isPresent());
   }
@@ -353,7 +361,7 @@ class AccountOperationsClientTest {
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of());
     accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
-    accountOperationsClient.createOtpToken(userId, "value");
+    accountOperationsClient.createTrustedToken(userId, "value");
     long tokenId = accountOperationsClient.getOtpToken(userId, "value", false).get().getId();
 
     accountOperationsClient.deleteOtpToken(userId, tokenId);

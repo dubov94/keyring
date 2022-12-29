@@ -7,6 +7,20 @@ java_library(
 )
 
 java_library(
+    name = "limiters",
+    srcs = ["Limiters.java"],
+    deps = [
+        ":queries",
+        "//server/main:chronometry",
+        "//server/main/entities:key",
+        "//server/main/entities:mail_token",
+        "//server/main/entities:otp_params",
+        "//server/main/entities:session",
+        "@maven//:javax_persistence_javax_persistence_api",
+    ],
+)
+
+java_library(
     name = "account_operations_interface",
     srcs = ["AccountOperationsInterface.java"],
     visibility = ["//server:internal"],
@@ -27,6 +41,7 @@ java_library(
     srcs = ["AccountOperationsClient.java"],
     deps = [
         ":account_operations_interface",
+        ":limiters",
         ":queries",
         "//proto:service_java_grpc",
         "//server/main:chronometry",
@@ -61,6 +76,7 @@ woven_junit5_test(
     deps = [
         ":account_operations_client",
         ":account_operations_interface",
+        ":limiters",
         "//proto:service_java_grpc",
         "//server/main:chronometry",
         "//server/main/aspects:annotations",
@@ -99,6 +115,7 @@ java_library(
     srcs = ["KeyOperationsClient.java"],
     deps = [
         ":key_operations_interface",
+        ":limiters",
         ":queries",
         "//proto:service_java_grpc",
         "//server/main/aspects:annotations",
@@ -127,6 +144,7 @@ woven_junit5_test(
         "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
+        ":limiters",
         "//proto:service_java_grpc",
         "//server/main:arithmetic",
         "//server/main:chronometry",
@@ -160,6 +178,7 @@ java_library(
     deps = [
         ":account_operations_client",
         ":key_operations_client",
+        ":limiters",
         "//server/main:chronometry",
         "//server/main:environment",
         "//server/main/storage:account_operations_interface",

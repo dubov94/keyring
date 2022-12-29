@@ -20,7 +20,13 @@ import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
 
 public class KeyOperationsClient implements KeyOperationsInterface {
+  private final Limiters limiters;
+
   @ContextualEntityManager private EntityManager entityManager;
+
+  KeyOperationsClient(Limiters limiters) {
+    this.limiters = limiters;
+  }
 
   private Session mustGetSession(long sessionId) {
     Optional<Session> maybeSession =
@@ -75,6 +81,8 @@ public class KeyOperationsClient implements KeyOperationsInterface {
       throw new IllegalArgumentException(String.format("Shadows must have a non-nil parent"));
     }
     Session session = mustGetSession(sessionId);
+    long userId = session.getUser().getIdentifier();
+    limiters.checkKeysPerUser(entityManager, userId);
     return _spawnKey(session, content, attrs);
   }
 

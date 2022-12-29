@@ -288,7 +288,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     accountOperationsInterface.restoreOtpSpareAttempts(userId);
     if (request.getYieldTrustedToken()) {
       String otpToken = cryptography.generateTts();
-      accountOperationsInterface.createOtpToken(userId, otpToken);
+      accountOperationsInterface.createTrustedToken(userId, otpToken);
       builder.setTrustedToken(otpToken);
     }
     long sessionEntityId = kvAuthn.getSessionEntityId();

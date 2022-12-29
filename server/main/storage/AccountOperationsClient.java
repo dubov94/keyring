@@ -30,7 +30,6 @@ import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
 
 public class AccountOperationsClient implements AccountOperationsInterface {
-  private static final int INITIAL_SPARE_ATTEMPTS = 5;
   private static final ImmutableMap<FeatureType, Consumer<FeaturePrompts>> FEATURE_PROMPT_ACKERS =
       ImmutableMap.of(
           FeatureType.OTP,
@@ -39,10 +38,15 @@ public class AccountOperationsClient implements AccountOperationsInterface {
           featurePrompts -> featurePrompts.setFuzzySearch(false));
 
   private Chronometry chronometry;
+  private Limiters limiters;
+  private final int initialSpareAttempts;
+
   @ContextualEntityManager private EntityManager entityManager;
 
-  AccountOperationsClient(Chronometry chronometry) {
+  AccountOperationsClient(Chronometry chronometry, Limiters limiters, int initialSpareAttempts) {
     this.chronometry = chronometry;
+    this.limiters = limiters;
+    this.initialSpareAttempts = initialSpareAttempts;
   }
 
   @Override
@@ -61,10 +65,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public MailToken createMailToken(long userIdentifier, String mail, String code) {
+  public MailToken createMailToken(long userId, String mail, String code) {
+    limiters.checkMailTokensPerUser(entityManager, userId);
+    limiters.checkMailTokensPerAddress(entityManager, mail);
     MailToken mailToken =
         new MailToken()
-            .setUser(entityManager.getReference(User.class, userIdentifier))
+            .setUser(entityManager.getReference(User.class, userId))
             .setMail(mail)
             .setCode(code);
     entityManager.persist(mailToken);
@@ -226,6 +232,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
+    limiters.checkRecentSessionsPerUser(chronometry, entityManager, userId);
     return _createSession(maybeUser.get(), userVersion, ipAddress, userAgent, clientVersion);
   }
 
@@ -338,6 +345,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public OtpParams createOtpParams(long userId, String sharedSecret, List<String> scratchCodes) {
+    limiters.checkOtpParamsPerUser(entityManager, userId);
     OtpParams otpParams =
         new OtpParams()
             // Currently allowed even if `User` already has `otpSharedSecret`.
@@ -363,7 +371,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
           String.format("User %d already has 2FA enabled", user.getIdentifier()));
     }
     user.setOtpSharedSecret(otpParams.getOtpSharedSecret());
-    user.setOtpSpareAttempts(INITIAL_SPARE_ATTEMPTS);
+    user.setOtpSpareAttempts(initialSpareAttempts);
     entityManager.persist(user);
     for (String scratchCode : otpParams.getScratchCodes()) {
       entityManager.persist(new OtpToken().setUser(user).setIsInitial(true).setValue(scratchCode));
@@ -389,7 +397,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   @LockEntity(name = "user")
-  private void _createOtpToken(User user, String otpToken) {
+  private void _createTrustedToken(User user, String otpToken) {
     if (user.getOtpSharedSecret() == null) {
       throw new IllegalArgumentException(
           String.format("User %d does not have 2FA enabled", user.getIdentifier()));
@@ -399,12 +407,13 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public void createOtpToken(long userId, String otpToken) {
+  public void createTrustedToken(long userId, String otpToken) {
     Optional<User> maybeUser = getUserById(userId);
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
-    _createOtpToken(maybeUser.get(), otpToken);
+    // `OtpToken` limits are implied by `Session` limits.
+    _createTrustedToken(maybeUser.get(), otpToken);
   }
 
   @Override
@@ -489,7 +498,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
       throw new IllegalArgumentException(
           String.format("User %d does not have 2FA enabled", user.getIdentifier()));
     }
-    user.setOtpSpareAttempts(INITIAL_SPARE_ATTEMPTS);
+    user.setOtpSpareAttempts(initialSpareAttempts);
     entityManager.persist(user);
   }
 
