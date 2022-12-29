@@ -13,6 +13,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Version;
@@ -28,7 +29,9 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 @Entity
-@Table(name = "keys")
+@Table(
+    name = "keys",
+    indexes = {@Index(columnList = "user_identifier"), @Index(columnList = "parent_identifier")})
 @TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class Key {
   @Id

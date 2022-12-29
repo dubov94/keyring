@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Version;
@@ -20,7 +21,9 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
-@Table(name = "sessions")
+@Table(
+    name = "sessions",
+    indexes = {@Index(columnList = "user_identifier")})
 public class Session {
   public static final int SESSION_RELATIVE_DURATION_S = 10 * 60;
   public static final int SESSION_ABSOLUTE_DURATION_H = 2;

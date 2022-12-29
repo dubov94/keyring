@@ -89,18 +89,16 @@ CREATE TABLE "public"."users" (
 -- changeset liquibase:7
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.table_constraints where table_schema = 'public' and table_name = 'otp_tokens' and constraint_name = 'ukepg9lkm4ggrlj2daic3l3i2vw'
-ALTER TABLE
-    "public"."otp_tokens"
-ADD
-    CONSTRAINT "ukepg9lkm4ggrlj2daic3l3i2vw" UNIQUE ("user_identifier", "value");
+ALTER TABLE "public"."otp_tokens"
+    ADD CONSTRAINT "ukepg9lkm4ggrlj2daic3l3i2vw"
+    UNIQUE ("user_identifier", "value");
 
 -- changeset liquibase:8
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.table_constraints where table_schema = 'public' and table_name = 'users' and constraint_name = 'uk_r43af9ap4edm43mmtq01oddj6'
-ALTER TABLE
-    "public"."users"
-ADD
-    CONSTRAINT "uk_r43af9ap4edm43mmtq01oddj6" UNIQUE ("username");
+ALTER TABLE"public"."users"
+    ADD CONSTRAINT "uk_r43af9ap4edm43mmtq01oddj6"
+    UNIQUE ("username");
 
 -- changeset liquibase:9
 -- preconditions onFail:MARK_RAN
@@ -116,58 +114,58 @@ CREATE TABLE "public"."feature_prompts" (
 -- changeset liquibase:10
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.table_constraints where table_schema = 'public' and table_name = 'otp_tokens' and constraint_name = 'fk1u2jwse5b3wdxuvhk37jwtaxp'
-ALTER TABLE
-    "public"."otp_tokens"
-ADD
-    CONSTRAINT "fk1u2jwse5b3wdxuvhk37jwtaxp" FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier") ON UPDATE NO ACTION ON DELETE CASCADE;
+ALTER TABLE "public"."otp_tokens"
+    ADD CONSTRAINT "fk1u2jwse5b3wdxuvhk37jwtaxp"
+    FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier")
+    ON UPDATE NO ACTION ON DELETE CASCADE;
 
 -- changeset liquibase:11
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.table_constraints where table_schema = 'public' and table_name = 'mail_tokens' and constraint_name = 'fk4bho6q1wvhvj71c4mlboqc2we'
-ALTER TABLE
-    "public"."mail_tokens"
-ADD
-    CONSTRAINT "fk4bho6q1wvhvj71c4mlboqc2we" FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier") ON UPDATE NO ACTION ON DELETE CASCADE;
+ALTER TABLE "public"."mail_tokens"
+    ADD CONSTRAINT "fk4bho6q1wvhvj71c4mlboqc2we"
+    FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier")
+    ON UPDATE NO ACTION ON DELETE CASCADE;
 
 -- changeset liquibase:12
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.table_constraints where table_schema = 'public' and table_name = 'otp_params' and constraint_name = 'fk4n8xrfcqrlgwfbmkxqw28e6u0'
-ALTER TABLE
-    "public"."otp_params"
-ADD
-    CONSTRAINT "fk4n8xrfcqrlgwfbmkxqw28e6u0" FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier") ON UPDATE NO ACTION ON DELETE CASCADE;
+ALTER TABLE "public"."otp_params"
+    ADD CONSTRAINT "fk4n8xrfcqrlgwfbmkxqw28e6u0"
+    FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier")
+    ON UPDATE NO ACTION ON DELETE CASCADE;
 
 -- changeset liquibase:13
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.table_constraints where table_schema = 'public' and table_name = 'keys' and constraint_name = 'fk9bpkeay3gjqgj6qsh1usbmkwe'
-ALTER TABLE
-    "public"."keys"
-ADD
-    CONSTRAINT "fk9bpkeay3gjqgj6qsh1usbmkwe" FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier") ON UPDATE NO ACTION ON DELETE CASCADE;
+ALTER TABLE "public"."keys"
+    ADD CONSTRAINT "fk9bpkeay3gjqgj6qsh1usbmkwe"
+    FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier")
+    ON UPDATE NO ACTION ON DELETE CASCADE;
 
 -- changeset liquibase:14
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.table_constraints where table_schema = 'public' and table_name = 'sessions' and constraint_name = 'fkm4okt87wyku2rji43sd4yrkym'
-ALTER TABLE
-    "public"."sessions"
-ADD
-    CONSTRAINT "fkm4okt87wyku2rji43sd4yrkym" FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier") ON UPDATE NO ACTION ON DELETE CASCADE;
+ALTER TABLE "public"."sessions"
+    ADD CONSTRAINT "fkm4okt87wyku2rji43sd4yrkym"
+    FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier")
+    ON UPDATE NO ACTION ON DELETE CASCADE;
 
 -- changeset liquibase:15
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.table_constraints where table_schema = 'public' and table_name = 'keys' and constraint_name = 'fko76l9bbtm9ne8jkl824tx8oub'
-ALTER TABLE
-    "public"."keys"
-ADD
-    CONSTRAINT "fko76l9bbtm9ne8jkl824tx8oub" FOREIGN KEY ("parent_identifier") REFERENCES "public"."keys" ("identifier") ON UPDATE NO ACTION ON DELETE CASCADE;
+ALTER TABLE "public"."keys"
+    ADD CONSTRAINT "fko76l9bbtm9ne8jkl824tx8oub"
+    FOREIGN KEY ("parent_identifier") REFERENCES "public"."keys" ("identifier")
+    ON UPDATE NO ACTION ON DELETE CASCADE;
 
 -- changeset liquibase:16
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.table_constraints where table_schema = 'public' and table_name = 'feature_prompts' and constraint_name = 'fkstt2d96538kdhgl2qhiouhep3'
-ALTER TABLE
-    "public"."feature_prompts"
-ADD
-    CONSTRAINT "fkstt2d96538kdhgl2qhiouhep3" FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier") ON UPDATE NO ACTION ON DELETE CASCADE;
+ALTER TABLE "public"."feature_prompts"
+    ADD CONSTRAINT "fkstt2d96538kdhgl2qhiouhep3"
+    FOREIGN KEY ("user_identifier") REFERENCES "public"."users" ("identifier")
+    ON UPDATE NO ACTION ON DELETE CASCADE;
 
 -- changeset liquibase:17
 -- comment Upgrades from `enum` to `UserState`.
@@ -197,3 +195,25 @@ UPDATE "public"."sessions" SET "last_stage_change" = "timestamp";
 -- comment Prepends key prefixes, `INITIATED` ≡ 1, `ACTIVATED` ≡ 2.
 UPDATE "public"."sessions" SET "key" = concat('authn:', "key") WHERE "stage" = 1;
 UPDATE "public"."sessions" SET "key" = concat('session:', "key") WHERE "stage" = 2;
+
+-- changeset liquibase:22
+CREATE INDEX IF NOT EXISTS "idx8uiomr1kpiydl6yyifyqlstw2" ON "public"."keys" ("user_identifier");
+
+-- changeset liquibase:23
+CREATE INDEX IF NOT EXISTS "idx81lj69y60lms7f7gvmn186acw" ON "public"."keys" ("parent_identifier");
+
+-- changeset liquibase:24
+CREATE INDEX IF NOT EXISTS "idx3t5hq5fvd7r5qqmqfggo8uu2m" ON "public"."mail_tokens" ("user_identifier");
+
+-- changeset liquibase:25
+CREATE INDEX IF NOT EXISTS "idxn3qd43ibuyr8s8k56fxv60quj" ON "public"."mail_tokens" ("mail");
+
+-- changeset liquibase:26
+CREATE INDEX IF NOT EXISTS "idxb9h4of0nvxfsur7tcsdyngm2y" ON "public"."otp_params" ("user_identifier");
+
+-- changeset liquibase:27
+CREATE INDEX IF NOT EXISTS "idxpuwlxukecumjygkgefdeob3ol" ON "public"."otp_tokens" ("user_identifier");
+
+-- changeset liquibase:28
+CREATE INDEX IF NOT EXISTS "idxndl4t14kpseeq8gi0x3h4034k" ON "public"."sessions" ("user_identifier");
+

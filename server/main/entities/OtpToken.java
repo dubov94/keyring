@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
@@ -16,6 +17,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 @Table(
     name = "otp_tokens",
+    indexes = {@Index(columnList = "user_identifier")},
     uniqueConstraints = {@UniqueConstraint(columnNames = {"user_identifier", "value"})})
 public class OtpToken {
   @Id

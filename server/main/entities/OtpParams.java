@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,7 +19,9 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 @Entity
-@Table(name = "otp_params")
+@Table(
+    name = "otp_params",
+    indexes = {@Index(columnList = "user_identifier")})
 @TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class OtpParams {
   @Id
