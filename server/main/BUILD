@@ -1,7 +1,9 @@
 load("//bazel/java:junit5.bzl", "junit5_test")
 load("//server:aspectj.bzl", "woven_java_binary")
+load("//server/main:aspectj.bzl", "ASPECTS")
 
 exports_files([
+    "aspectj.bzl",
     "entrypoint.sh",
 ])
 
@@ -128,10 +130,7 @@ java_binary(
 woven_java_binary(
     name = "main",
     aop_xml = "//server/main/java/META-INF:aop.xml",
-    aspects = [
-        "//server/main/aspects:validate_user_aspect",
-        "//server/main/aspects:storage_manager_aspect",
-    ],
+    aspects = ASPECTS,
     jvm_flags = [
         # https://github.com/pgjdbc/pgjdbc/issues/986
         "--add-opens java.base/java.util=ALL-UNNAMED",

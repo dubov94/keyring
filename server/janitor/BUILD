@@ -1,6 +1,8 @@
 load("//server:aspectj.bzl", "woven_java_binary")
+load("//server/janitor:aspectj.bzl", "ASPECTS")
 
 exports_files([
+    "aspectj.bzl",
     "entrypoint.sh",
 ])
 
@@ -64,7 +66,7 @@ java_binary(
 woven_java_binary(
     name = "janitor",
     aop_xml = "//server/janitor/java/META-INF:aop.xml",
-    aspects = ["//server/main/aspects:storage_manager_aspect"],
+    aspects = ASPECTS,
     jvm_flags = [
         # https://github.com/pgjdbc/pgjdbc/issues/986
         "--add-opens java.base/java.util=ALL-UNNAMED",

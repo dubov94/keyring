@@ -7,6 +7,7 @@ ASPECTJ_JVM_FLAGS = [
     # https://www.eclipse.org/aspectj/doc/released/README-194.html
     "--add-opens java.base/java.lang=ALL-UNNAMED",
 ]
+MESSAGE_HANDLER = "//server/main/aspects:message_handler"
 
 def woven_java_binary(
         name,
@@ -26,7 +27,7 @@ def woven_java_binary(
         jvm_flags = all_jvm_flags,
         main_class = main_class,
         resources = resources + [aop_xml],
-        runtime_deps = runtime_deps + aspects,
+        runtime_deps = runtime_deps + [MESSAGE_HANDLER] + aspects,
         visibility = visibility,
     )
     java_package(
@@ -55,6 +56,6 @@ def woven_junit5_test(
         jvm_flags = jvm_flags + ASPECTJ_JVM_FLAGS,
         resources = resources + [aop_xml],
         test_package = test_package,
-        runtime_deps = runtime_deps + aspects,
+        runtime_deps = runtime_deps + [MESSAGE_HANDLER] + aspects,
         deps = deps,
     )

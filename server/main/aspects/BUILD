@@ -90,3 +90,10 @@ java_library(
         "@maven//:org_aspectj_aspectjrt",
     ],
 )
+
+java_library(
+    name = "message_handler",
+    srcs = ["MessageHandler.java"],
+    visibility = ["//server:internal"],
+    deps = ["@maven//:org_aspectj_aspectjtools"],
+)

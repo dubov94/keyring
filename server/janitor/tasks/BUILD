@@ -1,4 +1,5 @@
 load("//server:aspectj.bzl", "woven_junit5_test")
+load("//server/janitor:aspectj.bzl", "ASPECTS")
 
 package(default_visibility = ["//server:internal"])
 
@@ -18,7 +19,7 @@ woven_junit5_test(
     name = "deleted_users_test",
     srcs = ["DeletedUsersTest.java"],
     aop_xml = "//server/janitor/java/META-INF:aop.xml",
-    aspects = ["//server/main/aspects:storage_manager_aspect"],
+    aspects = ASPECTS,
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "keyring.server.janitor.tasks",
     runtime_deps = [
@@ -55,7 +56,7 @@ woven_junit5_test(
     name = "disabled_session_records_test",
     srcs = ["DisabledSessionRecordsTest.java"],
     aop_xml = "//server/janitor/java/META-INF:aop.xml",
-    aspects = ["//server/main/aspects:storage_manager_aspect"],
+    aspects = ASPECTS,
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "keyring.server.janitor.tasks",
     runtime_deps = [
@@ -105,7 +106,7 @@ woven_junit5_test(
     name = "expired_pending_users_test",
     srcs = ["ExpiredPendingUsersTest.java"],
     aop_xml = "//server/janitor/java/META-INF:aop.xml",
-    aspects = ["//server/main/aspects:storage_manager_aspect"],
+    aspects = ASPECTS,
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "keyring.server.janitor.tasks",
     runtime_deps = [

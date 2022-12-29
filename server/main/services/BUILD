@@ -1,4 +1,5 @@
 load("//server:aspectj.bzl", "woven_junit5_test")
+load("//server/main:aspectj.bzl", "ASPECTS")
 
 java_library(
     name = "administration_service",
@@ -36,10 +37,7 @@ woven_junit5_test(
     name = "administration_service_test",
     srcs = ["AdministrationServiceTest.java"],
     aop_xml = "//server/main/java/META-INF:aop.xml",
-    aspects = [
-        "//server/main/aspects:storage_manager_aspect",
-        "//server/main/aspects:validate_user_aspect",
-    ],
+    aspects = ASPECTS,
     test_package = "keyring.server.main.services",
     deps = [
         "//proto:service_java_grpc",
@@ -108,10 +106,7 @@ woven_junit5_test(
     name = "authentication_service_test",
     srcs = ["AuthenticationServiceTest.java"],
     aop_xml = "//server/main/java/META-INF:aop.xml",
-    aspects = [
-        "//server/main/aspects:storage_manager_aspect",
-        "//server/main/aspects:validate_user_aspect",
-    ],
+    aspects = ASPECTS,
     test_package = "keyring.server.main.services",
     deps = [
         "//proto:service_java_grpc",

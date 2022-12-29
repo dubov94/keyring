@@ -1,4 +1,5 @@
 load("//server:aspectj.bzl", "woven_junit5_test")
+load("//server/main:aspectj.bzl", "ASPECTS")
 
 java_library(
     name = "queries",
@@ -63,10 +64,7 @@ woven_junit5_test(
     name = "account_operations_client_test",
     srcs = ["AccountOperationsClientTest.java"],
     aop_xml = "//server/main/java/META-INF:aop.xml",
-    aspects = [
-        "//server/main/aspects:storage_manager_aspect",
-        "//server/main/aspects:validate_user_aspect",
-    ],
+    aspects = ASPECTS,
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "keyring.server.main.storage",
     runtime_deps = [
@@ -132,11 +130,7 @@ woven_junit5_test(
     name = "key_operations_client_test",
     srcs = ["KeyOperationsClientTest.java"],
     aop_xml = "//server/main/java/META-INF:aop.xml",
-    aspects = [
-        "//server/main/aspects:activated_session_aspect",
-        "//server/main/aspects:storage_manager_aspect",
-        "//server/main/aspects:validate_user_aspect",
-    ],
+    aspects = ASPECTS,
     resources = ["//server/java/META-INF:persistence.xml"],
     test_package = "keyring.server.main.storage",
     runtime_deps = [

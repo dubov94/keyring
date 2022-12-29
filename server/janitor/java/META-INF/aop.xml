@@ -1,9 +1,9 @@
 <aspectj>
     <aspects>
         <aspect name="keyring.server.main.aspects.StorageManagerAspect"/>
-        <weaver>
-            <include within="keyring.server.main.aspects.*"/>
-            <include within="keyring.server.janitor.tasks.*"/>
+        <weaver options="-XmessageHandlerClass:keyring.server.main.aspects.MessageHandler">
+            <include within="keyring.server.main.aspects..*"/>
+            <include within="keyring.server.janitor..*"/>
         </weaver>
     </aspects>
 </aspectj>

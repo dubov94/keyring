@@ -3,10 +3,9 @@
         <aspect name="keyring.server.main.aspects.ActivatedSessionAspect"/>
         <aspect name="keyring.server.main.aspects.ValidateUserAspect"/>
         <aspect name="keyring.server.main.aspects.StorageManagerAspect"/>
-        <weaver>
-            <include within="keyring.server.main.aspects.*"/>
-            <include within="keyring.server.main.storage.*"/>
-            <include within="keyring.server.main.services.*"/>
+        <weaver options="-XmessageHandlerClass:keyring.server.main.aspects.MessageHandler">
+            <!-- Includes `keyring.server.main.aspects`. -->
+            <include within="keyring.server.main..*"/>
         </weaver>
     </aspects>
 </aspectj>
