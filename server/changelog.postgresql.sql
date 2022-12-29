@@ -96,7 +96,7 @@ ALTER TABLE "public"."otp_tokens"
 -- changeset liquibase:8
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.table_constraints where table_schema = 'public' and table_name = 'users' and constraint_name = 'uk_r43af9ap4edm43mmtq01oddj6'
-ALTER TABLE"public"."users"
+ALTER TABLE "public"."users"
     ADD CONSTRAINT "uk_r43af9ap4edm43mmtq01oddj6"
     UNIQUE ("username");
 
