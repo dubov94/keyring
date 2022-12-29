@@ -1,7 +1,9 @@
 package keyring.server.main.services;
 
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static keyring.server.main.storage.AccountOperationsInterface.MtNudgeStatus;
 
 import com.google.common.collect.ImmutableList;
