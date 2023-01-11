@@ -408,7 +408,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _acceptOtpParams(user, otpParams);
   }
 
-  @LockEntity(name = "user")
+  // TODO: Add `@LockEntity(name = "user")` back.
   private void _createTrustedToken(User user, String otpToken) {
     if (user.getOtpSharedSecret() == null) {
       throw new IllegalArgumentException(
