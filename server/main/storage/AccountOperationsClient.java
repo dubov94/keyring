@@ -215,7 +215,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _changeUsername(maybeUser.get(), username);
   }
 
-  // TODO: Add `@LockEntity(name = "user")` back.
+  @LockEntity(name = "user")
   private Session _createSession(
       User user, long version, String ipAddress, String userAgent, String clientVersion) {
     long actualVersion = user.getVersion();
@@ -408,7 +408,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _acceptOtpParams(user, otpParams);
   }
 
-  // TODO: Add `@LockEntity(name = "user")` back.
+  @LockEntity(name = "user")
   private void _createTrustedToken(User user, String otpToken) {
     if (user.getOtpSharedSecret() == null) {
       throw new IllegalArgumentException(
@@ -478,7 +478,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _resetOtp(maybeUser.get());
   }
 
-  // TODO: Add `@LockEntity(name = "user")` back.
+  @LockEntity(name = "user")
   private Optional<Integer> _acquireOtpSpareAttempt(User user) {
     if (user.getOtpSharedSecret() == null) {
       throw new IllegalArgumentException(
@@ -504,7 +504,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     return _acquireOtpSpareAttempt(maybeUser.get());
   }
 
-  // TODO: Add `@LockEntity(name = "user")` back.
+  @LockEntity(name = "user")
   private void _restoreOtpSpareAttempts(User user) {
     if (user.getOtpSharedSecret() == null) {
       throw new IllegalArgumentException(
