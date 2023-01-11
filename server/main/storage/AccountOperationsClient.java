@@ -478,7 +478,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _resetOtp(maybeUser.get());
   }
 
-  @LockEntity(name = "user")
+  // TODO: Add `@LockEntity(name = "user")` back.
   private Optional<Integer> _acquireOtpSpareAttempt(User user) {
     if (user.getOtpSharedSecret() == null) {
       throw new IllegalArgumentException(
@@ -504,7 +504,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     return _acquireOtpSpareAttempt(maybeUser.get());
   }
 
-  @LockEntity(name = "user")
+  // TODO: Add `@LockEntity(name = "user")` back.
   private void _restoreOtpSpareAttempts(User user) {
     if (user.getOtpSharedSecret() == null) {
       throw new IllegalArgumentException(
