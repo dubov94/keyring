@@ -215,7 +215,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     _changeUsername(maybeUser.get(), username);
   }
 
-  @LockEntity(name = "user")
+  // TODO: Add `@LockEntity(name = "user")` back.
   private Session _createSession(
       User user, long version, String ipAddress, String userAgent, String clientVersion) {
     long actualVersion = user.getVersion();
