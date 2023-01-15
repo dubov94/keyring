@@ -222,7 +222,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
     User user = maybeUser.get();
     if (!cryptography.doesDigestMatchHash(request.getDigest(), user.getHash())
-        || Objects.equals(user.getState(), UserState.DELETED)) {
+        || Objects.equals(user.getState(), UserState.USER_DELETED)) {
       return builder.setError(LogInResponse.Error.INVALID_CREDENTIALS).build();
     }
     long userId = user.getIdentifier();

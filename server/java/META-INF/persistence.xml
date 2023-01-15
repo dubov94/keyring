@@ -6,6 +6,7 @@
         <class>keyring.server.main.entities.FeaturePrompts</class>
         <class>keyring.server.main.entities.Key</class>
         <class>keyring.server.main.entities.MailToken</class>
+        <class>keyring.server.main.entities.MailTokenStateConverter</class>
         <class>keyring.server.main.entities.OtpParams</class>
         <class>keyring.server.main.entities.OtpToken</class>
         <class>keyring.server.main.entities.Session</class>
@@ -30,6 +31,7 @@
         <class>keyring.server.main.entities.FeaturePrompts</class>
         <class>keyring.server.main.entities.Key</class>
         <class>keyring.server.main.entities.MailToken</class>
+        <class>keyring.server.main.entities.MailTokenStateConverter</class>
         <class>keyring.server.main.entities.OtpParams</class>
         <class>keyring.server.main.entities.OtpToken</class>
         <class>keyring.server.main.entities.Session</class>
@@ -50,6 +52,7 @@
         <class>keyring.server.main.entities.FeaturePrompts</class>
         <class>keyring.server.main.entities.Key</class>
         <class>keyring.server.main.entities.MailToken</class>
+        <class>keyring.server.main.entities.MailTokenStateConverter</class>
         <class>keyring.server.main.entities.OtpParams</class>
         <class>keyring.server.main.entities.OtpToken</class>
         <class>keyring.server.main.entities.Session</class>

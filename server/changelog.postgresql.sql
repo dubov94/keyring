@@ -179,7 +179,7 @@ UPDATE "public"."sessions" SET "version" = 1;
 ALTER TABLE "public"."sessions" ALTER COLUMN "version" SET NOT NULL;
 
 -- changeset liquibase:19
--- comment Defaults `SessionStage` to `ACTIVATED`.
+-- comment Defaults `SessionStage` to `SESSION_ACTIVATED`.
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'sessions' and column_name = 'stage'
 ALTER TABLE "public"."sessions" ADD COLUMN "stage" INTEGER;
@@ -192,7 +192,7 @@ ALTER TABLE "public"."sessions" ADD COLUMN "last_stage_change" TIMESTAMP WITHOUT
 UPDATE "public"."sessions" SET "last_stage_change" = "timestamp";
 
 -- changeset liquibase:21
--- comment Prepends key prefixes, `INITIATED` ≡ 1, `ACTIVATED` ≡ 2.
+-- comment Prepends key prefixes, `SESSION_INITIATED` ≡ 1, `SESSION_ACTIVATED` ≡ 2.
 UPDATE "public"."sessions" SET "key" = concat('authn:', "key") WHERE "stage" = 1;
 UPDATE "public"."sessions" SET "key" = concat('session:', "key") WHERE "stage" = 2;
 
@@ -217,3 +217,13 @@ CREATE INDEX IF NOT EXISTS "idxpuwlxukecumjygkgefdeob3ol" ON "public"."otp_token
 -- changeset liquibase:28
 CREATE INDEX IF NOT EXISTS "idxndl4t14kpseeq8gi0x3h4034k" ON "public"."sessions" ("user_identifier");
 
+-- changeset liquibase:29
+-- comment Addresses may differ but ultimately refer to the same inbox.
+DROP INDEX IF EXISTS "idxn3qd43ibuyr8s8k56fxv60quj";
+
+-- changeset liquibase:30
+-- comment Defaults `MailTokenState` to `MAIL_TOKEN_PENDING`.
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'mail_tokens' and column_name = 'state'
+ALTER TABLE "public"."mail_tokens" ADD COLUMN "state" INTEGER;
+UPDATE "public"."mail_tokens" SET "state" = 1;

@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import java.sql.Timestamp;
 import java.time.Instant;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,6 +13,7 @@ import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Version;
+import keyring.server.main.entities.columns.MailTokenState;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
@@ -20,7 +22,7 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 @Table(
     name = "mail_tokens",
-    indexes = {@Index(columnList = "user_identifier"), @Index(columnList = "mail")})
+    indexes = {@Index(columnList = "user_identifier")})
 public class MailToken {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,8 +39,15 @@ public class MailToken {
   @Column(columnDefinition = "text")
   private String code;
 
+  // To limit emails per address there should be a separate column for normalisation.
+  // Java does not provide a viable option (https://stackoverflow.com/a/14525933), so
+  // the solution is likely to be creating a separate Go service based on libraries from
+  // https://github.com/avelino/awesome-go#email.
   @Column(columnDefinition = "text")
   private String mail;
+
+  @Convert(converter = MailTokenStateConverter.class)
+  private MailTokenState state;
 
   @Column(name = "last_attempt")
   @ColumnDefault("timestamp 'epoch'")
@@ -87,6 +96,15 @@ public class MailToken {
   public MailToken setMail(String mail) {
     Validators.checkMailLength(mail);
     this.mail = mail;
+    return this;
+  }
+
+  public MailTokenState getState() {
+    return state;
+  }
+
+  public MailToken setState(MailTokenState state) {
+    this.state = state;
     return this;
   }
 

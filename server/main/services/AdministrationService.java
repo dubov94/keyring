@@ -184,7 +184,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
   @Override
   @WithEntityManager
-  @ValidateUser(states = {UserState.PENDING, UserState.ACTIVE})
+  @ValidateUser(states = {UserState.USER_PENDING, UserState.USER_ACTIVE})
   public void releaseMailToken(
       ReleaseMailTokenRequest request, StreamObserver<ReleaseMailTokenResponse> response) {
     response.onNext(_releaseMailToken(request));
@@ -389,7 +389,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     }
     keyValueClient.safelyDeleteSeRefs(
         accountOperationsInterface.readSessions(
-            userId, Optional.of(ImmutableList.of(SessionStage.DISABLED))));
+            userId, Optional.of(ImmutableList.of(SessionStage.SESSION_DISABLED))));
     accountOperationsInterface.markAccountAsDeleted(userId);
     return Either.right(builder.build());
   }
@@ -412,11 +412,11 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     switch (stage) {
       case UNKNOWN_SESSION_STAGE:
         return GetRecentSessionsResponse.Session.Status.UNKNOWN_STATUS;
-      case INITIATED:
+      case SESSION_INITIATED:
         return GetRecentSessionsResponse.Session.Status.AWAITING_2FA;
-      case ACTIVATED:
+      case SESSION_ACTIVATED:
         return GetRecentSessionsResponse.Session.Status.ACTIVATED;
-      case DISABLED:
+      case SESSION_DISABLED:
         return GetRecentSessionsResponse.Session.Status.DISABLED;
       default:
         throw new IllegalArgumentException(

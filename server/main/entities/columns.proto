@@ -7,14 +7,20 @@ option java_package = "keyring.server.main.entities.columns";
 
 enum UserState {
     UNKNOWN_USER_STATE = 0;
-    PENDING = 1;
-    ACTIVE = 2;
-    DELETED = 3;
+    USER_PENDING = 1;
+    USER_ACTIVE = 2;
+    USER_DELETED = 3;
 }
 
 enum SessionStage {
     UNKNOWN_SESSION_STAGE = 0;
-    INITIATED = 1;
-    ACTIVATED = 2;
-    DISABLED = 3;
+    SESSION_INITIATED = 1;
+    SESSION_ACTIVATED = 2;
+    SESSION_DISABLED = 3;
+}
+
+enum MailTokenState {
+    UNKNOWN_MAIL_TOKEN_STATE = 0;
+    MAIL_TOKEN_PENDING = 1;
+    MAIL_TOKEN_ACCEPTED = 2;
 }

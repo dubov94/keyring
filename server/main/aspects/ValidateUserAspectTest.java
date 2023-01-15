@@ -54,7 +54,7 @@ class ValidateUserAspectTest {
   void executeValidateUser_getsStatePending_returnsUnauthenticated() throws Throwable {
     when(mockSessionAccessor.getUserId()).thenReturn(0L);
     when(mockAccountOperationsInterface.getUserById(0L))
-        .thenReturn(Optional.of(new User().setState(UserState.PENDING)));
+        .thenReturn(Optional.of(new User().setState(UserState.USER_PENDING)));
     when(mockProceedingJoinPoint.getArgs()).thenReturn(new Object[] {null, mockStreamObserver});
 
     validateUserAspect.executeValidateUser(createValidateUserAnnotation(), mockProceedingJoinPoint);
@@ -68,7 +68,7 @@ class ValidateUserAspectTest {
   void executeValidateUser_getsStateActive_callsJoinPoint() throws Throwable {
     when(mockSessionAccessor.getUserId()).thenReturn(0L);
     when(mockAccountOperationsInterface.getUserById(0L))
-        .thenReturn(Optional.of(new User().setState(UserState.ACTIVE)));
+        .thenReturn(Optional.of(new User().setState(UserState.USER_ACTIVE)));
 
     validateUserAspect.executeValidateUser(createValidateUserAnnotation(), mockProceedingJoinPoint);
 
@@ -84,7 +84,7 @@ class ValidateUserAspectTest {
 
       @Override
       public UserState[] states() {
-        return new UserState[] {UserState.ACTIVE};
+        return new UserState[] {UserState.USER_ACTIVE};
       }
     };
   }

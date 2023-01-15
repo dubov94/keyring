@@ -54,17 +54,6 @@ class Limiters {
     }
   }
 
-  void checkMailTokensPerAddress(EntityManager entityManager, String address) {
-    long mailTokenCount =
-        Queries.countRowsByValue(entityManager, MailToken.class, MailToken_.mail, address);
-    if (mailTokenCount > approxMaxMailTokensPerAddress) {
-      throw new IllegalStateException(
-          String.format(
-              "Address [redacted] has been requested %d times, which is over the limit (%d)",
-              mailTokenCount, approxMaxMailTokensPerAddress));
-    }
-  }
-
   void checkRecentSessionsPerUser(
       Chronometry chronometry, EntityManager entityManager, long userId) {
     List<Session> allSessions =

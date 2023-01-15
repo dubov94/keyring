@@ -33,19 +33,19 @@ public final class DisabledSessionRecords implements Runnable {
     CriteriaUpdate<Session> criteriaUpdate = criteriaBuilder.createCriteriaUpdate(Session.class);
     Root<Session> sessionRoot = criteriaUpdate.from(Session.class);
     // if_change(session_disablement)
-    criteriaUpdate.set(sessionRoot.get(Session_.stage), SessionStage.DISABLED);
+    criteriaUpdate.set(sessionRoot.get(Session_.stage), SessionStage.SESSION_DISABLED);
     criteriaUpdate.set(
         sessionRoot.get(Session_.lastStageChange), Timestamp.from(chronometry.currentTime()));
     // then_change
     Predicate predicateForInitiated =
         criteriaBuilder.and(
-            criteriaBuilder.equal(sessionRoot.get(Session_.stage), SessionStage.INITIATED),
+            criteriaBuilder.equal(sessionRoot.get(Session_.stage), SessionStage.SESSION_INITIATED),
             criteriaBuilder.lessThan(
                 sessionRoot.get(Session_.lastStageChange),
                 chronometry.pastTimestamp(Session.AUTHN_DURATION_S, ChronoUnit.SECONDS)));
     Predicate predicateForActivated =
         criteriaBuilder.and(
-            criteriaBuilder.equal(sessionRoot.get(Session_.stage), SessionStage.ACTIVATED),
+            criteriaBuilder.equal(sessionRoot.get(Session_.stage), SessionStage.SESSION_ACTIVATED),
             criteriaBuilder.lessThan(
                 sessionRoot.get(Session_.lastStageChange),
                 // Technically this is an upper bound.

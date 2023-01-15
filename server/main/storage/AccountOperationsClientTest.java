@@ -26,6 +26,7 @@ import keyring.server.main.entities.MailToken;
 import keyring.server.main.entities.OtpParams;
 import keyring.server.main.entities.Session;
 import keyring.server.main.entities.User;
+import keyring.server.main.entities.columns.MailTokenState;
 import keyring.server.main.entities.columns.SessionStage;
 import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.proto.service.KeyAttrs;
@@ -73,10 +74,11 @@ class AccountOperationsClientTest {
         accountOperationsClient.createUser(username, "salt", "hash", "mail@example.com", "0");
 
     MailToken mailToken = tuple._2;
+    assertEquals(MailTokenState.MAIL_TOKEN_PENDING, mailToken.getState());
     assertEquals("0", mailToken.getCode());
     assertEquals("mail@example.com", mailToken.getMail());
     User user = tuple._1;
-    assertEquals(UserState.PENDING, user.getState());
+    assertEquals(UserState.USER_PENDING, user.getState());
     assertEquals(username, user.getUsername());
     assertEquals("salt", user.getSalt());
     assertEquals("hash", user.getHash());
@@ -121,7 +123,7 @@ class AccountOperationsClientTest {
 
   @Test
   @WithEntityManager
-  void releaseMailToken_removesTokenSetsMailActivatesUser() {
+  void releaseMailToken_updatesTokenSetsMailActivatesUser() {
     String username = newRandomUuid();
     Tuple2<User, MailToken> tuple =
         accountOperationsClient.createUser(username, "", "", "mail@domain.com", "0");
@@ -130,10 +132,26 @@ class AccountOperationsClientTest {
 
     accountOperationsClient.releaseMailToken(userId, mailTokenId);
 
-    assertFalse(accountOperationsClient.getMailToken(userId, mailTokenId).isPresent());
+    MailToken mailToken = accountOperationsClient.getMailToken(userId, mailTokenId).get();
+    assertEquals(MailTokenState.MAIL_TOKEN_ACCEPTED, mailToken.getState());
     User user = accountOperationsClient.getUserById(userId).get();
     assertEquals("mail@domain.com", user.getMail());
-    assertEquals(UserState.ACTIVE, user.getState());
+    assertEquals(UserState.USER_ACTIVE, user.getState());
+  }
+
+  @Test
+  @WithEntityManager
+  void releaseMailToken_acceptedToken_throwsException() {
+    String username = newRandomUuid();
+    Tuple2<User, MailToken> tuple =
+        accountOperationsClient.createUser(username, "", "", "mail@example.com", "0");
+    long userId = tuple._1.getIdentifier();
+    long mailTokenId = tuple._2.getIdentifier();
+    accountOperationsClient.releaseMailToken(userId, mailTokenId);
+
+    assertThrows(
+        StorageException.class,
+        () -> accountOperationsClient.releaseMailToken(userId, mailTokenId));
   }
 
   @Test
@@ -175,7 +193,7 @@ class AccountOperationsClientTest {
     assertEquals(1, disabledSessions.size());
     Session deletedSession = disabledSessions.get(0);
     assertEquals(sessionId, deletedSession.getIdentifier());
-    assertEquals(SessionStage.DISABLED, deletedSession.getStage());
+    assertEquals(SessionStage.SESSION_DISABLED, deletedSession.getStage());
     User user = accountOperationsClient.getUserById(userId).get();
     assertEquals("salt", user.getSalt());
     assertEquals("hash", user.getHash());
@@ -235,7 +253,7 @@ class AccountOperationsClientTest {
 
     Session session = accountOperationsClient.mustGetSession(userId, sessionId);
     assertEquals("prefix:initiation-key", session.getKey());
-    assertEquals(SessionStage.INITIATED, session.getStage());
+    assertEquals(SessionStage.SESSION_INITIATED, session.getStage());
   }
 
   @Test
@@ -254,7 +272,7 @@ class AccountOperationsClientTest {
 
     Session session = accountOperationsClient.mustGetSession(userId, sessionId);
     assertEquals("after:activation-key", session.getKey());
-    assertEquals(SessionStage.ACTIVATED, session.getStage());
+    assertEquals(SessionStage.SESSION_ACTIVATED, session.getStage());
     assertTrue(
         Duration.between(session.getUser().getLastSession(), Instant.now()).getSeconds() < 4);
   }
@@ -270,6 +288,7 @@ class AccountOperationsClientTest {
     Optional<MailToken> maybeMailToken = accountOperationsClient.getMailToken(userId, mailTokenId);
     assertTrue(maybeMailToken.isPresent());
     MailToken mailToken = maybeMailToken.get();
+    assertEquals(MailTokenState.MAIL_TOKEN_PENDING, mailToken.getState());
     assertEquals("user@mail.com", mailToken.getMail());
     assertEquals("0", mailToken.getCode());
   }
@@ -308,7 +327,7 @@ class AccountOperationsClientTest {
     Optional<User> maybeUser = accountOperationsClient.getUserById(userId);
     assertTrue(maybeUser.isPresent());
     User user = maybeUser.get();
-    assertEquals(UserState.DELETED, user.getState());
+    assertEquals(UserState.USER_DELETED, user.getState());
   }
 
   @Test

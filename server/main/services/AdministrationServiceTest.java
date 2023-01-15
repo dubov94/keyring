@@ -88,7 +88,7 @@ class AdministrationServiceTest {
   private User user =
       new User()
           .setIdentifier(7L)
-          .setState(UserState.ACTIVE)
+          .setState(UserState.USER_ACTIVE)
           .setUsername("username")
           .setSalt("salt")
           .setHash("hash");
@@ -195,7 +195,7 @@ class AdministrationServiceTest {
 
   @Test
   void createKey_userNotActive_repliesUnauthenticated() {
-    user.setState(UserState.PENDING);
+    user.setState(UserState.USER_PENDING);
 
     administrationService.createKey(CreateKeyRequest.getDefaultInstance(), mockStreamObserver);
 
@@ -372,7 +372,7 @@ class AdministrationServiceTest {
     ImmutableList<Session> sessions = ImmutableList.of(new Session().setKey("prefix:session"));
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockAccountOperationsInterface.readSessions(
-            7L, Optional.of(ImmutableList.of(SessionStage.DISABLED))))
+            7L, Optional.of(ImmutableList.of(SessionStage.SESSION_DISABLED))))
         .thenReturn(sessions);
 
     administrationService.deleteAccount(
@@ -392,7 +392,7 @@ class AdministrationServiceTest {
                 .setTimestamp(instant)
                 .setIpAddress("127.0.0.1")
                 .setUserAgent("Chrome/0.0.0")
-                .setStage(SessionStage.ACTIVATED, instant);
+                .setStage(SessionStage.SESSION_ACTIVATED, instant);
     when(mockAccountOperationsInterface.readSessions(7L, Optional.empty()))
         .thenReturn(
             ImmutableList.of(

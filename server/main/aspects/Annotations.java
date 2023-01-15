@@ -10,7 +10,7 @@ public class Annotations {
   @Retention(RetentionPolicy.RUNTIME)
   @Target(ElementType.METHOD)
   public @interface ValidateUser {
-    UserState[] states() default {UserState.ACTIVE};
+    UserState[] states() default {UserState.USER_ACTIVE};
   }
 
   @Retention(RetentionPolicy.RUNTIME)

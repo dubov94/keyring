@@ -35,6 +35,7 @@ import keyring.server.main.entities.Session;
 import keyring.server.main.entities.Session_;
 import keyring.server.main.entities.User;
 import keyring.server.main.entities.User_;
+import keyring.server.main.entities.columns.MailTokenState;
 import keyring.server.main.entities.columns.SessionStage;
 import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.proto.service.FeatureType;
@@ -66,9 +67,18 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public Tuple2<User, MailToken> createUser(
       String username, String salt, String hash, String mail, String code) {
     User user =
-        new User().setState(UserState.PENDING).setUsername(username).setSalt(salt).setHash(hash);
+        new User()
+            .setState(UserState.USER_PENDING)
+            .setUsername(username)
+            .setSalt(salt)
+            .setHash(hash);
     FeaturePrompts featurePrompts = new FeaturePrompts().setUser(user);
-    MailToken mailToken = new MailToken().setUser(user).setMail(mail).setCode(code);
+    MailToken mailToken =
+        new MailToken()
+            .setUser(user)
+            .setMail(mail)
+            .setCode(code)
+            .setState(MailTokenState.MAIL_TOKEN_PENDING);
     entityManager.persist(user);
     entityManager.persist(featurePrompts);
     entityManager.persist(mailToken);
@@ -79,12 +89,12 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @WithEntityTransaction
   public MailToken createMailToken(long userId, String mail, String code) {
     limiters.checkMailTokensPerUser(entityManager, userId);
-    limiters.checkMailTokensPerAddress(entityManager, mail);
     MailToken mailToken =
         new MailToken()
             .setUser(entityManager.getReference(User.class, userId))
             .setMail(mail)
-            .setCode(code);
+            .setCode(code)
+            .setState(MailTokenState.MAIL_TOKEN_PENDING);
     entityManager.persist(mailToken);
     return mailToken;
   }
@@ -105,21 +115,34 @@ public class AccountOperationsClient implements AccountOperationsInterface {
         .max((left, right) -> left.getTimestamp().compareTo(right.getTimestamp()));
   }
 
+  @LockEntity(name = "mailToken")
+  private void _acceptMailToken(MailToken mailToken) {
+    MailTokenState mailTokenState = mailToken.getState();
+    if (!Objects.equals(mailTokenState, MailTokenState.MAIL_TOKEN_PENDING)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "MailToken %d cannot be released, its state is %s",
+              mailToken.getIdentifier(), mailTokenState));
+    }
+    mailToken.setState(MailTokenState.MAIL_TOKEN_ACCEPTED);
+    entityManager.persist(mailToken);
+  }
+
   @LockEntity(name = "user")
   private void _releaseMailToken(User user, MailToken mailToken) {
     UserState userState = user.getState();
-    if (!ImmutableList.of(UserState.PENDING, UserState.ACTIVE).contains(userState)) {
+    if (!ImmutableList.of(UserState.USER_PENDING, UserState.USER_ACTIVE).contains(userState)) {
       throw new IllegalArgumentException(
           String.format(
               "User %d cannot `releaseMailToken`, their state is %s",
               user.getIdentifier(), userState));
     }
+    _acceptMailToken(mailToken);
     user.setMail(mailToken.getMail());
     if (user.isActivated()) {
-      user.setState(UserState.ACTIVE);
+      user.setState(UserState.USER_ACTIVE);
     }
     entityManager.persist(user);
-    entityManager.remove(mailToken);
   }
 
   @Override
@@ -162,11 +185,11 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     // Concurrent `Session` creation is blocked by `User` version update.
     // `createSession` requires both `userId` and `userVersion`.
     List<Session> sessions =
-        readSessions(userId, Optional.of(ImmutableList.of(SessionStage.DISABLED)));
+        readSessions(userId, Optional.of(ImmutableList.of(SessionStage.SESSION_DISABLED)));
     Instant now = chronometry.currentTime();
     for (Session session : sessions) {
       // Implicitly causes version increment.
-      session.setStage(SessionStage.DISABLED, now);
+      session.setStage(SessionStage.SESSION_DISABLED, now);
       entityManager.persist(session);
     }
     user.setSalt(salt);
@@ -274,7 +297,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
               session.getIdentifier(), session.getStage().getValueDescriptor().getName()));
     }
     session.setKey(key);
-    session.setStage(SessionStage.INITIATED, chronometry.currentTime());
+    session.setStage(SessionStage.SESSION_INITIATED, chronometry.currentTime());
     entityManager.persist(session);
   }
 
@@ -287,7 +310,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @LockEntity(name = "session")
   private void _activateSession(Session session, String key) {
-    if (!ImmutableList.of(SessionStage.UNKNOWN_SESSION_STAGE, SessionStage.INITIATED)
+    if (!ImmutableList.of(SessionStage.UNKNOWN_SESSION_STAGE, SessionStage.SESSION_INITIATED)
         .contains(session.getStage())) {
       throw new IllegalArgumentException(
           String.format(
@@ -295,7 +318,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
               session.getIdentifier(), session.getStage().getValueDescriptor().getName()));
     }
     session.setKey(key);
-    session.setStage(SessionStage.ACTIVATED, chronometry.currentTime());
+    session.setStage(SessionStage.SESSION_ACTIVATED, chronometry.currentTime());
     entityManager.persist(session);
   }
 
@@ -340,7 +363,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   }
 
   private void _markAccountAsDeleted(User user) {
-    user.setState(UserState.DELETED);
+    user.setState(UserState.USER_DELETED);
     entityManager.persist(user);
   }
 

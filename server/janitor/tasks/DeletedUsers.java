@@ -24,7 +24,7 @@ public final class DeletedUsers implements Runnable {
     CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
     CriteriaDelete<User> criteriaDelete = criteriaBuilder.createCriteriaDelete(User.class);
     Root<User> userRoot = criteriaDelete.from(User.class);
-    criteriaDelete.where(criteriaBuilder.equal(userRoot.get(User_.state), UserState.DELETED));
+    criteriaDelete.where(criteriaBuilder.equal(userRoot.get(User_.state), UserState.USER_DELETED));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }
 }

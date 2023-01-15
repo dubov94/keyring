@@ -54,13 +54,15 @@ final class DisabledSessionRecordsTest {
     User user = new User().setUsername(newRandomUuid());
     persistEntity(user);
     Session session =
-        new Session().setUser(user).setStage(SessionStage.INITIATED, Instant.ofEpochSecond(2));
+        new Session()
+            .setUser(user)
+            .setStage(SessionStage.SESSION_INITIATED, Instant.ofEpochSecond(2));
     persistEntity(session);
 
     disabledSessionRecords.run();
 
     entityManager.refresh(session);
-    assertEquals(SessionStage.INITIATED, session.getStage());
+    assertEquals(SessionStage.SESSION_INITIATED, session.getStage());
   }
 
   @Test
@@ -72,13 +74,15 @@ final class DisabledSessionRecordsTest {
     User user = new User().setUsername(newRandomUuid());
     persistEntity(user);
     Session session =
-        new Session().setUser(user).setStage(SessionStage.INITIATED, Instant.ofEpochSecond(1));
+        new Session()
+            .setUser(user)
+            .setStage(SessionStage.SESSION_INITIATED, Instant.ofEpochSecond(1));
     persistEntity(session);
 
     disabledSessionRecords.run();
 
     entityManager.refresh(session);
-    assertEquals(SessionStage.DISABLED, session.getStage());
+    assertEquals(SessionStage.SESSION_DISABLED, session.getStage());
   }
 
   @Test
@@ -90,13 +94,15 @@ final class DisabledSessionRecordsTest {
     User user = new User().setUsername(newRandomUuid());
     persistEntity(user);
     Session session =
-        new Session().setUser(user).setStage(SessionStage.ACTIVATED, Instant.ofEpochSecond(2));
+        new Session()
+            .setUser(user)
+            .setStage(SessionStage.SESSION_ACTIVATED, Instant.ofEpochSecond(2));
     persistEntity(session);
 
     disabledSessionRecords.run();
 
     entityManager.refresh(session);
-    assertEquals(SessionStage.ACTIVATED, session.getStage());
+    assertEquals(SessionStage.SESSION_ACTIVATED, session.getStage());
   }
 
   @Test
@@ -108,13 +114,15 @@ final class DisabledSessionRecordsTest {
     User user = new User().setUsername(newRandomUuid());
     persistEntity(user);
     Session session =
-        new Session().setUser(user).setStage(SessionStage.ACTIVATED, Instant.ofEpochSecond(1));
+        new Session()
+            .setUser(user)
+            .setStage(SessionStage.SESSION_ACTIVATED, Instant.ofEpochSecond(1));
     persistEntity(session);
 
     disabledSessionRecords.run();
 
     entityManager.refresh(session);
-    assertEquals(SessionStage.DISABLED, session.getStage());
+    assertEquals(SessionStage.SESSION_DISABLED, session.getStage());
   }
 
   private String newRandomUuid() {

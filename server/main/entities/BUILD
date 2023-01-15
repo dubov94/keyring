@@ -43,6 +43,8 @@ java_library(
     plugins = ["//bazel/java:hibernate_jpamodelgen"],
     visibility = ["//server:internal"],
     deps = [
+        ":columns_java_proto",
+        ":mail_token_state_converter",
         ":user",
         ":validators",
         "@maven//:com_google_guava_guava",
@@ -103,6 +105,7 @@ java_library(
     exports = [
         ":key",
         ":mail_token",
+        ":mail_token_state_converter",
         ":otp_params",
         ":otp_token",
         ":session",
@@ -155,6 +158,15 @@ java_library(
 java_library(
     name = "session_stage_converter",
     srcs = ["SessionStageConverter.java"],
+    deps = [
+        ":columns_java_proto",
+        "@maven//:javax_persistence_javax_persistence_api",
+    ],
+)
+
+java_library(
+    name = "mail_token_state_converter",
+    srcs = ["MailTokenStateConverter.java"],
     deps = [
         ":columns_java_proto",
         "@maven//:javax_persistence_javax_persistence_api",

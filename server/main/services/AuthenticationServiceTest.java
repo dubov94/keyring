@@ -239,7 +239,7 @@ class AuthenticationServiceTest {
             Optional.of(
                 new User()
                     .setIdentifier(1L)
-                    .setState(UserState.DELETED)
+                    .setState(UserState.USER_DELETED)
                     .setUsername("username")
                     .setSalt("salt")
                     .setHash("hash")));

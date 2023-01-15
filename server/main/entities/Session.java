@@ -115,7 +115,7 @@ public class Session {
   }
 
   public boolean isActivated() {
-    return stage == SessionStage.ACTIVATED;
+    return stage == SessionStage.SESSION_ACTIVATED;
   }
 
   public String getIpAddress() {

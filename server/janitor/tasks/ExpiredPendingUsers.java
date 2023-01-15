@@ -32,7 +32,7 @@ public final class ExpiredPendingUsers implements Runnable {
     Root<User> userRoot = criteriaDelete.from(User.class);
     criteriaDelete.where(
         criteriaBuilder.and(
-            criteriaBuilder.equal(userRoot.get(User_.state), UserState.PENDING),
+            criteriaBuilder.equal(userRoot.get(User_.state), UserState.USER_PENDING),
             criteriaBuilder.lessThan(
                 userRoot.get(User_.timestamp), chronometry.pastTimestamp(15, ChronoUnit.MINUTES))));
     entityManager.createQuery(criteriaDelete).executeUpdate();
