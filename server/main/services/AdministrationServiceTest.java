@@ -24,6 +24,7 @@ import javax.persistence.EntityManagerFactory;
 import keyring.server.main.Chronometry;
 import keyring.server.main.Cryptography;
 import keyring.server.main.MailClient;
+import keyring.server.main.MailNormaliser;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.aspects.ValidateUserAspect;
 import keyring.server.main.entities.MailToken;
@@ -82,6 +83,7 @@ class AdministrationServiceTest {
   @Mock private MailClient mockMailClient;
   @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
   @Mock private Chronometry mockChronometry;
+  @Mock private MailNormaliser mockMailNormaliser;
 
   private User user =
       new User()
@@ -109,7 +111,8 @@ class AdministrationServiceTest {
             mockCryptography,
             mockMailClient,
             mockGoogleAuthenticator,
-            mockChronometry);
+            mockChronometry,
+            mockMailNormaliser);
     when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
     when(mockSessionAccessor.getUserId()).thenReturn(kvSession.getUserId());
     when(mockSessionAccessor.getKvSession()).thenReturn(kvSession);
@@ -269,6 +272,7 @@ class AdministrationServiceTest {
 
   @Test
   void acquireMailToken_digestsMismatch_repliesWithError() {
+    when(mockMailNormaliser.checkAddress("mail@example.com")).thenReturn(true);
     when(mockCryptography.doesDigestMatchHash("digest", "random")).thenReturn(false);
     administrationService.acquireMailToken(
         AcquireMailTokenRequest.newBuilder()
@@ -287,6 +291,7 @@ class AdministrationServiceTest {
 
   @Test
   void acquireMailToken_digestsMatch_repliesWithTokenId() {
+    when(mockMailNormaliser.checkAddress("user@mail.com")).thenReturn(true);
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.generateUacs()).thenReturn("17");
     when(mockAccountOperationsInterface.createMailToken(7L, "user@mail.com", "17"))

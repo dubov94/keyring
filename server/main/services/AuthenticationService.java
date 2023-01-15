@@ -18,6 +18,7 @@ import java.util.function.Function;
 import javax.inject.Inject;
 import keyring.server.main.Cryptography;
 import keyring.server.main.MailClient;
+import keyring.server.main.MailNormaliser;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.entities.FeaturePrompts;
 import keyring.server.main.entities.Key;
@@ -46,7 +47,6 @@ import keyring.server.main.proto.service.RegisterResponse;
 import keyring.server.main.proto.service.UserData;
 import keyring.server.main.storage.AccountOperationsInterface;
 import keyring.server.main.storage.KeyOperationsInterface;
-import org.apache.commons.validator.routines.EmailValidator;
 
 public class AuthenticationService extends AuthenticationGrpc.AuthenticationImplBase {
   private static FeaturePrompt datalessFeaturePrompt(FeatureType featureType) {
@@ -74,6 +74,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private VersionAccessor versionAccessor;
   private IGoogleAuthenticator googleAuthenticator;
   private TurnstileValidator turnstileValidator;
+  private MailNormaliser mailNormaliser;
 
   @Inject
   AuthenticationService(
@@ -85,7 +86,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       AgentAccessor agentAccessor,
       VersionAccessor versionAccessor,
       IGoogleAuthenticator googleAuthenticator,
-      TurnstileValidator turnstileValidator) {
+      TurnstileValidator turnstileValidator,
+      MailNormaliser mailNormaliser) {
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
     this.cryptography = cryptography;
@@ -95,6 +97,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.versionAccessor = versionAccessor;
     this.googleAuthenticator = googleAuthenticator;
     this.turnstileValidator = turnstileValidator;
+    this.mailNormaliser = mailNormaliser;
   }
 
   private Optional<StatusException> validateRegisterRequest(RegisterRequest request) {
@@ -113,7 +116,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     if (!cryptography.validateDigest(request.getDigest())) {
       return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
     }
-    if (!EmailValidator.getInstance().isValid(request.getMail())) {
+    if (!mailNormaliser.checkAddress(request.getMail())) {
       return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
     }
     return Optional.empty();

@@ -17,6 +17,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import keyring.server.main.Cryptography;
 import keyring.server.main.MailClient;
+import keyring.server.main.MailNormaliser;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.entities.FeaturePrompts;
 import keyring.server.main.entities.MailToken;
@@ -67,6 +68,7 @@ class AuthenticationServiceTest {
   @Mock private StreamObserver mockStreamObserver;
   @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
   @Mock private TurnstileValidator mockTurnstileValidator;
+  @Mock private MailNormaliser mockMailNormaliser;
 
   private AuthenticationService authenticationService;
 
@@ -83,7 +85,8 @@ class AuthenticationServiceTest {
             mockAgentAccessor,
             mockVersionAccessor,
             mockGoogleAuthenticator,
-            mockTurnstileValidator);
+            mockTurnstileValidator,
+            mockMailNormaliser);
     when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
   }
 
@@ -106,6 +109,7 @@ class AuthenticationServiceTest {
         .thenReturn(TurnstileResponse.newBuilder().setSuccess(true).build());
     when(mockCryptography.validateA2p("")).thenReturn(true);
     when(mockCryptography.validateDigest("")).thenReturn(true);
+    when(mockMailNormaliser.checkAddress("mail@example.com")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(Optional.of(new User()));
 
@@ -128,6 +132,7 @@ class AuthenticationServiceTest {
         .thenReturn(TurnstileResponse.newBuilder().setSuccess(true).build());
     when(mockCryptography.validateA2p("salt")).thenReturn(true);
     when(mockCryptography.validateDigest("digest")).thenReturn(true);
+    when(mockMailNormaliser.checkAddress("mail@example.com")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
     when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockCryptography.generateUacs()).thenReturn("0");

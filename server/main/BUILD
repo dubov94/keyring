@@ -64,6 +64,15 @@ java_library(
 )
 
 java_library(
+    name = "mail_normaliser",
+    srcs = ["MailNormaliser.java"],
+    visibility = ["//server:internal"],
+    deps = [
+        "@maven//:commons_validator_commons_validator",
+    ],
+)
+
+java_library(
     name = "app_module",
     srcs = ["AppModule.java"],
     plugins = [
@@ -74,6 +83,7 @@ java_library(
         ":chronometry",
         ":cryptography",
         ":environment",
+        ":mail_normaliser",
         "//server/main/interceptors:agent_accessor",
         "//server/main/interceptors:agent_interceptor",
         "//server/main/interceptors:session_accessor",
@@ -81,6 +91,7 @@ java_library(
         "//server/turnstile",
         "@maven//:com_google_dagger_dagger",
         "@maven//:com_warrenstrange_googleauth",
+        "@maven//:commons_validator_commons_validator",
         "@maven//:javax_inject_javax_inject",
     ],
 )

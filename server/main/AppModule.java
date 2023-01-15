@@ -11,6 +11,7 @@ import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.AgentInterceptor;
 import keyring.server.main.interceptors.SessionAccessor;
 import keyring.server.main.interceptors.VersionAccessor;
+import org.apache.commons.validator.routines.EmailValidator;
 
 @Module
 class AppModule {
@@ -72,5 +73,11 @@ class AppModule {
         environment.isProduction()
             ? environment.getTurnstileSecretKey()
             : "1x0000000000000000000000000000000AA");
+  }
+
+  @Provides
+  @Singleton
+  static MailNormaliser provideMailNormaliser() {
+    return new MailNormaliser(EmailValidator.getInstance());
   }
 }

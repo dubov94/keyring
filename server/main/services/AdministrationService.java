@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import keyring.server.main.Chronometry;
 import keyring.server.main.Cryptography;
 import keyring.server.main.MailClient;
+import keyring.server.main.MailNormaliser;
 import keyring.server.main.aspects.Annotations.ValidateUser;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.entities.Key;
@@ -77,7 +78,6 @@ import keyring.server.main.proto.service.UpdateKeyRequest;
 import keyring.server.main.proto.service.UpdateKeyResponse;
 import keyring.server.main.storage.AccountOperationsInterface;
 import keyring.server.main.storage.KeyOperationsInterface;
-import org.apache.commons.validator.routines.EmailValidator;
 
 public class AdministrationService extends AdministrationGrpc.AdministrationImplBase {
   private KeyOperationsInterface keyOperationsInterface;
@@ -89,6 +89,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private MailClient mailClient;
   private IGoogleAuthenticator googleAuthenticator;
   private Chronometry chronometry;
+  private MailNormaliser mailNormaliser;
 
   private static final int OTP_TTS_COUNT = 5;
   private static final String OTP_ISSUER = "parolica.com";
@@ -103,7 +104,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       Cryptography cryptography,
       MailClient mailClient,
       IGoogleAuthenticator googleAuthenticator,
-      Chronometry chronometry) {
+      Chronometry chronometry,
+      MailNormaliser mailNormaliser) {
     this.keyOperationsInterface = keyOperationsInterface;
     this.accountOperationsInterface = accountOperationsInterface;
     this.geolocationServiceInterface = geolocationServiceInterface;
@@ -113,12 +115,13 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     this.mailClient = mailClient;
     this.googleAuthenticator = googleAuthenticator;
     this.chronometry = chronometry;
+    this.mailNormaliser = mailNormaliser;
   }
 
   private Either<StatusException, AcquireMailTokenResponse> _acquireMailToken(
       AcquireMailTokenRequest request) {
     String mail = request.getMail();
-    if (!EmailValidator.getInstance().isValid(mail)) {
+    if (!mailNormaliser.checkAddress(mail)) {
       return Either.left(new StatusException(Status.INVALID_ARGUMENT));
     }
     long userId = sessionAccessor.getUserId();
