@@ -1,4 +1,9 @@
 <style scoped>
+  .card-column {
+    /* Captcha plus two paddings. */
+    min-width: calc(300px + 16px * 2);
+  }
+
   .password-strength {
     padding-left: calc(24px + 9px);
   }
@@ -30,7 +35,7 @@
     <v-main>
       <v-container fluid>
         <v-row no-gutters class="mt-12" justify="center">
-          <v-col :cols="12" :sm="6" :md="4" :lg="3" :xl="2">
+          <v-col class="card-column" :cols="12" :sm="6" :md="4" :lg="3" :xl="2">
             <v-card>
               <v-card-text>
                 <v-form @keydown.native.enter.prevent="submit">
