@@ -19,7 +19,8 @@
               <div>Remember me</div>
               <div class="mt-1 text-body-2 text--secondary font-italic">
                 Enables offline access and, if applicable,
-                <tfa-docs-link>2FA</tfa-docs-link> seamless completion.
+                <external-link href="https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html">2FA</external-link>
+                seamless completion.
               </div>
             </div>
           </template>
@@ -45,7 +46,6 @@ import { DeepReadonly } from 'ts-essentials'
 import Vue, { VueConstructor } from 'vue'
 import { required } from 'vuelidate/lib/validators'
 import { ServiceLogInResponseError, ServiceGetSaltResponseError } from '@/api/definitions'
-import TfaDocsLink from '@/components/TfaDocsLink.vue'
 import { isFailureOf } from '@/redux/flow_signal'
 import {
   AuthnViaApiFlowIndicator,
@@ -73,9 +73,6 @@ interface Mixins {
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
-  components: {
-    tfaDocsLink: TfaDocsLink
-  },
   props: [
     'username',
     'password',

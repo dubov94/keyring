@@ -31,8 +31,9 @@
       </div>
       <div v-else-if="maybeOtpParams">
         <p>
-          Scan the image with <a href="https://support.google.com/accounts/answer/1066447"
-            target="_blank" rel="noopener noreferrer">Google Authenticator</a> or a similar application.
+          Scan the image with
+          <external-link href="https://support.google.com/accounts/answer/1066447">Google Authenticator</external-link>
+          or a similar application.
         </p>
         <v-tabs v-model="seedView" centered>
           <v-tab>Image</v-tab>
@@ -67,7 +68,7 @@
       </div>
       <div v-else>
         <p>
-          <tfa-docs-link>Two-factor authentication</tfa-docs-link> additionally protects your account
+          <external-link href="https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html">Two-factor authentication</external-link> additionally protects your account
           by requesting a time-based smartphone-generated token for each authentication attempt
           unless 'Remember me' is switched on, making the device trusted.
         </p>
@@ -91,7 +92,6 @@ import {
   ServiceAcceptOtpParamsResponseError,
   ServiceResetOtpResponseError
 } from '@/api/definitions'
-import TfaDocsLink from '@/components/TfaDocsLink.vue'
 import { isActionSuccess } from '@/redux/flow_signal'
 import {
   ackFeaturePrompt,
@@ -136,9 +136,6 @@ interface Mixins {
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
-  components: {
-    tfaDocsLink: TfaDocsLink
-  },
   data () {
     return {
       seedView: 0,

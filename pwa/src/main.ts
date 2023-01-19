@@ -20,7 +20,8 @@ import Vuelidate from 'vuelidate'
 import Vuetify from 'vuetify/lib'
 import { VuetifyThemeVariant } from 'vuetify/types/services/theme'
 import Application from './Application.vue'
-import FormTextField from './components/FormTextField.vue'
+import ExternalLink from '@/components/ExternalLink.vue'
+import FormTextField from '@/components/FormTextField.vue'
 
 import Logomark from './logomark.svg'
 
@@ -103,6 +104,7 @@ Vue.directive('visible', (element, binding) => {
 })
 
 Vue.component('form-text-field', FormTextField)
+Vue.component('external-link', ExternalLink)
 
 Vue.mixin({
   data () {

@@ -53,8 +53,7 @@
                     </strength-score>
                     <div class="mt-2 text-body-2 text--secondary">
                       Choose
-                      <a href="https://xkcd.com/936/" target="_blank"
-                        rel="noopener noreferrer">a strong passphrase</a>
+                      <external-link href="https://xkcd.com/936/">a strong passphrase</external-link>
                       that you will remember &mdash; all other data will
                       be encrypted with it, and there is no way to recover
                       any data if you forget it.

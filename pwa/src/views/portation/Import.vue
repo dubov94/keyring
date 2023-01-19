@@ -3,10 +3,11 @@
     <v-card-title>Import</v-card-title>
     <v-card-text>
       <p>
-        The uploaded vault must be a <a href="https://en.wikipedia.org/wiki/Comma-separated_values"
-        target="_blank" rel="noopener noreferrer">CSV</a> file with <b>url</b>, <b>username</b> and
-        <b>password</b> columns &mdash; these are usually exported by default by other providers.
-        Values of all other columns will be automatically appended as labels in the given order.
+        The uploaded vault must be a
+        <external-link href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</external-link>
+        file with <b>url</b>, <b>username</b> and <b>password</b> columns &mdash; these are usually
+        exported by default by other providers. Values of all other columns will be automatically
+        appended as labels in the given order.
       </p>
       <v-file-input accept="text/csv" label=".csv" outlined @change="changeFile"></v-file-input>
     </v-card-text>
