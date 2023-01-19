@@ -43,6 +43,19 @@
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
+      <v-list-item to="/portation" :disabled="!canAccessApi">
+        <v-list-item-action>
+          <v-icon>backup</v-icon>
+        </v-list-item-action>
+        <v-list-item-content>
+          <v-list-item-title>
+            Portation
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            Import or export
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>

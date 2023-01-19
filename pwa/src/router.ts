@@ -1,12 +1,13 @@
 import Dashboard from '@/views/Dashboard.vue'
 import Landing from '@/views/Landing.vue'
 import LogIn from '@/views/authn/LogIn.vue'
-import RecentSessions from '@/views/security/RecentSessions.vue'
-import Register from '@/views/authn/Register.vue'
 import MailVerification from '@/views/authn/MailVerification.vue'
+import Register from '@/views/authn/Register.vue'
+import Portation from '@/views/portation/Index.vue'
 import Security from '@/views/security/Index.vue'
-import Settings from '@/views/settings/Index.vue'
+import RecentSessions from '@/views/security/RecentSessions.vue'
 import ThreatAnalysis from '@/views/security/ThreatAnalysis.vue'
+import Settings from '@/views/settings/Index.vue'
 import Vue from 'vue'
 import VueRouter, { NavigationGuard } from 'vue-router'
 import { store } from './redux'
@@ -87,6 +88,10 @@ export const Router = new VueRouter({
     }, {
       path: '/settings',
       component: Settings,
+      beforeEnter: authenticationGuard
+    }, {
+      path: '/portation',
+      component: Portation,
       beforeEnter: authenticationGuard
     },
     {
