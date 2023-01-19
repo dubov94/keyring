@@ -82,7 +82,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     }
     Session session = mustGetSession(sessionId);
     long userId = session.getUser().getIdentifier();
-    limiters.checkKeysPerUser(entityManager, userId);
+    limiters.checkKeysPerUser(entityManager, userId, /* toAdd */ 1);
     return _spawnKey(session, content, attrs);
   }
 

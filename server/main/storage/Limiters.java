@@ -33,9 +33,9 @@ class Limiters {
     this.approxMaxOtpParamsPerUser = approxMaxOtpParamsPerUser;
   }
 
-  void checkKeysPerUser(EntityManager entityManager, long userId) {
+  void checkKeysPerUser(EntityManager entityManager, long userId, int toAdd) {
     long keyCount = Queries.countRowsByValue(entityManager, Key.class, Key_.user, userId);
-    if (keyCount > approxMaxKeysPerUser) {
+    if (keyCount + toAdd > approxMaxKeysPerUser) {
       throw new IllegalStateException(
           String.format(
               "User %d has %d `Key`s, which is over the limit (%d)",
@@ -43,10 +43,10 @@ class Limiters {
     }
   }
 
-  void checkMailTokensPerUser(EntityManager entityManager, long userId) {
+  void checkMailTokensPerUser(EntityManager entityManager, long userId, int toAdd) {
     long mailTokenCount =
         Queries.countRowsByValue(entityManager, MailToken.class, MailToken_.user, userId);
-    if (mailTokenCount > approxMaxMailTokensPerUser) {
+    if (mailTokenCount + toAdd > approxMaxMailTokensPerUser) {
       throw new IllegalStateException(
           String.format(
               "User %d has %d `MailToken`s, which is over the limit (%d)",
@@ -55,7 +55,7 @@ class Limiters {
   }
 
   void checkRecentSessionsPerUser(
-      Chronometry chronometry, EntityManager entityManager, long userId) {
+      Chronometry chronometry, EntityManager entityManager, long userId, int toAdd) {
     List<Session> allSessions =
         Queries.findManyToOne(entityManager, Session.class, Session_.user, userId);
     int recentCount = 0;
@@ -66,7 +66,7 @@ class Limiters {
         recentCount += 1;
       }
     }
-    if (recentCount > approxMaxRecentSessionsPerUser) {
+    if (recentCount + toAdd > approxMaxRecentSessionsPerUser) {
       throw new IllegalStateException(
           String.format(
               "User %d has %d `Session`s in the last hour, which is over the limit (%d)",
@@ -74,10 +74,10 @@ class Limiters {
     }
   }
 
-  void checkOtpParamsPerUser(EntityManager entityManager, long userId) {
+  void checkOtpParamsPerUser(EntityManager entityManager, long userId, int toAdd) {
     long otpParamsCount =
         Queries.countRowsByValue(entityManager, OtpParams.class, OtpParams_.user, userId);
-    if (otpParamsCount > approxMaxOtpParamsPerUser) {
+    if (otpParamsCount + toAdd > approxMaxOtpParamsPerUser) {
       throw new IllegalStateException(
           String.format(
               "User %d has %d `OtpParams`, which is over the limit (%d)",

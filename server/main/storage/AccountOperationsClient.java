@@ -88,7 +88,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public MailToken createMailToken(long userId, String mail, String code) {
-    limiters.checkMailTokensPerUser(entityManager, userId);
+    limiters.checkMailTokensPerUser(entityManager, userId, /* toAdd */ 1);
     MailToken mailToken =
         new MailToken()
             .setUser(entityManager.getReference(User.class, userId))
@@ -267,7 +267,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     if (!maybeUser.isPresent()) {
       throw new IllegalArgumentException(String.format("`User` %d does not exist", userId));
     }
-    limiters.checkRecentSessionsPerUser(chronometry, entityManager, userId);
+    limiters.checkRecentSessionsPerUser(chronometry, entityManager, userId, /* toAdd */ 1);
     return _createSession(maybeUser.get(), userVersion, ipAddress, userAgent, clientVersion);
   }
 
@@ -380,7 +380,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public OtpParams createOtpParams(long userId, String sharedSecret, List<String> scratchCodes) {
-    limiters.checkOtpParamsPerUser(entityManager, userId);
+    limiters.checkOtpParamsPerUser(entityManager, userId, /* toAdd */ 1);
     OtpParams otpParams =
         new OtpParams()
             // Currently allowed even if `User` already has `otpSharedSecret`.
