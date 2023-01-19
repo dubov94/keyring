@@ -1,7 +1,13 @@
+<style scoped>
+  .container {
+    max-width: calc(2 * (12px + 24px) + var(--max-content-width));
+  }
+</style>
+
 <template>
   <v-container fluid>
     <v-row justify="center" align="center">
-      <v-col :cols="12" :md="7">
+      <v-col :cols="12" :md="9">
         <h2>Threat analysis</h2>
         <p class="mb-0">
           Click the button to toggle reactive password scrutiny for this
@@ -16,7 +22,7 @@
           {{ isAnalysisOn ? 'Disable' : 'Enable'}}
         </v-btn>
       </v-col>
-      <v-col v-if="isAnalysisOn" :cols="12" :md="10">
+      <v-col v-if="isAnalysisOn" :cols="12">
         <v-expansion-panels multiple>
           <duplicate-passwords></duplicate-passwords>
           <compromised-passwords></compromised-passwords>

@@ -1,5 +1,7 @@
 <template>
-  <v-navigation-drawer app temporary floating :width="300"
+  <v-navigation-drawer app
+    :temporary="isTemporary" :floating="isTemporary"
+    :permanent="isPermanent" :clipped="isPermanent"
     :value="value" @input="input">
     <v-list two-line>
       <v-list-item to="/dashboard">
@@ -7,15 +9,38 @@
           <v-icon>dashboard</v-icon>
         </v-list-item-action>
         <v-list-item-content>
-          Dashboard
+          <v-list-item-title>
+            Dashboard
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            Search for items
+          </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
-      <v-list-item to="/security" :disabled="!canAccessApi">
+      <v-list-item to="/security/threat-analysis" :disabled="!canAccessApi">
         <v-list-item-action>
-          <v-icon>shield</v-icon>
+          <v-icon>security</v-icon>
         </v-list-item-action>
         <v-list-item-content>
-          Security
+          <v-list-item-title>
+            Threats
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            Password safety
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item to="/security/recent-sessions" :disabled="!canAccessApi">
+        <v-list-item-action>
+          <v-icon>history</v-icon>
+        </v-list-item-action>
+        <v-list-item-content>
+          <v-list-item-title>
+            Sessions
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            Account activity
+          </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
     </v-list>
@@ -31,6 +56,12 @@ export default Vue.extend({
   computed: {
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
+    },
+    isTemporary (): boolean {
+      return this.$vuetify.breakpoint.xsOnly
+    },
+    isPermanent (): boolean {
+      return !this.isTemporary
     }
   },
   methods: {

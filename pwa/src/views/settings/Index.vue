@@ -6,16 +6,23 @@
 </style>
 
 <template>
-  <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch">
-    <user-menu v-model="showMenu"></user-menu>
-    <v-main class="px-2">
-      <v-expansion-panels inset class="my-4">
-        <change-username></change-username>
-        <change-master-key></change-master-key>
-        <otp-switch></otp-switch>
-        <change-mail></change-mail>
-        <delete-account></delete-account>
-      </v-expansion-panels>
+  <page>
+    <v-main>
+      <div class="my-4 mx-2 text-center">
+        <div class="d-inline-block">
+          <v-btn block depressed @click="$router.back()">
+            <v-icon left>arrow_back</v-icon>
+            Back
+          </v-btn>
+          <v-expansion-panels class="my-4" inset>
+            <change-username></change-username>
+            <change-master-key></change-master-key>
+            <otp-switch></otp-switch>
+            <change-mail></change-mail>
+            <delete-account></delete-account>
+          </v-expansion-panels>
+        </div>
+      </div>
     </v-main>
   </page>
 </template>
@@ -28,7 +35,6 @@ import ChangeUsername from './ChangeUsername.vue'
 import DeleteAccount from './DeleteAccount.vue'
 import OtpSwitch from './OtpSwitch.vue'
 import Page from '@/components/Page.vue'
-import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
 
 export default Vue.extend({
   components: {
@@ -37,18 +43,7 @@ export default Vue.extend({
     changeUsername: ChangeUsername,
     deleteAccount: DeleteAccount,
     page: Page,
-    otpSwitch: OtpSwitch,
-    userMenu: UserMenu
-  },
-  data () {
-    return {
-      showMenu: false
-    }
-  },
-  methods: {
-    menuSwitch (value: boolean) {
-      this.showMenu = value
-    }
+    otpSwitch: OtpSwitch
   }
 })
 </script>

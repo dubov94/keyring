@@ -29,8 +29,8 @@
     </v-text-field>
     <user-menu v-model="showMenu"></user-menu>
     <v-main>
-      <v-container fluid>
-        <v-row>
+      <v-container fluid class="pt-8">
+        <v-row v-if="anyFeaturePrompts">
           <v-col :cols="12">
             <v-alert :value="otpPrompt" @input="ackOtpPrompt"
               type="info" outlined dismissible border="left" class="mb-0">
@@ -133,6 +133,9 @@ export default (Vue as VueConstructor<Vue>).extend({
     },
     featurePrompts () {
       return featurePrompts(this.$data.$state)
+    },
+    anyFeaturePrompts (): boolean {
+      return this.featurePrompts.length > 0
     },
     otpPrompt (): boolean {
       return this.featurePrompts.findIndex(

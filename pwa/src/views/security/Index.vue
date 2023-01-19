@@ -1,12 +1,8 @@
 <template>
   <page :has-menu="true" :show-menu="showMenu" @menuSwitch="menuSwitch">
     <user-menu v-model="showMenu"></user-menu>
-    <v-main>
-        <v-tabs fixed-tabs>
-          <v-tab to="/security/threat-analysis">Threat analysis</v-tab>
-          <v-tab to="/security/recent-sessions">Recent sessions</v-tab>
-        </v-tabs>
-        <router-view></router-view>
+    <v-main class="ma-2">
+      <router-view></router-view>
     </v-main>
   </page>
 </template>

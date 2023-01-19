@@ -1,6 +1,7 @@
-  <template>
-  <v-app-bar app color="primary" dark :height="64" :extension-height="64">
-    <v-app-bar-nav-icon v-if="hasMenu" @click="toggle">
+<template>
+  <v-app-bar app :clipped-left="clipLeft" color="primary" dark
+    :height="64" :extension-height="64">
+    <v-app-bar-nav-icon v-if="showNavIcon" @click="toggle">
     </v-app-bar-nav-icon>
     <v-btn icon :to="homeTarget">
       <v-icon>$vuetify.icons.logomark</v-icon>
@@ -27,11 +28,11 @@
           <v-list-item-action>
             <v-icon>settings</v-icon>
           </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>
-                Settings
-              </v-list-item-title>
-            </v-list-item-content>
+          <v-list-item-content>
+            <v-list-item-title>
+              Settings
+            </v-list-item-title>
+          </v-list-item-content>
         </v-list-item>
         <v-divider></v-divider>
         <v-list-item @click="logOut">
@@ -54,6 +55,7 @@
 
 <script lang="ts">
 import Vue, { VueConstructor } from 'vue'
+import { Framework } from 'vuetify'
 import { sessionUsername } from '@/redux/modules/session/selectors'
 import { isAuthenticated } from '@/redux/modules/user/account/selectors'
 import { logOut, LogoutTrigger } from '@/redux/modules/user/account/actions'
@@ -73,6 +75,12 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     },
     homeTarget (): string {
       return this.isAuthenticated ? '/dashboard' : '/'
+    },
+    clipLeft (): boolean {
+      return this.hasMenu && (this.$vuetify as Framework).breakpoint.smAndUp
+    },
+    showNavIcon (): boolean {
+      return this.hasMenu && (this.$vuetify as Framework).breakpoint.xsOnly
     }
   },
   methods: {
