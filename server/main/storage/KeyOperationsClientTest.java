@@ -58,6 +58,22 @@ class KeyOperationsClientTest {
 
   @Test
   @WithEntityManager
+  void importKeys() {
+    long sessionId = createActiveSession(createUniqueUser());
+    ImmutableList<Password> passwords =
+        ImmutableList.of(
+            Password.newBuilder().setValue("alpha").build(),
+            Password.newBuilder().setValue("beta").build());
+
+    keyOperationsClient.importKeys(sessionId, passwords);
+
+    List<Password> imported =
+        keyOperationsClient.readKeys(sessionId).stream().map(Key::toPassword).collect(toList());
+    assertEquals(passwords, imported);
+  }
+
+  @Test
+  @WithEntityManager
   void createKey() {
     long sessionId = createActiveSession(createUniqueUser());
     Password password =

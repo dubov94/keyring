@@ -47,6 +47,28 @@ public class KeyOperationsClient implements KeyOperationsInterface {
 
   @LockEntity(name = "session")
   @ActivatedSession(name = "session")
+  private List<Key> _importKeys(Session session, List<Password> passwords) {
+    User user = session.getUser();
+    ImmutableList.Builder<Key> keys = ImmutableList.builder();
+    for (Password password : passwords) {
+      Key newKey = new Key().mergeFromPassword(password).setUser(user);
+      entityManager.persist(newKey);
+      keys.add(newKey);
+    }
+    return keys.build();
+  }
+
+  @Override
+  @WithEntityTransaction
+  public List<Key> importKeys(long sessionId, List<Password> passwords) {
+    Session session = mustGetSession(sessionId);
+    long userId = session.getUser().getIdentifier();
+    limiters.checkKeysPerUser(entityManager, userId, passwords.size());
+    return _importKeys(session, passwords);
+  }
+
+  @LockEntity(name = "session")
+  @ActivatedSession(name = "session")
   private Key _spawnKey(Session session, Password content, KeyAttrs attrs) {
     User user = session.getUser();
     Key newKey = new Key().mergeFromPassword(content).setUser(user);

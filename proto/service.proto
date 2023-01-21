@@ -191,6 +191,19 @@ message KeyPatch {
     Password password = 2;
 }
 
+message ImportKeysRequest {
+  repeated Password passwords = 1;
+}
+
+message ImportKeysResponse {
+  message KeyMetadata {
+    int64 identifier = 1;
+    int64 creation_time_in_millis = 2;
+  }
+
+  repeated KeyMetadata metadata = 1;
+}
+
 message CreateKeyRequest {
     Password password = 1;
     KeyAttrs attrs = 2;
@@ -371,6 +384,12 @@ service Administration {
             body: "*"
         };
     };
+    rpc ImportKeys (ImportKeysRequest) returns (ImportKeysResponse) {
+        option (google.api.http) = {
+            post: "/administration/import-keys"
+            body: "*"
+        };
+    }
     rpc CreateKey (CreateKeyRequest) returns (CreateKeyResponse) {
         option (google.api.http) = {
             post: "/administration/create-key"

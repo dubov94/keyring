@@ -65,6 +65,8 @@ import keyring.server.main.proto.service.GenerateOtpParamsResponse;
 import keyring.server.main.proto.service.Geolocation;
 import keyring.server.main.proto.service.GetRecentSessionsRequest;
 import keyring.server.main.proto.service.GetRecentSessionsResponse;
+import keyring.server.main.proto.service.ImportKeysRequest;
+import keyring.server.main.proto.service.ImportKeysResponse;
 import keyring.server.main.proto.service.KeepAliveRequest;
 import keyring.server.main.proto.service.KeepAliveResponse;
 import keyring.server.main.proto.service.KeyProto;
@@ -194,6 +196,29 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @Override
   public void keepAlive(KeepAliveRequest request, StreamObserver<KeepAliveResponse> response) {
     response.onNext(KeepAliveResponse.getDefaultInstance());
+    response.onCompleted();
+  }
+
+  @Override
+  @WithEntityManager
+  @ValidateUser
+  public void importKeys(ImportKeysRequest request, StreamObserver<ImportKeysResponse> response) {
+    List<Key> keys =
+        keyOperationsInterface.importKeys(
+            sessionAccessor.getSessionEntityId(), request.getPasswordsList());
+    ImportKeysResponse.Builder responseBuilder = ImportKeysResponse.newBuilder();
+    for (Key key : keys) {
+      ImportKeysResponse.KeyMetadata.Builder metadataBuilder =
+          ImportKeysResponse.KeyMetadata.newBuilder();
+      metadataBuilder.setIdentifier(key.getIdentifier());
+      key.getCreationTimestamp()
+          .ifPresent(
+              (timestamp) -> {
+                metadataBuilder.setCreationTimeInMillis(timestamp.getTime());
+              });
+      responseBuilder.addMetadata(metadataBuilder.build());
+    }
+    response.onNext(responseBuilder.build());
     response.onCompleted();
   }
 

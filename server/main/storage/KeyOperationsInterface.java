@@ -8,6 +8,8 @@ import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
 
 public interface KeyOperationsInterface {
+  List<Key> importKeys(long sessionId, List<Password> passwords);
+
   Key createKey(long sessionId, Password content, KeyAttrs attrs);
 
   List<Key> readKeys(long sessionId);
