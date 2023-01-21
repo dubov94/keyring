@@ -13,11 +13,13 @@ export interface ImportError {
   message: string;
 }
 
-const EXPECTED_COLUMNS = ['url', 'username', 'password']
+const PASSWORD_COLUMN = 'password'
+const PRIORITY_COLUMNS = ['url', 'username']
 
 export const deserializeVault = (csv: string): either.Either<ImportError, VaultItem[]> => {
   const results = Papa.parse<{ [key: string]: string }>(csv, {
     header: true,
+    transformHeader: (header) => header.toLowerCase(),
     skipEmptyLines: true
   })
   if (results.errors.length > 0) {
@@ -27,16 +29,20 @@ export const deserializeVault = (csv: string): either.Either<ImportError, VaultI
   if (results.meta.fields === undefined) {
     return either.left({ message: 'No fields found' })
   }
-  for (const columnName of EXPECTED_COLUMNS) {
-    if (!results.meta.fields.includes(columnName)) {
-      return either.left({ message: `Missing column '${columnName}'` })
-    }
+  if (!results.meta.fields.includes(PASSWORD_COLUMN)) {
+    return either.left({ message: `Missing column '${PASSWORD_COLUMN}'` })
   }
   const vaultItems: VaultItem[] = []
   for (const item of results.data) {
     const labels: string[] = []
     for (const [columnName, value] of Object.entries(item)) {
-      if (!EXPECTED_COLUMNS.includes(columnName) && !isEmpty(value)) {
+      if (columnName === PASSWORD_COLUMN) {
+        continue
+      }
+      if (PRIORITY_COLUMNS.includes(columnName)) {
+        continue
+      }
+      if (!isEmpty(value)) {
         labels.push(value)
       }
     }

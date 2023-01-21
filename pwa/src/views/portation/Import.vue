@@ -5,9 +5,9 @@
       <p>
         The uploaded vault must be a
         <external-link href="https://en.wikipedia.org/wiki/Comma-separated_values">CSV</external-link>
-        file with <b>url</b>, <b>username</b> and <b>password</b> columns &mdash; these are usually
-        exported by default by other providers. Values of all other columns will be automatically
-        appended as labels in the given order.
+        file with a <b>password</b> column &mdash; it is usually exported by default by other providers.
+        Values of all other columns are automatically appended as labels in the original order, though
+        <b>url</b> and <b>username</b> will be prioritised.
       </p>
       <v-file-input accept="text/csv" label=".csv" hide-details outlined
         @change="loadFile" :value="file"></v-file-input>

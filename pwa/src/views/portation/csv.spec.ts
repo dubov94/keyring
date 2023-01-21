@@ -54,16 +54,32 @@ describe('deserializeVault', () => {
     }]))
   })
 
-  it('checks if expected columns are present', () => {
+  it('checks if the password column is present', () => {
     const csv = [
-      'url,email,password',
-      'example.com,mail@domain.com,abc'
+      'url,email',
+      'example.com,mail@domain.com'
     ].join('\n')
 
     const results = deserializeVault(csv)
 
     expect(results).to.deep.equal(either.left({
-      message: 'Missing column \'username\''
+      message: 'Missing column \'password\''
     }))
+  })
+
+  it('is able to process uppercase headers', () => {
+    const csv = [
+      'URL,USERNAME,PASSWORD',
+      'example.com,user,abc'
+    ].join('\n')
+
+    const results = deserializeVault(csv)
+
+    expect(results).to.deep.equal(either.right([{
+      url: 'example.com',
+      username: 'user',
+      password: 'abc',
+      labels: []
+    }]))
   })
 })
