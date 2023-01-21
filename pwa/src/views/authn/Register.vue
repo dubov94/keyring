@@ -263,20 +263,14 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
           size: 'normal'
         }
       )!
-    },
-    unmountTurnstile () {
-      const turnstileApi = getTurnstileApi()
-      if (turnstileApi === null) {
-        return
-      }
-      turnstileApi.reset(this.turnstileWidgetId)
     }
   },
   mounted () {
     this.mountTurnstile()
   },
   beforeDestroy () {
-    this.unmountTurnstile()
+    // Ideally we should call `unmountTurnstile` here,
+    // but the element is removed from the DOM before.
     this.dispatch(registrationReset())
   }
 })
