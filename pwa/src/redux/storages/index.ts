@@ -12,6 +12,7 @@ export const SESSION_STORAGE_ACCESSOR = initializeStorage(sessionStorage, [
   }]
 ])
 
+// if_change(storage_migration)
 export const LOCAL_STORAGE_ACCESSOR = initializeStorage(localStorage, [
   [2, (storageAdapter) => {
     const accessor = new JsonAccessor(storageAdapter)
@@ -34,3 +35,4 @@ export const LOCAL_STORAGE_ACCESSOR = initializeStorage(localStorage, [
     accessor.del(VUEX_KEY)
   }]
 ])
+// then_change

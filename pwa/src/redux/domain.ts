@@ -1,3 +1,4 @@
+// if_change
 export interface Password {
   value: string;
   tags: string[];
@@ -19,6 +20,7 @@ export interface WithKeyAttrs {
 export type Key = WithKeyId & WithKeyAttrs & Password & {
   creationTimeInMillis: number;
 }
+// then_change(pwa/src/redux/storages/index.ts:storage_migration)
 
 export interface EditableUnit {
   parent?: Key;
