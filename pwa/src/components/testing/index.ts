@@ -1,12 +1,13 @@
-import Vue, { ComponentOptions, VueConstructor } from 'vue'
-import { createLocalVue, Wrapper } from '@vue/test-utils'
-import Vuetify from 'vuetify'
-import Vuelidate from 'vuelidate'
-import { RootAction } from '@/redux/root_action'
-import FormTextField from '@/components/FormTextField.vue'
-import { Future, newFuture } from '@/future'
 import last from 'lodash/last'
+import Vue, { ComponentOptions, VueConstructor } from 'vue'
+import Vuelidate from 'vuelidate'
+import Vuetify from 'vuetify'
 import { Store } from '@reduxjs/toolkit'
+import { createLocalVue, Wrapper } from '@vue/test-utils'
+import FormTextField from '@/components/FormTextField.vue'
+import ExternalLink from '@/components/ExternalLink.vue'
+import { Future, newFuture } from '@/future'
+import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
 
 Vue.use(Vuetify)
@@ -16,6 +17,7 @@ export const setUpLocalVue = (): VueConstructor<Vue> => {
   const localVue = createLocalVue()
   localVue.use(Vuelidate)
   localVue.component('form-text-field', FormTextField)
+  localVue.component('external-link', ExternalLink)
   return localVue
 }
 
