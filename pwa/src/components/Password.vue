@@ -30,7 +30,7 @@
         </v-btn>
         <v-spacer></v-spacer>
         <v-btn text @click="editBaseline" :loading="clique.busyness > 0"
-          :disabled="!canAccessApi || autosavePrompt">
+          :disabled="!canAccessApi || autosavePrompt" v-if="editable">
           Edit
         </v-btn>
       </v-card-actions>
@@ -201,6 +201,10 @@ export default Vue.extend({
     clique: {
       type: Object as PropType<DeepReadonly<Clique>>,
       required: true
+    },
+    editable: {
+      type: Boolean,
+      default: true
     },
     initEdit: {
       type: Boolean,

@@ -93,6 +93,7 @@ DEPENDENCIES = [
     "@pwa_npm//@fontsource/roboto-mono",
     "@pwa_npm//@types/libsodium-wrappers",
     "@pwa_npm//@types/lodash",
+    "@pwa_npm//@types/papaparse",
     "@pwa_npm//@types/qrcode",
     "@pwa_npm//@types/ua-parser-js",
     "@pwa_npm//@types/uuid",
@@ -116,6 +117,7 @@ DEPENDENCIES = [
     "@pwa_npm//fuse.js",
     "@pwa_npm//libsodium-wrappers",
     "@pwa_npm//lodash",
+    "@pwa_npm//papaparse",
     # For `ts_swagger_api`.
     "@pwa_npm//portable-fetch",
     "@pwa_npm//qrcode",
@@ -202,8 +204,8 @@ pkg_tar(
 container_layer(
     name = "dist_layer",
     directory = "/root",
-    tars = [":pkg_tar"],
     enable_mtime_preservation = True,
+    tars = [":pkg_tar"],
 )
 
 container_layer(

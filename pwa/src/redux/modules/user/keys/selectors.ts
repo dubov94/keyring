@@ -4,7 +4,7 @@ import groupBy from 'lodash/groupBy'
 import orderBy from 'lodash/orderBy'
 import sortBy from 'lodash/sortBy'
 import { DeepReadonly } from 'ts-essentials'
-import { Key } from '@/redux/domain'
+import { Key, Password } from '@/redux/domain'
 import { RootState } from '@/redux/root_reducer'
 
 const userKeys = (state: RootState): DeepReadonly<Key[]> => state.user.keys.userKeys
@@ -22,6 +22,25 @@ export interface Clique {
 export const createEmptyClique = (name: string): DeepReadonly<Clique> => ({
   name,
   parent: null,
+  shadows: [],
+  busyness: 0
+})
+export const createCliqueFromPassword = (
+  cliqueName: string,
+  keyId: string,
+  password: DeepReadonly<Password>,
+  creationTimeInMillis: number
+): DeepReadonly<Clique> => ({
+  name: cliqueName,
+  parent: {
+    identifier: keyId,
+    attrs: {
+      isShadow: false,
+      parent: ''
+    },
+    ...password,
+    creationTimeInMillis
+  },
   shadows: [],
   busyness: 0
 })

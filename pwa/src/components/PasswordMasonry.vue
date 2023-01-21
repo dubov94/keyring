@@ -15,11 +15,12 @@
 <template>
   <v-row>
     <transition-group name="bricks" tag="div" class="flex-1" :style="listStyles">
-      <v-lazy :min-height="128" v-for="(item, index) in items" :key="item.name"
-        class="pa-3" :style="itemStyles(index)">
+      <v-lazy :min-height="passwordMinHeight" class="pa-3" :style="itemStyles(index)"
+        v-for="(item, index) in items" :key="item.name">
         <password :debounce-millis="200" :clique="item" :scoreColor="idToScore[item.name]"
           @save="finalize(item.name, true)" @delete="finalize(item.name, false)"
-          @cancel="finalize(item.name)" :init-edit="additions.includes(item.name)">
+          @cancel="finalize(item.name)" :init-edit="additions.includes(item.name)"
+          :editable="editable">
         </password>
       </v-lazy>
     </transition-group>
@@ -33,6 +34,7 @@ import Vue, { PropType } from 'vue'
 import { Color } from '@/cryptography/strength_test_service'
 import { Clique, createEmptyClique } from '@/redux/modules/user/keys/selectors'
 import PasswordComponent from './Password.vue'
+import { PASSWORD_MIN_HEIGHT } from './dimensions'
 
 export default Vue.extend({
   components: {
@@ -50,6 +52,23 @@ export default Vue.extend({
     idToScore: {
       type: Object as PropType<{ [key: string]: Color }>,
       default: () => ({})
+    },
+    editable: {
+      type: Boolean,
+      default: true
+    },
+    colCountLg: {
+      type: Number,
+      default: 3
+    },
+    colCountMd: {
+      type: Number,
+      default: 2
+    }
+  },
+  data () {
+    return {
+      passwordMinHeight: PASSWORD_MIN_HEIGHT
     }
   },
   computed: {
@@ -72,10 +91,10 @@ export default Vue.extend({
     },
     columnCount (): number {
       if (this.$vuetify.breakpoint.lgAndUp) {
-        return 3
+        return this.colCountLg
       }
-      if (this.$vuetify.breakpoint.mdOnly) {
-        return 2
+      if (this.$vuetify.breakpoint.mdAndUp) {
+        return this.colCountMd
       }
       return 1
     },
