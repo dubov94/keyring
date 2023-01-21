@@ -470,6 +470,7 @@ export const shadowDigestionEpic: Epic<RootAction, RootAction, RootState> = (act
   groupBy((action) => action.payload.clique),
   // `mergeMap` is knowingly append-only.
   mergeMap((group) => group.pipe(
+    // For each clique queue up actions via `concatMap`.
     concatMap(unlockClique((action) => scheduled([action], asapScheduler).pipe(
       withLatestFrom(state$),
       switchMap(([action, state]) => {

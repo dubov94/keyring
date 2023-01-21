@@ -24,6 +24,10 @@ export default createReducer<{
   userKeys: Key[];
   idToClique: { [key: string]: string };
   busyness: { [key: string]: number };
+  // Holds the latest `shadowCommitmentSignal` error for each clique.
+  // The idea is that `commitShadow` is followed by `integrateClique`
+  // on saving, thus to pick up an error coming from the former
+  // we need a separate storage.
   cliqueToSyncError: { [key: string]: option.Option<string> };
   cliquesInOrder: string[];
 }>(
