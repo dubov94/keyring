@@ -52,6 +52,7 @@ class Database extends Dexie {
   constructor() {
     super('application');
 
+    // https://dexie.org/docs/Tutorial/Design#database-versioning
     this.version(3).stores({
       swEvents: '++id, version, event, timestamp',
       clients: '++id, clientId, origin'
@@ -136,7 +137,7 @@ const reloadCachedClients = async () => {
     includeUncontrolled: false
   });
   // Do not block on `navigate` as it goes through
-  // the service worker, which is being activated.
+  // the service worker which is being activated.
   windowClients.forEach(async (client) => {
     try {
       const record = await getClientById(client.id);
