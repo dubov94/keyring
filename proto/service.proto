@@ -196,12 +196,7 @@ message ImportKeysRequest {
 }
 
 message ImportKeysResponse {
-  message KeyMetadata {
-    int64 identifier = 1;
-    int64 creation_time_in_millis = 2;
-  }
-
-  repeated KeyMetadata metadata = 1;
+  repeated KeyProto keys = 1;
 }
 
 message CreateKeyRequest {

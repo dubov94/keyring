@@ -7,16 +7,17 @@ import { Key } from '@/redux/domain'
 import { FlowSignalKind, isActionSuccess } from '@/redux/flow_signal'
 import {
   acquireCliqueLock,
-  cliqueOrder,
+  initialCliqueOrder,
   creationSignal,
   deletionSignal,
   emplace,
-  cliqueAdjunction,
+  cliqueAddition,
   NIL_KEY_ID,
   releaseCliqueLock,
   shadowCommitmentSignal,
   shadowElectionSignal,
-  updationSignal
+  updationSignal,
+  importSignal
 } from './actions'
 import { getUidService } from '@/cryptography/uid_service'
 
@@ -56,10 +57,19 @@ export default createReducer<{
           ? rootToMarker[item.identifier] : rootToMarker[item.attrs.parent]
       }
     })
-    .addMatcher(isActionOf(cliqueOrder), (state, action) => {
+    .addMatcher(isActionOf(initialCliqueOrder), (state, action) => {
       state.cliquesInOrder = castDraft(action.payload)
     })
-    .addMatcher(isActionOf(cliqueAdjunction), (state, action) => {
+    .addMatcher(isActionSuccess(importSignal), (state, action) => {
+      const keys = castDraft(action.payload.data)
+      for (const key of keys.reverse()) {
+        state.userKeys.unshift(key)
+        const cliqueName = getUidService().v4()
+        state.idToClique[key.identifier] = cliqueName
+        state.cliquesInOrder.unshift(cliqueName)
+      }
+    })
+    .addMatcher(isActionOf(cliqueAddition), (state, action) => {
       if (!state.cliquesInOrder.includes(action.payload)) {
         state.cliquesInOrder.unshift(action.payload)
       }

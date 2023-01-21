@@ -12,7 +12,6 @@ import {
   ServiceGetSaltResponseError,
   ServiceLogInResponse,
   ServiceLogInResponseError,
-  ServiceKeyProto,
   ServiceProvideOtpResponse,
   ServiceProvideOtpResponseError,
   ServiceUserData
@@ -35,6 +34,7 @@ import {
 import { isDepotActive } from '@/redux/modules/depot/selectors'
 import { defaultMailVerification, localOtpTokenFailure, remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
 import { NIL_KEY_ID } from '@/redux/modules/user/keys/actions'
+import { fromKeyProto } from '@/redux/modules/user/keys/converters'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
 import {
@@ -118,18 +118,7 @@ export const displayRegistrationExceptionsEpic = createDisplayExceptionsEpic(reg
 
 const decodeUserData = (encryptionKey: string, userData: ServiceUserData): Observable<UserData> => {
   return forkJoin(userData.userKeys!.map(
-    async (item: ServiceKeyProto): Promise<Key> => ({
-      identifier: item.identifier!,
-      attrs: {
-        isShadow: item.attrs!.isShadow!,
-        parent: item.attrs!.parent!
-      },
-      ...(await getSodiumClient().decryptPassword(encryptionKey, {
-        value: item.password!.value!,
-        tags: item.password!.tags!
-      })),
-      creationTimeInMillis: Number(item.creationTimeInMillis!)
-    })
+    fromKeyProto(encryptionKey)
   )).pipe(
     defaultIfEmpty(<Key[]>[]),
     switchMap((userKeys) => {

@@ -18,6 +18,9 @@ export interface WithClique {
   clique: string;
 }
 export const emplace = createAction('user/keys/emplace')<DeepReadonly<Key[]>>()
+export const import_ = createAction('user/keys/import')<DeepReadonly<Password[]>>()
+export const importSignal = createAction('user/keys/importSignal')<DeepReadonly<FlowSignal<OperationIndicator, Key[], StandardError<never>>>>()
+export const importReset = createAction('user/keys/importReset')()
 export const create = createAction('user/keys/create')<
   DeepReadonly<WithKeyAttrs & Password>,
   DeepReadonly<WithClique & OperationMetadata>
@@ -31,8 +34,8 @@ export const updationSignal = createAction('user/keys/updationSignal')<DeepReado
 export const delete_ = createAction('user/keys/delete')<DeepReadonly<WithKeyId>, DeepReadonly<OperationMetadata>>()
 export const deletionSignal = createAction('user/keys/deletionSignal')<DeepReadonly<FlowSignal<OperationIndicator, string, StandardError<never>>>, DeepReadonly<OperationMetadata>>()
 export const userKeysUpdate = createAction('user/keys/userKeysUpdate')<DeepReadonly<Key[]>>()
-export const cliqueOrder = createAction('user/keys/cliqueOrder')<DeepReadonly<string[]>>()
-export const cliqueAdjunction = createAction('user/keys/cliqueAdjunction')<string>()
+export const initialCliqueOrder = createAction('user/keys/initialCliqueOrder')<DeepReadonly<string[]>>()
+export const cliqueAddition = createAction('user/keys/cliqueAddition')<string>()
 
 export const NIL_KEY_ID = '0'
 export const electShadow = createAction('user/keys/electShadow')<string, DeepReadonly<OperationMetadata>>()

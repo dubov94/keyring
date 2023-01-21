@@ -1,10 +1,11 @@
 import { monoid, function as fn, option, predicate, record, readonlyArray, string } from 'fp-ts'
 import sortBy from 'lodash/sortBy'
 import { Epic } from 'redux-observable'
-import { asapScheduler, concat, EMPTY, from, Observable, of, OperatorFunction, pipe, scheduled, throwError } from 'rxjs'
+import { asapScheduler, concat, EMPTY, forkJoin, from, Observable, of, OperatorFunction, pipe, scheduled, throwError } from 'rxjs'
 import {
   catchError,
   concatMap,
+  defaultIfEmpty,
   filter,
   groupBy,
   map,
@@ -16,9 +17,11 @@ import {
 import { DeepReadonly } from 'ts-essentials'
 import { getType, isActionOf, PayloadMetaAction, PayloadMetaActionCreator, TypeConstant } from 'typesafe-actions'
 import { getAdministrationApi } from '@/api/api_di'
-import { ServiceCreateKeyResponse, ServiceElectShadowResponse } from '@/api/definitions'
+import { ServiceCreateKeyResponse, ServiceElectShadowResponse, ServiceImportKeysResponse } from '@/api/definitions'
 import { getSodiumClient } from '@/cryptography/sodium_client'
+import { getUidService } from '@/cryptography/uid_service'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
+import { Key, Password } from '@/redux/domain'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import {
   exception,
@@ -33,7 +36,8 @@ import {
   FlowSignal,
   isSignalFailure,
   isSignalException,
-  FlowSignalKind
+  FlowSignalKind,
+  cancel
 } from '@/redux/flow_signal'
 import { authnViaDepotSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
 import { RootAction } from '@/redux/root_action'
@@ -63,11 +67,68 @@ import {
   acquireCliqueLock,
   releaseCliqueLock,
   shadowCommitmentSignal,
-  cliqueOrder,
-  cliqueAdjunction
+  initialCliqueOrder,
+  cliqueAddition,
+  importSignal,
+  import_,
+  importReset
 } from './actions'
 import { Clique, cliques, createEmptyClique, getCliqueRepr, getCliqueRoot, getFrontShadow } from './selectors'
-import { getUidService } from '@/cryptography/uid_service'
+import { fromKeyProto } from './converters'
+
+const importSequence = (
+  sessionKey: string,
+  encryptionKey: string,
+  passwords: DeepReadonly<Password[]>
+): Observable<RootAction> => {
+  return concat(
+    of(importSignal(indicator(OperationIndicator.WORKING))),
+    forkJoin(passwords.map(async (password) => {
+      return getSodiumClient().encryptPassword(encryptionKey, password)
+    })).pipe(
+      defaultIfEmpty(<Password[]>[]),
+      switchMap((encryptedPasswords) => {
+        return from(getAdministrationApi().administrationImportKeys({
+          passwords: encryptedPasswords
+        }, {
+          headers: {
+            [SESSION_TOKEN_HEADER_NAME]: sessionKey
+          }
+        })).pipe(
+          switchMap((response: ServiceImportKeysResponse) => {
+            return forkJoin(response.keys!.map(fromKeyProto(encryptionKey))).pipe(
+              defaultIfEmpty(<Key[]>[]),
+              switchMap((keys: Key[]) => {
+                return of(importSignal(success(keys)))
+              })
+            )
+          })
+        )
+      })
+    )
+  ).pipe(
+    catchError((error) => of(importSignal(exception(errorToMessage(error)))))
+  )
+}
+
+export const displayImportExceptionEpic = createDisplayExceptionsEpic(importSignal)
+
+export const importEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionOf([import_, importReset])),
+  withLatestFrom(state$),
+  switchMap(([action, state]) => {
+    if (isActionOf(import_, action)) {
+      return importSequence(
+        state.user.account.sessionKey!,
+        state.user.account.encryptionKey!,
+        action.payload
+      )
+    } else if (isActionOf(importReset, action)) {
+      return of(importSignal(cancel()))
+    }
+    return EMPTY
+  })
+)
 
 export const creationEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf(create)),
@@ -213,6 +274,7 @@ export const shadowElectionEpic: Epic<RootAction, RootAction, RootState> = (acti
 export const userKeysUpdateEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(monoid.concatAll(predicate.getMonoidAny<RootAction>())([
     isActionOf(emplace),
+    isActionSuccess(importSignal),
     isActionSuccess(creationSignal),
     isActionSuccess(updationSignal),
     isActionSuccess(deletionSignal),
@@ -222,10 +284,10 @@ export const userKeysUpdateEpic: Epic<RootAction, RootAction, RootState> = (acti
   map(([, state]) => userKeysUpdate(state.user.keys.userKeys))
 )
 
-export const cliqueOrderEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+export const initialCliqueOrderEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf(emplace)),
   withLatestFrom(state$),
-  map(([, state]) => cliqueOrder(
+  map(([, state]) => initialCliqueOrder(
     sortBy(
       cliques(state),
       (clique) => clique.shadows.length === 0,
@@ -240,9 +302,9 @@ export const cliqueOrderEpic: Epic<RootAction, RootAction, RootState> = (action$
   ))
 )
 
-export const cliqueAdjunctionEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+export const cliqueAdditionEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionSuccess(creationSignal)),
-  map((action) => cliqueAdjunction(action.meta.clique))
+  map((action) => cliqueAddition(action.meta.clique))
 )
 
 const makeUid = <T>(callback: (uid: string) => T): T => {

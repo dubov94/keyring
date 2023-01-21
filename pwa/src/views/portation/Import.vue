@@ -10,10 +10,10 @@
         appended as labels in the given order.
       </p>
       <v-file-input accept="text/csv" label=".csv" hide-details outlined
-        @change="changeFile"></v-file-input>
+        @change="loadFile" :value="file"></v-file-input>
       <div class="mt-4">
-        <v-btn block color="primary" :disabled="!hasVault">
-          Save
+        <v-btn block color="primary" :disabled="!hasVault" @click="import_">
+          Import
         </v-btn>
       </div>
       <template v-if="hasVault">
@@ -32,12 +32,15 @@
 <script lang="ts">
 import { array, either, function as fn, predicate } from 'fp-ts'
 import isEmpty from 'lodash/isEmpty'
+import { takeUntil, filter } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
 import Vue from 'vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import { PASSWORD_MIN_HEIGHT } from '@/components/dimensions'
 import { getUidService } from '@/cryptography/uid_service'
+import { isActionSuccess } from '@/redux/flow_signal'
 import { showToast } from '@/redux/modules/ui/toast/actions'
+import { extractPassword, import_, importSignal, importReset } from '@/redux/modules/user/keys/actions'
 import { Clique, createCliqueFromPassword } from '@/redux/modules/user/keys/selectors'
 import { VaultItem, deserializeVault } from './csv'
 
@@ -47,8 +50,20 @@ export default Vue.extend({
   },
   data () {
     return {
+      file: null as null | File,
       vaultItems: null as null | VaultItem[]
     }
+  },
+  created () {
+    this.$data.$actions.pipe(
+      filter(isActionSuccess(importSignal)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      this.file = null
+      this.vaultItems = null
+      this.dispatch(importReset())
+      this.dispatch(showToast({ message: this.$t('DONE') as string }))
+    })
   },
   computed: {
     hasVault (): boolean {
@@ -84,7 +99,8 @@ export default Vue.extend({
     }
   },
   methods: {
-    async changeFile (file: null | File) {
+    async loadFile (file: null | File) {
+      this.file = file
       if (file === null) {
         this.vaultItems = null
         return
@@ -107,7 +123,18 @@ export default Vue.extend({
           }
         )
       )
+    },
+    import_ () {
+      if (this.vaultItems === null) {
+        console.warn('`vaultItems` is `null`')
+        return
+      }
+      this.dispatch(import_(this.cliques.map(
+        (clique) => extractPassword(clique.parent!))))
     }
+  },
+  beforeDestroy () {
+    this.dispatch(importReset())
   }
 })
 </script>

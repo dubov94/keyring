@@ -206,19 +206,10 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     List<Key> keys =
         keyOperationsInterface.importKeys(
             sessionAccessor.getSessionEntityId(), request.getPasswordsList());
-    ImportKeysResponse.Builder responseBuilder = ImportKeysResponse.newBuilder();
-    for (Key key : keys) {
-      ImportKeysResponse.KeyMetadata.Builder metadataBuilder =
-          ImportKeysResponse.KeyMetadata.newBuilder();
-      metadataBuilder.setIdentifier(key.getIdentifier());
-      key.getCreationTimestamp()
-          .ifPresent(
-              (timestamp) -> {
-                metadataBuilder.setCreationTimeInMillis(timestamp.getTime());
-              });
-      responseBuilder.addMetadata(metadataBuilder.build());
-    }
-    response.onNext(responseBuilder.build());
+    response.onNext(
+        ImportKeysResponse.newBuilder()
+            .addAllKeys(keys.stream().map(Key::toKeyProto).collect(toList()))
+            .build());
     response.onCompleted();
   }
 

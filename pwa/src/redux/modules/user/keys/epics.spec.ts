@@ -5,6 +5,7 @@ import { container } from 'tsyringe'
 import { ADMINISTRATION_API_TOKEN } from '@/api/api_di'
 import {
   AdministrationApi,
+  ServiceImportKeysResponse,
   ServiceCreateKeyResponse,
   ServiceUpdateKeyResponse,
   ServiceDeleteKeyResponse,
@@ -27,10 +28,10 @@ import { createRegistrationFlowResult, createRemoteAuthnCompleteResult, createUs
 import { SequentialFakeUidService } from '@/redux/testing/services'
 import {
   cancelShadow,
-  cliqueAdjunction,
+  cliqueAddition,
   cliqueIntegrationSignal,
   cliqueObliterationSignal,
-  cliqueOrder,
+  initialCliqueOrder,
   commitShadow,
   create,
   creationSignal,
@@ -46,19 +47,118 @@ import {
   shadowElectionSignal,
   update,
   updationSignal,
-  userKeysUpdate
+  userKeysUpdate,
+  importSignal,
+  import_
 } from './actions'
 import {
-  cliqueAdjunctionEpic,
-  cliqueOrderEpic,
+  cliqueAdditionEpic,
+  initialCliqueOrderEpic,
   creationEpic,
   deletionEpic,
   inheritKeysFromAuthnDataEpic,
   shadowDigestionEpic,
   shadowElectionEpic,
   updationEpic,
-  userKeysUpdateEpic
+  userKeysUpdateEpic,
+  importEpic
 } from './epics'
+
+describe('importEpic', () => {
+  it('emits import sequence', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockSodiumClient = mock(SodiumClient)
+    when(mockSodiumClient.encryptPassword('encryptionKey', deepEqual({
+      value: 'value',
+      tags: ['tag']
+    }))).thenResolve({
+      value: '$value',
+      tags: ['$tag']
+    })
+    when(mockSodiumClient.decryptPassword('encryptionKey', deepEqual({
+      value: '$value',
+      tags: ['$tag']
+    }))).thenResolve({
+      value: 'value',
+      tags: ['tag']
+    })
+    container.register(SodiumClient, {
+      useValue: instance(mockSodiumClient)
+    })
+    const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
+    when(mockAdministrationApi.administrationImportKeys(
+      deepEqual({
+        passwords: [{
+          value: '$value',
+          tags: ['$tag']
+        }]
+      }),
+      deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
+    )).thenResolve(<ServiceImportKeysResponse>{
+      keys: [{
+        identifier: 'identifier',
+        attrs: { isShadow: false, parent: '' },
+        password: {
+          value: '$value',
+          tags: ['$tag']
+        },
+        creationTimeInMillis: '1'
+      }]
+    })
+    container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
+      useValue: instance(mockAdministrationApi)
+    })
+
+    const epicTracker = new EpicTracker(importEpic(action$, state$, {}))
+    actionSubject.next(import_([{
+      value: 'value',
+      tags: ['tag']
+    }]))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      importSignal(indicator(OperationIndicator.WORKING)),
+      importSignal(success([{
+        identifier: 'identifier',
+        attrs: { isShadow: false, parent: '' },
+        value: 'value',
+        tags: ['tag'],
+        creationTimeInMillis: 1
+      }]))
+    ])
+  })
+
+  it('does not get stuck on an empty set of passwords', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockSodiumClient = mock(SodiumClient)
+    container.register(SodiumClient, {
+      useValue: instance(mockSodiumClient)
+    })
+    const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
+    when(mockAdministrationApi.administrationImportKeys(
+      deepEqual({ passwords: [] }),
+      deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
+    )).thenResolve(<ServiceImportKeysResponse>{ keys: [] })
+    container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
+      useValue: instance(mockAdministrationApi)
+    })
+
+    const epicTracker = new EpicTracker(importEpic(action$, state$, {}))
+    actionSubject.next(import_([]))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      importSignal(indicator(OperationIndicator.WORKING)),
+      importSignal(success([]))
+    ])
+  })
+})
 
 describe('creationEpic', () => {
   it('emits creation sequence', async () => {
@@ -243,6 +343,12 @@ describe('userKeysUpdateEpic', () => {
       identifier: '1',
       value: 'value'
     })]),
+    importSignal(success([
+      createUserKey({
+        identifier: '1',
+        value: 'value'
+      })
+    ])),
     creationSignal(success(createUserKey({
       identifier: '1',
       value: 'value'
@@ -322,7 +428,7 @@ describe('shadowElectionEpic', () => {
   })
 })
 
-describe('cliqueOrderEpic', () => {
+describe('initialCliqueOrderEpic', () => {
   it('lowers & sorts on `emplace`', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const shadow = createUserKey({ identifier: 'shadow', attrs: { isShadow: true }, tags: ['a', 'a'] })
@@ -337,23 +443,23 @@ describe('cliqueOrderEpic', () => {
     )
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-    const epicTracker = new EpicTracker(cliqueOrderEpic(action$, state$, {}))
+    const epicTracker = new EpicTracker(initialCliqueOrderEpic(action$, state$, {}))
     actionSubject.next(emplace([upper, sample, shadow]))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      cliqueOrder(['x', 'z', 'y'])
+      initialCliqueOrder(['x', 'z', 'y'])
     ])
   })
 })
 
-describe('cliqueAdjunctionEpic', () => {
+describe('cliqueAdditionEpic', () => {
   it('emits on successful creation', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-    const epicTracker = new EpicTracker(cliqueAdjunctionEpic(action$, state$, {}))
+    const epicTracker = new EpicTracker(cliqueAdditionEpic(action$, state$, {}))
     actionSubject.next(creationSignal(
       success(createUserKey({ identifier: 'id' })),
       { uid: 'random', clique: 'clique' }
@@ -362,7 +468,7 @@ describe('cliqueAdjunctionEpic', () => {
     await epicTracker.waitForCompletion()
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      cliqueAdjunction('clique')
+      cliqueAddition('clique')
     ])
   })
 })
