@@ -15,19 +15,36 @@
         </div>
       </div>
       <div class="text-center mt-2">
-        <v-btn color="error" :disabled="!ack">Download</v-btn>
+        <v-btn color="error" :disabled="!ack" @click="download">Download</v-btn>
       </div>
     </v-card-text>
   </v-card>
 </template>
 
 <script lang="ts">
+import FileSaver from 'file-saver'
+import { DeepReadonly } from 'ts-essentials'
 import Vue from 'vue'
+import { cliques, Clique } from '@/redux/modules/user/keys/selectors'
+import { serializeVault } from './csv'
 
 export default Vue.extend({
   data () {
     return {
       ack: false
+    }
+  },
+  computed: {
+    cliques (): DeepReadonly<Clique[]> {
+      return cliques(this.$data.$state)
+    }
+  },
+  methods: {
+    download () {
+      const csv = serializeVault(this.cliques)
+      const blob = new Blob([csv], { type: 'text/csv' })
+      FileSaver.saveAs(blob, 'vault.csv')
+      this.ack = false
     }
   }
 })

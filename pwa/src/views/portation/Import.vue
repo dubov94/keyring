@@ -30,8 +30,7 @@
 </template>
 
 <script lang="ts">
-import { array, either, function as fn, predicate } from 'fp-ts'
-import isEmpty from 'lodash/isEmpty'
+import { either, function as fn } from 'fp-ts'
 import { takeUntil, filter } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
 import Vue from 'vue'
@@ -42,7 +41,7 @@ import { isActionSuccess } from '@/redux/flow_signal'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 import { extractPassword, import_, importSignal, importReset } from '@/redux/modules/user/keys/actions'
 import { Clique, createCliqueFromPassword } from '@/redux/modules/user/keys/selectors'
-import { VaultItem, deserializeVault } from './csv'
+import { ImportedRow, deserializeVault, convertImportedRowToPassword } from './csv'
 
 export default Vue.extend({
   components: {
@@ -51,7 +50,7 @@ export default Vue.extend({
   data () {
     return {
       file: null as null | File,
-      vaultItems: null as null | VaultItem[]
+      importedRows: null as null | ImportedRow[]
     }
   },
   created () {
@@ -60,14 +59,14 @@ export default Vue.extend({
       takeUntil(this.$data.$destruction)
     ).subscribe(() => {
       this.file = null
-      this.vaultItems = null
+      this.importedRows = null
       this.dispatch(importReset())
       this.dispatch(showToast({ message: this.$t('DONE') as string }))
     })
   },
   computed: {
     hasVault (): boolean {
-      return this.vaultItems !== null
+      return this.importedRows !== null
     },
     vaultPreviewStyles (): { [key: string]: string } {
       return {
@@ -76,22 +75,16 @@ export default Vue.extend({
       }
     },
     cliques (): DeepReadonly<Clique>[] {
-      if (this.vaultItems === null) {
+      if (this.importedRows === null) {
         return []
       }
       const uidService = getUidService()
       const cliques: DeepReadonly<Clique>[] = []
-      for (const vaultItem of this.vaultItems) {
+      for (const importedRow of this.importedRows) {
         cliques.push(createCliqueFromPassword(
           /* cliqueName */ uidService.v4(),
           /* keyId */ uidService.v4(),
-          /* password */ {
-            value: vaultItem.password,
-            tags: fn.pipe(
-              [vaultItem.url, vaultItem.username, ...vaultItem.labels],
-              array.filter(predicate.not(isEmpty))
-            )
-          },
+          /* password */ convertImportedRowToPassword(importedRow),
           /* creationTimeInMillis */ Date.now()
         ))
       }
@@ -102,7 +95,7 @@ export default Vue.extend({
     async loadFile (file: null | File) {
       this.file = file
       if (file === null) {
-        this.vaultItems = null
+        this.importedRows = null
         return
       }
       const vaultResults = deserializeVault(await file.text())
@@ -112,21 +105,21 @@ export default Vue.extend({
           (error) => {
             this.dispatch(showToast({ message: error.message }))
           },
-          (vaultItems) => {
-            if (vaultItems.length === 0) {
+          (importedRows) => {
+            if (importedRows.length === 0) {
               this.dispatch(showToast({
                 message: 'The vault does not contain any items'
               }))
               return
             }
-            this.vaultItems = vaultItems
+            this.importedRows = importedRows
           }
         )
       )
     },
     import_ () {
-      if (this.vaultItems === null) {
-        console.warn('`vaultItems` is `null`')
+      if (this.importedRows === null) {
+        console.warn('`importedRows` is `null`')
         return
       }
       this.dispatch(import_(this.cliques.map(
