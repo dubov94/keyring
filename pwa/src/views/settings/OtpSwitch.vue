@@ -8,7 +8,7 @@
 </style>
 
 <template>
-  <v-expansion-panel @change="ackOtpPrompt">
+  <v-expansion-panel :disabled="!canAccessApi" @change="ackOtpPrompt">
     <v-expansion-panel-header>
       <v-badge left dot color="warning" :value="otpPrompt" :offset-x="-2" :offset-y="-2">
         Two-factor authentication
@@ -23,7 +23,7 @@
             :dirty="$v.deactivation.$dirty" :append-icon="deactivationOtpIcon"
             @touch="$v.deactivation.$touch()" @reset="$v.deactivation.$reset()"></form-text-field>
           <div class="mx-4">
-            <v-btn block color="primary" @click="deactivate" :disabled="!canAccessApi" :loading="otpResetInProgress">
+            <v-btn block color="primary" @click="deactivate" :loading="otpResetInProgress">
               Disable
             </v-btn>
           </div>
@@ -60,7 +60,7 @@
             :dirty="$v.activation.$dirty" :append-icon="activationOtpIcon"
             @touch="$v.activation.$touch()" @reset="$v.activation.$reset()"></form-text-field>
           <div class="mx-4">
-            <v-btn block color="primary" @click="activate" :disabled="!canAccessApi" :loading="otpParamsAcceptanceInProgress">
+            <v-btn block color="primary" @click="activate" :loading="otpParamsAcceptanceInProgress">
               Activate
             </v-btn>
           </div>
@@ -73,7 +73,7 @@
           unless 'Remember me' is switched on, making the device trusted.
         </p>
         <div class="mx-4">
-          <v-btn block color="primary" @click="generate" :disabled="!canAccessApi" :loading="otpParamsGenerationInProgress">
+          <v-btn block color="primary" @click="generate" :loading="otpParamsGenerationInProgress">
             Enable
           </v-btn>
         </div>
@@ -123,7 +123,6 @@ const activationIncorrectValidator = remoteDataErrorIndicator(ServiceAcceptOtpPa
 const deactivationIncorrectValidator = remoteDataErrorIndicator(ServiceResetOtpResponseError.INVALIDCODE)
 
 interface Mixins {
-  canAccessApi: boolean;
   otpPrompt: boolean;
   activation: { untouchedSinceDispatch: boolean; otp: string };
   deactivation: { untouchedSinceDispatch: boolean; otp: string };
@@ -235,7 +234,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.activation.untouchedSinceDispatch = false
     },
     activate () {
-      if (this.canAccessApi && !this.otpParamsAcceptanceInProgress) {
+      if (!this.otpParamsAcceptanceInProgress) {
         this.$v.activation.$touch()
         if (!this.$v.activation.$invalid) {
           this.activation.untouchedSinceDispatch = true
@@ -254,7 +253,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.deactivation.untouchedSinceDispatch = false
     },
     deactivate () {
-      if (this.canAccessApi && !this.otpResetInProgress) {
+      if (!this.otpResetInProgress) {
         this.$v.deactivation.$touch()
         if (!this.$v.deactivation.$invalid) {
           this.deactivation.untouchedSinceDispatch = true

@@ -15,7 +15,7 @@
 </style>
 
 <template>
-  <v-expansion-panel>
+  <v-expansion-panel :disabled="!canAccessApi">
     <v-expansion-panel-header>
       Change e-mail
     </v-expansion-panel-header>
@@ -38,7 +38,7 @@
               @touch="$v.requestGroup.password.$touch()" @reset="$v.requestGroup.password.$reset()"></form-text-field>
             <div class="mx-4 mt-4">
               <v-btn block :loading="acquisitionInProgress"
-                color="primary" @click="acquireToken" :disabled="!canAccessApi">
+                color="primary" @click="acquireToken">
                 Next
               </v-btn>
             </div>
@@ -52,7 +52,7 @@
               @touch="$v.code.$touch()" @reset="$v.code.$reset()"></form-text-field>
             <div class="mx-4 mt-4">
               <v-btn block :loading="releaseInProgress"
-                color="primary" @click="releaseToken" :disabled="!canAccessApi">
+                color="primary" @click="releaseToken">
                 Submit
               </v-btn>
             </div>
@@ -231,7 +231,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.code.untouchedSinceDispatch = false
     },
     acquireToken () {
-      if (this.canAccessApi && !this.acquisitionInProgress) {
+      if (!this.acquisitionInProgress) {
         this.$v.requestGroup.$touch()
         if (!this.$v.requestGroup.$invalid) {
           this.requestGroup.password.untouchedSinceDispatch = true
@@ -243,7 +243,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       }
     },
     releaseToken () {
-      if (this.canAccessApi && !this.releaseInProgress) {
+      if (!this.releaseInProgress) {
         this.$v.code.$touch()
         if (!this.$v.code.nonRetryable!.$invalid) {
           this.code.untouchedSinceDispatch = true

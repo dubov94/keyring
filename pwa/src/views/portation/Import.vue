@@ -1,5 +1,5 @@
 <template>
-  <v-card>
+  <v-card :disabled="!canAccessApi">
     <v-card-title>Import</v-card-title>
     <v-card-text>
       <p>
@@ -39,6 +39,7 @@ import { PASSWORD_MIN_HEIGHT } from '@/components/dimensions'
 import { getUidService } from '@/cryptography/uid_service'
 import { isActionSuccess } from '@/redux/flow_signal'
 import { showToast } from '@/redux/modules/ui/toast/actions'
+import { canAccessApi } from '@/redux/modules/user/account/selectors'
 import { extractPassword, import_, importSignal, importReset } from '@/redux/modules/user/keys/actions'
 import { Clique, createCliqueFromPassword } from '@/redux/modules/user/keys/selectors'
 import { ImportedRow, deserializeVault, convertImportedRowToPassword } from './csv'
@@ -65,6 +66,9 @@ export default Vue.extend({
     })
   },
   computed: {
+    canAccessApi (): boolean {
+      return canAccessApi(this.$data.$state)
+    },
     hasVault (): boolean {
       return this.importedRows !== null
     },

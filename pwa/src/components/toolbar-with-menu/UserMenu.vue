@@ -43,7 +43,7 @@
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
-      <v-list-item to="/portation" :disabled="!canAccessApi">
+      <v-list-item to="/portation">
         <v-list-item-action>
           <v-icon>backup</v-icon>
         </v-list-item-action>

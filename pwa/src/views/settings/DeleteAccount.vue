@@ -1,5 +1,5 @@
 <template>
-  <v-expansion-panel>
+  <v-expansion-panel :disabled="!canAccessApi">
     <v-expansion-panel-header>
       Delete account
     </v-expansion-panel-header>
@@ -9,8 +9,9 @@
           :value="password" @input="setPassword" :dirty="$v.password.$dirty" :errors="passwordErrors"
           @touch="$v.password.$touch()" @reset="$v.password.$reset()"></form-text-field>
         <div class="mx-4 mt-4">
-          <v-btn block color="error" :loading="inProgress"
-            @click="submit" :disabled="!canAccessApi">Submit</v-btn>
+          <v-btn block color="error" :loading="inProgress" @click="submit">
+            Submit
+          </v-btn>
         </div>
       </v-form>
     </v-expansion-panel-content>
@@ -69,7 +70,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.untouchedSinceDispatch = false
     },
     submit () {
-      if (this.canAccessApi && !this.inProgress) {
+      if (!this.inProgress) {
         this.$v.$touch()
         if (!this.$v.$invalid) {
           this.untouchedSinceDispatch = true
