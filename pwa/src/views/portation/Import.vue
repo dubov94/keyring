@@ -10,7 +10,7 @@
         <b>url</b> and <b>username</b> will be prioritised.
       </p>
       <v-file-input accept="text/csv" label=".csv" hide-details outlined
-        @change="loadFile" :value="file"></v-file-input>
+        @click="resetFile" @change="loadFile" :value="file" ref="fileInput"></v-file-input>
       <div class="mt-4">
         <v-btn block color="primary" :disabled="!hasVault" @click="import_">
           Import
@@ -96,6 +96,12 @@ export default Vue.extend({
     }
   },
   methods: {
+    resetFile () {
+      const inputRoot = (this.$refs.fileInput as Vue).$el
+      const fileInput = inputRoot.querySelector('input[type="file"]') as HTMLInputElement
+      // https://stackoverflow.com/q/12030686
+      fileInput.value = ''
+    },
     async loadFile (file: null | File) {
       this.file = file
       if (file === null) {
@@ -107,6 +113,7 @@ export default Vue.extend({
         vaultResults,
         either.fold(
           (error) => {
+            this.importedRows = null
             this.dispatch(showToast({ message: error.message }))
           },
           (importedRows) => {
