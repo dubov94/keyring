@@ -82,6 +82,7 @@ func updateMmdb() error {
 }
 
 func main() {
+	flag.Parse()
 	defer glog.Flush()
 
 	if err := updateMmdb(); err != nil {
@@ -109,10 +110,10 @@ func main() {
 		if err != nil {
 			return fmt.Errorf("unable to listen to %d: %v", *port, err)
 		}
-	
+
 		s := grpc.NewServer()
 		gi.RegisterGeoIpServiceServer(s, &server{})
-	
+
 		if err = s.Serve(ln); err != nil {
 			return fmt.Errorf("unable to serve at %d: %v", *port, err)
 		}
