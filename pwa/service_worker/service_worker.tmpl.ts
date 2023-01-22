@@ -203,7 +203,7 @@ const getFromPrecache = async (cacheKey: string): Promise<Response> => {
 };
 
 const saveClient = async (clientId: string, origin: ClientOrigin) => {
-  console.log(`Saving client ${clientId} from '${origin}'`)
+  console.info(`Saving client ${clientId} from '${origin}'`)
   // `clientId` is universally unique.
   await getDatabase().clients.add({
     clientId,
