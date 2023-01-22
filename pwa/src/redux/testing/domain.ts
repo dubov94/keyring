@@ -6,6 +6,7 @@ import { RegistrationFlowResult, RemoteAuthnCompletionData } from '@/redux/modul
 import { NIL_KEY_ID } from '@/redux/modules/user/keys/actions'
 import { Clique } from '@/redux/modules/user/keys/selectors'
 import { defaultMailVerification } from '../modules/user/account/actions'
+import { DepotActivationData } from '../modules/depot/actions'
 
 export const createKeyProto = (partial: DeepPartial<ServiceKeyProto>): ServiceKeyProto => merge({
   identifier: '',
@@ -59,4 +60,13 @@ export const createClique = (partial: DeepPartial<Clique>): Clique => merge({
   parent: null,
   shadows: [],
   busyness: 0
+}, partial)
+
+export const createDepotActivationData = (
+  partial: DeepPartial<DepotActivationData>
+): DepotActivationData => merge({
+  username: 'username',
+  salt: 'salt',
+  hash: 'hash',
+  depotKey: 'depotKey'
 }, partial)

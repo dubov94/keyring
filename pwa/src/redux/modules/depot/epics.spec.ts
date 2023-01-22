@@ -12,17 +12,12 @@ import { emplace, userKeysUpdate } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
+import { createDepotActivationData, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
 import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
 import { activateDepotEpic, localRehashEpic, masterKeyUpdateEpic, updateEncryptedOtpTokenEpic, updateVaultEpic } from './epics'
 
 describe('updateVaultEpic', () => {
-  const depotActivationDataAction = depotActivationData({
-    username: 'username',
-    salt: 'salt',
-    hash: 'hash',
-    depotKey: 'depotKey'
-  })
+  const depotActivationDataAction = depotActivationData(createDepotActivationData({}))
   const userKeys: Key[] = [
     createUserKey({
       identifier: '1',
@@ -61,12 +56,7 @@ describe('updateVaultEpic', () => {
 })
 
 describe('updateEncryptedOtpTokenEpic', () => {
-  const depotActivationDataAction = depotActivationData({
-    username: 'username',
-    salt: 'salt',
-    hash: 'hash',
-    depotKey: 'depotKey'
-  })
+  const depotActivationDataAction = depotActivationData(createDepotActivationData({}))
   const remoteAuthnCompleteAction = remoteAuthnComplete(createRemoteAuthnCompleteResult({
     isOtpEnabled: true,
     otpToken: 'otpToken'
@@ -151,12 +141,7 @@ describe('masterKeyUpdateEpic', () => {
 
   it('activates the depot', async () => {
     const store = createStore(reducer)
-    store.dispatch(depotActivationData({
-      username: 'username',
-      salt: 'salt',
-      hash: 'hash',
-      depotKey: 'depotKey'
-    }))
+    store.dispatch(depotActivationData(createDepotActivationData({})))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
     const epicTracker = new EpicTracker(masterKeyUpdateEpic(action$, state$, {}))

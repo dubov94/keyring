@@ -35,7 +35,7 @@ import { emplace } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createRegistrationFlowResult, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
+import { createDepotActivationData, createRegistrationFlowResult, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,
@@ -675,12 +675,7 @@ describe('otpParamsAcceptanceEpic', () => {
   it('emits acceptance sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
-    store.dispatch(depotActivationData({
-      username: 'user',
-      salt: 'salt',
-      hash: 'hash',
-      depotKey: 'depotKey'
-    }))
+    store.dispatch(depotActivationData(createDepotActivationData({})))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationAcceptOtpParams(deepEqual({

@@ -3,8 +3,8 @@
     :prepend-icon="prependIcon" :autofocus="autofocus" ref="input" :solo="solo"
     :error-messages="errorMessages" @blur="touch" @keydown.native.enter="touch"
     @focus="reset" @input="input" :append-icon="appendIcon" :error="error"
-    :aria-label="label" :hide-details="hideDetails || false" autocomplete="off"
-    v-on="extraListeners">
+    :aria-label="label" :hide-details="Boolean(hideDetails)" autocomplete="off"
+    v-on="extraListeners" :height="height">
   </v-text-field>
 </template>
 
@@ -16,6 +16,7 @@ export default {
     'autofocus',
     'disabled',
     'dirty',
+    'height',
     'hideDetails',
     'invalid',
     'errors',

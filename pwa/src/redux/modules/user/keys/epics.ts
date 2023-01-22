@@ -37,7 +37,8 @@ import {
   isSignalFailure,
   isSignalException,
   FlowSignalKind,
-  cancel
+  cancel,
+  failure
 } from '@/redux/flow_signal'
 import { authnViaDepotSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
 import { RootAction } from '@/redux/root_action'
@@ -71,7 +72,10 @@ import {
   cliqueAddition,
   importSignal,
   import_,
-  importReset
+  importReset,
+  export_,
+  exportSignal,
+  ExportError
 } from './actions'
 import { Clique, cliques, createEmptyClique, getCliqueRepr, getCliqueRoot, getFrontShadow } from './selectors'
 import { fromKeyProto } from './converters'
@@ -559,3 +563,48 @@ export const shadowDigestionEpic: Epic<RootAction, RootAction, RootState> = (act
 export const displayCliqueIntegrationExceptionEpic = createDisplayExceptionsEpic(cliqueIntegrationSignal)
 
 export const displayCliqueObliterationExceptionEpic = createDisplayExceptionsEpic(cliqueObliterationSignal)
+
+export const exportEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionOf(export_)),
+  withLatestFrom(state$),
+  switchMap(([action, state]) => concat(
+    of(exportSignal(indicator(OperationIndicator.WORKING))),
+    of(action.payload.password).pipe(
+      switchMap((password) => {
+        const sodiumClient = getSodiumClient()
+        let salt = ''
+        let targetKey = ''
+
+        const { account } = state.user
+        if (account.encryptionKey !== null) {
+          salt = account.parametrization!
+          targetKey = account.encryptionKey
+        }
+
+        const { depot } = state
+        if (depot.depotKey !== null) {
+          salt = depot.salt!
+          targetKey = depot.depotKey
+        }
+
+        if (targetKey === '') {
+          throw new Error('Neither remote nor local `targetKey` is available')
+        }
+        return from(sodiumClient.computeAuthDigestAndEncryptionKey(salt, password)).pipe(
+          switchMap(({ encryptionKey }) => {
+            // This by no means is a security measure -- rather preventing
+            // 'accidental' exports.
+            if (encryptionKey !== targetKey) {
+              return of(exportSignal(failure(ExportError.INVALID_PASSWORD)))
+            }
+            return of(exportSignal(success(cliques(state))))
+          })
+        )
+      })
+    )
+  ).pipe(
+    catchError((error) => of(exportSignal(exception(errorToMessage(error)))))
+  ))
+)
+
+export const displayExportExceptionEpic = createDisplayExceptionsEpic(exportSignal)

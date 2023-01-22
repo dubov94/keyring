@@ -15,16 +15,22 @@ import { SodiumClient } from '@/cryptography/sodium_client'
 import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { Key } from '@/redux/domain'
-import { indicator, success } from '@/redux/flow_signal'
+import { exception, failure, indicator, success } from '@/redux/flow_signal'
 import {
   authnViaDepotSignal,
   registrationSignal,
   remoteAuthnComplete
 } from '@/redux/modules/authn/actions'
+import { depotActivationData } from '@/redux/modules/depot/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createRegistrationFlowResult, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
+import {
+  createDepotActivationData,
+  createRegistrationFlowResult,
+  createRemoteAuthnCompleteResult,
+  createUserKey
+} from '@/redux/testing/domain'
 import { SequentialFakeUidService } from '@/redux/testing/services'
 import {
   cancelShadow,
@@ -49,7 +55,10 @@ import {
   updationSignal,
   userKeysUpdate,
   importSignal,
-  import_
+  import_,
+  export_,
+  exportSignal,
+  ExportError
 } from './actions'
 import {
   cliqueAdditionEpic,
@@ -61,7 +70,8 @@ import {
   shadowElectionEpic,
   updationEpic,
   userKeysUpdateEpic,
-  importEpic
+  importEpic,
+  exportEpic
 } from './epics'
 
 describe('importEpic', () => {
@@ -649,5 +659,120 @@ describe('shadowDigestionEpic', () => {
     expect(await epicTracker.nextEmission()).to.deep.equal(
       releaseCliqueLock('parent-only')
     )
+  })
+})
+
+describe('exportEpic', () => {
+  const configureSodiumClient = (callback: (mock: SodiumClient) => void) => {
+    const mockSodiumClient = mock(SodiumClient)
+    callback(mockSodiumClient)
+    container.register(SodiumClient, {
+      useValue: instance(mockSodiumClient)
+    })
+  }
+
+  const testEpic = async (
+    arrangement: RootAction[],
+    action: ReturnType<typeof export_>
+  ) => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    arrangement.forEach(action => store.dispatch(action))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(exportEpic(action$, state$, {}))
+    actionSubject.next(action)
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    return await drainEpicActions(epicTracker)
+  }
+
+  it('fails if remote `targetKey` does not match', async () => {
+    configureSodiumClient((mockSodiumClient) => {
+      when(mockSodiumClient.computeAuthDigestAndEncryptionKey(
+        'parametrization', 'abc'
+      )).thenResolve({
+        authDigest: 'notAuthDigest',
+        encryptionKey: 'notEncryptionKey'
+      })
+    })
+
+    const emission = await testEpic([
+      registrationSignal(success(createRegistrationFlowResult({})))
+    ], export_({ password: 'abc' }))
+
+    expect(emission).to.deep.equal([
+      exportSignal(indicator(OperationIndicator.WORKING)),
+      exportSignal(failure(ExportError.INVALID_PASSWORD))
+    ])
+  })
+
+  it('succeeds if remote `targetKey` matches', async () => {
+    configureSodiumClient((mockSodiumClient) => {
+      when(mockSodiumClient.computeAuthDigestAndEncryptionKey(
+        'parametrization', 'password'
+      )).thenResolve({
+        authDigest: 'authDigest',
+        encryptionKey: 'encryptionKey'
+      })
+    })
+
+    const emission = await testEpic([
+      registrationSignal(success(createRegistrationFlowResult({})))
+    ], export_({ password: 'password' }))
+
+    expect(emission).to.deep.equal([
+      exportSignal(indicator(OperationIndicator.WORKING)),
+      exportSignal(success([]))
+    ])
+  })
+
+  it('fails if local `targetKey` does not match', async () => {
+    configureSodiumClient((mockSodiumClient) => {
+      when(mockSodiumClient.computeAuthDigestAndEncryptionKey(
+        'salt', 'abc'
+      )).thenResolve({
+        authDigest: 'notHash',
+        encryptionKey: 'notDepotKey'
+      })
+    })
+
+    const emission = await testEpic([
+      depotActivationData(createDepotActivationData({}))
+    ], export_({ password: 'abc' }))
+
+    expect(emission).to.deep.equal([
+      exportSignal(indicator(OperationIndicator.WORKING)),
+      exportSignal(failure(ExportError.INVALID_PASSWORD))
+    ])
+  })
+
+  it('succeeds if local `targetKey` matches', async () => {
+    configureSodiumClient((mockSodiumClient) => {
+      when(mockSodiumClient.computeAuthDigestAndEncryptionKey(
+        'salt', 'password'
+      )).thenResolve({
+        authDigest: 'hash',
+        encryptionKey: 'depotKey'
+      })
+    })
+
+    const emission = await testEpic([
+      depotActivationData(createDepotActivationData({}))
+    ], export_({ password: 'password' }))
+
+    expect(emission).to.deep.equal([
+      exportSignal(indicator(OperationIndicator.WORKING)),
+      exportSignal(success([]))
+    ])
+  })
+
+  it('throws if no `targetKey` is available', async () => {
+    const emission = await testEpic([], export_({ password: 'password' }))
+
+    expect(emission).to.deep.equal([
+      exportSignal(indicator(OperationIndicator.WORKING)),
+      exportSignal(exception('Error: Neither remote nor local `targetKey` is available'))
+    ])
   })
 })

@@ -16,10 +16,11 @@ export const activateDepot = createAction('depot/activate')<DeepReadonly<{
   username: string;
   password: string;
 }>>()
-export const depotActivationData = createAction('depot/activationData')<DeepReadonly<{
+export interface DepotActivationData {
   username: string;
   salt: string;
   hash: string;
   depotKey: string;
-}>>()
+}
+export const depotActivationData = createAction('depot/activationData')<DeepReadonly<DepotActivationData>>()
 export const clearDepot = createAction('depot/clear')()

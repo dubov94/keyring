@@ -2,6 +2,7 @@ import { DeepReadonly } from 'ts-essentials'
 import { createAction } from 'typesafe-actions'
 import { Key, Password, WithKeyAttrs, WithKeyId } from '@/redux/domain'
 import { StandardError, FlowSignal } from '@/redux/flow_signal'
+import { Clique } from './selectors'
 
 export const extractPassword = <T extends DeepReadonly<Password>>(object: T): DeepReadonly<Password> => ({
   value: object.value,
@@ -64,3 +65,11 @@ export const cliqueObliterationSignal = createAction('user/keys/cliqueObliterati
 
 export const acquireCliqueLock = createAction('user/keys/acquireCliqueLock')<string>()
 export const releaseCliqueLock = createAction('user/keys/releaseCliqueLock')<string>()
+
+export const export_ = createAction('user/keys/export')<DeepReadonly<{ password: string }>>()
+export enum ExportError {
+  INVALID_PASSWORD = 'INVALID_PASSWORD',
+}
+export const exportSignal = createAction('user/keys/exportSignal')<DeepReadonly<
+  FlowSignal<OperationIndicator, DeepReadonly<Clique[]>, StandardError<ExportError>
+>>>()
