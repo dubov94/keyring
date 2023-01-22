@@ -39,13 +39,14 @@ export const deserializeVault = (csv: string): either.Either<ImportError, Import
   const importedRows: ImportedRow[] = []
   for (const item of results.data) {
     const labels: string[] = []
-    for (const [columnName, value] of Object.entries(item)) {
+    for (const columnName of results.meta.fields) {
       if (columnName === PASSWORD_COLUMN) {
         continue
       }
       if (PRIORITY_COLUMNS.includes(columnName)) {
         continue
       }
+      const value = item[columnName]
       if (!isEmpty(value)) {
         labels.push(value)
       }
