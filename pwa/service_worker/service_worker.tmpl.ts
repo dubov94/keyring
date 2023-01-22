@@ -74,6 +74,7 @@ const getActiveSw = async (): Promise<OptionalActiveSw> => {
   for (const entry of entries) {
     if (entry.event === SwEventType.INSTALL &&
         activated.has(entry.version)) {
+      console.info(`Active SW is ${entry.version}`)
       return {
         version: entry.version,
         checkTs: entry.timestamp
@@ -82,6 +83,7 @@ const getActiveSw = async (): Promise<OptionalActiveSw> => {
       activated.add(entry.version);
     }
   }
+  console.info('No active SW found')
   return null;
 };
 
@@ -104,6 +106,7 @@ const isSwOutdated = (activeSw: OptionalActiveSw) => {
 };
 
 const writeSwEvent = async (eventName) => {
+  console.info(`Saving SW event '${eventName}' for ${APP_VERSION}`)
   await getDatabase().swEvents.add({
     version: APP_VERSION,
     event: eventName,
@@ -112,8 +115,10 @@ const writeSwEvent = async (eventName) => {
 };
 
 const installHandler = async () => {
+  console.info(`Installing ${APP_VERSION}`)
   await precacheController.install();
   if (isSwOutdated(await getActiveSw())) {
+    console.info('Active SW is obsolete, skipping waiting')
     await scope.skipWaiting();
   }
   await writeSwEvent(SwEventType.INSTALL);
@@ -141,8 +146,12 @@ const reloadCachedClients = async () => {
   windowClients.forEach(async (client) => {
     try {
       const record = await getClientById(client.id);
-      if (record === null ||
-          record.origin === ClientOrigin.CACHE) {
+      if (record === null) {
+        console.info(`Client ${client.id} was not recorded`)
+        return
+      }
+      console.info(`Client ${client.id} is from '${record.origin}'`)
+      if (record.origin === ClientOrigin.CACHE) {
         await (client as WindowClient).navigate(client.url);
       }
     } catch (error) {
@@ -167,9 +176,11 @@ const deleteObsoleteClients = async () => {
 };
 
 const activateHandler = async () => {
+  console.info(`Activating ${APP_VERSION}`)
   await caches.delete(workbox.core.cacheNames.runtime);
   await precacheController.activate();
   if (isSwOutdated(await getActiveSw())) {
+    console.info('Active SW is obsolete, reloading clients')
     await reloadCachedClients();
   }
   await deleteObsoleteSwEvents();
@@ -192,6 +203,7 @@ const getFromPrecache = async (cacheKey: string): Promise<Response> => {
 };
 
 const saveClient = async (clientId: string, origin: ClientOrigin) => {
+  console.log(`Saving client ${clientId} from '${origin}'`)
   // `clientId` is universally unique.
   await getDatabase().clients.add({
     clientId,
@@ -212,12 +224,14 @@ const loadEntryPoint = async (clientId: string): Promise<Response> => {
       timeoutPromise
     ]);
     if (result !== null && result.ok) {
+      console.info(`Serving '${indexCacheKey}' from network`)
       await saveClient(clientId, ClientOrigin.NETWORK);
       return result;
     }
   } catch (error) {
     console.warn(error);
   }
+  console.info(`Serving '${indexCacheKey}' from precache`)
   const response = await getFromPrecache(indexCacheKey);
   await saveClient(clientId, ClientOrigin.CACHE);
   return response;
@@ -229,11 +243,13 @@ const router = new workbox.routing.Router();
 scope.addEventListener('fetch', (event) => {
   // https://fetch.spec.whatwg.org/#dom-requestmode-navigate
   if (event.request.mode === 'navigate') {
+    console.info(`Navigation event, \`resultingClientId\` is ${event.resultingClientId}`)
     event.respondWith(loadEntryPoint(event.resultingClientId));
     return;
   }
   const cacheKey = precacheController.getCacheKeyForURL(event.request.url);
   if (cacheKey) {
+    console.info(`Getting '${cacheKey}' from precache`)
     event.respondWith(getFromPrecache(cacheKey));
     return;
   }
