@@ -1,7 +1,7 @@
 <template>
   <v-expansion-panel>
     <v-expansion-panel-header disable-icon-rotate>
-      Compromised passwords
+      Found in data breaches
       <template v-if="!inProgress">({{ keyCount }})</template>
       <template v-slot:actions>
         <v-progress-circular v-if="inProgress" color="primary"
