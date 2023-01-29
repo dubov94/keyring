@@ -54,6 +54,8 @@ export class SodiumClient {
     }
   }
 
+  // https://crypto.stackexchange.com/q/102449 and the references there are a
+  // good starting point for this scheme analysis.
   async computeAuthDigestAndEncryptionKey (parametrization: string, password: string): Promise<MasterKeyDerivatives> {
     const hash = await this.computeArgon2HashForDigestAndKey(parametrization, password)
     return this.extractAuthDigestAndEncryptionKey(hash)
