@@ -2,7 +2,7 @@ import { AnyAction, configureStore } from '@reduxjs/toolkit'
 import { retryBackoff } from 'backoff-rxjs'
 import isEqual from 'lodash/isEqual'
 import { combineEpics, createEpicMiddleware, Epic } from 'redux-observable'
-import { BehaviorSubject, defer, EMPTY, fromEvent, Subject, timer } from 'rxjs'
+import { BehaviorSubject, defer, EMPTY, Subject, timer } from 'rxjs'
 import { concatMapTo, distinctUntilChanged, exhaustMap, filter, map, switchMap, takeUntil, tap } from 'rxjs/operators'
 import { isActionOf } from 'typesafe-actions'
 import { getAdministrationApi } from '@/api/api_di'
@@ -17,6 +17,7 @@ import { logOut, LogoutTrigger } from './modules/user/account/actions'
 import * as userAccountEpics from './modules/user/account/epics'
 import * as userKeysEpics from './modules/user/keys/epics'
 import * as userSecurityEpics from './modules/user/security/epics'
+import { createIdleDetector } from './idle'
 import { RootAction } from './root_action'
 import { reducer, RootState } from './root_reducer'
 import { LOCAL_STORAGE_ACCESSOR, SESSION_STORAGE_ACCESSOR } from './storages'
@@ -95,15 +96,13 @@ state$.pipe(
 })
 
 // Session maintenance.
-const SESSION_LIFETIME_IN_MILLIS = 10 * 60 * 1000
+const SESSION_LIFETIME_MILLIS = 10 * 60 * 1000
 
-fromEvent(document, 'visibilitychange').pipe(switchMap(() => {
-  if (document.visibilityState !== 'visible') {
-    // https://stackoverflow.com/q/6346849
-    return timer(SESSION_LIFETIME_IN_MILLIS)
+const [idle$] = createIdleDetector(1000)
+idle$.subscribe((periodMillis) => {
+  if (periodMillis < SESSION_LIFETIME_MILLIS) {
+    return
   }
-  return EMPTY
-})).subscribe(() => {
   if (state$.getValue().user.account.isAuthenticated) {
     store.dispatch(logOut(LogoutTrigger.SESSION_EXPIRATION))
   }
@@ -113,7 +112,7 @@ state$.pipe(
   map((state) => state.user.account.sessionKey),
   distinctUntilChanged(isEqual),
   switchMap((sessionKey) => {
-    const halfLifetime = SESSION_LIFETIME_IN_MILLIS / 2
+    const halfLifetime = SESSION_LIFETIME_MILLIS / 2
     return sessionKey === null ? EMPTY : timer(halfLifetime, halfLifetime).pipe(
       exhaustMap(() => defer(() => getAdministrationApi().administrationKeepAlive({}, {
         headers: {
