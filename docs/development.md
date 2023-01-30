@@ -30,6 +30,11 @@ starting a local instance on Linux (or
 Note that in the development environment activation tokens are not sent by email
 &mdash; instead they are printed to the console.
 
+## Testing
+
+* `bazelisk test $(bazelisk query 'tests(//server/...)')`
+* `bazelisk test //pwa:unit_tests`
+
 ## Liquibase
 
 Database upgrades are managed by
