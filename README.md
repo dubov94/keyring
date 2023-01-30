@@ -45,4 +45,8 @@ Other handy features include [two-factor authentication](https://cheatsheetserie
   </kbd>
 </div>
 
-## Techdeck
+## Techlinks
+
+- Details of [the architecture](/docs/architecture.md)
+- [Development](/docs/development.md) instructions
+- [Deployment](/docs/deployment.md) of the service
