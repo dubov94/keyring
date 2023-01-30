@@ -227,3 +227,19 @@ DROP INDEX IF EXISTS "idxn3qd43ibuyr8s8k56fxv60quj";
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'mail_tokens' and column_name = 'state'
 ALTER TABLE "public"."mail_tokens" ADD COLUMN "state" INTEGER;
 UPDATE "public"."mail_tokens" SET "state" = 1;
+
+-- changeset liquibase:31
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:1 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'feature_prompts' and column_name = 'fuzzy_search'
+ALTER TABLE "public.feature_prompts" DROP COLUMN "fuzzy_search";
+
+-- changeset liquibase:32
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:1 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'feature_prompts' and column_name = 'otp'
+ALTER TABLE "public.feature_prompts" DROP COLUMN "otp";
+
+-- changeset liquibase:33
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'feature_prompts' and column_name = 'release'
+ALTER TABLE "public"."feature_prompts" ADD COLUMN "release" BOOLEAN;
+UPDATE "public"."feature_prompts" SET "release" = TRUE;

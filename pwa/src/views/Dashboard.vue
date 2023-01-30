@@ -32,13 +32,13 @@
       <v-container fluid class="pt-8">
         <v-row v-if="anyFeaturePrompts">
           <v-col :cols="12">
-            <v-alert :value="otpPrompt" @input="ackOtpPrompt"
+            <v-alert :value="releasePrompt" @input="ackReleasePrompt"
               type="info" outlined dismissible border="left" class="mb-0">
-              You can enable two-factor authentication in <router-link to="/settings">settings</router-link> now.
-            </v-alert>
-            <v-alert :value="fuzzySearchPrompt" @input="ackFuzzySearchPrompt"
-              type="info" outlined dismissible border="left" class="mb-0">
-              Search is no longer prefix-based &mdash; one can type 'vidi' to find an entry labelled as 'Veni, vidi, vici'.
+              🎉 Parolica has reached its release milestone &mdash; check out
+              <external-link href="https://github.com/dubov94/keyring#readme">the documentation</external-link>,
+              feel free to file
+              <external-link href="https://github.com/dubov94/keyring/issues">feature requests</external-link>
+              and spread the word!
             </v-alert>
           </v-col>
         </v-row>
@@ -137,13 +137,9 @@ export default (Vue as VueConstructor<Vue>).extend({
     anyFeaturePrompts (): boolean {
       return this.featurePrompts.length > 0
     },
-    otpPrompt (): boolean {
+    releasePrompt (): boolean {
       return this.featurePrompts.findIndex(
-        (fp) => fp.featureType === ServiceFeatureType.OTP) === 0
-    },
-    fuzzySearchPrompt (): boolean {
-      return this.featurePrompts.findIndex(
-        (fp) => fp.featureType === ServiceFeatureType.FUZZYSEARCH) === 0
+        (fp) => fp.featureType === ServiceFeatureType.RELEASE) === 0
     },
     toolbarIsExtended (): boolean {
       return this.$vuetify.breakpoint.xsOnly
@@ -167,11 +163,8 @@ export default (Vue as VueConstructor<Vue>).extend({
     menuSwitch (value: boolean) {
       this.showMenu = value
     },
-    ackOtpPrompt () {
-      this.dispatch(ackFeaturePrompt(ServiceFeatureType.OTP))
-    },
-    ackFuzzySearchPrompt () {
-      this.dispatch(ackFeaturePrompt(ServiceFeatureType.FUZZYSEARCH))
+    ackReleasePrompt () {
+      this.dispatch(ackFeaturePrompt(ServiceFeatureType.RELEASE))
     },
     addKey () {
       this.newCliques.unshift(getUidService().v4())

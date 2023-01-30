@@ -25,31 +25,19 @@ public class FeaturePrompts {
 
   @Version private long version;
 
-  @Column private boolean otp;
-
-  @Column(name = "fuzzy_search")
-  private boolean fuzzySearch;
+  @Column private boolean release;
 
   public FeaturePrompts setUser(User user) {
     this.user = user;
     return this;
   }
 
-  public boolean getOtp() {
-    return otp;
+  public boolean getRelease() {
+    return release;
   }
 
-  public FeaturePrompts setOtp(boolean otp) {
-    this.otp = otp;
-    return this;
-  }
-
-  public boolean getFuzzySearch() {
-    return fuzzySearch;
-  }
-
-  public FeaturePrompts setFuzzySearch(boolean fuzzySearch) {
-    this.fuzzySearch = fuzzySearch;
+  public FeaturePrompts setRelease(boolean release) {
+    this.release = release;
     return this;
   }
 }

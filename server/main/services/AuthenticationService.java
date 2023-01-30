@@ -57,12 +57,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       FEATURE_PROMPT_MAPPERS =
           ImmutableList.of(
               featurePrompts ->
-                  featurePrompts.getOtp()
-                      ? Optional.of(datalessFeaturePrompt(FeatureType.OTP))
-                      : Optional.empty(),
-              featurePrompts ->
-                  featurePrompts.getFuzzySearch()
-                      ? Optional.of(datalessFeaturePrompt(FeatureType.FUZZY_SEARCH))
+                  featurePrompts.getRelease()
+                      ? Optional.of(datalessFeaturePrompt(FeatureType.RELEASE))
                       : Optional.empty());
 
   private AccountOperationsInterface accountOperationsInterface;

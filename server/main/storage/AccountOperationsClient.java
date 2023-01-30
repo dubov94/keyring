@@ -44,11 +44,7 @@ import keyring.server.main.proto.service.Password;
 
 public class AccountOperationsClient implements AccountOperationsInterface {
   private static final ImmutableMap<FeatureType, Consumer<FeaturePrompts>> FEATURE_PROMPT_ACKERS =
-      ImmutableMap.of(
-          FeatureType.OTP,
-          featurePrompts -> featurePrompts.setOtp(false),
-          FeatureType.FUZZY_SEARCH,
-          featurePrompts -> featurePrompts.setFuzzySearch(false));
+      ImmutableMap.of(FeatureType.RELEASE, featurePrompts -> featurePrompts.setRelease(false));
 
   private Chronometry chronometry;
   private Limiters limiters;

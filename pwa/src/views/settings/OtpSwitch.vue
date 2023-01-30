@@ -8,11 +8,9 @@
 </style>
 
 <template>
-  <v-expansion-panel :disabled="!canAccessApi" @change="ackOtpPrompt">
+  <v-expansion-panel :disabled="!canAccessApi">
     <v-expansion-panel-header>
-      <v-badge left dot color="warning" :value="otpPrompt" :offset-x="-2" :offset-y="-2">
-        Two-factor authentication
-      </v-badge>
+      Two-factor authentication
     </v-expansion-panel-header>
     <v-expansion-panel-content>
       <div v-if="isOtpEnabled">
@@ -88,13 +86,11 @@ import { filter, takeUntil } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
 import Vue, { VueConstructor } from 'vue'
 import {
-  ServiceFeatureType,
   ServiceAcceptOtpParamsResponseError,
   ServiceResetOtpResponseError
 } from '@/api/definitions'
 import { isActionSuccess } from '@/redux/flow_signal'
 import {
-  ackFeaturePrompt,
   generateOtpParams,
   otpParamsGenerationReset,
   OtpParams,
@@ -108,7 +104,6 @@ import {
 import {
   isOtpEnabled,
   canAccessApi,
-  featurePrompts,
   OtpParamsGeneration,
   otpParamsGeneration,
   OtpParamsAcceptance,
@@ -123,7 +118,6 @@ const activationIncorrectValidator = remoteDataErrorIndicator(ServiceAcceptOtpPa
 const deactivationIncorrectValidator = remoteDataErrorIndicator(ServiceResetOtpResponseError.INVALIDCODE)
 
 interface Mixins {
-  otpPrompt: boolean;
   activation: { untouchedSinceDispatch: boolean; otp: string };
   deactivation: { untouchedSinceDispatch: boolean; otp: string };
   otpParamsGeneration: DeepReadonly<OtpParamsGeneration>;
@@ -163,10 +157,6 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   computed: {
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
-    },
-    otpPrompt () {
-      return featurePrompts(this.$data.$state).some(
-        (fp) => fp.featureType === ServiceFeatureType.OTP)
     },
     isOtpEnabled (): boolean {
       return isOtpEnabled(this.$data.$state)
@@ -223,11 +213,6 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   methods: {
     generate () {
       this.dispatch(generateOtpParams())
-    },
-    ackOtpPrompt () {
-      if (this.otpPrompt) {
-        this.dispatch(ackFeaturePrompt(ServiceFeatureType.OTP))
-      }
     },
     setActivationOtp (value: string) {
       this.activation.otp = value
