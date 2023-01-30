@@ -1,6 +1,10 @@
 # Development
 
-The project is using [Bazelisk](https://docs.bazel.build/versions/master/install-bazelisk.html) for building, running and testing. These instructions will guide you through starting a local instance on Linux (or [WSL](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux)).
+The project is using
+[Bazelisk](https://docs.bazel.build/versions/master/install-bazelisk.html) for
+building, running and testing. These instructions will guide you through
+starting a local instance on Linux (or
+[WSL](https://en.wikipedia.org/wiki/Windows_Subsystem_for_Linux)).
 
 ## Prerequisites
 
@@ -23,4 +27,20 @@ The project is using [Bazelisk](https://docs.bazel.build/versions/master/install
 * `bazelisk run //:backends` to start the backends
 * `bazelisk run //:pwa` to start the frontend
 
-Note that in the development environment activation tokens are not sent by email &mdash; instead they are printed to the console.
+Note that in the development environment activation tokens are not sent by email
+&mdash; instead they are printed to the console.
+
+## Liquibase
+
+Database upgrades are managed by
+[`changelog.postgresl.sql`](/server/changelog.postgresql.sql). Run
+`generate-changelog` from root to regenerate the changelog from scratch from
+an existing local instance of the `keyring` database. Note that it's created
+by default when `server` is run in the development environment.
+
+```sh
+liquibase --changelog-file=server/changelog.postgresql.sql \
+    --url=jdbc:postgresql://localhost/keyring \
+    --username=postgres --password=postgres \
+    generate-changelog --overwrite-output-file=true
+```
