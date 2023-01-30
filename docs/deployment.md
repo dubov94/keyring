@@ -19,11 +19,11 @@ Infrastructurally the service uses (managed) Kubernetes on DigitalOcean and Goog
   * `loki-stack`
     * connected manually to Grafana from KPS
 
-
-
-## Instructions
-
 See [/k8s/README.md](/k8s/README.md) for deployment instructions.
+
+## Rate limiting
+
+Cloudflare provides caching for the frontends and throttling for the backends (`/api/...`) at 80 RQ10S for one IP.
 
 ## Alerts
 
