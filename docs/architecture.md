@@ -1,6 +1,23 @@
 # Architecture
 
-These notes are mostly concerned with security aspects.
+```mermaid
+graph LR;
+  subgraph k8s[Kubernetes managed by DigitalOcean]
+    subgraph cloudflare[Cloudflare]
+      pwa[Progressive Web App] -- /api/ --> grpc_gateway;
+    end
+    grpc_gateway --> server;
+    server --> ip_geolocation[MaxMind IP Geolocation];
+    server --> postgres[Postgres];
+    server --> redis[Redis];
+    janitor[TTL CronJob] --> postgres;
+    archiver --> server;
+    restorer[/restorer/] -.-> server;
+  end
+  style k8s fill:#deffff,stroke:#33aaaa;
+  archiver --> gcs[Google Cloud Storage];
+  restorer -.-> gcs;
+```
 
 ## Authentication
 
@@ -14,12 +31,14 @@ graph TD;
   hashing --> authn_digest["authn_digest = hash[:32]"];
   hashing --> encryption_key["encryption_key = hash[32:]"];
   authn_digest -- "/log-in { username, authn_digest }" --> authn_check[("sha256(authn_digest) == User.hash")];
-  authn_check -- ok --> encrypted_vault;
-  encrypted_vault --> decrypted_vault;
+  authn_check -- ok --> user_data["{ encrypted_vault, session_token }"];
+  user_data --> decrypted_vault;
   encryption_key -- XSalsa20-Poly1305 --> decrypted_vault;
 ```
 
-Argon2 parameters are generated on the client in [argon2.ts](/pwa/src/cryptography/argon2.ts) during registration. The recommended parameters can be changed if necessary &mdash; that will cause automated rehashes next time users log in.
+* Argon2 parameters are generated on the client in [argon2.ts](/pwa/src/cryptography/argon2.ts) during registration.
+* The recommended parameters can be changed if necessary &mdash; that will cause automated rehashes next time users log in.
+* All types of session tokens are [128-bit long](https://owasp.org/www-community/vulnerabilities/Insufficient_Session-ID_Length).
 
 If 2FA is enabled, `/log-in` does not immediately return the encrypted vault; it should be followed by `/provide-otp`, which accepts both time-based and 128-bit recovery codes and only then returns the encrypted vault.
 
