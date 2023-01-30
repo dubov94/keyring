@@ -1,18 +1,41 @@
-# keyring
+<p align="center">
+  <a href="https://parolica.com">
+    <img src="/pwa/src/logomark.svg" width="64">
+  </a>
+</p>
+<p align="center">
+  <b><a href="https://parolica.com">parolica.com</a></b>
+</p>
+<p align="center">
+  <i>It's all about flexibility</i>
+</p>
+<p align="center">
+  <a href="https://github.com/dubov94/keyring/actions/workflows/release.yml">
+    <img src="https://github.com/dubov94/keyring/actions/workflows/release.yml/badge.svg">
+  </a>
+  <a href="https://github.com/XAMPPRocky/tokei#badges">
+    <!-- https://github.com/XAMPPRocky/tokei#supported-languages -->
+    <img src="https://img.shields.io/tokei/lines/github/dubov94/keyring">
+  </a>
+</p>
 
-[![Release](https://github.com/dubov94/keyring/actions/workflows/release.yml/badge.svg)](https://github.com/dubov94/keyring/actions/workflows/release.yml)
-![Lines of code](https://img.shields.io/tokei/lines/github/dubov94/keyring)<!-- https://github.com/XAMPPRocky/tokei#supported-languages -->
+# [Parolica](https://parolica.com)
 
-## Instructions
+Parolica *(pronounced [[pɐˈrolʲɪtsə]](https://en.wikipedia.org/wiki/International_Phonetic_Alphabet))* is a minimalistic cloud-based [password manager](https://en.wikipedia.org/wiki/Password_manager). My friends like it! 🤭
 
-### Development
+- [🔐 **Zero-knowledge**](https://en.wikipedia.org/wiki/Zero-knowledge_service)
+  - The vault is stored encrypted in the cloud, and can only be decrypted with the master password.
+  - No one can access the data without it. Even the service maintainers.
+- 🗂️ **Free-form metadata**
+  - Each 'secret' &mdash; a password, an [SSH](https://en.wikipedia.org/wiki/Secure_Shell) key or any other private text &mdash; can be associated with one or more labels.
+  - You decide on how to organise them, making search tailored specifically for your needs and habits.
+- 📶 **Offline mode**
+  - Store an encrypted local copy of the vault on the device, available without internet connection.
+- 🔍 **Security scanning**
+  - Analyse the vault for weak, reused and leaked passwords.
 
-Install Python (with PIP and `python-is-python3`), Java 11 and
-[Bazelisk](https://docs.bazel.build/versions/master/install-bazelisk.html) on a
-Linux distribution. You may also need `build-essential` or an alternative.
+Other handy features include [two-factor authentication](https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html), [autosave](https://en.wikipedia.org/wiki/Autosave) (so that you never lose a password even if you forget to explicitly save one while actively switching between windows) and [.csv](https://en.wikipedia.org/wiki/Comma-separated_values) imports / exports.
 
-Set up [Redis](https://redis.io/), [PostgreSQL](https://www.postgresql.org/) with
-`postgres:postgres` as an authentication pair and [Docker](https://www.docker.com/).
+## Screencast
 
-Create a database named `keyring` in PostgreSQL; run `bazelisk run //:backends` to
-spin up the backends and `bazelisk run //:pwa` to serve the frontend.
+## Techdeck
