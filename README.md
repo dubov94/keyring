@@ -35,6 +35,12 @@ Parolica *(pronounced [[pɐˈrolʲɪtsə]](https://en.wikipedia.org/wiki/Interna
 
 Other handy features include [two-factor authentication](https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html), [autosave](https://en.wikipedia.org/wiki/Autosave) (so that you never lose a password even if you forget to explicitly save one while actively switching between windows) and [.csv](https://en.wikipedia.org/wiki/Comma-separated_values) imports / exports.
 
+## Techlinks
+
+- Details of [the architecture](/docs/architecture.md)
+- [Development](/docs/development.md) instructions
+- [Deployment](/docs/deployment.md) of the service
+
 ## Screencast
 
 <div align="center">
@@ -43,9 +49,3 @@ Other handy features include [two-factor authentication](https://cheatsheetserie
     <img src="/docs/getting_started.gif">
   </kbd>
 </div>
-
-## Techlinks
-
-- Details of [the architecture](/docs/architecture.md)
-- [Development](/docs/development.md) instructions
-- [Deployment](/docs/deployment.md) of the service
