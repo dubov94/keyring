@@ -38,4 +38,11 @@ Other handy features include [two-factor authentication](https://cheatsheetserie
 
 ## Screencast
 
+<div align="center">
+  <kbd>
+    <p align="center">getting_started.gif</p>
+    <img src="/docs/getting_started.gif">
+  </kbd>
+</div>
+
 ## Techdeck
