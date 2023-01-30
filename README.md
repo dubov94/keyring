@@ -13,9 +13,8 @@
   <a href="https://github.com/dubov94/keyring/actions/workflows/release.yml">
     <img src="https://github.com/dubov94/keyring/actions/workflows/release.yml/badge.svg">
   </a>
-  <a href="https://github.com/XAMPPRocky/tokei#badges">
-    <!-- https://github.com/XAMPPRocky/tokei#supported-languages -->
-    <img src="https://img.shields.io/tokei/lines/github/dubov94/keyring">
+  <a href="https://github.com/boyter/scc#badges-beta">
+    <img src="https://sloc.xyz/github/dubov94/keyring">
   </a>
 </p>
 
