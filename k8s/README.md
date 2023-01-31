@@ -1,17 +1,12 @@
 # Kubernetes
 
-See ['Storage on DigitalOcean'](https://digitalocean.github.io/navigators-guide/book/03-backup/ch07-storage-on-digitalocean.html#block-storage-volumes)
-for the Block Storage Volume guarantees (including encryption-at-rest).
+* [Application stack](/k8s/application/README.md)
+* [Monitoring stack](/k8s/monitoring/README.md)
 
 ## Prerequisites
 
-Once `kubectl` is configured, install the following.
+*Assuming configured `kubectl`.*
 
 * [`helm`](https://github.com/helm/helm)
 * [`helmfile`](https://github.com/roboll/helmfile)
   * [`helm-diff`](https://github.com/databus23/helm-diff)
-
-## Deployment
-
-See the instructions for [the application stack](/k8s/application/README.md) and
-[the monitoring stack](/k8s/monitoring/README.md).
