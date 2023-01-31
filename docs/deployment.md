@@ -1,6 +1,10 @@
 # Deployment
 
-Infrastructurally the service uses (managed) Kubernetes on DigitalOcean and Google Cloud Storage (GCS) for backups. The stack can be roughly divided into:
+See [/k8s/README.md](/k8s/README.md) for detailed operating instructions.
+
+Infrastructurally the service uses (managed) Kubernetes on DigitalOcean and Google Cloud Storage (GCS) for backups.
+
+## Stack
 
 * `application/`
   * `Ingress`
@@ -19,29 +23,22 @@ Infrastructurally the service uses (managed) Kubernetes on DigitalOcean and Goog
   * `loki-stack`
     * connected manually to Grafana from KPS
 
-See [/k8s/README.md](/k8s/README.md) for deployment instructions.
+## Monitoring
 
-## Rate limiting
+### Rate limiting
 
 Cloudflare provides caching for the frontends and throttling for the backends (`/api/...`) at 80 RQ10S for one IP.
 
-## Alerts
+### Alerts
 
 All of them are installed manually at the moment, and Alertmanager hasn't been explored.
 
-### DigitalOcean
-
-`Memory Utilization` is above 90% for 5 min for any of the cluster nodes.
-
-### Mailgun
-
-> 'The primary account holder will receive an e-mail notification when 50% and 75% of the limit has been crossed.'
-
-The message limit has been set to 1k.
-
-### GCS
-
-`received_bytes_count` in the backup bucket is less than KiB for at least 25 hours (the corresponding `CronJob` runs every day).
+* **DigitalOcean**
+  * `Memory Utilization` is above 90% for 5 min for any of the cluster nodes.
+* **Mailgun**
+  * 'The primary account holder will receive an e-mail notification when 50% and 75% of the limit [1k] has been crossed.'
+* **Google Cloud Storage**
+  * `received_bytes_count` in the backup bucket is less than KiB for at least 25 hours (the corresponding `CronJob` runs every day).
 
 ## Referrals
 
