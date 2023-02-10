@@ -96,12 +96,14 @@ class StorageManagerAspectTest {
 
   @Test
   void executeWithEntityManager_joinPointThrows_closesRemovesReference() throws Throwable {
-    when(mockManagerJoinPoint.proceed()).thenThrow(new RuntimeException());
+    when(mockManagerJoinPoint.proceed()).thenThrow(new RuntimeException("`JoinPoint` threw"));
 
-    assertThrows(
-        RuntimeException.class,
-        () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
+    RuntimeException exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
 
+    assertEquals("`JoinPoint` threw", exception.getMessage());
     verify(mockEntityManager).close();
     assertEquals(null, storageManagerAspect.getContextualEntityManager(null));
   }
@@ -114,13 +116,15 @@ class StorageManagerAspectTest {
               storageManagerAspect.executeWithEntityTransaction(null, mockTransactionJoinPoint);
               return null;
             });
-    doThrow(new RuntimeException()).when(mockEntityTransaction).begin();
+    doThrow(new RuntimeException("Unable to begin")).when(mockEntityTransaction).begin();
     when(mockEntityTransaction.isActive()).thenReturn(false);
 
-    assertThrows(
-        StorageException.class,
-        () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
+    StorageException exception =
+        assertThrows(
+            StorageException.class,
+            () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
 
+    assertEquals("java.lang.RuntimeException: Unable to begin", exception.getMessage());
     verify(mockEntityTransaction, never()).rollback();
   }
 
@@ -132,12 +136,15 @@ class StorageManagerAspectTest {
               storageManagerAspect.executeWithEntityTransaction(null, mockTransactionJoinPoint);
               return null;
             });
-    doThrow(new RuntimeException()).when(mockEntityTransaction).begin();
+    doThrow(new RuntimeException("Unable to begin")).when(mockEntityTransaction).begin();
     when(mockEntityTransaction.isActive()).thenThrow(new RuntimeException());
 
-    assertThrows(
-        StorageException.class,
-        () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
+    StorageException exception =
+        assertThrows(
+            StorageException.class,
+            () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
+
+    assertEquals("java.lang.RuntimeException: Unable to begin", exception.getMessage());
   }
 
   @Test
@@ -149,13 +156,16 @@ class StorageManagerAspectTest {
               return null;
             });
     when(mockTransactionJoinPoint.proceed()).thenReturn(null);
-    doThrow(new RuntimeException()).when(mockEntityTransaction).commit();
+    doThrow(new RuntimeException("Unable to commit")).when(mockEntityTransaction).commit();
     when(mockEntityTransaction.isActive()).thenReturn(true);
-    doThrow(new RuntimeException()).when(mockEntityTransaction).rollback();
+    doThrow(new RuntimeException("Unable to roll back")).when(mockEntityTransaction).rollback();
 
-    assertThrows(
-        StorageException.class,
-        () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
+    StorageException exception =
+        assertThrows(
+            StorageException.class,
+            () -> storageManagerAspect.executeWithEntityManager(null, mockManagerJoinPoint));
+
+    assertEquals("java.lang.RuntimeException: Unable to commit", exception.getMessage());
   }
 
   @Test

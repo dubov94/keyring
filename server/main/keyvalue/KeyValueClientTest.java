@@ -65,8 +65,11 @@ class KeyValueClientTest {
     String sessionToken = generateUniqueToken();
     keyValueClient.createSession(sessionToken, 1L, 7L);
 
-    assertThrows(
-        KeyValueException.class, () -> keyValueClient.createSession(sessionToken, 2L, 14L));
+    KeyValueException exception =
+        assertThrows(
+            KeyValueException.class, () -> keyValueClient.createSession(sessionToken, 2L, 14L));
+
+    assertEquals("https://redis.io/topics/protocol#nil-reply", exception.getMessage());
   }
 
   @Test

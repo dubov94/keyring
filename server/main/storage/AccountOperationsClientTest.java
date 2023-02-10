@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -91,9 +92,15 @@ class AccountOperationsClientTest {
     String username = newRandomUuid();
     accountOperationsClient.createUser(username, "", "", "", "0");
 
-    assertThrows(
-        StorageException.class,
-        () -> accountOperationsClient.createUser(username, "", "", "", "X"));
+    StorageException exception =
+        assertThrows(
+            StorageException.class,
+            () -> accountOperationsClient.createUser(username, "", "", "", "X"));
+
+    assertTrue(
+        Throwables.getRootCause(exception)
+            .getMessage()
+            .contains("duplicate key value violates unique constraint"));
   }
 
   @Test
@@ -149,9 +156,18 @@ class AccountOperationsClientTest {
     long mailTokenId = tuple._2.getIdentifier();
     accountOperationsClient.releaseMailToken(userId, mailTokenId);
 
-    assertThrows(
-        StorageException.class,
-        () -> accountOperationsClient.releaseMailToken(userId, mailTokenId));
+    StorageException exception =
+        assertThrows(
+            StorageException.class,
+            () -> accountOperationsClient.releaseMailToken(userId, mailTokenId));
+
+    assertEquals(
+        String.format(
+            "java.lang.IllegalArgumentException:"
+                + " MailToken %d cannot be released,"
+                + " its state is MAIL_TOKEN_ACCEPTED",
+            mailTokenId),
+        exception.getMessage());
   }
 
   @Test
@@ -212,12 +228,19 @@ class AccountOperationsClientTest {
     long userId = userRefs._1;
     when(mockChronometry.currentTime()).thenReturn(Instant.now());
     long sessionId = createActiveSession(userId, userRefs._2);
-    keyOperationsClient.createKey(
-        sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance());
+    long keyId =
+        keyOperationsClient
+            .createKey(sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
+            .getIdentifier();
 
-    assertThrows(
-        StorageException.class,
-        () -> accountOperationsClient.changeMasterKey(userId, "", "", ImmutableList.of()));
+    StorageException exception =
+        assertThrows(
+            StorageException.class,
+            () -> accountOperationsClient.changeMasterKey(userId, "", "", ImmutableList.of()));
+
+    assertEquals(
+        String.format("java.lang.IllegalArgumentException: Missing `KeyPatch` for key %d", keyId),
+        exception.getMessage());
   }
 
   @Test
@@ -249,11 +272,19 @@ class AccountOperationsClientTest {
             .createSession(userId, userRefs._2, "127.0.0.1", "Chrome/0.0.0", "version")
             .getIdentifier();
 
-    assertThrows(
-        StorageException.class,
-        () ->
-            accountOperationsClient.initiateSession(
-                userId, sessionId, "127.0.0.2", "prefix:initiation-key"));
+    StorageException exception =
+        assertThrows(
+            StorageException.class,
+            () ->
+                accountOperationsClient.initiateSession(
+                    userId, sessionId, "127.0.0.2", "prefix:initiation-key"));
+
+    assertEquals(
+        String.format(
+            "java.lang.IllegalArgumentException:"
+                + " 127.0.0.2 does not match the IP address of session %d",
+            sessionId),
+        exception.getMessage());
   }
 
   @Test
@@ -286,11 +317,19 @@ class AccountOperationsClientTest {
             .createSession(userId, userRefs._2, "127.0.0.1", "Chrome/0.0.0", "version")
             .getIdentifier();
 
-    assertThrows(
-        StorageException.class,
-        () ->
-            accountOperationsClient.activateSession(
-                userId, sessionId, "127.0.0.2", "prefix:initiation-key"));
+    StorageException exception =
+        assertThrows(
+            StorageException.class,
+            () ->
+                accountOperationsClient.activateSession(
+                    userId, sessionId, "127.0.0.2", "prefix:initiation-key"));
+
+    assertEquals(
+        String.format(
+            "java.lang.IllegalArgumentException:"
+                + " 127.0.0.2 does not match the IP address of session %d",
+            sessionId),
+        exception.getMessage());
   }
 
   @Test
@@ -338,8 +377,14 @@ class AccountOperationsClientTest {
     String username = newRandomUuid();
     accountOperationsClient.createUser(username, "", "", "", "");
 
-    assertThrows(
-        StorageException.class, () -> accountOperationsClient.changeUsername(userId, username));
+    StorageException exception =
+        assertThrows(
+            StorageException.class, () -> accountOperationsClient.changeUsername(userId, username));
+
+    assertTrue(
+        Throwables.getRootCause(exception)
+            .getMessage()
+            .contains("duplicate key value violates unique constraint"));
   }
 
   @Test

@@ -121,13 +121,18 @@ class KeyOperationsClientTest {
   void createKey_nonShadowWithParent_throws() {
     long sessionId = createActiveSession(createUniqueUser());
 
-    assertThrows(
-        StorageException.class,
-        () ->
-            keyOperationsClient.createKey(
-                sessionId,
-                Password.getDefaultInstance(),
-                KeyAttrs.newBuilder().setParent(1).build()));
+    StorageException exception =
+        assertThrows(
+            StorageException.class,
+            () ->
+                keyOperationsClient.createKey(
+                    sessionId,
+                    Password.getDefaultInstance(),
+                    KeyAttrs.newBuilder().setParent(1).build()));
+
+    assertEquals(
+        "java.lang.IllegalArgumentException: Shadows must have a non-nil parent",
+        exception.getMessage());
   }
 
   @Test
@@ -140,7 +145,7 @@ class KeyOperationsClientTest {
             .createKey(sessionB, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
             .getIdentifier();
 
-    StorageException thrown =
+    StorageException exception =
         assertThrows(
             StorageException.class,
             () ->
@@ -148,10 +153,11 @@ class KeyOperationsClientTest {
                     sessionA,
                     Password.getDefaultInstance(),
                     KeyAttrs.newBuilder().setIsShadow(true).setParent(foreignParentId).build()));
-    assertTrue(
-        thrown
-            .getMessage()
-            .contains(String.format("Parent %d does not belong to", foreignParentId)));
+    assertEquals(
+        String.format(
+            "java.lang.IllegalArgumentException: Parent %d does not belong to the user",
+            foreignParentId),
+        exception.getMessage());
   }
 
   @Test
@@ -164,7 +170,7 @@ class KeyOperationsClientTest {
             .createKey(sessionId, parent, KeyAttrs.newBuilder().setIsShadow(true).build())
             .getIdentifier();
 
-    StorageException thrown =
+    StorageException exception =
         assertThrows(
             StorageException.class,
             () ->
@@ -173,8 +179,12 @@ class KeyOperationsClientTest {
                     Password.getDefaultInstance(),
                     KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build()));
 
-    assertTrue(
-        thrown.getMessage().contains(String.format("for %d as it's also a shadow", parentId)));
+    assertEquals(
+        String.format(
+            "java.lang.IllegalArgumentException:"
+                + " Cannot create a shadow for %d as it's also a shadow",
+            parentId),
+        exception.getMessage());
   }
 
   @Test
@@ -183,15 +193,17 @@ class KeyOperationsClientTest {
     User user = createUniqueUser();
     long sessionId = createNewSession(user.getIdentifier(), user.getVersion(), "127.0.0.1");
 
-    StorageException thrown =
+    StorageException exception =
         assertThrows(
             StorageException.class,
             () ->
                 keyOperationsClient.createKey(
                     sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance()));
 
-    assertTrue(
-        thrown.getMessage().contains(String.format("`Session` %d is not `ACTIVATED`", sessionId)));
+    assertEquals(
+        String.format(
+            "java.lang.IllegalArgumentException: `Session` %d is not `ACTIVATED`", sessionId),
+        exception.getMessage());
   }
 
   @Test
