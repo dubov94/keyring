@@ -38,6 +38,7 @@ import keyring.server.main.entities.User;
 import keyring.server.main.entities.columns.SessionStage;
 import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.geolocation.GeolocationServiceInterface;
+import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.SessionAccessor;
 import keyring.server.main.keyvalue.KeyValueClient;
 import keyring.server.main.keyvalue.values.KvSession;
@@ -92,6 +93,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private IGoogleAuthenticator googleAuthenticator;
   private Chronometry chronometry;
   private MailNormaliser mailNormaliser;
+  private AgentAccessor agentAccessor;
 
   private static final int OTP_TTS_COUNT = 5;
   private static final String OTP_ISSUER = "parolica.com";
@@ -107,7 +109,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       MailClient mailClient,
       IGoogleAuthenticator googleAuthenticator,
       Chronometry chronometry,
-      MailNormaliser mailNormaliser) {
+      MailNormaliser mailNormaliser,
+      AgentAccessor agentAccessor) {
     this.keyOperationsInterface = keyOperationsInterface;
     this.accountOperationsInterface = accountOperationsInterface;
     this.geolocationServiceInterface = geolocationServiceInterface;
@@ -118,6 +121,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     this.googleAuthenticator = googleAuthenticator;
     this.chronometry = chronometry;
     this.mailNormaliser = mailNormaliser;
+    this.agentAccessor = agentAccessor;
   }
 
   private Either<StatusException, AcquireMailTokenResponse> _acquireMailToken(
@@ -318,17 +322,21 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
 
     Session oldSessionRecord =
         accountOperationsInterface.mustGetSession(userId, oldKvSession.getSessionEntityId());
+    String newIpAddress = agentAccessor.getIpAddress();
     Session newSessionRecord =
         accountOperationsInterface.createSession(
             userId,
             user.getVersion(),
-            oldSessionRecord.getIpAddress(),
+            newIpAddress,
             oldSessionRecord.getUserAgent(),
             oldSessionRecord.getClientVersion());
     long newSessionId = newSessionRecord.getIdentifier();
     String newSessionToken = cryptography.generateTts();
     accountOperationsInterface.activateSession(
-        userId, newSessionId, keyValueClient.convertSessionTokenToKey(newSessionToken));
+        userId,
+        newSessionId,
+        newIpAddress,
+        keyValueClient.convertSessionTokenToKey(newSessionToken));
     keyValueClient.createSession(newSessionToken, userId, newSessionId);
     return Either.right(builder.setSessionKey(newSessionToken).build());
   }

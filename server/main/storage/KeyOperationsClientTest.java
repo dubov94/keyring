@@ -181,7 +181,7 @@ class KeyOperationsClientTest {
   @WithEntityManager
   void createKey_invalidSession_throws() {
     User user = createUniqueUser();
-    long sessionId = createNewSession(user.getIdentifier(), user.getVersion());
+    long sessionId = createNewSession(user.getIdentifier(), user.getVersion(), "127.0.0.1");
 
     StorageException thrown =
         assertThrows(
@@ -326,19 +326,20 @@ class KeyOperationsClientTest {
     return accountOperationsClient.createUser(newRandomUuid(), "", "", "", "")._1;
   }
 
-  private long createNewSession(long userId, long userVersion) {
+  private long createNewSession(long userId, long userVersion, String ipAddress) {
     return accountOperationsClient
-        .createSession(userId, userVersion, "127.0.0.1", "Chrome/0.0.0", "version")
+        .createSession(userId, userVersion, ipAddress, "Chrome/0.0.0", "version")
         .getIdentifier();
   }
 
   private long createActiveSession(User user) {
     long userId = user.getIdentifier();
-    long sessionId = createNewSession(userId, user.getVersion());
+    String ipAddress = "127.0.0.1";
+    long sessionId = createNewSession(userId, user.getVersion(), ipAddress);
     accountOperationsClient.initiateSession(
-        userId, sessionId, String.format("authn:%s", newRandomUuid()));
+        userId, sessionId, ipAddress, String.format("authn:%s", newRandomUuid()));
     accountOperationsClient.activateSession(
-        userId, sessionId, String.format("session:%s", newRandomUuid()));
+        userId, sessionId, ipAddress, String.format("session:%s", newRandomUuid()));
     return sessionId;
   }
 }

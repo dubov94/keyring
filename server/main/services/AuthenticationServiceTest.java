@@ -166,7 +166,7 @@ class AuthenticationServiceTest {
         .createUser("username", "salt", "hash", "mail@example.com", "0");
     verify(mockAccountOperationsInterface).createSession(1L, 0L, IP_ADDRESS, USER_AGENT, VERSION);
     verify(mockKeyValueClient).createSession(sessionToken, 1L, 3L);
-    verify(mockAccountOperationsInterface).activateSession(1L, 3L, "key");
+    verify(mockAccountOperationsInterface).activateSession(1L, 3L, IP_ADDRESS, "key");
     verify(mockMailClient).sendMailVc("mail@example.com", "0");
     verify(mockStreamObserver)
         .onNext(
@@ -286,7 +286,7 @@ class AuthenticationServiceTest {
 
     verify(mockAccountOperationsInterface).createSession(1L, 0L, IP_ADDRESS, USER_AGENT, VERSION);
     verify(mockKeyValueClient).createSession(sessionToken, 1L, 3L);
-    verify(mockAccountOperationsInterface).activateSession(1L, 3L, "key");
+    verify(mockAccountOperationsInterface).activateSession(1L, 3L, IP_ADDRESS, "key");
     verify(mockAccountOperationsInterface).getFeaturePrompts(1L);
     verify(mockStreamObserver)
         .onNext(
@@ -358,6 +358,7 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(Optional.of(2));
     when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
     when(mockCryptography.generateTts()).thenReturn("token");
+    when(mockAgentAccessor.getIpAddress()).thenReturn(IP_ADDRESS);
     when(mockKeyValueClient.convertSessionTokenToKey("token")).thenReturn("key");
     when(mockKeyValueClient.createSession("token", 1L, 3L))
         .thenReturn(KvSession.getDefaultInstance());
@@ -372,7 +373,7 @@ class AuthenticationServiceTest {
     verify(mockKeyValueClient).deleteAuthn("authn");
     verify(mockAccountOperationsInterface).restoreOtpSpareAttempts(1L);
     verify(mockKeyValueClient).createSession("token", 1L, 3L);
-    verify(mockAccountOperationsInterface).activateSession(1L, 3L, "key");
+    verify(mockAccountOperationsInterface).activateSession(1L, 3L, IP_ADDRESS, "key");
     verify(mockAccountOperationsInterface).getFeaturePrompts(1L);
     verify(mockStreamObserver)
         .onNext(
@@ -418,6 +419,7 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.getOtpToken(1L, "otp", false))
         .thenReturn(Optional.of(new OtpToken().setId(42L)));
     when(mockCryptography.generateTts()).thenReturn("token");
+    when(mockAgentAccessor.getIpAddress()).thenReturn(IP_ADDRESS);
     when(mockKeyValueClient.convertSessionTokenToKey("token")).thenReturn("key");
     when(mockKeyValueClient.createSession("token", 1L, 3L))
         .thenReturn(KvSession.getDefaultInstance());
@@ -433,7 +435,7 @@ class AuthenticationServiceTest {
     verify(mockKeyValueClient).deleteAuthn("authn");
     verify(mockAccountOperationsInterface).restoreOtpSpareAttempts(1L);
     verify(mockKeyValueClient).createSession("token", 1L, 3L);
-    verify(mockAccountOperationsInterface).activateSession(1L, 3L, "key");
+    verify(mockAccountOperationsInterface).activateSession(1L, 3L, IP_ADDRESS, "key");
     verify(mockAccountOperationsInterface).getFeaturePrompts(1L);
     verify(mockStreamObserver)
         .onNext(

@@ -40,9 +40,9 @@ public interface AccountOperationsInterface {
 
   Session mustGetSession(long userId, long sessionId);
 
-  void initiateSession(long userId, long sessionId, String key);
+  void initiateSession(long userId, long sessionId, String ipAddress, String key);
 
-  void activateSession(long userId, long sessionId, String key);
+  void activateSession(long userId, long sessionId, String ipAddress, String key);
 
   List<Session> readSessions(long userId, Optional<List<SessionStage>> exceptStages);
 

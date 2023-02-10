@@ -138,16 +138,17 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     User user = entities._1;
     long userId = user.getIdentifier();
     String sessionToken = cryptography.generateTts();
+    String ipAddress = agentAccessor.getIpAddress();
     Session session =
         accountOperationsInterface.createSession(
             userId,
             user.getVersion(),
-            agentAccessor.getIpAddress(),
+            ipAddress,
             agentAccessor.getUserAgent(),
             versionAccessor.getVersion());
     long sessionId = session.getIdentifier();
     accountOperationsInterface.activateSession(
-        userId, sessionId, keyValueClient.convertSessionTokenToKey(sessionToken));
+        userId, sessionId, ipAddress, keyValueClient.convertSessionTokenToKey(sessionToken));
     keyValueClient.createSession(sessionToken, userId, sessionId);
     mailClient.sendMailVc(mail, code);
     return Either.right(
@@ -221,19 +222,20 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         || Objects.equals(user.getState(), UserState.USER_DELETED)) {
       return builder.setError(LogInResponse.Error.INVALID_CREDENTIALS).build();
     }
+    String ipAddress = agentAccessor.getIpAddress();
     long userId = user.getIdentifier();
     Session session =
         accountOperationsInterface.createSession(
             userId,
             user.getVersion(),
-            agentAccessor.getIpAddress(),
+            ipAddress,
             agentAccessor.getUserAgent(),
             versionAccessor.getVersion());
     long sessionEntityId = session.getIdentifier();
     if (user.getOtpSharedSecret() != null) {
       String authnToken = cryptography.generateTts();
       accountOperationsInterface.initiateSession(
-          userId, sessionEntityId, keyValueClient.convertAuthnTokenToKey(authnToken));
+          userId, sessionEntityId, ipAddress, keyValueClient.convertAuthnTokenToKey(authnToken));
       keyValueClient.createAuthn(authnToken, userId, sessionEntityId);
       return builder
           .setOtpContext(
@@ -244,7 +246,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
     String sessionToken = cryptography.generateTts();
     accountOperationsInterface.activateSession(
-        userId, sessionEntityId, keyValueClient.convertSessionTokenToKey(sessionToken));
+        userId, sessionEntityId, ipAddress, keyValueClient.convertSessionTokenToKey(sessionToken));
     keyValueClient.createSession(sessionToken, userId, sessionEntityId);
     return builder.setUserData(newUserData(sessionEntityId, sessionToken, user)).build();
   }
@@ -306,7 +308,10 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     long sessionEntityId = kvAuthn.getSessionEntityId();
     String sessionToken = cryptography.generateTts();
     accountOperationsInterface.activateSession(
-        userId, sessionEntityId, keyValueClient.convertSessionTokenToKey(sessionToken));
+        userId,
+        sessionEntityId,
+        agentAccessor.getIpAddress(),
+        keyValueClient.convertSessionTokenToKey(sessionToken));
     keyValueClient.createSession(sessionToken, userId, sessionEntityId);
     return Either.right(
         builder.setUserData(newUserData(sessionEntityId, sessionToken, user)).build());

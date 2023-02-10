@@ -35,6 +35,7 @@ import keyring.server.main.entities.User;
 import keyring.server.main.entities.columns.SessionStage;
 import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.geolocation.GeolocationServiceInterface;
+import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.SessionAccessor;
 import keyring.server.main.keyvalue.KeyValueClient;
 import keyring.server.main.keyvalue.values.KvSession;
@@ -84,6 +85,7 @@ class AdministrationServiceTest {
   @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
   @Mock private Chronometry mockChronometry;
   @Mock private MailNormaliser mockMailNormaliser;
+  @Mock private AgentAccessor mockAgentAccessor;
 
   private User user =
       new User()
@@ -112,7 +114,8 @@ class AdministrationServiceTest {
             mockMailClient,
             mockGoogleAuthenticator,
             mockChronometry,
-            mockMailNormaliser);
+            mockMailNormaliser,
+            mockAgentAccessor);
     when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
     when(mockSessionAccessor.getUserId()).thenReturn(kvSession.getUserId());
     when(mockSessionAccessor.getKvSession()).thenReturn(kvSession);
@@ -236,12 +239,9 @@ class AdministrationServiceTest {
         .thenReturn(sessions);
     when(mockAccountOperationsInterface.mustGetSession(userId, kvSession.getSessionEntityId()))
         .thenReturn(oldSession);
+    when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.2");
     when(mockAccountOperationsInterface.createSession(
-            userId,
-            0L,
-            oldSession.getIpAddress(),
-            oldSession.getUserAgent(),
-            oldSession.getClientVersion()))
+            userId, 0L, "127.0.0.2", oldSession.getUserAgent(), oldSession.getClientVersion()))
         .thenReturn(new Session().setIdentifier(12L));
     String newSessionToken = "new-session-token";
     when(mockCryptography.generateTts()).thenReturn(newSessionToken);
@@ -263,7 +263,7 @@ class AdministrationServiceTest {
     verify(mockAccountOperationsInterface)
         .changeMasterKey(7L, "prefix", "xiffus", ImmutableList.of(keyPatch));
     verify(mockKeyValueClient).safelyDeleteSeRefs(sessions);
-    verify(mockAccountOperationsInterface).activateSession(userId, 12L, newSessionKey);
+    verify(mockAccountOperationsInterface).activateSession(userId, 12L, "127.0.0.2", newSessionKey);
     verify(mockKeyValueClient).createSession(newSessionToken, userId, 12L);
     verify(mockStreamObserver)
         .onNext(ChangeMasterKeyResponse.newBuilder().setSessionKey("new-session-token").build());
