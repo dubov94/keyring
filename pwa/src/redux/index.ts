@@ -97,7 +97,7 @@ state$.pipe(
 
 // Session maintenance.
 // if_change(session_relative_duration)
-const SESSION_RELATIVE_DURATION_MILLIS = 6 * 60 * 1000
+const SESSION_RELATIVE_DURATION_MILLIS = 10 * 60 * 1000
 // then_change
 
 createIdleDetector(1000).pipe(
