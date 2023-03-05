@@ -23,11 +23,12 @@ Infrastructurally the service uses (managed) Kubernetes on DigitalOcean and Goog
   * `loki-stack`
     * connected manually to Grafana from KPS
 
-## Monitoring
+## Reliability
 
-### Rate limiting
+### Cloudflare
 
-Cloudflare provides caching for the frontends and throttling for the backends (`/api/...`) at 80 RQ10S for one IP.
+* Caching for the frontends at 1 hour TTL.
+* Throttling for the backends (`/api/...`) at 80 RQ10S for one IP.
 
 ### Alerts
 
