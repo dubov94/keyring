@@ -96,11 +96,16 @@ state$.pipe(
 })
 
 // Session maintenance.
-const SESSION_LIFETIME_MILLIS = 10 * 60 * 1000
+// if_change(session_relative_duration)
+const SESSION_RELATIVE_DURATION_MILLIS = 6 * 60 * 1000
+// then_change
 
 const [idle$] = createIdleDetector(1000)
-idle$.subscribe((periodMillis) => {
-  if (periodMillis < SESSION_LIFETIME_MILLIS) {
+idle$.pipe(
+  // To avoid dispatching `logOut` multiple times.
+  takeUntil(action$.pipe(filter(isActionOf(logOut))))
+).subscribe((periodMillis) => {
+  if (periodMillis < SESSION_RELATIVE_DURATION_MILLIS) {
     return
   }
   if (state$.getValue().user.account.isAuthenticated) {
@@ -112,8 +117,8 @@ state$.pipe(
   map((state) => state.user.account.sessionKey),
   distinctUntilChanged(isEqual),
   switchMap((sessionKey) => {
-    const halfLifetime = SESSION_LIFETIME_MILLIS / 2
-    return sessionKey === null ? EMPTY : timer(halfLifetime, halfLifetime).pipe(
+    const halfDuration = SESSION_RELATIVE_DURATION_MILLIS / 2
+    return sessionKey === null ? EMPTY : timer(halfDuration, halfDuration).pipe(
       exhaustMap(() => defer(() => getAdministrationApi().administrationKeepAlive({}, {
         headers: {
           [SESSION_TOKEN_HEADER_NAME]: sessionKey

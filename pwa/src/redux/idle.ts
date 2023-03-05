@@ -1,5 +1,5 @@
-import { fromEvent, merge, Observable, Subject, timer } from 'rxjs'
-import { map, takeUntil } from 'rxjs/operators'
+import { fromEvent, interval, merge, Observable, Subject } from 'rxjs'
+import { map, pairwise, startWith, switchMap, takeUntil } from 'rxjs/operators'
 
 export const DEFAULT_ELEMENT = document
 // https://github.com/SupremeTechnopriest/react-idle-timer/blob/4ebf8894d7d6c2a9c3a601150523e15c74514898/src/utils/defaults.ts
@@ -23,20 +23,26 @@ export const createIdleDetector = (
   element: Document | HTMLElement = DEFAULT_ELEMENT,
   events = DEFAULT_ACITIVTY_EVENTS
 ): [Observable<number>, Subject<void>] => {
-  let lastActivity = Date.now()
+  const start = Date.now()
   const cancel = new Subject<void>()
 
-  merge(...events.map((event) => fromEvent(element, event))).pipe(
-    takeUntil(cancel)
-  ).subscribe(() => {
-    lastActivity = Date.now()
-  })
-
-  // Avoid `setTimeout` due to https://stackoverflow.com/q/6346849.
   return [
-    timer(0, emitEveryMillis).pipe(
-      takeUntil(cancel),
-      map(() => Date.now() - lastActivity)
+    merge(
+      ...events.map((event) => fromEvent(element, event).pipe(
+        map(() => Date.now())
+      ))
+    ).pipe(
+      startWith(start, start),
+      pairwise(),
+      switchMap(([previous, current]) => {
+        // Avoid `setTimeout` due to https://stackoverflow.com/q/6346849.
+        return interval(emitEveryMillis).pipe(
+          map(() => Date.now() - current),
+          // In case the browser went to sleep (and so did `interval`).
+          startWith(current - previous)
+        )
+      }),
+      takeUntil(cancel)
     ),
     cancel
   ]

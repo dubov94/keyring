@@ -25,7 +25,9 @@ import org.hibernate.annotations.OnDeleteAction;
     name = "sessions",
     indexes = {@Index(columnList = "user_identifier")})
 public class Session {
+  // if_change
   public static final int SESSION_RELATIVE_DURATION_S = 10 * 60;
+  // then_change(pwa/src/redux/index.js:session_relative_duration)
   public static final int SESSION_ABSOLUTE_DURATION_H = 2;
   public static final int AUTHN_DURATION_S = 5 * 60;
 
