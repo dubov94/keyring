@@ -100,8 +100,7 @@ state$.pipe(
 const SESSION_RELATIVE_DURATION_MILLIS = 6 * 60 * 1000
 // then_change
 
-const [idle$] = createIdleDetector(1000)
-idle$.pipe(
+createIdleDetector(1000).pipe(
   // To avoid dispatching `logOut` multiple times.
   takeUntil(action$.pipe(filter(isActionOf(logOut))))
 ).subscribe((periodMillis) => {

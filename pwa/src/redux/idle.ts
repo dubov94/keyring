@@ -22,28 +22,22 @@ export const createIdleDetector = (
   emitEveryMillis: number,
   element: Document | HTMLElement = DEFAULT_ELEMENT,
   events = DEFAULT_ACITIVTY_EVENTS
-): [Observable<number>, Subject<void>] => {
+): Observable<number> => {
   const start = Date.now()
-  const cancel = new Subject<void>()
-
-  return [
-    merge(
-      ...events.map((event) => fromEvent(element, event).pipe(
-        map(() => Date.now())
-      ))
-    ).pipe(
-      startWith(start, start),
-      pairwise(),
-      switchMap(([previous, current]) => {
-        // Avoid `setTimeout` due to https://stackoverflow.com/q/6346849.
-        return interval(emitEveryMillis).pipe(
-          map(() => Date.now() - current),
-          // In case the browser went to sleep (and so did `interval`).
-          startWith(current - previous)
-        )
-      }),
-      takeUntil(cancel)
-    ),
-    cancel
-  ]
+  return merge(
+    ...events.map((event) => fromEvent(element, event).pipe(
+      map(() => Date.now())
+    ))
+  ).pipe(
+    startWith(start, start),
+    pairwise(),
+    switchMap(([previous, current]) => {
+      // Avoid `setTimeout` due to https://stackoverflow.com/q/6346849.
+      return interval(emitEveryMillis).pipe(
+        map(() => Date.now() - current),
+        // In case the browser went to sleep (and so did `interval`).
+        startWith(current - previous)
+      )
+    })
+  )
 }
