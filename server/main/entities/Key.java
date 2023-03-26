@@ -34,6 +34,8 @@ import org.hibernate.annotations.TypeDef;
     indexes = {@Index(columnList = "user_identifier"), @Index(columnList = "parent_identifier")})
 @TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class Key {
+  public static final long APPROX_MAX_KEYS_PER_USER = 2048;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;

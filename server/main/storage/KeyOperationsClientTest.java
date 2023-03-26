@@ -335,7 +335,7 @@ class KeyOperationsClientTest {
   }
 
   private User createUniqueUser() {
-    return accountOperationsClient.createUser(newRandomUuid(), "", "", "", "")._1;
+    return accountOperationsClient.createUser(newRandomUuid(), "", "", "127.0.0.1", "", "")._1;
   }
 
   private long createNewSession(long userId, long userVersion, String ipAddress) {

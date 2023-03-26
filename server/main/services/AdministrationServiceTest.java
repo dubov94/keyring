@@ -294,7 +294,8 @@ class AdministrationServiceTest {
     when(mockMailNormaliser.checkAddress("user@mail.com")).thenReturn(true);
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.generateUacs()).thenReturn("17");
-    when(mockAccountOperationsInterface.createMailToken(7L, "user@mail.com", "17"))
+    when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
+    when(mockAccountOperationsInterface.createMailToken(7L, "127.0.0.1", "user@mail.com", "17"))
         .thenReturn(new MailToken().setIdentifier(1L));
 
     administrationService.acquireMailToken(

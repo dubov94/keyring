@@ -141,7 +141,9 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       return Either.right(builder.setError(AcquireMailTokenResponse.Error.INVALID_DIGEST).build());
     }
     String code = cryptography.generateUacs();
-    MailToken mailToken = accountOperationsInterface.createMailToken(userId, mail, code);
+    MailToken mailToken =
+        accountOperationsInterface.createMailToken(
+            userId, agentAccessor.getIpAddress(), mail, code);
     mailClient.sendMailVc(mail, code);
     return Either.right(builder.setTokenId(mailToken.getIdentifier()).build());
   }

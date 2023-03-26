@@ -47,7 +47,7 @@ final class DisabledSessionRecordsTest {
 
   @Test
   void relevantInitiated_keeps() {
-    when(mockChronometry.pastTimestamp(Session.AUTHN_DURATION_S, ChronoUnit.SECONDS))
+    when(mockChronometry.pastTimestamp(Session.AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.ofEpochSecond(1)));
     when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
         .thenReturn(Timestamp.from(Instant.now()));
@@ -67,7 +67,7 @@ final class DisabledSessionRecordsTest {
 
   @Test
   void expiredInitiated_disables() {
-    when(mockChronometry.pastTimestamp(Session.AUTHN_DURATION_S, ChronoUnit.SECONDS))
+    when(mockChronometry.pastTimestamp(Session.AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.ofEpochSecond(2)));
     when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
         .thenReturn(Timestamp.from(Instant.now()));
@@ -87,7 +87,7 @@ final class DisabledSessionRecordsTest {
 
   @Test
   void relevantActivated_keeps() {
-    when(mockChronometry.pastTimestamp(Session.AUTHN_DURATION_S, ChronoUnit.SECONDS))
+    when(mockChronometry.pastTimestamp(Session.AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.now()));
     when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
         .thenReturn(Timestamp.from(Instant.ofEpochSecond(1)));
@@ -107,7 +107,7 @@ final class DisabledSessionRecordsTest {
 
   @Test
   void expiredActivated_disables() {
-    when(mockChronometry.pastTimestamp(Session.AUTHN_DURATION_S, ChronoUnit.SECONDS))
+    when(mockChronometry.pastTimestamp(Session.AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.now()));
     when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
         .thenReturn(Timestamp.from(Instant.ofEpochSecond(2)));

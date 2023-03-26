@@ -135,11 +135,11 @@ class AuthenticationServiceTest {
     when(mockMailNormaliser.checkAddress("mail@example.com")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
     when(mockCryptography.computeHash("digest")).thenReturn("hash");
+    when(mockAgentAccessor.getIpAddress()).thenReturn(IP_ADDRESS);
     when(mockCryptography.generateUacs()).thenReturn("0");
     when(mockAccountOperationsInterface.createUser(
-            "username", "salt", "hash", "mail@example.com", "0"))
+            "username", "salt", "hash", IP_ADDRESS, "mail@example.com", "0"))
         .thenReturn(Tuple.of(new User().setIdentifier(1L), new MailToken().setIdentifier(2L)));
-    when(mockAgentAccessor.getIpAddress()).thenReturn(IP_ADDRESS);
     when(mockAgentAccessor.getUserAgent()).thenReturn(USER_AGENT);
     when(mockVersionAccessor.getVersion()).thenReturn(VERSION);
     String sessionToken = "token";
@@ -163,7 +163,7 @@ class AuthenticationServiceTest {
     verify(mockCryptography).validateA2p("salt");
     verify(mockCryptography).validateDigest("digest");
     verify(mockAccountOperationsInterface)
-        .createUser("username", "salt", "hash", "mail@example.com", "0");
+        .createUser("username", "salt", "hash", IP_ADDRESS, "mail@example.com", "0");
     verify(mockAccountOperationsInterface).createSession(1L, 0L, IP_ADDRESS, USER_AGENT, VERSION);
     verify(mockKeyValueClient).createSession(sessionToken, 1L, 3L);
     verify(mockAccountOperationsInterface).activateSession(1L, 3L, IP_ADDRESS, "key");

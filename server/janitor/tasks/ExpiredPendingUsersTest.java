@@ -49,7 +49,7 @@ final class ExpiredPendingUsersTest {
   void oldActiveUser_keeps() {
     User user = new User().setState(UserState.USER_ACTIVE).setUsername(newRandomUuid());
     persistEntity(user);
-    when(mockChronometry.pastTimestamp(15, ChronoUnit.MINUTES))
+    when(mockChronometry.pastTimestamp(User.PENDING_USER_EXPIRATION_M, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.now()));
 
     expiredPendingUsers.run();
@@ -61,7 +61,7 @@ final class ExpiredPendingUsersTest {
   void oldPendingUser_removes() {
     User user = new User().setState(UserState.USER_PENDING).setUsername(newRandomUuid());
     persistEntity(user);
-    when(mockChronometry.pastTimestamp(15, ChronoUnit.MINUTES))
+    when(mockChronometry.pastTimestamp(User.PENDING_USER_EXPIRATION_M, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.now()));
 
     expiredPendingUsers.run();

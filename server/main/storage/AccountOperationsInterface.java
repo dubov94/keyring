@@ -17,9 +17,9 @@ import keyring.server.main.proto.service.KeyPatch;
 
 public interface AccountOperationsInterface {
   Tuple2<User, MailToken> createUser(
-      String username, String salt, String hash, String mail, String code);
+      String username, String salt, String hash, String ipAddress, String mail, String code);
 
-  MailToken createMailToken(long userId, String mail, String code);
+  MailToken createMailToken(long userId, String ipAddress, String mail, String code);
 
   Optional<MailToken> getMailToken(long userId, long tokenId);
 

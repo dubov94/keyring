@@ -19,6 +19,8 @@ import org.hibernate.annotations.CreationTimestamp;
 @Entity
 @Table(name = "users")
 public class User {
+  public static final long PENDING_USER_EXPIRATION_M = 15;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;

@@ -42,7 +42,7 @@ public final class DisabledSessionRecords implements Runnable {
             criteriaBuilder.equal(sessionRoot.get(Session_.stage), SessionStage.SESSION_INITIATED),
             criteriaBuilder.lessThan(
                 sessionRoot.get(Session_.lastStageChange),
-                chronometry.pastTimestamp(Session.AUTHN_DURATION_S, ChronoUnit.SECONDS)));
+                chronometry.pastTimestamp(Session.AUTHN_EXPIRATION_M, ChronoUnit.MINUTES)));
     Predicate predicateForActivated =
         criteriaBuilder.and(
             criteriaBuilder.equal(sessionRoot.get(Session_.stage), SessionStage.SESSION_ACTIVATED),
@@ -50,6 +50,7 @@ public final class DisabledSessionRecords implements Runnable {
                 sessionRoot.get(Session_.lastStageChange),
                 // Technically this is an upper bound.
                 chronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS)));
+    // Leaves `SESSION_DISABLED` intact.
     criteriaUpdate.where(criteriaBuilder.or(predicateForInitiated, predicateForActivated));
     entityManager.createQuery(criteriaUpdate).executeUpdate();
   }

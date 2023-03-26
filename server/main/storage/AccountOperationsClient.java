@@ -61,7 +61,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public Tuple2<User, MailToken> createUser(
-      String username, String salt, String hash, String mail, String code) {
+      String username, String salt, String hash, String ipAddress, String mail, String code) {
+    limiters.checkMailTokensPerIpAddress(entityManager, ipAddress, /* toAdd */ 1);
     User user =
         new User()
             .setState(UserState.USER_PENDING)
@@ -83,7 +84,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public MailToken createMailToken(long userId, String mail, String code) {
+  public MailToken createMailToken(long userId, String ipAddress, String mail, String code) {
+    limiters.checkMailTokensPerIpAddress(entityManager, ipAddress, /* toAdd */ 1);
     limiters.checkMailTokensPerUser(entityManager, userId, /* toAdd */ 1);
     MailToken mailToken =
         new MailToken()

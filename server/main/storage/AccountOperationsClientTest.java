@@ -43,6 +43,8 @@ import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
 class AccountOperationsClientTest {
+  private static final String IP_ADDRESS = "127.0.0.1";
+
   @Mock private Chronometry mockChronometry;
   private AccountOperationsClient accountOperationsClient;
   private KeyOperationsClient keyOperationsClient;
@@ -57,11 +59,11 @@ class AccountOperationsClientTest {
   void beforeEach() {
     Limiters limiters =
         new Limiters(
-            /* approxMaxKeysPerUser */ 8,
-            /* approxMaxMailTokensPerUser */ 4,
-            /* approxMaxMailTokensPerAddress */ 2,
-            /* approxMaxRecentSessionsPerUser */ 15,
-            /* approxMaxOtpParamsPerUser */ 4);
+            Key.APPROX_MAX_KEYS_PER_USER,
+            MailToken.APPROX_MAX_MAIL_TOKENS_PER_USER,
+            MailToken.APPROX_MAX_MAIL_TOKENS_PER_IP_ADDRESS,
+            Session.APPROX_MAX_LAST_HOUR_SESSIONS_PER_USER,
+            OtpParams.APPROX_MAX_OTP_PARAMS_PER_USER);
     accountOperationsClient =
         new AccountOperationsClient(mockChronometry, limiters, /* initialSpareAttempts */ 5);
     keyOperationsClient = new KeyOperationsClient(limiters);
@@ -72,7 +74,8 @@ class AccountOperationsClientTest {
   void createUser_getsUniqueUsername_postsUserAndMailToken() {
     String username = newRandomUuid();
     Tuple2<User, MailToken> tuple =
-        accountOperationsClient.createUser(username, "salt", "hash", "mail@example.com", "0");
+        accountOperationsClient.createUser(
+            username, "salt", "hash", IP_ADDRESS, "mail@example.com", "0");
 
     MailToken mailToken = tuple._2;
     assertEquals(MailTokenState.MAIL_TOKEN_PENDING, mailToken.getState());
@@ -90,12 +93,12 @@ class AccountOperationsClientTest {
   @WithEntityManager
   void createUser_getsExistingUsername_throwsException() {
     String username = newRandomUuid();
-    accountOperationsClient.createUser(username, "", "", "", "0");
+    accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "0");
 
     StorageException exception =
         assertThrows(
             StorageException.class,
-            () -> accountOperationsClient.createUser(username, "", "", "", "X"));
+            () -> accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "X"));
 
     assertTrue(
         Throwables.getRootCause(exception)
@@ -107,7 +110,8 @@ class AccountOperationsClientTest {
   @WithEntityManager
   void getMailToken_foreignToken_returnsEmpty() {
     String username = newRandomUuid();
-    Tuple2<User, MailToken> user = accountOperationsClient.createUser(username, "", "", "", "A");
+    Tuple2<User, MailToken> user =
+        accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "A");
 
     assertFalse(
         accountOperationsClient
@@ -120,9 +124,9 @@ class AccountOperationsClientTest {
   void latestMailToken_sortsByCreationTime() {
     long userId = createActiveUser()._1;
 
-    accountOperationsClient.createMailToken(userId, "fst@domain.com", "fst");
-    accountOperationsClient.createMailToken(userId, "snd@domain.com", "snd");
-    accountOperationsClient.createMailToken(userId, "trd@domain.com", "trd");
+    accountOperationsClient.createMailToken(userId, IP_ADDRESS, "fst@domain.com", "fst");
+    accountOperationsClient.createMailToken(userId, IP_ADDRESS, "snd@domain.com", "snd");
+    accountOperationsClient.createMailToken(userId, IP_ADDRESS, "trd@domain.com", "trd");
     MailToken mailToken = accountOperationsClient.latestMailToken(userId).get();
 
     assertEquals("trd@domain.com", mailToken.getMail());
@@ -133,7 +137,7 @@ class AccountOperationsClientTest {
   void releaseMailToken_updatesTokenSetsMailActivatesUser() {
     String username = newRandomUuid();
     Tuple2<User, MailToken> tuple =
-        accountOperationsClient.createUser(username, "", "", "mail@domain.com", "0");
+        accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "mail@domain.com", "0");
     long userId = tuple._1.getIdentifier();
     long mailTokenId = tuple._2.getIdentifier();
 
@@ -151,7 +155,7 @@ class AccountOperationsClientTest {
   void releaseMailToken_acceptedToken_throwsException() {
     String username = newRandomUuid();
     Tuple2<User, MailToken> tuple =
-        accountOperationsClient.createUser(username, "", "", "mail@example.com", "0");
+        accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "mail@example.com", "0");
     long userId = tuple._1.getIdentifier();
     long mailTokenId = tuple._2.getIdentifier();
     accountOperationsClient.releaseMailToken(userId, mailTokenId);
@@ -360,7 +364,9 @@ class AccountOperationsClientTest {
     long userId = createActiveUser()._1;
 
     long mailTokenId =
-        accountOperationsClient.createMailToken(userId, "user@mail.com", "0").getIdentifier();
+        accountOperationsClient
+            .createMailToken(userId, IP_ADDRESS, "user@mail.com", "0")
+            .getIdentifier();
 
     Optional<MailToken> maybeMailToken = accountOperationsClient.getMailToken(userId, mailTokenId);
     assertTrue(maybeMailToken.isPresent());
@@ -375,7 +381,7 @@ class AccountOperationsClientTest {
   void changeUsername_getsExistingUsername_throwsException() {
     long userId = createActiveUser()._1;
     String username = newRandomUuid();
-    accountOperationsClient.createUser(username, "", "", "", "");
+    accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "");
 
     StorageException exception =
         assertThrows(
@@ -508,7 +514,9 @@ class AccountOperationsClientTest {
   void nudgeMailToken_notAvailable_returnsFalse() {
     long userId = createActiveUser()._1;
     long mailTokenId =
-        accountOperationsClient.createMailToken(userId, "mail@domain.com", "A").getIdentifier();
+        accountOperationsClient
+            .createMailToken(userId, IP_ADDRESS, "mail@domain.com", "A")
+            .getIdentifier();
     Instant epochPlusFour = Instant.ofEpochSecond(4);
     Instant epochPlusTwo = Instant.ofEpochSecond(2);
     when(mockChronometry.currentTime()).thenReturn(epochPlusTwo);
@@ -526,7 +534,9 @@ class AccountOperationsClientTest {
   void nudgeMailToken_available_updatesTrail() {
     long userId = createActiveUser()._1;
     long mailTokenId =
-        accountOperationsClient.createMailToken(userId, "mail@domain.com", "A").getIdentifier();
+        accountOperationsClient
+            .createMailToken(userId, IP_ADDRESS, "mail@domain.com", "A")
+            .getIdentifier();
     Instant epochPlusOne = Instant.ofEpochSecond(1);
     Instant epochPlusTwo = Instant.ofEpochSecond(2);
     when(mockChronometry.currentTime()).thenReturn(epochPlusTwo);
@@ -549,7 +559,8 @@ class AccountOperationsClientTest {
 
   private Tuple2<Long, Long> createActiveUser() {
     String username = newRandomUuid();
-    Tuple2<User, MailToken> user = accountOperationsClient.createUser(username, "", "", "", "");
+    Tuple2<User, MailToken> user =
+        accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "");
     long userId = user._1.getIdentifier();
     accountOperationsClient.releaseMailToken(userId, user._2.getIdentifier());
     return Tuple.of(userId, user._1.getVersion());

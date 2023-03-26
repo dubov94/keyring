@@ -22,8 +22,13 @@ import org.hibernate.annotations.OnDeleteAction;
 @Entity
 @Table(
     name = "mail_tokens",
-    indexes = {@Index(columnList = "user_identifier")})
+    indexes = {@Index(columnList = "user_identifier"), @Index(columnList = "ip_address")})
 public class MailToken {
+  // Slightly lower than `User.PENDING_USER_EXPIRATION_M`.
+  public static final long MAIL_TOKEN_EXPIRATION_M = 10;
+  public static final long APPROX_MAX_MAIL_TOKENS_PER_USER = 4;
+  public static final long APPROX_MAX_MAIL_TOKENS_PER_IP_ADDRESS = 64;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
@@ -36,13 +41,12 @@ public class MailToken {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private User user;
 
+  @Column(name = "ip_address", columnDefinition = "text")
+  private String ipAddress;
+
   @Column(columnDefinition = "text")
   private String code;
 
-  // To limit emails per address there should be a separate column for normalisation.
-  // Java does not provide a viable option (https://stackoverflow.com/a/14525933), so
-  // the solution is likely to be creating a separate Go service based on libraries from
-  // https://github.com/avelino/awesome-go#email.
   @Column(columnDefinition = "text")
   private String mail;
 
@@ -76,6 +80,13 @@ public class MailToken {
 
   public MailToken setUser(User user) {
     this.user = user;
+    return this;
+  }
+
+  public MailToken setIpAddress(String ipAddress) {
+    // https://stackoverflow.com/q/166132
+    Preconditions.checkArgument(ipAddress.length() <= 64);
+    this.ipAddress = ipAddress;
     return this;
   }
 

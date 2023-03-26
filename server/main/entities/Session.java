@@ -26,10 +26,13 @@ import org.hibernate.annotations.OnDeleteAction;
     indexes = {@Index(columnList = "user_identifier")})
 public class Session {
   // if_change
-  public static final int SESSION_RELATIVE_DURATION_S = 10 * 60;
+  // Maximum allowed idle time between two requests.
+  public static final int SESSION_RELATIVE_DURATION_M = 10;
   // then_change(pwa/src/redux/index.js:session_relative_duration)
   public static final int SESSION_ABSOLUTE_DURATION_H = 2;
-  public static final int AUTHN_DURATION_S = 5 * 60;
+  public static final int AUTHN_EXPIRATION_M = 5;
+  public static final long APPROX_MAX_LAST_HOUR_SESSIONS_PER_USER = 60 / 4;
+  public static final long SESSION_RETENTION_PERIOD_D = 28;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

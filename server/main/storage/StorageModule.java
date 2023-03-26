@@ -8,6 +8,10 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import keyring.server.main.Chronometry;
 import keyring.server.main.Environment;
+import keyring.server.main.entities.Key;
+import keyring.server.main.entities.MailToken;
+import keyring.server.main.entities.OtpParams;
+import keyring.server.main.entities.Session;
 
 @Module
 public class StorageModule {
@@ -27,11 +31,11 @@ public class StorageModule {
   @Singleton
   static Limiters provideLimiters() {
     return new Limiters(
-        /* approxMaxKeysPerUser */ 2048,
-        /* approxMaxMailTokensPerUser */ 4,
-        /* approxMaxMailTokensPerAddress */ 2,
-        /* approxMaxRecentSessionsPerUser */ 15,
-        /* approxMaxOtpParamsPerUser */ 4);
+        Key.APPROX_MAX_KEYS_PER_USER,
+        MailToken.APPROX_MAX_MAIL_TOKENS_PER_USER,
+        MailToken.APPROX_MAX_MAIL_TOKENS_PER_IP_ADDRESS,
+        Session.APPROX_MAX_LAST_HOUR_SESSIONS_PER_USER,
+        OtpParams.APPROX_MAX_OTP_PARAMS_PER_USER);
   }
 
   @Provides

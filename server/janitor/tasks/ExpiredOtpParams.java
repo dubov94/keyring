@@ -33,7 +33,7 @@ public final class ExpiredOtpParams implements Runnable {
     criteriaDelete.where(
         criteriaBuilder.lessThan(
             otpParamsRoot.get(OtpParams_.creationTimestamp),
-            chronometry.pastTimestamp(10, ChronoUnit.MINUTES)));
+            chronometry.pastTimestamp(OtpParams.OTP_PARAMS_EXPIRATION_M, ChronoUnit.MINUTES)));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }
 }

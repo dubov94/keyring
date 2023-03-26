@@ -20,6 +20,8 @@ import org.hibernate.annotations.OnDeleteAction;
     indexes = {@Index(columnList = "user_identifier")},
     uniqueConstraints = {@UniqueConstraint(columnNames = {"user_identifier", "value"})})
 public class OtpToken {
+  public static final long OTP_TOKEN_EXPIRATION_D = 3 * 28;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;

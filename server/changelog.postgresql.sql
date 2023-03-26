@@ -243,3 +243,11 @@ ALTER TABLE "public"."feature_prompts" DROP COLUMN "otp";
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'feature_prompts' and column_name = 'release'
 ALTER TABLE "public"."feature_prompts" ADD COLUMN "release" BOOLEAN;
 UPDATE "public"."feature_prompts" SET "release" = TRUE;
+
+-- changeset liquibase:34
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'mail_tokens' and column_name = 'ip_address'
+ALTER TABLE "public"."mail_tokens" ADD COLUMN "ip_address" TEXT;
+
+-- changeset liquibase:35
+CREATE INDEX IF NOT EXISTS "idxl5uyiwnyq34h45vftpj88ganp" ON "public"."mail_tokens" ("ip_address");

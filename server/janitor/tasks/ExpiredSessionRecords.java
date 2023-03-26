@@ -31,7 +31,8 @@ public final class ExpiredSessionRecords implements Runnable {
     Root<Session> sessionRoot = criteriaDelete.from(Session.class);
     criteriaDelete.where(
         criteriaBuilder.lessThan(
-            sessionRoot.get(Session_.timestamp), chronometry.pastTimestamp(28, ChronoUnit.DAYS)));
+            sessionRoot.get(Session_.timestamp),
+            chronometry.pastTimestamp(Session.SESSION_RETENTION_PERIOD_D, ChronoUnit.DAYS)));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }
 }

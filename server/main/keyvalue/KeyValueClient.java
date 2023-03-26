@@ -45,7 +45,7 @@ public class KeyValueClient {
           jedis.set(
               convertSessionTokenToKey(sessionToken),
               base64Encoder.encodeToString(kvSession.toByteArray()),
-              new SetParams().nx().ex(Session.SESSION_RELATIVE_DURATION_S));
+              new SetParams().nx().ex(Session.SESSION_RELATIVE_DURATION_M * 60));
       if (status == null) {
         throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
       }
@@ -58,7 +58,8 @@ public class KeyValueClient {
       String sessionKey = convertSessionTokenToKey(sessionToken);
       Optional<String> serializedKvSession =
           Optional.ofNullable(
-              jedis.getEx(sessionKey, new GetExParams().ex(Session.SESSION_RELATIVE_DURATION_S)));
+              jedis.getEx(
+                  sessionKey, new GetExParams().ex(Session.SESSION_RELATIVE_DURATION_M * 60)));
       return serializedKvSession
           .map(
               string -> {
@@ -101,7 +102,7 @@ public class KeyValueClient {
           jedis.set(
               convertAuthnTokenToKey(authnToken),
               base64Encoder.encodeToString(kvAuthn.toByteArray()),
-              new SetParams().nx().ex(Session.AUTHN_DURATION_S));
+              new SetParams().nx().ex(Session.AUTHN_EXPIRATION_M * 60));
       if (status == null) {
         throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
       }

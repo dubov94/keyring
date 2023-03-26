@@ -131,14 +131,14 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
     String salt = request.getSalt();
     String hash = cryptography.computeHash(request.getDigest());
+    String ipAddress = agentAccessor.getIpAddress();
     String mail = request.getMail();
     String code = cryptography.generateUacs();
     Tuple2<User, MailToken> entities =
-        accountOperationsInterface.createUser(username, salt, hash, mail, code);
+        accountOperationsInterface.createUser(username, salt, hash, ipAddress, mail, code);
     User user = entities._1;
     long userId = user.getIdentifier();
     String sessionToken = cryptography.generateTts();
-    String ipAddress = agentAccessor.getIpAddress();
     Session session =
         accountOperationsInterface.createSession(
             userId,

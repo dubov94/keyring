@@ -16,20 +16,20 @@ import keyring.server.main.entities.Session_;
 class Limiters {
   private final long approxMaxKeysPerUser;
   private final long approxMaxMailTokensPerUser;
-  private final long approxMaxMailTokensPerAddress;
-  private final long approxMaxRecentSessionsPerUser;
+  private final long approxMaxMailTokensPerIpAddress;
+  private final long approxMaxLastHourSessionsPerUser;
   private final long approxMaxOtpParamsPerUser;
 
   Limiters(
       long approxMaxKeysPerUser,
       long approxMaxMailTokensPerUser,
-      long approxMaxMailTokensPerAddress,
-      long approxMaxRecentSessionsPerUser,
+      long approxMaxMailTokensPerIpAddress,
+      long approxMaxLastHourSessionsPerUser,
       long approxMaxOtpParamsPerUser) {
     this.approxMaxKeysPerUser = approxMaxKeysPerUser;
     this.approxMaxMailTokensPerUser = approxMaxMailTokensPerUser;
-    this.approxMaxMailTokensPerAddress = approxMaxMailTokensPerAddress;
-    this.approxMaxRecentSessionsPerUser = approxMaxRecentSessionsPerUser;
+    this.approxMaxMailTokensPerIpAddress = approxMaxMailTokensPerIpAddress;
+    this.approxMaxLastHourSessionsPerUser = approxMaxLastHourSessionsPerUser;
     this.approxMaxOtpParamsPerUser = approxMaxOtpParamsPerUser;
   }
 
@@ -54,6 +54,17 @@ class Limiters {
     }
   }
 
+  void checkMailTokensPerIpAddress(EntityManager entityManager, String ipAddress, int toAdd) {
+    long mailTokenCount =
+        Queries.countRowsByValue(entityManager, MailToken.class, MailToken_.ipAddress, ipAddress);
+    if (mailTokenCount + toAdd > approxMaxMailTokensPerIpAddress) {
+      throw new IllegalStateException(
+          String.format(
+              "IP address %s has %d `MailToken`s, which is over the limit (%d)",
+              ipAddress, mailTokenCount, approxMaxMailTokensPerIpAddress));
+    }
+  }
+
   void checkRecentSessionsPerUser(
       Chronometry chronometry, EntityManager entityManager, long userId, int toAdd) {
     List<Session> allSessions =
@@ -66,11 +77,11 @@ class Limiters {
         recentCount += 1;
       }
     }
-    if (recentCount + toAdd > approxMaxRecentSessionsPerUser) {
+    if (recentCount + toAdd > approxMaxLastHourSessionsPerUser) {
       throw new IllegalStateException(
           String.format(
               "User %d has %d `Session`s in the last hour, which is over the limit (%d)",
-              userId, recentCount, approxMaxRecentSessionsPerUser));
+              userId, recentCount, approxMaxLastHourSessionsPerUser));
     }
   }
 

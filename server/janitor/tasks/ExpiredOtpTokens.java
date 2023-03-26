@@ -33,7 +33,7 @@ public final class ExpiredOtpTokens implements Runnable {
         criteriaBuilder.and(
             criteriaBuilder.lessThan(
                 otpTokenRoot.get(OtpToken_.creationTimestamp),
-                chronometry.pastTimestamp(3 * 28, ChronoUnit.DAYS)),
+                chronometry.pastTimestamp(OtpToken.OTP_TOKEN_EXPIRATION_D, ChronoUnit.DAYS)),
             criteriaBuilder.isFalse(otpTokenRoot.get(OtpToken_.isInitial))));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }
