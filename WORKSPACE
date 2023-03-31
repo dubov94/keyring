@@ -102,6 +102,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 ASPECTJ_VERSION = "1.9.5"
 
+# Run `bazel run @unpinned_maven//:pin` to re-pin.
 maven_install(
     artifacts = [
         "com.beust:jcommander:1.78",
@@ -156,7 +157,12 @@ maven_install(
     repositories = [
         "https://repo1.maven.org/maven2",
     ],
+    maven_install_json = "//:maven_install.json",
 )
+
+load("@maven//:defs.bzl", "pinned_maven_install")
+
+pinned_maven_install()
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
 
