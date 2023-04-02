@@ -1,5 +1,5 @@
-import { fromEvent, interval, merge, Observable, Subject } from 'rxjs'
-import { map, pairwise, startWith, switchMap, takeUntil } from 'rxjs/operators'
+import { fromEvent, interval, merge, Observable } from 'rxjs'
+import { map, pairwise, startWith, switchMap } from 'rxjs/operators'
 
 export const DEFAULT_ELEMENT = document
 // https://github.com/SupremeTechnopriest/react-idle-timer/blob/4ebf8894d7d6c2a9c3a601150523e15c74514898/src/utils/defaults.ts
