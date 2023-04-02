@@ -9,8 +9,7 @@ spec:
     spec:
       containers:
       - name: restorer
-        image: dubov94/keyring-restorer
-        imagePullPolicy: Always
+        image: dubov94/keyring-restorer:29df2d62c1bf130749b2b77f3d6901183e65b3ca
         env:
         - name: PGPASSWORD
           valueFrom:
