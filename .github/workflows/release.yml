@@ -18,8 +18,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker tag bazel/grpc_gateway:grpc_gateway docker.io/dubov94/keyring-grpc-gateway:{{ github.sha }}
-      - run: docker push docker.io/dubov94/keyring-grpc-gateway:{{ github.sha }}
+      - run: docker tag bazel/grpc_gateway:grpc_gateway docker.io/dubov94/keyring-grpc-gateway:${{ github.sha }}
+      - run: docker push docker.io/dubov94/keyring-grpc-gateway:${{ github.sha }}
       - run: docker tag bazel/grpc_gateway:grpc_gateway docker.io/dubov94/keyring-grpc-gateway:latest
       - run: docker push docker.io/dubov94/keyring-grpc-gateway:latest
   ip_geolocation:
@@ -34,8 +34,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker tag bazel/ip_geolocation:ip_geolocation docker.io/dubov94/keyring-ip-geolocation:{{ github.sha }}
-      - run: docker push docker.io/dubov94/keyring-ip-geolocation:{{ github.sha }}
+      - run: docker tag bazel/ip_geolocation:ip_geolocation docker.io/dubov94/keyring-ip-geolocation:${{ github.sha }}
+      - run: docker push docker.io/dubov94/keyring-ip-geolocation:${{ github.sha }}
       - run: docker tag bazel/ip_geolocation:ip_geolocation docker.io/dubov94/keyring-ip-geolocation:latest
       - run: docker push docker.io/dubov94/keyring-ip-geolocation:latest
   pwa:
@@ -51,8 +51,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker tag bazel/pwa:pwa docker.io/dubov94/keyring-pwa:{{ github.sha }}
-      - run: docker push docker.io/dubov94/keyring-pwa:{{ github.sha }}
+      - run: docker tag bazel/pwa:pwa docker.io/dubov94/keyring-pwa:${{ github.sha }}
+      - run: docker push docker.io/dubov94/keyring-pwa:${{ github.sha }}
       - run: docker tag bazel/pwa:pwa docker.io/dubov94/keyring-pwa:latest
       - run: docker push docker.io/dubov94/keyring-pwa:latest
   server:
@@ -71,8 +71,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker tag bazel/server:server docker.io/dubov94/keyring-server:{{ github.sha }}
-      - run: docker push docker.io/dubov94/keyring-server:{{ github.sha }}
+      - run: docker tag bazel/server:server docker.io/dubov94/keyring-server:${{ github.sha }}
+      - run: docker push docker.io/dubov94/keyring-server:${{ github.sha }}
       - run: docker tag bazel/server:server docker.io/dubov94/keyring-server:latest
       - run: docker push docker.io/dubov94/keyring-server:latest
   janitor:
@@ -91,8 +91,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker tag bazel/server:janitor docker.io/dubov94/keyring-janitor:{{ github.sha }}
-      - run: docker push docker.io/dubov94/keyring-janitor:{{ github.sha }}
+      - run: docker tag bazel/server:janitor docker.io/dubov94/keyring-janitor:${{ github.sha }}
+      - run: docker push docker.io/dubov94/keyring-janitor:${{ github.sha }}
       - run: docker tag bazel/server:janitor docker.io/dubov94/keyring-janitor:latest
       - run: docker push docker.io/dubov94/keyring-janitor:latest
   liquibase:
@@ -107,8 +107,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker tag bazel/server:liquibase docker.io/dubov94/keyring-liquibase:{{ github.sha }}
-      - run: docker push docker.io/dubov94/keyring-liquibase:{{ github.sha }}
+      - run: docker tag bazel/server:liquibase docker.io/dubov94/keyring-liquibase:${{ github.sha }}
+      - run: docker push docker.io/dubov94/keyring-liquibase:${{ github.sha }}
       - run: docker tag bazel/server:liquibase docker.io/dubov94/keyring-liquibase:latest
       - run: docker push docker.io/dubov94/keyring-liquibase:latest
   archiver:
@@ -123,8 +123,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker tag bazel/server/archiver:archiver docker.io/dubov94/keyring-archiver:{{ github.sha }}
-      - run: docker push docker.io/dubov94/keyring-archiver:{{ github.sha }}
+      - run: docker tag bazel/server/archiver:archiver docker.io/dubov94/keyring-archiver:${{ github.sha }}
+      - run: docker push docker.io/dubov94/keyring-archiver:${{ github.sha }}
       - run: docker tag bazel/server/archiver:archiver docker.io/dubov94/keyring-archiver:latest
       - run: docker push docker.io/dubov94/keyring-archiver:latest
   restorer:
@@ -139,8 +139,8 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker tag bazel/server/restorer:restorer docker.io/dubov94/keyring-restorer:{{ github.sha }}
-      - run: docker push docker.io/dubov94/keyring-restorer:{{ github.sha }}
+      - run: docker tag bazel/server/restorer:restorer docker.io/dubov94/keyring-restorer:${{ github.sha }}
+      - run: docker push docker.io/dubov94/keyring-restorer:${{ github.sha }}
       - run: docker tag bazel/server/restorer:restorer docker.io/dubov94/keyring-restorer:latest
       - run: docker push docker.io/dubov94/keyring-restorer:latest
   redirection:
@@ -155,7 +155,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker tag bazel/redirection:redirection docker.io/dubov94/keyring-redirection:{{ github.sha }}
-      - run: docker push docker.io/dubov94/keyring-redirection:{{ github.sha }}
+      - run: docker tag bazel/redirection:redirection docker.io/dubov94/keyring-redirection:${{ github.sha }}
+      - run: docker push docker.io/dubov94/keyring-redirection:${{ github.sha }}
       - run: docker tag bazel/redirection:redirection docker.io/dubov94/keyring-redirection:latest
       - run: docker push docker.io/dubov94/keyring-redirection:latest
