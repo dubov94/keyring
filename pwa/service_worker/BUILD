@@ -4,10 +4,15 @@ load("//bazel/workspace:substitution.bzl", "status_vars_template")
 
 ts_project(
     name = "service_worker_tsc",
-    srcs = ["service_worker.tmpl.ts"],
+    srcs = [
+        "service_worker.tmpl.ts",
+        "types/workbox.d.ts",
+    ],
     deps = [
-        "@pwa_npm//@types/workbox-sw",
         "@pwa_npm//dexie",
+        "@pwa_npm//workbox-core",
+        "@pwa_npm//workbox-precaching",
+        "@pwa_npm//workbox-routing",
     ],
 )
 

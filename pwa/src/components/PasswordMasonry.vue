@@ -43,11 +43,11 @@ export default Vue.extend({
   props: {
     additions: {
       type: Array as PropType<string[]>,
-      default: () => []
+      default: () => [] as string[]
     },
     cliques: {
       type: Array as PropType<DeepReadonly<Clique>[]>,
-      default: () => []
+      default: () => [] as DeepReadonly<Clique>[]
     },
     idToScore: {
       type: Object as PropType<{ [key: string]: Color }>,

@@ -3,6 +3,10 @@
     "target": "es2019",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["webworker", "esnext"]
+    "lib": ["webworker", "esnext"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./service_worker/types"
+    ]
   }
 }

@@ -23,8 +23,10 @@ module.exports = {
     'vuetify/no-deprecated-props': 'error',
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/consistent-type-assertions': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-extra-semi': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-unused-vars': 'warn'
   },

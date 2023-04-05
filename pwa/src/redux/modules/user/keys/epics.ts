@@ -297,10 +297,13 @@ export const initialCliqueOrderEpic: Epic<RootAction, RootAction, RootState> = (
       (clique) => clique.shadows.length === 0,
       (clique) => fn.pipe(
         getCliqueRepr(clique),
-        option.fold(() => [], (repr) => fn.pipe(
-          repr.tags,
-          readonlyArray.map(string.toLowerCase)
-        ))
+        option.fold(
+          () => <DeepReadonly<string[]>>[],
+          (repr) => fn.pipe(
+            repr.tags,
+            readonlyArray.map(string.toLowerCase)
+          )
+        )
       )
     ).map((clique) => clique.name)
   ))
