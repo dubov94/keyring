@@ -1,11 +1,13 @@
 import { createStore, Store } from '@reduxjs/toolkit'
 import { shallowMount, Wrapper } from '@vue/test-utils'
 import { assert, expect } from 'chai'
+import isNumber from 'lodash/isNumber'
 import { EMPTY, Subject } from 'rxjs'
 import { Writable } from 'ts-essentials'
 import { container } from 'tsyringe'
 import VueRouter from 'vue-router'
 import { Framework } from 'vuetify'
+import { VuetifyGoToTarget } from 'vuetify/types/services/goto'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import { ActionQueue, setUpLocalVue, setUpStateMixin, setUpVuetify } from '@/components/testing'
 import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
@@ -53,7 +55,12 @@ describe('Dashboard', () => {
       ]
     })
     // Alter the framework after the component is instantiated.
-    ;(<Writable<Framework>>vuetify.framework).goTo = <T>(target: T) => Promise.resolve(target)
+    ;(<Writable<Framework>>vuetify.framework).goTo = (target: VuetifyGoToTarget) => {
+      if (!isNumber(target)) {
+        throw new Error(`\`VuetifyGoToTarget\` must be a number: ${target}`)
+      }
+      return Promise.resolve(target)
+    }
   })
 
   const getSearchInput = () => wrapper.findComponent({ name: 'v-text-field' })

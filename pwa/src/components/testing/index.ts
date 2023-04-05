@@ -11,7 +11,7 @@ import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
 
 Vue.use(Vuetify)
-;(globalThis as any).requestAnimationFrame = (callback: () => {}) => callback()
+;(globalThis as any).requestAnimationFrame = (callback: () => void) => callback()
 
 export const setUpLocalVue = (): VueConstructor<Vue> => {
   const localVue = createLocalVue()

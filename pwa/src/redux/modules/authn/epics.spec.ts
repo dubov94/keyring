@@ -16,7 +16,8 @@ import {
   ServiceLogInResponseError,
   ServiceProvideOtpResponse,
   ServiceProvideOtpResponseError,
-  ServiceFeatureType
+  ServiceFeatureType,
+  ServiceFeaturePrompt
 } from '@/api/definitions'
 import { SodiumClient } from '@/cryptography/sodium_client'
 import { Key } from '@/redux/domain'
@@ -613,10 +614,10 @@ describe('remoteAuthnCompleteOnCredentialsEpic', () => {
   }
   const userData = {
     sessionKey: 'sessionKey',
-    featurePrompts: [],
+    featurePrompts: <ServiceFeaturePrompt[]>[],
     mailVerification: defaultMailVerification(),
     mail: 'mail@example.com',
-    userKeys: []
+    userKeys: <Key[]>[]
   }
   const flowResult = {
     ...params,
