@@ -51,7 +51,7 @@ export const shadowElectionSignal = createAction('user/keys/shadowElectionSignal
 
 export const commitShadow = createAction('user/keys/commitShadow')<DeepReadonly<WithClique & Password>>()
 export const shadowCommitmentSignal = createAction('user/keys/shadowCommitmentSignal')<DeepReadonly<
-  FlowSignal<never, {}, string>
+  FlowSignal<never, Record<string, never>, string>
 >, DeepReadonly<WithClique>>()
 export const integrateClique = createAction('user/keys/integrateClique')<DeepReadonly<WithClique>>()
 export const cliqueIntegrationSignal = createAction('user/keys/cliqueIntegrationSignal')<DeepReadonly<

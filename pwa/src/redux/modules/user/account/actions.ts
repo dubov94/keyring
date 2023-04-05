@@ -92,7 +92,7 @@ export const deleteAccount = createAction('user/account/deleteAccount')<DeepRead
   password: string;
 }>>()
 export const accountDeletionSignal = createAction('user/account/accountDeletionSignal')<DeepReadonly<
-  FlowSignal<AccountDeletionFlowIndicator, {}, StandardError<ServiceDeleteAccountResponseError>>
+  FlowSignal<AccountDeletionFlowIndicator, Record<string, never>, StandardError<ServiceDeleteAccountResponseError>>
 >>()
 export const accountDeletionReset = createAction('user/account/accountDeletionReset')()
 
@@ -136,7 +136,7 @@ export const resetOtp = createAction('user/account/resetOtp')<DeepReadonly<{
   otp: string;
 }>>()
 export const otpResetSignal = createAction('user/account/otpResetSignal')<DeepReadonly<
-  FlowSignal<OtpResetFlowIndicator, {}, StandardError<ServiceResetOtpResponseError>>
+  FlowSignal<OtpResetFlowIndicator, Record<string, never>, StandardError<ServiceResetOtpResponseError>>
 >>()
 export const cancelOtpReset = createAction('user/account/cancelOtpReset')()
 

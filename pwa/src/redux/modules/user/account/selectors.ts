@@ -34,16 +34,16 @@ export const accountMail = (state: RootState): string | null => state.user.accou
 export type MailTokenAcquisition = RemoteData<MailTokenAcquisitionFlowIndicator, MailTokenAcquisitionData, StandardError<ServiceAcquireMailTokenResponseError>>
 export const mailTokenAcquisition = (state: RootState): DeepReadonly<MailTokenAcquisition> => state.user.account.mailTokenAcquisition
 
-export type MailTokenRelease = RemoteData<MailTokenReleaseFlowIndicator, {}, StandardError<ServiceReleaseMailTokenResponseError>>
+export type MailTokenRelease = RemoteData<MailTokenReleaseFlowIndicator, string, StandardError<ServiceReleaseMailTokenResponseError>>
 export const mailTokenRelease = (state: RootState): DeepReadonly<MailTokenRelease> => state.user.account.mailTokenRelease
 
-export type UsernameChange = RemoteData<UsernameChangeFlowIndicator, {}, StandardError<ServiceChangeUsernameResponseError>>
+export type UsernameChange = RemoteData<UsernameChangeFlowIndicator, Record<string, never>, StandardError<ServiceChangeUsernameResponseError>>
 export const usernameChange = (state: RootState): DeepReadonly<UsernameChange> => state.user.account.usernameChange
 
-export type MasterKeyChange = RemoteData<MasterKeyChangeFlowIndicator, {}, StandardError<ServiceChangeMasterKeyResponseError>>
+export type MasterKeyChange = RemoteData<MasterKeyChangeFlowIndicator, Record<string, never>, StandardError<ServiceChangeMasterKeyResponseError>>
 export const masterKeyChange = (state: RootState): DeepReadonly<MasterKeyChange> => state.user.account.masterKeyChange
 
-export type AccountDeletion = RemoteData<AccountDeletionFlowIndicator, {}, StandardError<ServiceDeleteAccountResponseError>>
+export type AccountDeletion = RemoteData<AccountDeletionFlowIndicator, Record<string, never>, StandardError<ServiceDeleteAccountResponseError>>
 export const accountDeletion = (state: RootState): DeepReadonly<AccountDeletion> => state.user.account.accountDeletion
 
 export const isOtpEnabled = (state: RootState): boolean => state.user.account.isOtpEnabled
@@ -51,10 +51,10 @@ export const isOtpEnabled = (state: RootState): boolean => state.user.account.is
 export type OtpParamsGeneration = RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<never>>
 export const otpParamsGeneration = (state: RootState): DeepReadonly<OtpParamsGeneration> => state.user.account.otpParamsGeneration
 
-export type OtpParamsAcceptance = RemoteData<OtpParamsAcceptanceFlowIndicator, {}, StandardError<ServiceAcceptOtpParamsResponseError>>
+export type OtpParamsAcceptance = RemoteData<OtpParamsAcceptanceFlowIndicator, Record<string, never>, StandardError<ServiceAcceptOtpParamsResponseError>>
 export const otpParamsAcceptance = (state: RootState): DeepReadonly<OtpParamsAcceptance> => state.user.account.otpParamsAcceptance
 
-export type OtpReset = RemoteData<OtpResetFlowIndicator, {}, StandardError<ServiceResetOtpResponseError>>
+export type OtpReset = RemoteData<OtpResetFlowIndicator, Record<string, never>, StandardError<ServiceResetOtpResponseError>>
 export const otpReset = (state: RootState): DeepReadonly<OtpReset> => state.user.account.otpReset
 
 export const featurePrompts = (state: RootState): DeepReadonly<ServiceFeaturePrompt[]> => state.user.account.featurePrompts

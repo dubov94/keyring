@@ -63,14 +63,14 @@ export default createReducer<{
   mail: string | null;
   mailTokenRelease: RemoteData<MailTokenReleaseFlowIndicator, string, StandardError<ServiceReleaseMailTokenResponseError>>;
   mailTokenAcquisition: RemoteData<MailTokenAcquisitionFlowIndicator, MailTokenAcquisitionData, StandardError<ServiceAcquireMailTokenResponseError>>;
-  masterKeyChange: RemoteData<MasterKeyChangeFlowIndicator, {}, StandardError<ServiceChangeMasterKeyResponseError>>;
-  usernameChange: RemoteData<UsernameChangeFlowIndicator, {}, StandardError<ServiceChangeUsernameResponseError>>;
-  accountDeletion: RemoteData<AccountDeletionFlowIndicator, {}, StandardError<ServiceDeleteAccountResponseError>>;
+  masterKeyChange: RemoteData<MasterKeyChangeFlowIndicator, Record<string, never>, StandardError<ServiceChangeMasterKeyResponseError>>;
+  usernameChange: RemoteData<UsernameChangeFlowIndicator, Record<string, never>, StandardError<ServiceChangeUsernameResponseError>>;
+  accountDeletion: RemoteData<AccountDeletionFlowIndicator, Record<string, never>, StandardError<ServiceDeleteAccountResponseError>>;
   isOtpEnabled: boolean;
   otpToken: string | null;
   otpParamsGeneration: RemoteData<OtpParamsGenerationFlowIndicator, OtpParams, StandardError<never>>;
-  otpParamsAcceptance: RemoteData<OtpParamsAcceptanceFlowIndicator, {}, StandardError<ServiceAcceptOtpParamsResponseError>>;
-  otpReset: RemoteData<OtpResetFlowIndicator, {}, StandardError<ServiceResetOtpResponseError>>;
+  otpParamsAcceptance: RemoteData<OtpParamsAcceptanceFlowIndicator, Record<string, never>, StandardError<ServiceAcceptOtpParamsResponseError>>;
+  otpReset: RemoteData<OtpResetFlowIndicator, Record<string, never>, StandardError<ServiceResetOtpResponseError>>;
 }>(
   {
     isAuthenticated: false,

@@ -29,10 +29,10 @@ import { DeepReadonly } from 'ts-essentials'
 import { castDraft } from 'immer'
 
 export default createReducer<{
-  registration: RemoteData<RegistrationFlowIndicator, {}, StandardError<ServiceRegisterResponseError>>;
+  registration: RemoteData<RegistrationFlowIndicator, Record<string, never>, StandardError<ServiceRegisterResponseError>>;
   authnViaApi: RemoteData<AuthnViaApiFlowIndicator, AuthnViaApiFlowResult, StandardError<ServiceGetSaltResponseError | ServiceLogInResponseError>>;
-  authnOtpProvision: RemoteData<AuthnOtpProvisionFlowIndicator, {}, StandardError<AuthnOtpProvisionFlowError>>;
-  authnViaDepot: RemoteData<AuthnViaDepotFlowIndicator, {}, StandardError<AuthnViaDepotFlowError>>;
+  authnOtpProvision: RemoteData<AuthnOtpProvisionFlowIndicator, Record<string, never>, StandardError<AuthnOtpProvisionFlowError>>;
+  authnViaDepot: RemoteData<AuthnViaDepotFlowIndicator, Record<string, never>, StandardError<AuthnViaDepotFlowError>>;
   backgroundAuthnError: boolean;
 }>(
   {
