@@ -19,9 +19,6 @@ describe('ChangeMail', () => {
   let wrapper: Wrapper<Vue>
   let $actions: Subject<RootAction>
 
-  const getPanelButton = () => wrapper.findAll('button').filter(
-    (button) => button.text() === 'Change e-mail')
-
   beforeEach(async () => {
     const localVue = setUpLocalVue()
     store = createStore(reducer)
@@ -34,6 +31,7 @@ describe('ChangeMail', () => {
       provide: {
         ...setUpExpansionPanelProviders()
       },
+      propsData: { eagerPanel: true },
       data () {
         return {
           $actions,
@@ -45,7 +43,6 @@ describe('ChangeMail', () => {
         setUpStateMixin(store, actionQueue)
       ]
     })
-    await getPanelButton().trigger('click')
   })
 
   const getNewMailInput = () => wrapper.find('[aria-label="New e-mail"]')

@@ -75,24 +75,12 @@ SOURCES = [
     "//pwa/src/api/definitions:swagger_api",
 ]
 
-# ESLint indications might be unstable, see
-# https://github.com/vuejs/vue-cli/issues/3065.
-vue_cli_launcher(
-    name = "serve",
-    args = [
-        "serve",
-        "--package-json-path=$(rootpath :package_json)",
-    ],
-    data = SOURCES,
-    visibility = ["//:root"],
-)
-
 DEPENDENCIES = [
     "@pwa_npm//@fontsource/material-icons",
     "@pwa_npm//@fontsource/roboto",
     "@pwa_npm//@fontsource/roboto-mono",
     "@pwa_npm//@types/file-saver",
-    "@pwa_npm//@types/libsodium-wrappers",
+    "@pwa_npm//@types/libsodium-wrappers-sumo",
     "@pwa_npm//@types/lodash",
     "@pwa_npm//@types/papaparse",
     "@pwa_npm//@types/qrcode",
@@ -117,7 +105,7 @@ DEPENDENCIES = [
     "@pwa_npm//file-saver",
     "@pwa_npm//fp-ts",
     "@pwa_npm//fuse.js",
-    "@pwa_npm//libsodium-wrappers",
+    "@pwa_npm//libsodium-wrappers-sumo",
     "@pwa_npm//lodash",
     "@pwa_npm//papaparse",
     # For `ts_swagger_api`.
@@ -153,6 +141,18 @@ DEPENDENCIES = [
     "@pwa_npm//zxcvbn",
 ]
 
+# ESLint indications might be unstable, see
+# https://github.com/vuejs/vue-cli/issues/3065.
+vue_cli_launcher(
+    name = "serve",
+    args = [
+        "serve",
+        "--package-json-path=$(rootpath :package_json)",
+    ],
+    data = SOURCES + DEPENDENCIES,
+    visibility = ["//:root"],
+)
+
 vue_cli_launcher_test(
     name = "unit_tests",
     args = [
@@ -180,7 +180,7 @@ vue_cli_launcher(
         "--package-json-path=$(execpath :package_json)",
     ],
     data = SOURCES + DEPENDENCIES,
-    output_dir = True,
+    templated_args = ["--bazel_patch_module_resolver"],
 )
 
 pkg_tar(

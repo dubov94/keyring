@@ -20,9 +20,6 @@ describe('ChangeMasterKey', () => {
   let wrapper: Wrapper<Vue>
   let $actions: Subject<RootAction>
 
-  const getPanelButton = () => wrapper.findAll('button').filter(
-    (button) => button.text().includes('Change password'))
-
   beforeEach(async () => {
     const localVue = setUpLocalVue()
     store = createStore(reducer)
@@ -35,6 +32,7 @@ describe('ChangeMasterKey', () => {
       provide: {
         ...setUpExpansionPanelProviders()
       },
+      propsData: { eagerPanel: true },
       data () {
         return {
           $actions,
@@ -46,7 +44,6 @@ describe('ChangeMasterKey', () => {
         setUpStateMixin(store, actionQueue)
       ]
     })
-    await getPanelButton().trigger('click')
   })
 
   const getCurrentPasswordInput = () => wrapper.find('[aria-label="Current password"]')

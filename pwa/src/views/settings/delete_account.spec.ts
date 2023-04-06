@@ -16,9 +16,6 @@ describe('DeleteAccount', () => {
   let store: Store<RootState, RootAction>
   let actionQueue: ActionQueue
 
-  const getPanelButton = () => wrapper.findAll('button').filter(
-    (button) => button.text() === 'Delete account')
-
   beforeEach(async () => {
     const localVue = setUpLocalVue()
     store = createStore(reducer)
@@ -30,12 +27,12 @@ describe('DeleteAccount', () => {
       provide: {
         ...setUpExpansionPanelProviders()
       },
+      propsData: { eagerPanel: true },
       mixins: [
         setUpTranslationMixin(fn.identity),
         setUpStateMixin(store, actionQueue)
       ]
     })
-    await getPanelButton().trigger('click')
   })
 
   const getPasswordInput = () => wrapper.find('[aria-label="Password"]')

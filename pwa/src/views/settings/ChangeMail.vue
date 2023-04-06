@@ -19,7 +19,7 @@
     <v-expansion-panel-header>
       Change e-mail
     </v-expansion-panel-header>
-    <v-expansion-panel-content>
+    <v-expansion-panel-content :eager="eagerPanel">
       <template v-if="showAccountMail">
         <div class="mail-box">{{ accountMail }}</div>
       </template>
@@ -104,6 +104,7 @@ interface Mixins {
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
+  props: { eagerPanel: { type: Boolean, default: false } },
   data () {
     return {
       requestGroup: {

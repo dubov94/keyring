@@ -19,9 +19,6 @@ describe('ChangeUsername', () => {
   let wrapper: Wrapper<Vue>
   let $actions: Subject<RootAction>
 
-  const getPanelButton = () => wrapper.findAll('button').filter(
-    (button) => button.text() === 'Change username')
-
   beforeEach(async () => {
     const localVue = setUpLocalVue()
     store = createStore(reducer)
@@ -34,6 +31,7 @@ describe('ChangeUsername', () => {
       provide: {
         ...setUpExpansionPanelProviders()
       },
+      propsData: { eagerPanel: true },
       data () {
         return {
           $actions,
@@ -45,7 +43,6 @@ describe('ChangeUsername', () => {
         setUpStateMixin(store, actionQueue)
       ]
     })
-    await getPanelButton().trigger('click')
   })
 
   const getNewUsernameInput = () => wrapper.find('[aria-label="New username"]')

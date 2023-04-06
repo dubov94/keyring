@@ -1,4 +1,4 @@
-import sodium from 'libsodium-wrappers'
+import sodium from 'libsodium-wrappers-sumo'
 
 export const fromBase64 = (base64String: string): Uint8Array => {
   return sodium.from_base64(base64String, sodium.base64_variants.URLSAFE_NO_PADDING)

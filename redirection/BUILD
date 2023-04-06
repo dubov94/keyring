@@ -16,7 +16,7 @@ exports_files([
 
 filegroup_copy(
     name = "chdir_js",
-    srcs = ["chdir.js"]
+    srcs = ["chdir.js"],
 )
 
 filegroup_copy(
@@ -70,7 +70,7 @@ react_scripts(
         "--node_options=--require=./$(rootpath :chdir_js)",
         "start",
     ],
-    data = [":chdir_js"] + SOURCES,
+    data = [":chdir_js"] + SOURCES + DEPENDENCIES,
     tags = ["ibazel_notify_changes"],
 )
 
@@ -101,8 +101,8 @@ pkg_tar(
 container_layer(
     name = "dist_layer",
     directory = "/root",
-    tars = [":pkg_tar"],
     enable_mtime_preservation = True,
+    tars = [":pkg_tar"],
 )
 
 container_layer(

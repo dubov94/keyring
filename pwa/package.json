@@ -21,7 +21,7 @@
     "file-saver": "^2.0.5",
     "fp-ts": "^2.11.5",
     "fuse.js": "^6.4.6",
-    "libsodium-wrappers": "^0.7.6",
+    "libsodium-wrappers-sumo": "^0.7.11",
     "lodash": "^4.17.20",
     "papaparse": "^5.3.2",
     "portable-fetch": "^3.0.0",
@@ -50,10 +50,10 @@
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
-    "@bazel/typescript": "^3.7.0",
+    "@bazel/typescript": "^5.8.1",
     "@types/chai": "^4.2.11",
     "@types/file-saver": "^2.0.5",
-    "@types/libsodium-wrappers": "^0.7.7",
+    "@types/libsodium-wrappers-sumo": "^0.7.5",
     "@types/lodash": "^4.14.161",
     "@types/mocha": "^5.2.4",
     "@types/papaparse": "^5.3.7",

@@ -3,7 +3,7 @@
     <v-expansion-panel-header>
       Change username
     </v-expansion-panel-header>
-    <v-expansion-panel-content>
+    <v-expansion-panel-content :eager="eagerPanel">
       <v-form @keydown.native.enter.prevent="submit">
         <form-text-field type="text" label="New username" prepend-icon="person_outline"
           :value="username" @input="setUsername"
@@ -48,6 +48,7 @@ interface Mixins {
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
+  props: { eagerPanel: { type: Boolean, default: false } },
   validations: {
     username: {
       required,

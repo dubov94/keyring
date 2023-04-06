@@ -17,7 +17,7 @@
     "baseUrl": ".",
     "types": [
       "chai",
-      "libsodium-wrappers",
+      "libsodium-wrappers-sumo",
       "lodash",
       "mocha",
       "vuelidate",

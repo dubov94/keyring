@@ -10,7 +10,7 @@
         </div>
       </div>
     </v-expansion-panel-header>
-    <v-expansion-panel-content>
+    <v-expansion-panel-content :eager="eagerPanel">
       <v-form @keydown.native.enter.prevent="submit">
         <form-text-field type="password" label="Current password" prepend-icon="lock"
           :value="current" @input="setCurrent"
@@ -65,6 +65,7 @@ interface Mixins {
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
+  props: { eagerPanel: { type: Boolean, default: false } },
   data () {
     return {
       current: '',

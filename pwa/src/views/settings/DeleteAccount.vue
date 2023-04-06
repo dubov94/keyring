@@ -3,7 +3,7 @@
     <v-expansion-panel-header>
       Delete account
     </v-expansion-panel-header>
-    <v-expansion-panel-content>
+    <v-expansion-panel-content :eager="eagerPanel">
       <v-form @keydown.native.enter.prevent="submit">
         <form-text-field type="password" label="Password" prepend-icon="lock"
           :value="password" @input="setPassword" :dirty="$v.password.$dirty" :errors="passwordErrors"
@@ -35,6 +35,7 @@ interface Mixins {
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
+  props: { eagerPanel: { type: Boolean, default: false } },
   validations: {
     password: {
       correct () {
