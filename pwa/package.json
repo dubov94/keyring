@@ -89,7 +89,6 @@
     "sass-loader": "^8.0.2",
     "ts-essentials": "^7.0.1",
     "typescript": "~4.3.5",
-    "vue-cli-launcher": "^1.1.0",
     "vue-cli-plugin-vuetify": "~2.4.1",
     "vue-svg-loader": "^0.16.0",
     "vue-template-compiler": "2.6.11",

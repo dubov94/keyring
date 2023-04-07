@@ -1,5 +1,6 @@
+load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary", "npm_package_bin")
 load("@io_bazel_rules_docker//container:container.bzl", "container_image", "container_layer")
-load("@pwa_npm//vue-cli-launcher:index.bzl", "vue_cli_launcher", "vue_cli_launcher_test")
+load("@pwa_npm//@vue/cli-service:index.bzl", "vue_cli_service", "vue_cli_service_test")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 # `filegroup_copy` targets below ensure that all files end up under `bazel-out`.
@@ -15,6 +16,12 @@ exports_files([
     "package.json",
     "yarn.lock",
 ])
+
+genrule(
+    name = "change_directory_js",
+    outs = ["change_directory.js"],
+    cmd = "echo 'process.chdir(__dirname)' > $@",
+)
 
 SPEC_PATTERNS = [
     "src/**/*.spec.js",
@@ -99,6 +106,7 @@ DEPENDENCIES = [
     "@pwa_npm//@vue/eslint-config-typescript",
     "@pwa_npm//axios",
     "@pwa_npm//backoff-rxjs",
+    "@pwa_npm//core-js",
     "@pwa_npm//camelcase-keys",
     "@pwa_npm//eslint-plugin-vue",
     "@pwa_npm//eslint-plugin-vuetify",
@@ -143,24 +151,24 @@ DEPENDENCIES = [
 
 # ESLint indications might be unstable, see
 # https://github.com/vuejs/vue-cli/issues/3065.
-vue_cli_launcher(
+vue_cli_service(
     name = "serve",
     args = [
+        "--node_options=--require=./$(rootpath :change_directory_js)",
         "serve",
-        "--package-json-path=$(rootpath :package_json)",
     ],
-    data = SOURCES + DEPENDENCIES,
+    data = [":change_directory_js"] + SOURCES + DEPENDENCIES,
     visibility = ["//:root"],
 )
 
-vue_cli_launcher_test(
+vue_cli_service_test(
     name = "unit_tests",
     args = [
+        "--node_options=--require=./$(rootpath :change_directory_js)",
         "test:unit",
-        "--package-json-path=$(rootpath :package_json)",
         "pwa/src/**/*.spec.{js,ts}",
     ],
-    data = [
+    data = [":change_directory_js"] + [
         ":specs",
         "@pwa_npm//@types/chai",
         "@pwa_npm//@types/mocha",
@@ -171,16 +179,25 @@ vue_cli_launcher_test(
     ] + SOURCES + DEPENDENCIES,
 )
 
-vue_cli_launcher(
+nodejs_binary(
+    name = "vue_cli_service",
+    data = [
+        "vue_cli_service.js",
+        "@pwa_npm//@vue/cli-service",
+    ],
+    entry_point = "vue_cli_service.js",
+)
+
+npm_package_bin(
     name = "dist",
     args = [
+        "--node_options=--require=./$(execpath :change_directory_js)",
         "build",
         "--dest=$(@D)",
-        "--resolve-dest-by-cwd",
-        "--package-json-path=$(execpath :package_json)",
     ],
-    data = SOURCES + DEPENDENCIES,
-    templated_args = ["--bazel_patch_module_resolver"],
+    data = [":change_directory_js"] + SOURCES + DEPENDENCIES,
+    output_dir = True,
+    tool = ":vue_cli_service",
 )
 
 pkg_tar(

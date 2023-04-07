@@ -14,9 +14,10 @@ exports_files([
     "yarn.lock",
 ])
 
-filegroup_copy(
-    name = "chdir_js",
-    srcs = ["chdir.js"],
+genrule(
+    name = "change_directory_js",
+    outs = ["change_directory.js"],
+    cmd = "echo 'process.chdir(__dirname)' > $@",
 )
 
 filegroup_copy(
@@ -67,20 +68,20 @@ DEPENDENCIES = [
 react_scripts(
     name = "serve",
     args = [
-        "--node_options=--require=./$(rootpath :chdir_js)",
+        "--node_options=--require=./$(rootpath :change_directory_js)",
         "start",
     ],
-    data = [":chdir_js"] + SOURCES + DEPENDENCIES,
+    data = [":change_directory_js"] + SOURCES + DEPENDENCIES,
     tags = ["ibazel_notify_changes"],
 )
 
 react_scripts(
     name = "dist",
     args = [
-        "--node_options=--require=./$(execpath :chdir_js)",
+        "--node_options=--require=./$(execpath :change_directory_js)",
         "build",
     ],
-    data = [":chdir_js"] + SOURCES + DEPENDENCIES,
+    data = [":change_directory_js"] + SOURCES + DEPENDENCIES,
     env = {
         # https://create-react-app.dev/docs/advanced-configuration/
         "BUILD_PATH": "./dist",
