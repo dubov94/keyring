@@ -1,4 +1,6 @@
 module.exports = {
+  // https://github.com/vuejs/vue-cli/issues/2176#issuecomment-421354721
+  parallel: false,
   transpileDependencies: [
     'vuetify'
   ],
