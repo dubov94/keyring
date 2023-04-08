@@ -2,15 +2,16 @@
     "dependency_tree": {
         "conflict_resolution": {
             "com.google.guava:guava:29.0-android": "com.google.guava:guava:30.1.1-android",
-            "org.apiguardian:apiguardian-api:1.0.0": "org.apiguardian:apiguardian-api:1.1.0",
+            "org.apiguardian:apiguardian-api:1.0.0": "org.apiguardian:apiguardian-api:1.1.2",
+            "junit:junit:4.12": "junit:junit:4.13.2",
             "io.opencensus:opencensus-api:0.24.0": "io.opencensus:opencensus-api:0.31.1",
             "com.google.code.gson:gson:2.8.6": "com.google.code.gson:gson:2.10",
             "javax.xml.bind:jaxb-api:2.3.0": "javax.xml.bind:jaxb-api:2.3.1",
             "org.opentest4j:opentest4j:1.1.1": "org.opentest4j:opentest4j:1.2.0",
             "org.junit.platform:junit-platform-engine:1.5.0": "org.junit.platform:junit-platform-engine:1.6.2",
             "com.google.guava:guava:24.0-jre": "com.google.guava:guava:30.1.1-android",
-            "org.junit.jupiter:junit-jupiter-api:5.6.2": "org.junit.jupiter:junit-jupiter-api:5.7.0",
-            "org.junit.platform:junit-platform-commons:1.5.0": "org.junit.platform:junit-platform-commons:1.7.0",
+            "org.junit.jupiter:junit-jupiter-api:5.6.2": "org.junit.jupiter:junit-jupiter-api:5.8.1",
+            "org.junit.platform:junit-platform-commons:1.5.0": "org.junit.platform:junit-platform-commons:1.8.1",
             "com.google.errorprone:error_prone_annotations:2.4.0": "com.google.errorprone:error_prone_annotations:2.16"
         },
         "dependencies": [
@@ -116,8 +117,8 @@
                 "sha256": "aab4de3006808c09d25dd4ff4a3611cfb63c95463cfd99e73d2e1680d229a33b"
             },
             {
-                "coord": "com.github.docker-java:docker-java-api:3.2.8",
-                "file": "v1/https/repo1.maven.org/maven2/com/github/docker-java/docker-java-api/3.2.8/docker-java-api-3.2.8.jar",
+                "coord": "com.github.docker-java:docker-java-api:3.2.12",
+                "file": "v1/https/repo1.maven.org/maven2/com/github/docker-java/docker-java-api/3.2.12/docker-java-api-3.2.12.jar",
                 "directDependencies": [
                     "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
                     "org.slf4j:slf4j-api:1.7.32"
@@ -126,41 +127,41 @@
                     "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
                     "org.slf4j:slf4j-api:1.7.32"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-api/3.2.8/docker-java-api-3.2.8.jar",
+                "url": "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-api/3.2.12/docker-java-api-3.2.12.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-api/3.2.8/docker-java-api-3.2.8.jar"
+                    "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-api/3.2.12/docker-java-api-3.2.12.jar"
                 ],
-                "sha256": "5a9f801ea1fc51fa06ab97a9856ceb95c8cbca53a9b359bac46b6d65cc38a3cf"
+                "sha256": "28521c21fe277619031f9e92d8ba8cbd6af86dcdec18e965257a3d62bc12223b"
             },
             {
-                "coord": "com.github.docker-java:docker-java-transport-zerodep:3.2.8",
-                "file": "v1/https/repo1.maven.org/maven2/com/github/docker-java/docker-java-transport-zerodep/3.2.8/docker-java-transport-zerodep-3.2.8.jar",
+                "coord": "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
+                "file": "v1/https/repo1.maven.org/maven2/com/github/docker-java/docker-java-transport-zerodep/3.2.12/docker-java-transport-zerodep-3.2.12.jar",
                 "directDependencies": [
-                    "com.github.docker-java:docker-java-transport:3.2.8",
+                    "com.github.docker-java:docker-java-transport:3.2.12",
                     "net.java.dev.jna:jna:5.8.0",
                     "org.slf4j:slf4j-api:1.7.32"
                 ],
                 "dependencies": [
-                    "com.github.docker-java:docker-java-transport:3.2.8",
+                    "com.github.docker-java:docker-java-transport:3.2.12",
                     "net.java.dev.jna:jna:5.8.0",
                     "org.slf4j:slf4j-api:1.7.32"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-transport-zerodep/3.2.8/docker-java-transport-zerodep-3.2.8.jar",
+                "url": "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-transport-zerodep/3.2.12/docker-java-transport-zerodep-3.2.12.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-transport-zerodep/3.2.8/docker-java-transport-zerodep-3.2.8.jar"
+                    "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-transport-zerodep/3.2.12/docker-java-transport-zerodep-3.2.12.jar"
                 ],
-                "sha256": "f0ce261803b459e00de8b549d88713822d53ff727aa2fa4125fc44af5c637c5e"
+                "sha256": "07f904c6cc9c6937e573ed7658d983c84578fb4e97a57ad76b3e399c78b8acdb"
             },
             {
-                "coord": "com.github.docker-java:docker-java-transport:3.2.8",
-                "file": "v1/https/repo1.maven.org/maven2/com/github/docker-java/docker-java-transport/3.2.8/docker-java-transport-3.2.8.jar",
+                "coord": "com.github.docker-java:docker-java-transport:3.2.12",
+                "file": "v1/https/repo1.maven.org/maven2/com/github/docker-java/docker-java-transport/3.2.12/docker-java-transport-3.2.12.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-transport/3.2.8/docker-java-transport-3.2.8.jar",
+                "url": "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-transport/3.2.12/docker-java-transport-3.2.12.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-transport/3.2.8/docker-java-transport-3.2.8.jar"
+                    "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-transport/3.2.12/docker-java-transport-3.2.12.jar"
                 ],
-                "sha256": "1d3eb23fcf6c0b8097808e131394dfdcaf913b35b6b249945bd1762cc6423e0b"
+                "sha256": "7231bfece69ebbeab89d3140d12c9fc2a338d6dd26ca2dd0163b7f9d6335fb3d"
             },
             {
                 "coord": "com.google.android:annotations:4.1.1.4",
@@ -601,9 +602,9 @@
                 "file": "v1/https/repo1.maven.org/maven2/com/google/truth/truth/1.0.1/truth-1.0.1.jar",
                 "directDependencies": [
                     "com.google.guava:guava:30.1.1-android",
-                    "junit:junit:4.12",
                     "com.googlecode.java-diff-utils:diffutils:1.3.0",
                     "com.google.auto.value:auto-value-annotations:1.10",
+                    "junit:junit:4.13.2",
                     "com.google.errorprone:error_prone_annotations:2.16",
                     "org.checkerframework:checker-compat-qual:2.5.5"
                 ],
@@ -612,11 +613,11 @@
                     "com.google.j2objc:j2objc-annotations:1.3",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.guava:guava:30.1.1-android",
-                    "junit:junit:4.12",
                     "org.hamcrest:hamcrest-core:1.3",
                     "com.googlecode.java-diff-utils:diffutils:1.3.0",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.auto.value:auto-value-annotations:1.10",
+                    "junit:junit:4.13.2",
                     "com.google.errorprone:error_prone_annotations:2.16",
                     "org.checkerframework:checker-compat-qual:2.5.5"
                 ],
@@ -1530,26 +1531,26 @@
                 "sha256": "88b955a0df57880a26a74708bc34f74dcaf8ebf4e78843a28b50eae945732b06"
             },
             {
-                "coord": "junit:junit:4.12",
-                "file": "v1/https/repo1.maven.org/maven2/junit/junit/4.12/junit-4.12.jar",
+                "coord": "junit:junit:4.13.2",
+                "file": "v1/https/repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
                 "directDependencies": [
                     "org.hamcrest:hamcrest-core:1.3"
                 ],
                 "dependencies": [
                     "org.hamcrest:hamcrest-core:1.3"
                 ],
-                "url": "https://repo1.maven.org/maven2/junit/junit/4.12/junit-4.12.jar",
+                "url": "https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/junit/junit/4.12/junit-4.12.jar"
+                    "https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar"
                 ],
-                "sha256": "59721f0805e223d84b90677887d9ff567dc534d7c502ca903c0c2b17f05c116a"
+                "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
             },
             {
                 "coord": "name.falgout.jeffrey.testing.junit5:mockito-extension:1.0.0",
                 "file": "v1/https/repo1.maven.org/maven2/name/falgout/jeffrey/testing/junit5/mockito-extension/1.0.0/mockito-extension-1.0.0.jar",
                 "directDependencies": [
                     "com.google.guava:guava:30.1.1-android",
-                    "org.junit.jupiter:junit-jupiter-api:5.7.0",
+                    "org.junit.jupiter:junit-jupiter-api:5.8.1",
                     "org.mockito:mockito-core:2.15.0"
                 ],
                 "dependencies": [
@@ -1557,14 +1558,14 @@
                     "com.google.j2objc:j2objc-annotations:1.3",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.guava:guava:30.1.1-android",
-                    "org.junit.jupiter:junit-jupiter-api:5.7.0",
+                    "org.junit.jupiter:junit-jupiter-api:5.8.1",
                     "org.opentest4j:opentest4j:1.2.0",
                     "net.bytebuddy:byte-buddy:1.10.10",
+                    "org.junit.platform:junit-platform-commons:1.8.1",
                     "org.objenesis:objenesis:2.6",
-                    "org.apiguardian:apiguardian-api:1.1.0",
                     "net.bytebuddy:byte-buddy-agent:1.7.9",
-                    "org.junit.platform:junit-platform-commons:1.7.0",
                     "com.google.guava:failureaccess:1.0.1",
+                    "org.apiguardian:apiguardian-api:1.1.2",
                     "org.mockito:mockito-core:2.15.0",
                     "com.google.errorprone:error_prone_annotations:2.16",
                     "org.checkerframework:checker-compat-qual:2.5.5"
@@ -1639,15 +1640,15 @@
                 "sha256": "1a9e8d3e23a3556bf1920ce795ea303dfc44cf76ef4a1b11cedf9befc48c7c9a"
             },
             {
-                "coord": "org.apache.commons:commons-compress:1.20",
-                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-compress/1.20/commons-compress-1.20.jar",
+                "coord": "org.apache.commons:commons-compress:1.21",
+                "file": "v1/https/repo1.maven.org/maven2/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-compress/1.20/commons-compress-1.20.jar",
+                "url": "https://repo1.maven.org/maven2/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apache/commons/commons-compress/1.20/commons-compress-1.20.jar"
+                    "https://repo1.maven.org/maven2/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar"
                 ],
-                "sha256": "0aeb625c948c697ea7b205156e112363b59ed5e2551212cd4e460bdb72c7c06e"
+                "sha256": "6aecfd5459728a595601cfa07258d131972ffc39b492eb48bdd596577a2f244a"
             },
             {
                 "coord": "org.apache.commons:commons-lang3:3.11",
@@ -1713,15 +1714,15 @@
                 "sha256": "253829d3c12b7381d1044fc22c6436cff025fe0d459e4a329413e560a7d0dd13"
             },
             {
-                "coord": "org.apiguardian:apiguardian-api:1.1.0",
-                "file": "v1/https/repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.0/apiguardian-api-1.1.0.jar",
+                "coord": "org.apiguardian:apiguardian-api:1.1.2",
+                "file": "v1/https/repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.0/apiguardian-api-1.1.0.jar",
+                "url": "https://repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.0/apiguardian-api-1.1.0.jar"
+                    "https://repo1.maven.org/maven2/org/apiguardian/apiguardian-api/1.1.2/apiguardian-api-1.1.2.jar"
                 ],
-                "sha256": "a9aae9ff8ae3e17a2a18f79175e82b16267c246fbbd3ca9dfbbb290b08dcfdd4"
+                "sha256": "b509448ac506d607319f182537f0b35d71007582ec741832a1f111e5b5b70b38"
             },
             {
                 "coord": "org.aspectj:aspectjrt:1.9.5",
@@ -2287,6 +2288,17 @@
                 "sha256": "a003dcfe44818b7e02166a153342fcf792b8c569ac660496aaddc86ea7c2a0f0"
             },
             {
+                "coord": "org.jetbrains:annotations:17.0.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/annotations/17.0.0/annotations-17.0.0.jar"
+                ],
+                "sha256": "195fb0da046d55bb042e91543484cf1da68b02bb7afbfe031f229e45ac84b3f2"
+            },
+            {
                 "coord": "org.json:json:20211205",
                 "file": "v1/https/repo1.maven.org/maven2/org/json/json/20211205/json-20211205.jar",
                 "directDependencies": [],
@@ -2359,38 +2371,38 @@
                 "sha256": "f277d1db04ecabc6592acf5632a3240ce8ad3ea887f1b85f45e78dad1b70be40"
             },
             {
-                "coord": "org.junit.jupiter:junit-jupiter-api:5.7.0",
-                "file": "v1/https/repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.7.0/junit-jupiter-api-5.7.0.jar",
+                "coord": "org.junit.jupiter:junit-jupiter-api:5.8.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.8.1/junit-jupiter-api-5.8.1.jar",
                 "directDependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0",
-                    "org.junit.platform:junit-platform-commons:1.7.0",
+                    "org.apiguardian:apiguardian-api:1.1.2",
+                    "org.junit.platform:junit-platform-commons:1.8.1",
                     "org.opentest4j:opentest4j:1.2.0"
                 ],
                 "dependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0",
                     "org.opentest4j:opentest4j:1.2.0",
-                    "org.junit.platform:junit-platform-commons:1.7.0"
+                    "org.junit.platform:junit-platform-commons:1.8.1",
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.7.0/junit-jupiter-api-5.7.0.jar",
+                "url": "https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.8.1/junit-jupiter-api-5.8.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.7.0/junit-jupiter-api-5.7.0.jar"
+                    "https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-api/5.8.1/junit-jupiter-api-5.8.1.jar"
                 ],
-                "sha256": "b03f78e0daeed2d77a0af9bcd662b4cdb9693f7ee72e01a539b508b84c63d182"
+                "sha256": "ce3374a7efba605e2d2b69a3fef90134032bab3ecc3ed8579a4871b1c2c4729c"
             },
             {
                 "coord": "org.junit.jupiter:junit-jupiter-engine:5.6.2",
                 "file": "v1/https/repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-engine/5.6.2/junit-jupiter-engine-5.6.2.jar",
                 "directDependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0",
-                    "org.junit.jupiter:junit-jupiter-api:5.7.0",
+                    "org.apiguardian:apiguardian-api:1.1.2",
+                    "org.junit.jupiter:junit-jupiter-api:5.8.1",
                     "org.junit.platform:junit-platform-engine:1.6.2"
                 ],
                 "dependencies": [
-                    "org.junit.jupiter:junit-jupiter-api:5.7.0",
+                    "org.junit.jupiter:junit-jupiter-api:5.8.1",
                     "org.opentest4j:opentest4j:1.2.0",
-                    "org.apiguardian:apiguardian-api:1.1.0",
+                    "org.junit.platform:junit-platform-commons:1.8.1",
                     "org.junit.platform:junit-platform-engine:1.6.2",
-                    "org.junit.platform:junit-platform-commons:1.7.0"
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-engine/5.6.2/junit-jupiter-engine-5.6.2.jar",
                 "mirror_urls": [
@@ -2402,14 +2414,14 @@
                 "coord": "org.junit.jupiter:junit-jupiter-params:5.6.2",
                 "file": "v1/https/repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-params/5.6.2/junit-jupiter-params-5.6.2.jar",
                 "directDependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0",
-                    "org.junit.jupiter:junit-jupiter-api:5.7.0"
+                    "org.apiguardian:apiguardian-api:1.1.2",
+                    "org.junit.jupiter:junit-jupiter-api:5.8.1"
                 ],
                 "dependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0",
-                    "org.junit.jupiter:junit-jupiter-api:5.7.0",
                     "org.opentest4j:opentest4j:1.2.0",
-                    "org.junit.platform:junit-platform-commons:1.7.0"
+                    "org.junit.platform:junit-platform-commons:1.8.1",
+                    "org.junit.jupiter:junit-jupiter-api:5.8.1",
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/junit/jupiter/junit-jupiter-params/5.6.2/junit-jupiter-params-5.6.2.jar",
                 "mirror_urls": [
@@ -2418,34 +2430,34 @@
                 "sha256": "52f7aeb346cfa41bb33a8d3dbab8c577f9c37f8f5a79a632af10b5c8f1e92186"
             },
             {
-                "coord": "org.junit.platform:junit-platform-commons:1.7.0",
-                "file": "v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-commons/1.7.0/junit-platform-commons-1.7.0.jar",
+                "coord": "org.junit.platform:junit-platform-commons:1.8.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-commons/1.8.1/junit-platform-commons-1.8.1.jar",
                 "directDependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0"
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
                 "dependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0"
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-commons/1.7.0/junit-platform-commons-1.7.0.jar",
+                "url": "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-commons/1.8.1/junit-platform-commons-1.8.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-commons/1.7.0/junit-platform-commons-1.7.0.jar"
+                    "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-commons/1.8.1/junit-platform-commons-1.8.1.jar"
                 ],
-                "sha256": "5330ee87cc7586e6e25175a34e9251624ff12ff525269d3415d0b4ca519b6fea"
+                "sha256": "fa4fa68c8bd54dd0cb49c3fcbe9b2e42f4da6bedbe7e7ccf2a05f1a1e609b593"
             },
             {
                 "coord": "org.junit.platform:junit-platform-console:1.5.0",
                 "file": "v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-console/1.5.0/junit-platform-console-1.5.0.jar",
                 "directDependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0",
+                    "org.apiguardian:apiguardian-api:1.1.2",
                     "org.junit.platform:junit-platform-reporting:1.5.0"
                 ],
                 "dependencies": [
                     "org.junit.platform:junit-platform-reporting:1.5.0",
                     "org.junit.platform:junit-platform-launcher:1.5.0",
                     "org.opentest4j:opentest4j:1.2.0",
-                    "org.apiguardian:apiguardian-api:1.1.0",
+                    "org.junit.platform:junit-platform-commons:1.8.1",
                     "org.junit.platform:junit-platform-engine:1.6.2",
-                    "org.junit.platform:junit-platform-commons:1.7.0"
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-console/1.5.0/junit-platform-console-1.5.0.jar",
                 "mirror_urls": [
@@ -2457,14 +2469,14 @@
                 "coord": "org.junit.platform:junit-platform-engine:1.6.2",
                 "file": "v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-engine/1.6.2/junit-platform-engine-1.6.2.jar",
                 "directDependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0",
-                    "org.junit.platform:junit-platform-commons:1.7.0",
+                    "org.apiguardian:apiguardian-api:1.1.2",
+                    "org.junit.platform:junit-platform-commons:1.8.1",
                     "org.opentest4j:opentest4j:1.2.0"
                 ],
                 "dependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0",
                     "org.opentest4j:opentest4j:1.2.0",
-                    "org.junit.platform:junit-platform-commons:1.7.0"
+                    "org.junit.platform:junit-platform-commons:1.8.1",
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-engine/1.6.2/junit-platform-engine-1.6.2.jar",
                 "mirror_urls": [
@@ -2476,14 +2488,14 @@
                 "coord": "org.junit.platform:junit-platform-launcher:1.5.0",
                 "file": "v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-launcher/1.5.0/junit-platform-launcher-1.5.0.jar",
                 "directDependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0",
+                    "org.apiguardian:apiguardian-api:1.1.2",
                     "org.junit.platform:junit-platform-engine:1.6.2"
                 ],
                 "dependencies": [
                     "org.junit.platform:junit-platform-engine:1.6.2",
-                    "org.apiguardian:apiguardian-api:1.1.0",
                     "org.opentest4j:opentest4j:1.2.0",
-                    "org.junit.platform:junit-platform-commons:1.7.0"
+                    "org.junit.platform:junit-platform-commons:1.8.1",
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-launcher/1.5.0/junit-platform-launcher-1.5.0.jar",
                 "mirror_urls": [
@@ -2495,15 +2507,15 @@
                 "coord": "org.junit.platform:junit-platform-reporting:1.5.0",
                 "file": "v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-reporting/1.5.0/junit-platform-reporting-1.5.0.jar",
                 "directDependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0",
+                    "org.apiguardian:apiguardian-api:1.1.2",
                     "org.junit.platform:junit-platform-launcher:1.5.0"
                 ],
                 "dependencies": [
                     "org.junit.platform:junit-platform-launcher:1.5.0",
                     "org.opentest4j:opentest4j:1.2.0",
-                    "org.apiguardian:apiguardian-api:1.1.0",
+                    "org.junit.platform:junit-platform-commons:1.8.1",
                     "org.junit.platform:junit-platform-engine:1.6.2",
-                    "org.junit.platform:junit-platform-commons:1.7.0"
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-reporting/1.5.0/junit-platform-reporting-1.5.0.jar",
                 "mirror_urls": [
@@ -2515,10 +2527,10 @@
                 "coord": "org.junit.platform:junit-platform-suite-api:1.5.0",
                 "file": "v1/https/repo1.maven.org/maven2/org/junit/platform/junit-platform-suite-api/1.5.0/junit-platform-suite-api-1.5.0.jar",
                 "directDependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0"
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
                 "dependencies": [
-                    "org.apiguardian:apiguardian-api:1.1.0"
+                    "org.apiguardian:apiguardian-api:1.1.2"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/junit/platform/junit-platform-suite-api/1.5.0/junit-platform-suite-api-1.5.0.jar",
                 "mirror_urls": [
@@ -2704,31 +2716,17 @@
             {
                 "coord": "org.rnorth.duct-tape:duct-tape:1.0.8",
                 "file": "v1/https/repo1.maven.org/maven2/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar",
-                "directDependencies": [],
-                "dependencies": [],
-                "exclusions": [
-                    "org.jetbrains:annotations"
+                "directDependencies": [
+                    "org.jetbrains:annotations:17.0.0"
+                ],
+                "dependencies": [
+                    "org.jetbrains:annotations:17.0.0"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar",
                 "mirror_urls": [
                     "https://repo1.maven.org/maven2/org/rnorth/duct-tape/duct-tape/1.0.8/duct-tape-1.0.8.jar"
                 ],
                 "sha256": "31cef12ddec979d1f86d7cf708c41a17da523d05c685fd6642e9d0b2addb7240"
-            },
-            {
-                "coord": "org.rnorth.visible-assertions:visible-assertions:2.1.2",
-                "file": "v1/https/repo1.maven.org/maven2/org/rnorth/visible-assertions/visible-assertions/2.1.2/visible-assertions-2.1.2.jar",
-                "directDependencies": [
-                    "net.java.dev.jna:jna:5.8.0"
-                ],
-                "dependencies": [
-                    "net.java.dev.jna:jna:5.8.0"
-                ],
-                "url": "https://repo1.maven.org/maven2/org/rnorth/visible-assertions/visible-assertions/2.1.2/visible-assertions-2.1.2.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/rnorth/visible-assertions/visible-assertions/2.1.2/visible-assertions-2.1.2.jar"
-                ],
-                "sha256": "4504ae968b237cdcdcb68ff5b07aa63abe4992f907a77c3d6120aa9b9041401c"
             },
             {
                 "coord": "org.slf4j:slf4j-api:1.7.32",
@@ -2757,147 +2755,146 @@
                 "sha256": "0966e86fffa5be52d3d9e7b89dd674d98a03eed0a454fbaf7c1bd9493bd9d874"
             },
             {
-                "coord": "org.testcontainers:database-commons:1.15.3",
-                "file": "v1/https/repo1.maven.org/maven2/org/testcontainers/database-commons/1.15.3/database-commons-1.15.3.jar",
+                "coord": "org.testcontainers:database-commons:1.16.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/testcontainers/database-commons/1.16.1/database-commons-1.16.1.jar",
                 "directDependencies": [
-                    "org.testcontainers:testcontainers:1.15.3"
+                    "org.testcontainers:testcontainers:1.16.1"
                 ],
                 "dependencies": [
-                    "com.github.docker-java:docker-java-transport-zerodep:3.2.8",
+                    "org.testcontainers:testcontainers:1.16.1",
+                    "org.apache.commons:commons-compress:1.21",
                     "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
-                    "org.apache.commons:commons-compress:1.20",
-                    "junit:junit:4.12",
-                    "com.github.docker-java:docker-java-api:3.2.8",
+                    "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
                     "org.hamcrest:hamcrest-core:1.3",
-                    "org.rnorth.visible-assertions:visible-assertions:2.1.2",
+                    "com.github.docker-java:docker-java-transport:3.2.12",
                     "net.java.dev.jna:jna:5.8.0",
                     "org.slf4j:slf4j-api:1.7.32",
+                    "org.jetbrains:annotations:17.0.0",
                     "org.rnorth.duct-tape:duct-tape:1.0.8",
-                    "org.testcontainers:testcontainers:1.15.3",
-                    "com.github.docker-java:docker-java-transport:3.2.8"
+                    "com.github.docker-java:docker-java-api:3.2.12",
+                    "junit:junit:4.13.2"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/testcontainers/database-commons/1.15.3/database-commons-1.15.3.jar",
+                "url": "https://repo1.maven.org/maven2/org/testcontainers/database-commons/1.16.1/database-commons-1.16.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/testcontainers/database-commons/1.15.3/database-commons-1.15.3.jar"
+                    "https://repo1.maven.org/maven2/org/testcontainers/database-commons/1.16.1/database-commons-1.16.1.jar"
                 ],
-                "sha256": "e72ea96d70677992e94c5d365cb4c776e895874b252f9f4007c83ff91e3170a1"
+                "sha256": "f52c1cb4bc396d102bd6bf10a715d3776320c76e249977253d459db08ac48edc"
             },
             {
-                "coord": "org.testcontainers:jdbc:1.15.3",
-                "file": "v1/https/repo1.maven.org/maven2/org/testcontainers/jdbc/1.15.3/jdbc-1.15.3.jar",
+                "coord": "org.testcontainers:jdbc:1.16.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/testcontainers/jdbc/1.16.1/jdbc-1.16.1.jar",
                 "directDependencies": [
-                    "org.testcontainers:database-commons:1.15.3"
+                    "org.testcontainers:database-commons:1.16.1"
                 ],
                 "dependencies": [
-                    "com.github.docker-java:docker-java-transport-zerodep:3.2.8",
+                    "org.testcontainers:testcontainers:1.16.1",
+                    "org.apache.commons:commons-compress:1.21",
                     "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
-                    "org.apache.commons:commons-compress:1.20",
-                    "junit:junit:4.12",
-                    "com.github.docker-java:docker-java-api:3.2.8",
-                    "org.testcontainers:database-commons:1.15.3",
+                    "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
                     "org.hamcrest:hamcrest-core:1.3",
-                    "org.rnorth.visible-assertions:visible-assertions:2.1.2",
+                    "com.github.docker-java:docker-java-transport:3.2.12",
                     "net.java.dev.jna:jna:5.8.0",
                     "org.slf4j:slf4j-api:1.7.32",
+                    "org.testcontainers:database-commons:1.16.1",
+                    "org.jetbrains:annotations:17.0.0",
                     "org.rnorth.duct-tape:duct-tape:1.0.8",
-                    "org.testcontainers:testcontainers:1.15.3",
-                    "com.github.docker-java:docker-java-transport:3.2.8"
+                    "com.github.docker-java:docker-java-api:3.2.12",
+                    "junit:junit:4.13.2"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/testcontainers/jdbc/1.15.3/jdbc-1.15.3.jar",
+                "url": "https://repo1.maven.org/maven2/org/testcontainers/jdbc/1.16.1/jdbc-1.16.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/testcontainers/jdbc/1.15.3/jdbc-1.15.3.jar"
+                    "https://repo1.maven.org/maven2/org/testcontainers/jdbc/1.16.1/jdbc-1.16.1.jar"
                 ],
-                "sha256": "a27e718e0f64997ca04410dc6fc51c5afcf430d53958c10f747751aee52a5f87"
+                "sha256": "14beaac89e9efdb00f2ebe03965083bf3235297d64f8aa39f2d9aeb178a6466e"
             },
             {
-                "coord": "org.testcontainers:junit-jupiter:1.15.3",
-                "file": "v1/https/repo1.maven.org/maven2/org/testcontainers/junit-jupiter/1.15.3/junit-jupiter-1.15.3.jar",
+                "coord": "org.testcontainers:junit-jupiter:1.16.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/testcontainers/junit-jupiter/1.16.1/junit-jupiter-1.16.1.jar",
                 "directDependencies": [
-                    "org.junit.jupiter:junit-jupiter-api:5.7.0",
-                    "org.testcontainers:testcontainers:1.15.3"
+                    "org.junit.jupiter:junit-jupiter-api:5.8.1",
+                    "org.testcontainers:testcontainers:1.16.1"
                 ],
                 "dependencies": [
-                    "com.github.docker-java:docker-java-transport-zerodep:3.2.8",
+                    "org.testcontainers:testcontainers:1.16.1",
+                    "org.apache.commons:commons-compress:1.21",
                     "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
-                    "org.apache.commons:commons-compress:1.20",
-                    "junit:junit:4.12",
-                    "com.github.docker-java:docker-java-api:3.2.8",
+                    "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
+                    "org.junit.jupiter:junit-jupiter-api:5.8.1",
                     "org.hamcrest:hamcrest-core:1.3",
-                    "org.junit.jupiter:junit-jupiter-api:5.7.0",
                     "org.opentest4j:opentest4j:1.2.0",
-                    "org.rnorth.visible-assertions:visible-assertions:2.1.2",
+                    "com.github.docker-java:docker-java-transport:3.2.12",
                     "net.java.dev.jna:jna:5.8.0",
                     "org.slf4j:slf4j-api:1.7.32",
-                    "org.apiguardian:apiguardian-api:1.1.0",
+                    "org.junit.platform:junit-platform-commons:1.8.1",
+                    "org.jetbrains:annotations:17.0.0",
                     "org.rnorth.duct-tape:duct-tape:1.0.8",
-                    "org.junit.platform:junit-platform-commons:1.7.0",
-                    "org.testcontainers:testcontainers:1.15.3",
-                    "com.github.docker-java:docker-java-transport:3.2.8"
+                    "com.github.docker-java:docker-java-api:3.2.12",
+                    "org.apiguardian:apiguardian-api:1.1.2",
+                    "junit:junit:4.13.2"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/testcontainers/junit-jupiter/1.15.3/junit-jupiter-1.15.3.jar",
+                "url": "https://repo1.maven.org/maven2/org/testcontainers/junit-jupiter/1.16.1/junit-jupiter-1.16.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/testcontainers/junit-jupiter/1.15.3/junit-jupiter-1.15.3.jar"
+                    "https://repo1.maven.org/maven2/org/testcontainers/junit-jupiter/1.16.1/junit-jupiter-1.16.1.jar"
                 ],
-                "sha256": "452f3ebd60e1dfb3d44b001cbf0f2d1d85e42998fe1a8c66255fd51074a6d5d7"
+                "sha256": "00a2a946b1c6b0782e33abb0be420651142ebd7d4e9aa261d9c79db8c423e38a"
             },
             {
-                "coord": "org.testcontainers:postgresql:1.15.3",
-                "file": "v1/https/repo1.maven.org/maven2/org/testcontainers/postgresql/1.15.3/postgresql-1.15.3.jar",
+                "coord": "org.testcontainers:postgresql:1.16.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/testcontainers/postgresql/1.16.1/postgresql-1.16.1.jar",
                 "directDependencies": [
-                    "org.testcontainers:jdbc:1.15.3"
+                    "org.testcontainers:jdbc:1.16.1"
                 ],
                 "dependencies": [
-                    "com.github.docker-java:docker-java-transport-zerodep:3.2.8",
+                    "org.testcontainers:testcontainers:1.16.1",
+                    "org.testcontainers:jdbc:1.16.1",
+                    "org.apache.commons:commons-compress:1.21",
                     "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
-                    "org.apache.commons:commons-compress:1.20",
-                    "junit:junit:4.12",
-                    "com.github.docker-java:docker-java-api:3.2.8",
-                    "org.testcontainers:jdbc:1.15.3",
-                    "org.testcontainers:database-commons:1.15.3",
+                    "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
                     "org.hamcrest:hamcrest-core:1.3",
-                    "org.rnorth.visible-assertions:visible-assertions:2.1.2",
+                    "com.github.docker-java:docker-java-transport:3.2.12",
                     "net.java.dev.jna:jna:5.8.0",
                     "org.slf4j:slf4j-api:1.7.32",
+                    "org.testcontainers:database-commons:1.16.1",
+                    "org.jetbrains:annotations:17.0.0",
                     "org.rnorth.duct-tape:duct-tape:1.0.8",
-                    "org.testcontainers:testcontainers:1.15.3",
-                    "com.github.docker-java:docker-java-transport:3.2.8"
+                    "com.github.docker-java:docker-java-api:3.2.12",
+                    "junit:junit:4.13.2"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/testcontainers/postgresql/1.15.3/postgresql-1.15.3.jar",
+                "url": "https://repo1.maven.org/maven2/org/testcontainers/postgresql/1.16.1/postgresql-1.16.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/testcontainers/postgresql/1.15.3/postgresql-1.15.3.jar"
+                    "https://repo1.maven.org/maven2/org/testcontainers/postgresql/1.16.1/postgresql-1.16.1.jar"
                 ],
-                "sha256": "85b37e8fe6052f9e0b3d30bb1f39c952ba29fa9667c136e7c7a8188a0bbef28f"
+                "sha256": "2a57d5f07f5434a82daca6a1f4fbed9ac7b3b55c1e101d832c4d8a37a2b10237"
             },
             {
-                "coord": "org.testcontainers:testcontainers:1.15.3",
-                "file": "v1/https/repo1.maven.org/maven2/org/testcontainers/testcontainers/1.15.3/testcontainers-1.15.3.jar",
+                "coord": "org.testcontainers:testcontainers:1.16.1",
+                "file": "v1/https/repo1.maven.org/maven2/org/testcontainers/testcontainers/1.16.1/testcontainers-1.16.1.jar",
                 "directDependencies": [
-                    "com.github.docker-java:docker-java-transport-zerodep:3.2.8",
-                    "org.apache.commons:commons-compress:1.20",
-                    "junit:junit:4.12",
-                    "com.github.docker-java:docker-java-api:3.2.8",
-                    "org.rnorth.visible-assertions:visible-assertions:2.1.2",
-                    "org.slf4j:slf4j-api:1.7.32",
-                    "org.rnorth.duct-tape:duct-tape:1.0.8"
-                ],
-                "dependencies": [
-                    "com.github.docker-java:docker-java-transport-zerodep:3.2.8",
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
-                    "org.apache.commons:commons-compress:1.20",
-                    "junit:junit:4.12",
-                    "com.github.docker-java:docker-java-api:3.2.8",
-                    "org.hamcrest:hamcrest-core:1.3",
-                    "org.rnorth.visible-assertions:visible-assertions:2.1.2",
-                    "net.java.dev.jna:jna:5.8.0",
+                    "org.apache.commons:commons-compress:1.21",
+                    "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
                     "org.slf4j:slf4j-api:1.7.32",
                     "org.rnorth.duct-tape:duct-tape:1.0.8",
-                    "com.github.docker-java:docker-java-transport:3.2.8"
+                    "com.github.docker-java:docker-java-api:3.2.12",
+                    "junit:junit:4.13.2"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/testcontainers/testcontainers/1.15.3/testcontainers-1.15.3.jar",
+                "dependencies": [
+                    "org.apache.commons:commons-compress:1.21",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
+                    "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
+                    "org.hamcrest:hamcrest-core:1.3",
+                    "com.github.docker-java:docker-java-transport:3.2.12",
+                    "net.java.dev.jna:jna:5.8.0",
+                    "org.slf4j:slf4j-api:1.7.32",
+                    "org.jetbrains:annotations:17.0.0",
+                    "org.rnorth.duct-tape:duct-tape:1.0.8",
+                    "com.github.docker-java:docker-java-api:3.2.12",
+                    "junit:junit:4.13.2"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/testcontainers/testcontainers/1.16.1/testcontainers-1.16.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/testcontainers/testcontainers/1.15.3/testcontainers-1.15.3.jar"
+                    "https://repo1.maven.org/maven2/org/testcontainers/testcontainers/1.16.1/testcontainers-1.16.1.jar"
                 ],
-                "sha256": "6c56448dad8649ce88285bda7c053e20ae7759b0a5ffcf30204ff717ec586c92"
+                "sha256": "6213e1219d44506ef1632a2a9d31c92bd6f82d296afa5c716f6e5372daa22d2a"
             },
             {
                 "coord": "redis.clients:jedis:4.2.3",
@@ -2922,6 +2919,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -2105148884
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": 1832705369
     }
 }
