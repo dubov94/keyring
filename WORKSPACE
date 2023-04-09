@@ -320,50 +320,50 @@ load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 
 container_pull(
     name = "io_docker_index_library_debian",
-    digest = "sha256:121dd2a723be1c8aa8b116684d66157c93c801f2f5107b60287937e88c13ab89",
+    digest = "sha256:ac8ad4307a275784e5fce8c832d1101b0fc8fd876e37f6fb2cb355c33ba456b1",
     registry = "index.docker.io",
     repository = "library/debian",
-    tag = "10.3",
+    tag = "10.13",
 )
 
 container_pull(
     name = "io_docker_index_library_nginx",
-    digest = "sha256:3f13b4376446cf92b0cb9a5c46ba75d57c41f627c4edb8b635fa47386ea29e20",
+    digest = "sha256:bfb112db4075460ec042ce13e0b9c3ebd982f93ae0be155496d050bb70006750",
     registry = "index.docker.io",
     repository = "library/nginx",
-    tag = "1.21",
+    tag = "1.23",
 )
 
 container_pull(
-    name = "io_docker_index_library_openjdk",
-    digest = "sha256:eaa06bc0541a17a55ac9040ccf8ce40655ef6e247534c21e4e065e1cf6078db2",
+    name = "io_docker_index_library_eclipse_temurin",
+    digest = "sha256:f5fbff202ca3c33f2543257e214bdc79087a56cfab5276a82a9870ec7038bbfd",
     registry = "index.docker.io",
-    repository = "library/openjdk",
-    tag = "9-jre",
+    repository = "library/eclipse-temurin",
+    tag = "11-jre",
 )
 
 container_pull(
     name = "io_docker_index_library_postgres",
-    digest = "sha256:8d46fa657b46fb96a707b3dff90ff95014476874a96389f0370c1c2a2846f249",
+    digest = "sha256:3a66aa86bb31614beda15a50277367fce6f7f25245debcf401c9676bf6b2f676",
     registry = "index.docker.io",
     repository = "library/postgres",
-    tag = "14.5",
+    tag = "14.7",
 )
 
 container_pull(
     name = "io_docker_index_liquibase_liquibase",
-    digest = "sha256:e2537e2d44f05bf5a684f50b03e616dc9d4615bd7cf1cf58da7618e4193a99f2",
+    digest = "sha256:de16d36f1011e8de9ee35ccbdd6340697f7f1c45f28e19d1ef4b633d2e4f5260",
     registry = "index.docker.io",
     repository = "liquibase/liquibase",
-    tag = "4.13",
+    tag = "4.20",
 )
 
 container_pull(
     name = "io_docker_index_maxmindinc_geoipupdate",
-    digest = "sha256:4803802f76c635839ab3d3fd4abb1c0d400c9788cffdd237e7c323298e40c915",
+    digest = "sha256:e5186d6a1ffa9e14b602ae5bddb22e6fe268e78759640f62aef1daadc7666891",
     registry = "index.docker.io",
     repository = "maxmindinc/geoipupdate",
-    tag = "v4.3",
+    tag = "v4.11",
 )
 
 # multirun_dependencies.external_multirun_dependencies

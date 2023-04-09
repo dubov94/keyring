@@ -9,7 +9,7 @@ exports_files(["aspectj.bzl"])
 
 container_image(
     name = "server",
-    base = "@io_docker_index_library_openjdk//image",
+    base = "@io_docker_index_library_eclipse_temurin//image",
     cmd = ["./entrypoint.sh"],
     directory = "/root",
     files = ["//server/main:entrypoint.sh"],
@@ -20,7 +20,7 @@ container_image(
 
 container_image(
     name = "janitor",
-    base = "@io_docker_index_library_openjdk//image",
+    base = "@io_docker_index_library_eclipse_temurin//image",
     cmd = ["./entrypoint.sh"],
     directory = "/root",
     files = ["//server/janitor:entrypoint.sh"],
