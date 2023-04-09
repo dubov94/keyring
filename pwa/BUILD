@@ -193,7 +193,6 @@ npm_package_bin(
     args = [
         "--node_options=--require=./$(execpath :change_directory_js)",
         "build",
-        "--dest=$(@D)",
     ],
     data = [":change_directory_js"] + SOURCES + DEPENDENCIES,
     output_dir = True,
