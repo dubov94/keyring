@@ -15,7 +15,7 @@ Infrastructurally the service uses (managed) Kubernetes on DigitalOcean and Goog
       * `/api/` forwarder
   * backends (includes Postgres and Redis)
   * `archiver_cronjob`
-    * writes the PG dump to GCS
+    * writes PG dumps to GCS
   * `restorer_cronjob`
     * `pg_restore` essentially
 * `monitoring/`
@@ -39,7 +39,12 @@ All of them are installed manually at the moment, and Alertmanager hasn't been e
 * **Mailgun**
   * 'The primary account holder will receive an e-mail notification when 50% and 75% of the limit [1k] has been crossed.'
 * **Google Cloud Storage**
-  * `received_bytes_count` in the backup bucket is less than KiB for at least 25 hours (the corresponding `CronJob` runs every day).
+  * `received_bytes_count` in the backup bucket is less than expected for at least 25 hours (the corresponding `CronJob` runs every day).
+
+### Security
+
+* [debricked.com](https://debricked.com/) for third-party dependencies.
+* [snyk.io](https://snyk.io/) for scanning Docker images.
 
 ## Referrals
 
