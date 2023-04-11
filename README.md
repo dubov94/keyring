@@ -1,10 +1,10 @@
 <p align="center">
-  <a href="https://parolica.com">
+  <a href="https://parolica.com/">
     <img src="/pwa/src/logomark.svg" width="64">
   </a>
 </p>
 <p align="center">
-  <b><a href="https://parolica.com">parolica.com</a></b>
+  <b><a href="https://parolica.com/">parolica.com</a></b>
 </p>
 <p align="center">
   <i>It's all about flexibility</i>
@@ -18,9 +18,11 @@
   </a>
 </p>
 
-# [Parolica](https://parolica.com)
+# [Parolica](https://parolica.com/)
 
-Parolica *(pronounced [[pɐˈrolʲɪtsə]](https://en.wikipedia.org/wiki/International_Phonetic_Alphabet))* is a minimalistic cloud-based [password manager](https://en.wikipedia.org/wiki/Password_manager). My friends like it! 🤭
+Parolica *(pronounced [[pɐˈrolʲɪtsə]](https://en.wikipedia.org/wiki/International_Phonetic_Alphabet))* is a minimalistic cloud-based [password manager](https://en.wikipedia.org/wiki/Password_manager).
+
+Even my friends who use 'password' as their password recommend it! 🤭
 
 - [🔐 **Zero-knowledge**](https://en.wikipedia.org/wiki/Zero-knowledge_service)
   - The vault is stored encrypted in the cloud, and can only be decrypted with the master password.
