@@ -24,7 +24,6 @@ import org.hibernate.annotations.TypeDef;
     indexes = {@Index(columnList = "user_identifier")})
 @TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class OtpParams {
-  // Slightly lower than `User.PENDING_USER_EXPIRATION_M`.
   public static final long OTP_PARAMS_EXPIRATION_M = 10;
   public static final long APPROX_MAX_OTP_PARAMS_PER_USER = 4;
 

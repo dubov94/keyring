@@ -33,7 +33,7 @@ public final class ExpiredMailTokens implements Runnable {
     criteriaDelete.where(
         criteriaBuilder.lessThan(
             mailTokenRoot.get(MailToken_.timestamp),
-            chronometry.pastTimestamp(MailToken.MAIL_TOKEN_EXPIRATION_M, ChronoUnit.MINUTES)));
+            chronometry.pastTimestamp(MailToken.MAIL_TOKEN_EXPIRATION_H, ChronoUnit.HOURS)));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }
 }

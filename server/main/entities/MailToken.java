@@ -24,8 +24,7 @@ import org.hibernate.annotations.OnDeleteAction;
     name = "mail_tokens",
     indexes = {@Index(columnList = "user_identifier"), @Index(columnList = "ip_address")})
 public class MailToken {
-  // Slightly lower than `User.PENDING_USER_EXPIRATION_M`.
-  public static final long MAIL_TOKEN_EXPIRATION_M = 10;
+  public static final long MAIL_TOKEN_EXPIRATION_H = 1;
   public static final long APPROX_MAX_MAIL_TOKENS_PER_USER = 4;
   public static final long APPROX_MAX_MAIL_TOKENS_PER_IP_ADDRESS = 64;
 
