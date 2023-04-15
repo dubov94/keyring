@@ -1,5 +1,4 @@
-load("@com_github_atlassian_bazel_tools//multirun:def.bzl", "command", "multirun")
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+load("@com_github_atlassian_bazel_tools//multirun:def.bzl", "multirun")
 
 package_group(
     name = "project",
@@ -13,19 +12,19 @@ package_group(
 
 exports_files(["WORKSPACE"])
 
-command(
+alias(
     name = "server",
-    command = "//server/main",
+    actual = "//server/main",
 )
 
-command(
+alias(
     name = "grpc_gateway",
-    command = "//grpc_gateway:main",
+    actual = "//grpc_gateway:main",
 )
 
-command(
+alias(
     name = "janitor",
-    command = "//server/janitor",
+    actual = "//server/janitor",
 )
 
 multirun(
@@ -37,12 +36,7 @@ multirun(
     parallel = True,
 )
 
-command(
+alias(
     name = "pwa",
-    arguments = [
-        "serve",
-        "--package-json-path=$(rootpath //pwa:package_json)",
-    ],
-    command = "//pwa:serve",
-    data = ["//pwa:package_json"],
+    actual = "//pwa:serve",
 )
