@@ -18,8 +18,8 @@ export const displayLogoutTriggerEpic: Epic<RootAction, RootAction, RootState> =
     switchMap(() => fn.pipe(
       option.fromNullable(action.payload.logoutTrigger),
       option.filter((trigger) => trigger !== LogoutTrigger.USER_REQUEST),
-      option.map<LogoutTrigger, Observable<RootAction>>(() => of(showToast({
-        message: 'We had to reload the app — sorry about that.'
+      option.map<LogoutTrigger, Observable<RootAction>>((trigger) => of(showToast({
+        message: `We had to reload the app (${trigger}) — sorry about that.`
       }))),
       option.getOrElse<Observable<RootAction>>(() => EMPTY)
     ))
