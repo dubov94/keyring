@@ -25,7 +25,7 @@ import {
 import { getQrcEncoder } from '@/cryptography/qrc_encoder'
 import { getSodiumClient } from '@/cryptography/sodium_client'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
-import { Password } from '@/redux/domain'
+import { Key, Password } from '@/redux/domain'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success } from '@/redux/flow_signal'
 import { remoteAuthnComplete } from '@/redux/modules/authn/actions'
@@ -163,15 +163,15 @@ export const displayMailTokenAcquisitionExceptionsEpic = createDisplayExceptions
 
 const masterKeyChange = <T extends TypeConstant>(
   { current, renewal }: { current: string; renewal: string },
-  state: RootState,
+  { parametrization, userKeys, sessionKey}: { parametrization: string; userKeys: DeepReadonly<Key[]>; sessionKey: string },
   signalCreator: (payload: DeepReadonly<MasterKeyChangeSignal>) => PayloadAction<T, DeepReadonly<MasterKeyChangeSignal>> & RootAction
 ): Observable<RootAction> => {
   return concat(
     of(signalCreator(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING))),
-    from(getSodiumClient().computeAuthDigestAndEncryptionKey(state.user.account.parametrization!, current)).pipe(
+    from(getSodiumClient().computeAuthDigestAndEncryptionKey(parametrization, current)).pipe(
       switchMap(({ authDigest }) => from(getSodiumClient().generateNewParametrization()).pipe(
         switchMap((newParametrization) => from(getSodiumClient().computeAuthDigestAndEncryptionKey(newParametrization, renewal)).pipe(
-          switchMap((newDerivatives) => forkJoin(state.user.keys.userKeys.map(async ({ identifier, value, tags }) => ({
+          switchMap((newDerivatives) => forkJoin(userKeys.map(async ({ identifier, value, tags }) => ({
             identifier,
             password: await getSodiumClient().encryptPassword(newDerivatives.encryptionKey, { value, tags })
           }))).pipe(
@@ -187,7 +187,7 @@ const masterKeyChange = <T extends TypeConstant>(
                 }
               }, {
                 headers: {
-                  [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
+                  [SESSION_TOKEN_HEADER_NAME]: sessionKey
                 }
               })).pipe(switchMap((response: ServiceChangeMasterKeyResponse) => {
                 switch (response.error) {
@@ -217,7 +217,15 @@ export const changeMasterKeyEpic: Epic<RootAction, RootAction, RootState> = (act
   withLatestFrom(state$),
   switchMap(([action, state]) => {
     if (isActionOf(changeMasterKey, action)) {
-      return masterKeyChange(action.payload, state, masterKeyChangeSignal)
+      return masterKeyChange(
+        action.payload,
+        {
+          parametrization: state.user.account.parametrization!,
+          userKeys: state.user.keys.userKeys,
+          sessionKey: state.user.account.sessionKey
+        },
+        masterKeyChangeSignal
+      )
     } else if (isActionOf(masterKeyChangeReset, action)) {
       return of(masterKeyChangeSignal(cancel()))
     }
@@ -317,13 +325,21 @@ export const logOutOnBackgroundAuthnFailureEpic: Epic<RootAction, RootAction, Ro
   mapTo(logOut(LogoutTrigger.BACKGROUND_AUTHN_FAILURE))
 )
 
-export const remoteRehashEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+export const remoteRehashEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(remoteAuthnComplete)),
-  withLatestFrom(state$),
-  switchMap(([action, state]) => {
+  switchMap((action) => {
     const { parametrization, password } = action.payload
     if (!getSodiumClient().isParametrizationUpToDate(parametrization)) {
-      return masterKeyChange({ current: password, renewal: password }, state, remoteRehashSignal)
+      return masterKeyChange(
+        { current: password, renewal: password },
+        // Use `remoteAuthnComplete` data to avoid race conditions with `emplace`.
+        {
+          parametrization,
+          userKeys: action.payload.userKeys,
+          sessionKey: action.payload.sessionKey
+        },
+        remoteRehashSignal
+      )
     }
     return EMPTY
   })
