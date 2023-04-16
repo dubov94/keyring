@@ -1,6 +1,6 @@
 import { either, function as fn, option } from 'fp-ts'
 import { Epic } from 'redux-observable'
-import { concat, EMPTY, forkJoin, from, Observable, of } from 'rxjs'
+import { concat, EMPTY, forkJoin, from, iif, Observable, of } from 'rxjs'
 import { catchError, concatMap, defaultIfEmpty, filter, map, mapTo, switchMap, withLatestFrom } from 'rxjs/operators'
 import { DeepReadonly, DeepPartial } from 'ts-essentials'
 import { isActionOf, PayloadAction, TypeConstant } from 'typesafe-actions'
@@ -281,8 +281,15 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
               if (authDigest === state.depot.hash) {
                 return concat(
                   of(authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.DECRYPTING_DATA))),
-                  from(getSodiumClient().decryptMessage(encryptionKey, state.depot.vault!)).pipe(
-                    switchMap((vault) => of(authnViaDepotSignal(success({
+                  forkJoin([
+                    getSodiumClient().decryptMessage(encryptionKey, state.depot.vault!),
+                    iif<null, string>(
+                      () => state.depot.encryptedOtpToken === null,
+                      Promise.resolve((null)),
+                      getSodiumClient().decryptMessage(encryptionKey, state.depot.encryptedOtpToken)
+                    )
+                  ]).pipe(
+                    switchMap(([vault, otpToken]) => of(authnViaDepotSignal(success({
                       username: action.payload.username,
                       password: action.payload.password,
                       userKeys: (<DeepPartial<Key>[]>JSON.parse(vault)).map((keyPartial): Key => ({
@@ -295,7 +302,8 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
                         },
                         creationTimeInMillis: keyPartial.creationTimeInMillis || 0
                       })),
-                      depotKey: encryptionKey
+                      depotKey: encryptionKey,
+                      otpToken: otpToken
                     }))))
                   )
                 )

@@ -10,7 +10,7 @@ import {
 import { reduce } from '@/redux/testing'
 import { clearDepot, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
 import reducer from './reducer'
-import { createRegistrationFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
+import { createAuthnViaDepotFlowResult, createRegistrationFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
 
 describe('rehydrateDepot', () => {
   it('restores values', () => {
@@ -32,12 +32,7 @@ describe('rehydrateDepot', () => {
 
 describe('authnViaDepotSignal', () => {
   it('sets the vault key', () => {
-    const state = reducer(undefined, authnViaDepotSignal(success({
-      username: 'username',
-      password: 'password',
-      userKeys: [],
-      depotKey: 'depotKey'
-    })))
+    const state = reducer(undefined, authnViaDepotSignal(success(createAuthnViaDepotFlowResult({}))))
 
     expect(state.depotKey).to.equal('depotKey')
   })

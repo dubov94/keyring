@@ -4,7 +4,7 @@ import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '@/
 import { logOut, LogoutTrigger, usernameChangeSignal } from '@/redux/modules/user/account/actions'
 import { rehydrateSession } from './actions'
 import reducer from './reducer'
-import { createRegistrationFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
+import { createAuthnViaDepotFlowResult, createRegistrationFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
 
 describe('registrationSignal', () => {
   it('updates the username', () => {
@@ -17,12 +17,7 @@ describe('registrationSignal', () => {
 describe('authnSignal', () => {
   ;[
     remoteAuthnComplete(createRemoteAuthnCompleteResult({})),
-    authnViaDepotSignal(success({
-      username: 'username',
-      password: 'password',
-      userKeys: [],
-      depotKey: 'depotKey'
-    }))
+    authnViaDepotSignal(success(createAuthnViaDepotFlowResult({})))
   ].forEach((trigger) => {
     it(`updates the username on ${trigger.type}`, () => {
       const state = reducer(undefined, trigger)

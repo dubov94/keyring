@@ -15,7 +15,7 @@ import { hasData, data } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
 import { either, option } from 'fp-ts'
 import { defaultMailVerification } from '../user/account/actions'
-import { createRegistrationFlowResult } from '@/redux/testing/domain'
+import { createAuthnViaDepotFlowResult, createRegistrationFlowResult } from '@/redux/testing/domain'
 
 describe('registration', () => {
   const signalAction = registrationSignal(success(createRegistrationFlowResult({})))
@@ -103,12 +103,7 @@ describe('authnOtpProvision', () => {
 })
 
 describe('authnViaDepot', () => {
-  const signalAction = authnViaDepotSignal(success({
-    username: 'username',
-    password: 'password',
-    userKeys: [],
-    depotKey: 'depotKey'
-  }))
+  const signalAction = authnViaDepotSignal(success(createAuthnViaDepotFlowResult({})))
 
   describe('authnViaDepotSignal', () => {
     it('updates the result', () => {

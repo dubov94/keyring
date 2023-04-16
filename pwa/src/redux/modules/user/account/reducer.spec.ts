@@ -28,7 +28,7 @@ import {
   usernameChangeSignal
 } from './actions'
 import reducer from './reducer'
-import { createRegistrationFlowResult } from '@/redux/testing/domain'
+import { createAuthnViaDepotFlowResult, createRegistrationFlowResult } from '@/redux/testing/domain'
 
 describe('registrationSignal', () => {
   it('sets the account state', () => {
@@ -77,15 +77,13 @@ describe('remoteAuthnComplete', () => {
 
 describe('authnViaDepotSignal', () => {
   it('transitions to the dashboard', () => {
-    const state = reducer(undefined, authnViaDepotSignal(success({
-      username: 'username',
-      password: 'password',
-      userKeys: [],
-      depotKey: 'depotKey'
-    })))
+    const state = reducer(undefined, authnViaDepotSignal(success(createAuthnViaDepotFlowResult({
+      otpToken: 'otpToken'
+    }))))
 
     expect(state.isAuthenticated).to.be.true
     expect(state.mailVerification.required).to.be.false
+    expect(state.otpToken).to.equal('otpToken')
   })
 })
 

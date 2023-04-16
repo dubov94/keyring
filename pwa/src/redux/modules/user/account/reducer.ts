@@ -114,9 +114,10 @@ export default createReducer<{
       state.isOtpEnabled = action.payload.isOtpEnabled
       state.otpToken = action.payload.otpToken
     })
-    .addMatcher(isActionSuccess(authnViaDepotSignal), (state) => {
+    .addMatcher(isActionSuccess(authnViaDepotSignal), (state, action) => {
       state.isAuthenticated = true
       state.mailVerification = defaultMailVerification()
+      state.otpToken = action.payload.data.otpToken
     })
     .addMatcher(isActionOf(mailTokenReleaseSignal), (state, action) => {
       state.mailTokenRelease = reducer(

@@ -104,6 +104,7 @@ export interface AuthnViaDepotFlowResult {
   password: string;
   userKeys: Key[];
   depotKey: string;
+  otpToken: string | null;
 }
 export const logInViaDepot = createAction('authn/logInViaDepot')<DeepReadonly<{
   username: string;

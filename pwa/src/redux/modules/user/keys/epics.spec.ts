@@ -26,6 +26,7 @@ import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import {
+  createAuthnViaDepotFlowResult,
   createDepotActivationData,
   createRegistrationFlowResult,
   createRemoteAuthnCompleteResult,
@@ -324,12 +325,7 @@ describe('inheritKeysFromAuthnDataEpic', () => {
     remoteAuthnComplete(createRemoteAuthnCompleteResult({
       userKeys
     })),
-    authnViaDepotSignal(success({
-      username: 'username',
-      password: 'password',
-      userKeys,
-      depotKey: 'depotKey'
-    }))
+    authnViaDepotSignal(success(createAuthnViaDepotFlowResult({})))
   ].forEach((trigger) => {
     it(`emits \`emplace\` on ${trigger.type}`, async () => {
       const store: Store<RootState, RootAction> = createStore(reducer)

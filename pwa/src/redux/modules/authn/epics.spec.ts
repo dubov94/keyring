@@ -28,7 +28,7 @@ import { defaultMailVerification, remoteCredentialsMismatchLocal } from '@/redux
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createKeyProto, createRegistrationFlowResult, createUserKey } from '@/redux/testing/domain'
+import { createAuthnViaDepotFlowResult, createKeyProto, createRegistrationFlowResult, createUserKey } from '@/redux/testing/domain'
 import {
   AuthnOtpProvisionFlowIndicator,
   authnOtpProvisionReset,
@@ -407,7 +407,7 @@ describe('logInViaDepotEpic', () => {
       salt: 'parametrization',
       hash: 'authDigest',
       vault: 'vault',
-      encryptedOtpToken: null
+      encryptedOtpToken: 'encryptedOtpToken'
     }))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
@@ -421,6 +421,7 @@ describe('logInViaDepotEpic', () => {
       tags: ['tag']
     })]
     when(mockSodiumClient.decryptMessage('depotKey', 'vault')).thenResolve(JSON.stringify(userKeys))
+    when(mockSodiumClient.decryptMessage('depotKey', 'encryptedOtpToken')).thenResolve('otpToken')
     container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)
     })
@@ -440,7 +441,8 @@ describe('logInViaDepotEpic', () => {
         username: 'username',
         password: 'password',
         userKeys: userKeys,
-        depotKey: 'depotKey'
+        depotKey: 'depotKey',
+        otpToken: 'otpToken'
       }))
     ])
   })
@@ -519,12 +521,7 @@ describe('backgroundOtpProvisionEpic', () => {
       vault: 'vault',
       encryptedOtpToken: 'encryptedOtpToken'
     }))
-    store.dispatch(authnViaDepotSignal(success({
-      username: 'username',
-      password: 'password',
-      userKeys: [],
-      depotKey: 'depotKey'
-    })))
+    store.dispatch(authnViaDepotSignal(success(createAuthnViaDepotFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const credentialParams: AuthnViaApiParams = {
       username: 'username',

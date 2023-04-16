@@ -12,7 +12,7 @@ import { emplace, userKeysUpdate } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createDepotActivationData, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
+import { createAuthnViaDepotFlowResult, createDepotActivationData, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
 import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
 import { activateDepotEpic, localRehashEpic, masterKeyUpdateEpic, updateEncryptedOtpTokenEpic, updateVaultEpic } from './epics'
 
@@ -174,12 +174,7 @@ describe('localRehashEpic', () => {
     })
 
     const epicTracker = new EpicTracker(localRehashEpic(action$, state$, {}))
-    actionSubject.next(authnViaDepotSignal(success({
-      username: 'username',
-      password: 'password',
-      userKeys: [],
-      depotKey: 'depotKey'
-    })))
+    actionSubject.next(authnViaDepotSignal(success(createAuthnViaDepotFlowResult({}))))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 

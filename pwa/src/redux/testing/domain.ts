@@ -2,7 +2,7 @@ import merge from 'lodash/merge'
 import { DeepPartial } from 'ts-essentials'
 import { ServiceKeyProto } from '@/api/definitions'
 import { Key } from '@/redux/domain'
-import { RegistrationFlowResult, RemoteAuthnCompletionData } from '@/redux/modules/authn/actions'
+import { RegistrationFlowResult, RemoteAuthnCompletionData, AuthnViaDepotFlowResult } from '@/redux/modules/authn/actions'
 import { NIL_KEY_ID } from '@/redux/modules/user/keys/actions'
 import { Clique } from '@/redux/modules/user/keys/selectors'
 import { defaultMailVerification } from '../modules/user/account/actions'
@@ -70,3 +70,13 @@ export const createDepotActivationData = (
   hash: 'hash',
   depotKey: 'depotKey'
 }, partial)
+
+export const createAuthnViaDepotFlowResult = (
+  partial: DeepPartial<AuthnViaDepotFlowResult>
+): AuthnViaDepotFlowResult => merge({
+  username: 'username',
+  password: 'password',
+  userKeys: [],
+  depotKey: 'depotKey',
+  otpToken: null
+})
