@@ -12,11 +12,21 @@ const fromUtf8 = (utf8String: string) => new TextEncoder().encode(utf8String)
 describe('SodiumClient', () => {
   before(() => {
     container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
-      useValue: {
+      useValue: <SodiumWorkerInterface>{
+        toString: (uint8Array) => Promise.resolve(toUtf8(uint8Array)),
+        fromString: (utf8String) => Promise.resolve(fromUtf8(utf8String)),
         toBase64: (uint8Array) => Promise.resolve(toUtf8(uint8Array)),
         fromBase64: (base64String) => Promise.resolve(fromUtf8(base64String)),
+        pad: (buffer, blockSize) => {
+          const string = toUtf8(buffer)
+          return Promise.resolve(fromUtf8(pad(string, string.length + blockSize)))
+        },
+        unpad: (buffer, blockSize) => {
+          const string = toUtf8(buffer)
+          expect(string.slice(0, blockSize)).to.equal(' '.repeat(blockSize))
+          return Promise.resolve(fromUtf8(string.slice(blockSize)))
+        },
         generateSalt: () => Promise.resolve(fromUtf8('_saltsaltsaltsaltsalt_')),
-        generateNonce: () => Promise.resolve(fromUtf8('nonce')),
         computeHash: (iterations, memoryInBytes, salt, password, hashLength) => {
           const struct = recommendedArgon2Settings()
           expect(struct.iterations).to.equal(iterations)
@@ -25,28 +35,29 @@ describe('SodiumClient', () => {
           assert.isAtMost(hash.length, hashLength)
           return Promise.resolve(fromUtf8(pad(hash, hashLength)))
         },
+        generateNonce: () => Promise.resolve(fromUtf8('nonce')),
         encryptMessage: (encryptionKey, nonce, message) => {
-          return Promise.resolve(JSON.stringify({
+          return Promise.resolve(fromUtf8(JSON.stringify({
             encryptionKey: toUtf8(encryptionKey),
             nonce: toUtf8(nonce),
-            message
-          }))
+            message: toUtf8(message)
+          })))
         },
         decryptMessage: (encryptionKey, nonce, cipher) => {
-          const payload = JSON.parse(cipher)
+          const payload = JSON.parse(toUtf8(cipher))
           expect(payload.encryptionKey).to.equal(toUtf8(encryptionKey))
           expect(payload.nonce).to.equal(toUtf8(nonce))
-          return Promise.resolve(payload.message)
+          return Promise.resolve(fromUtf8(payload.message))
         },
         joinNonceCipher: (nonce, cipher) => {
-          return Promise.resolve(JSON.stringify({
+          return Promise.resolve(fromUtf8(JSON.stringify({
             nonce: toUtf8(nonce),
-            cipher
-          }))
+            cipher: toUtf8(cipher)
+          })))
         },
         splitNonceCipher: (pack) => {
-          const { nonce, cipher } = JSON.parse(pack)
-          return Promise.all([fromUtf8(nonce), cipher])
+          const { nonce, cipher } = JSON.parse(toUtf8(pack))
+          return Promise.all([fromUtf8(nonce), fromUtf8(cipher)])
         }
       }
     })

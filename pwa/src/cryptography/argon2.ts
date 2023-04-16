@@ -84,11 +84,14 @@ export const parseArgon2Parametrization = (parametrization: string): Argon2Param
 }
 
 // https://tools.ietf.org/html/draft-irtf-cfrg-argon2-12#section-4
+// https://libsodium.gitbook.io/doc/password_hashing/default_phf#guidelines-for-choosing-the-parameters
 // https://github.com/golang/crypto/blob/5ea612d1eb830b38bc4e914e37f55311eb58adce/argon2/argon2.go
+// https://www.rfc-editor.org/rfc/rfc9106.pdf
+// https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
 export const recommendedArgon2Settings = (): Argon2Settings => ({
   type: 'argon2id',
   version: 'latest',
   memoryInBytes: 64 * 1024 * 1024,
-  iterations: 1,
+  iterations: 3,
   threads: 1
 })
