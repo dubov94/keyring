@@ -163,7 +163,7 @@ export const displayMailTokenAcquisitionExceptionsEpic = createDisplayExceptions
 
 const masterKeyChange = <T extends TypeConstant>(
   { current, renewal }: { current: string; renewal: string },
-  { parametrization, userKeys, sessionKey}: { parametrization: string; userKeys: DeepReadonly<Key[]>; sessionKey: string },
+  { parametrization, userKeys, sessionKey }: { parametrization: string; userKeys: DeepReadonly<Key[]>; sessionKey: string },
   signalCreator: (payload: DeepReadonly<MasterKeyChangeSignal>) => PayloadAction<T, DeepReadonly<MasterKeyChangeSignal>> & RootAction
 ): Observable<RootAction> => {
   return concat(
