@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: redirection
-        image: dubov94/keyring-redirection:e2b2c4ee4aeee8e95f9506a075f18dbfc06a9162
+        image: dubov94/keyring-redirection:8eea146c741cab7824590fc488fdbc5f2d2320cb
         ports:
         - containerPort: 8080
