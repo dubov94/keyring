@@ -45,7 +45,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: mishas/setup-bazelisk-action@v1
-      - run: bazelisk test $(bazel query 'tests(//pwa/...)')
+      - run: bazelisk test $(bazeliskquery 'tests(//pwa/...)')
       - run: bazelisk run //pwa
       - uses: docker/login-action@v1
         with:
@@ -65,7 +65,7 @@ jobs:
         with:
           java-version: 11
       - uses: mishas/setup-bazelisk-action@v1
-      - run: bazelisk test $(bazel query 'tests(//server/main/...)')
+      - run: bazelisk test $(bazeliskquery 'tests(//server/main/...)')
       - run: bazelisk run //server
       - uses: docker/login-action@v1
         with:
@@ -85,7 +85,7 @@ jobs:
         with:
           java-version: 11
       - uses: mishas/setup-bazelisk-action@v1
-      - run: bazelisk test $(bazel query 'tests(//server/janitor/...)')
+      - run: bazelisk test $(bazeliskquery 'tests(//server/janitor/...)')
       - run: bazelisk run //server:janitor
       - uses: docker/login-action@v1
         with:
