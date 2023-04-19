@@ -81,10 +81,9 @@ class KeyOperationsClientTest {
 
     keyOperationsClient.createKey(sessionId, password, KeyAttrs.getDefaultInstance());
 
-    List<Password> passwords =
-        keyOperationsClient.readKeys(sessionId).stream().map(Key::toPassword).collect(toList());
-    assertEquals(1, passwords.size());
-    assertEquals(password, passwords.get(0));
+    List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
+    assertEquals(1, allKeys.size());
+    assertEquals(password, allKeys.get(0).toPassword());
   }
 
   @Test
@@ -223,10 +222,10 @@ class KeyOperationsClientTest {
     keyOperationsClient.updateKey(
         sessionId, KeyPatch.newBuilder().setIdentifier(keyId).setPassword(password).build());
 
-    List<Password> passwords =
-        keyOperationsClient.readKeys(sessionId).stream().map(Key::toPassword).collect(toList());
-    assertEquals(1, passwords.size());
-    assertEquals(password, passwords.get(0));
+    List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
+    Optional<Key> maybeKey = getKeyFromList(allKeys, keyId);
+    assertTrue(maybeKey.isPresent());
+    assertEquals(password, maybeKey.get().toPassword());
   }
 
   @Test
@@ -324,6 +323,23 @@ class KeyOperationsClientTest {
     List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
     assertFalse(getKeyFromList(allKeys, fstShadowId).isPresent());
     assertFalse(getKeyFromList(allKeys, sndShadowId).isPresent());
+  }
+
+  @Test
+  @WithEntityManager
+  void togglePin() {
+    long sessionId = createActiveSession(createUniqueUser());
+    long keyId =
+        keyOperationsClient
+            .createKey(sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
+            .getIdentifier();
+
+    keyOperationsClient.togglePin(sessionId, keyId, /* isPinned */ true);
+
+    List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
+    Optional<Key> maybeKey = getKeyFromList(allKeys, keyId);
+    assertTrue(maybeKey.isPresent());
+    assertTrue(maybeKey.get().getIsPinned());
   }
 
   private Optional<Key> getKeyFromList(List<Key> allKeys, long keyId) {

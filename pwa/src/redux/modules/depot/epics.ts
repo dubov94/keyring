@@ -20,7 +20,7 @@ export const updateVaultEpic: Epic<RootAction, RootAction, RootState> = (action$
   withLatestFrom(state$),
   switchMap(([, state]) => fn.pipe(
     option.fromNullable(state.depot.depotKey),
-    option.map((depotKey) => from(getSodiumClient().encryptMessage(
+    option.map((depotKey) => from(getSodiumClient().encryptString(
       depotKey,
       JSON.stringify(state.user.keys.userKeys.filter((userKey) => !userKey.attrs.isShadow))
     )).pipe(map((vault) => newVault(vault)))),
@@ -40,7 +40,7 @@ export const updateEncryptedOtpTokenEpic: Epic<RootAction, RootAction, RootState
     option.fromNullable(state.depot.depotKey),
     option.map((depotKey) => fn.pipe(
       option.fromNullable(state.user.account.otpToken),
-      option.map((otpToken) => from(getSodiumClient().encryptMessage(depotKey, otpToken))),
+      option.map((otpToken) => from(getSodiumClient().encryptString(depotKey, otpToken))),
       option.getOrElse<Observable<string | null>>(() => of(null))
     )),
     option.map((observable: Observable<string | null>) => observable.pipe(

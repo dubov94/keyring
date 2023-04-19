@@ -1,4 +1,7 @@
-import { monoid, function as fn, option, predicate, record, readonlyArray, string } from 'fp-ts'
+// Extend `CLIQUE_DIGESTION_ACTIONS` and `userKeysUpdateEpic` with new mutations.
+
+import { monoid, function as fn, option, predicate, record, readonlyArray } from 'fp-ts'
+import reverse from 'lodash/reverse'
 import sortBy from 'lodash/sortBy'
 import { Epic } from 'redux-observable'
 import { asapScheduler, concat, EMPTY, forkJoin, from, Observable, of, OperatorFunction, pipe, scheduled, throwError } from 'rxjs'
@@ -68,16 +71,20 @@ import {
   acquireCliqueLock,
   releaseCliqueLock,
   shadowCommitmentSignal,
-  initialCliqueOrder,
+  newCliqueOrder,
   cliqueAddition,
   importSignal,
   import_,
   importReset,
   export_,
   exportSignal,
-  ExportError
+  ExportError,
+  toggleCliquePin,
+  keyPinTogglingSignal,
+  toggleKeyPin,
+  CLIQUE_ORDER_ITERATEES
 } from './actions'
-import { Clique, cliques, createEmptyClique, getCliqueRepr, getCliqueRoot, getFrontShadow } from './selectors'
+import { Clique, cliques, createEmptyClique, getCliqueRoot, getFrontShadow } from './selectors'
 import { fromKeyProto } from './converters'
 
 const importSequence = (
@@ -137,30 +144,36 @@ export const importEpic: Epic<RootAction, RootAction, RootState> = (action$, sta
 export const creationEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf(create)),
   withLatestFrom(state$),
-  mergeMap(([action, state]) => concat(
-    of(creationSignal(indicator(OperationIndicator.WORKING), action.meta)),
-    from(getSodiumClient().encryptPassword(state.user.account.encryptionKey!, action.payload)).pipe(
-      switchMap((password) => {
-        const { attrs } = action.payload
-        return from(getAdministrationApi().administrationCreateKey({ password, attrs }, {
-          headers: {
-            [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey!
-          }
-        })).pipe(
-          switchMap((response: ServiceCreateKeyResponse) => {
-            return of(creationSignal(success({
-              identifier: response.identifier!,
-              attrs,
-              ...extractPassword(action.payload),
-              creationTimeInMillis: Number(response.creationTimeInMillis!)
-            }), action.meta))
-          })
-        )
-      })
+  mergeMap(([action, state]) => {
+    const encryptionKey = state.user.account.encryptionKey!
+    return concat(
+      of(creationSignal(indicator(OperationIndicator.WORKING), action.meta)),
+      from(getSodiumClient().encryptPassword(encryptionKey, action.payload)).pipe(
+        switchMap((password) => {
+          const { attrs } = action.payload
+          return from(getAdministrationApi().administrationCreateKey({
+            password,
+            attrs
+          }, {
+            headers: {
+              [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey!
+            }
+          })).pipe(
+            switchMap((response: ServiceCreateKeyResponse) => {
+              return of(creationSignal(success({
+                identifier: response.identifier!,
+                attrs,
+                ...extractPassword(action.payload),
+                creationTimeInMillis: Number(response.creationTimeInMillis!)
+              }), action.meta))
+            })
+          )
+        })
+      )
+    ).pipe(
+      catchError((error) => of(creationSignal(exception(errorToMessage(error)), action.meta)))
     )
-  ).pipe(
-    catchError((error) => of(creationSignal(exception(errorToMessage(error)), action.meta)))
-  ))
+  })
 )
 
 export const updationEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
@@ -261,7 +274,8 @@ export const shadowElectionEpic: Epic<RootAction, RootAction, RootState> = (acti
             identifier: response.parent!,
             attrs: {
               isShadow: false,
-              parent: NIL_KEY_ID
+              parent: NIL_KEY_ID,
+              isPinned: userKeys[index].attrs.isPinned
             },
             ...extractPassword(userKeys[index]),
             creationTimeInMillis: userKeys[index].creationTimeInMillis
@@ -275,6 +289,30 @@ export const shadowElectionEpic: Epic<RootAction, RootAction, RootState> = (acti
   ))
 )
 
+export const keyPinTogglingEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionOf(toggleKeyPin)),
+  withLatestFrom(state$),
+  mergeMap(([action, state]) => concat(
+    of(keyPinTogglingSignal(indicator(OperationIndicator.WORKING), action.meta)),
+    from(getAdministrationApi().administrationTogglePin({
+      identifier: action.payload.identifier,
+      isPinned: action.payload.isPinned
+    }, {
+      headers: {
+        [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey!
+      }
+    })).pipe(
+      switchMap(() => {
+        return of(keyPinTogglingSignal(success(action.payload), action.meta))
+      })
+    )
+  ).pipe(
+    catchError((error) => of(keyPinTogglingSignal(exception(errorToMessage(error)), action.meta)))
+  ))
+)
+
+export const displayKeyPinTogglingExceptionEpic = createDisplayExceptionsEpic(keyPinTogglingSignal)
+
 export const userKeysUpdateEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(monoid.concatAll(predicate.getMonoidAny<RootAction>())([
     isActionOf(emplace),
@@ -282,36 +320,65 @@ export const userKeysUpdateEpic: Epic<RootAction, RootAction, RootState> = (acti
     isActionSuccess(creationSignal),
     isActionSuccess(updationSignal),
     isActionSuccess(deletionSignal),
-    isActionSuccess(shadowElectionSignal)
+    isActionSuccess(shadowElectionSignal),
+    isActionSuccess(keyPinTogglingSignal)
   ])),
   withLatestFrom(state$),
   map(([, state]) => userKeysUpdate(state.user.keys.userKeys))
 )
 
-export const initialCliqueOrderEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+export const cliqueOrderOnEmplaceEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf(emplace)),
   withLatestFrom(state$),
-  map(([, state]) => initialCliqueOrder(
-    sortBy(
-      cliques(state),
-      (clique) => clique.shadows.length === 0,
-      (clique) => fn.pipe(
-        getCliqueRepr(clique),
-        option.fold(
-          () => <DeepReadonly<string[]>>[],
-          (repr) => fn.pipe(
-            repr.tags,
-            readonlyArray.map(string.toLowerCase)
-          )
-        )
-      )
-    ).map((clique) => clique.name)
+  map(([, state]) => newCliqueOrder(
+    sortBy(cliques(state), CLIQUE_ORDER_ITERATEES).map((clique) => clique.name)
   ))
 )
 
 export const cliqueAdditionEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionSuccess(creationSignal)),
   map((action) => cliqueAddition(action.meta.clique))
+)
+
+export const cliqueOrderOnPinEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionSuccess(keyPinTogglingSignal)),
+  withLatestFrom(state$),
+  concatMap(([action, state]) => {
+    const { data } = action.payload
+    const cliqueName = state.user.keys.idToClique[data.identifier]
+    const cliqueList = cliques(state)
+    const cliqueIndex = cliqueList.findIndex(
+      (clique) => clique.name === cliqueName)
+    if (cliqueIndex === -1) {
+      return EMPTY
+    }
+    const toggledClique = cliqueList[cliqueIndex]
+    const delta = data.isPinned ? -1 : 1
+    let newIndex = cliqueIndex
+    while (true) {
+      const comparedIndex = newIndex + delta
+      if (!(0 <= comparedIndex && comparedIndex < cliqueList.length)) {
+        break
+      }
+      const comparedClique = cliqueList[comparedIndex]
+      let operands = [comparedClique, toggledClique]
+      if (!data.isPinned) {
+        operands = reverse(operands)
+      }
+      // `sortedIndexBy` does not support `iteratees`.
+      const [left] = sortBy(operands, CLIQUE_ORDER_ITERATEES)
+      if (left === operands[0]) {
+        break
+      }
+      newIndex = comparedIndex
+    }
+    const orderedCliques = [
+      ...cliqueList.slice(0, cliqueIndex),
+      ...cliqueList.slice(cliqueIndex + 1)
+    ]
+    orderedCliques.splice(newIndex, 0, toggledClique)
+    return of(newCliqueOrder(orderedCliques.map((clique) => clique.name)))
+  })
 )
 
 const makeUid = <T>(callback: (uid: string) => T): T => {
@@ -379,11 +446,17 @@ const deletionStream = (
   )
 ))
 
-const SHADOW_DIGESTION_ACTIONS = [commitShadow, integrateClique, cancelShadow, obliterateClique]
-type ShadowDigestionActionType = ReturnType<(typeof SHADOW_DIGESTION_ACTIONS)[number]>
+const CLIQUE_DIGESTION_ACTIONS = [
+  commitShadow,
+  integrateClique,
+  cancelShadow,
+  obliterateClique,
+  toggleCliquePin
+]
+type ShadowDigestionActionType = ReturnType<(typeof CLIQUE_DIGESTION_ACTIONS)[number]>
 
 export const lockCliqueEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
-  filter(isActionOf(SHADOW_DIGESTION_ACTIONS)),
+  filter(isActionOf(CLIQUE_DIGESTION_ACTIONS)),
   map((action) => acquireCliqueLock(action.payload.clique))
 )
 
@@ -406,7 +479,8 @@ const shadowCommitmentStream = (
             option.fromNullable(clique.parent),
             option.map((parent) => parent.identifier),
             option.getOrElse(() => NIL_KEY_ID)
-          )
+          ),
+          isPinned: false
         },
         ...extractPassword(action.payload)
       }, action$),
@@ -534,8 +608,29 @@ const cliqueObliterationStream = (
   )
 )
 
-export const shadowDigestionEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
-  filter(isActionOf(SHADOW_DIGESTION_ACTIONS)),
+const cliquePinTogglingStream = (
+  isPinned: boolean,
+  clique: DeepReadonly<Clique>,
+  action$: Observable<RootAction>
+): Observable<RootAction> => fn.pipe(
+  getCliqueRoot(clique),
+  option.fold(
+    () => EMPTY,
+    (root) => makeUid((uid) => concat(
+      of(toggleKeyPin(
+        { identifier: root.identifier, isPinned },
+        { uid, clique: clique.name }
+      )),
+      action$.pipe(
+        filterOperation(keyPinTogglingSignal, uid),
+        takeWhile((signal) => !isSignalFinale(signal.payload), true)
+      )
+    ))
+  )
+)
+
+export const cliqueDigestionEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionOf(CLIQUE_DIGESTION_ACTIONS)),
   groupBy((action) => action.payload.clique),
   // `mergeMap` is knowingly append-only.
   mergeMap((group) => group.pipe(
@@ -557,6 +652,8 @@ export const shadowDigestionEpic: Epic<RootAction, RootAction, RootState> = (act
             return shadowCancellationStream(clique, action$)
           case getType(obliterateClique):
             return cliqueObliterationStream(clique, action$)
+          case getType(toggleCliquePin):
+            return cliquePinTogglingStream(action.payload.isPinned, clique, action$)
         }
       })
     )))

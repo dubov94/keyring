@@ -981,17 +981,22 @@
   dependencies:
     google-protobuf "^3.6.1"
 
-"@fontsource/material-icons@^4.5.0":
+"@fontsource/material-icons-outlined@^4.5.4":
+  version "4.5.4"
+  resolved "https://registry.yarnpkg.com/@fontsource/material-icons-outlined/-/material-icons-outlined-4.5.4.tgz#23ce468b7c569d1c717061cb8c5a69b3cb3fba12"
+  integrity sha512-2SLQe/pAlOzoE2Kd5cBxqTgI9U63hf3a7RrCF8GFvgPkYhF6WOcIzFzsLc1Fdf+UhcYS+Hgpp6o8peguwZGK9Q==
+
+"@fontsource/material-icons@^4.5.4":
   version "4.5.4"
   resolved "https://registry.yarnpkg.com/@fontsource/material-icons/-/material-icons-4.5.4.tgz#bfedde9352c36dbbacb6b49d190a1ce1e5917756"
   integrity sha512-YGmXkkEdu6EIgpFKNmB/nIXzZocwSmbI01Ninpmml8x8BT0M6RR++V1KqOfpzZ6Cw/FQ2/KYonQ3x4IY/4VRRA==
 
-"@fontsource/roboto-mono@^4.5.0":
+"@fontsource/roboto-mono@^4.5.4":
   version "4.5.10"
   resolved "https://registry.yarnpkg.com/@fontsource/roboto-mono/-/roboto-mono-4.5.10.tgz#197fc2d5fa9c25fd7ad9dcccb2705663f2409850"
   integrity sha512-KrJdmkqz6DszT2wV/bbhXef4r0hV3B0vw2mAqei8A2kRnvq+gcJLmmIeQ94vu9VEXrUQzos5M9lH1TAAXpRphw==
 
-"@fontsource/roboto@^4.5.0":
+"@fontsource/roboto@^4.5.4":
   version "4.5.8"
   resolved "https://registry.yarnpkg.com/@fontsource/roboto/-/roboto-4.5.8.tgz#56347764786079838faf43f0eeda22dd7328437f"
   integrity sha512-CnD7zLItIzt86q4Sj3kZUiLcBk1dSk81qcqgMGaZe7SQ1P8hFNxhMl5AZthK1zrDM5m74VVhaOpuMGIL4gagaA==

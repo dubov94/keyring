@@ -1,6 +1,6 @@
 import { either, function as fn, option } from 'fp-ts'
 import { Epic } from 'redux-observable'
-import { concat, EMPTY, forkJoin, from, iif, Observable, of } from 'rxjs'
+import { concat, defer, EMPTY, forkJoin, from, iif, Observable, of } from 'rxjs'
 import { catchError, concatMap, defaultIfEmpty, filter, map, mapTo, switchMap, withLatestFrom } from 'rxjs/operators'
 import { DeepReadonly, DeepPartial } from 'ts-essentials'
 import { isActionOf, PayloadAction, TypeConstant } from 'typesafe-actions'
@@ -282,11 +282,11 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
                 return concat(
                   of(authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.DECRYPTING_DATA))),
                   forkJoin([
-                    getSodiumClient().decryptMessage(encryptionKey, state.depot.vault!),
+                    getSodiumClient().decryptString(encryptionKey, state.depot.vault!),
                     iif<null, string>(
                       () => state.depot.encryptedOtpToken === null,
                       Promise.resolve((null)),
-                      getSodiumClient().decryptMessage(encryptionKey, state.depot.encryptedOtpToken)
+                      defer(() => getSodiumClient().decryptString(encryptionKey, state.depot.encryptedOtpToken))
                     )
                   ]).pipe(
                     switchMap(([vault, otpToken]) => of(authnViaDepotSignal(success({
@@ -298,7 +298,8 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
                         tags: keyPartial.tags!,
                         attrs: {
                           isShadow: keyPartial.attrs?.isShadow || false,
-                          parent: keyPartial.attrs?.parent || NIL_KEY_ID
+                          parent: keyPartial.attrs?.parent || NIL_KEY_ID,
+                          isPinned: keyPartial.attrs?.isPinned || false
                         },
                         creationTimeInMillis: keyPartial.creationTimeInMillis || 0
                       })),
@@ -342,7 +343,7 @@ export const backgroundOtpProvisionEpic: Epic<RootAction, RootAction, RootState>
         option.map((depotKey) => fn.pipe(
           option.fromNullable(state.depot.encryptedOtpToken),
           option.map((encryptedOtpToken) => from(
-            getSodiumClient().decryptMessage(depotKey, encryptedOtpToken)
+            getSodiumClient().decryptString(depotKey, encryptedOtpToken)
           ).pipe(
             switchMap((otpToken) => otpProvision({
               credentialParams: {

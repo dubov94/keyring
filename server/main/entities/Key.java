@@ -65,6 +65,9 @@ public class Key {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Key parent;
 
+  @Column(name = "is_pinned")
+  private boolean isPinned;
+
   public long getIdentifier() {
     return identifier;
   }
@@ -123,6 +126,15 @@ public class Key {
     return this;
   }
 
+  public boolean getIsPinned() {
+    return Optional.ofNullable(isPinned).orElse(false);
+  }
+
+  public Key setIsPinned(boolean isPinned) {
+    this.isPinned = isPinned;
+    return this;
+  }
+
   public Key mergeFromPassword(Password password) {
     setValue(password.getValue());
     setTags(password.getTagsList());
@@ -145,7 +157,8 @@ public class Key {
     builder.setAttrs(
         KeyAttrs.newBuilder()
             .setIsShadow(getIsShadow())
-            .setParent(Optional.ofNullable(getParent()).map(Key::getIdentifier).orElse(0L)));
+            .setParent(Optional.ofNullable(getParent()).map(Key::getIdentifier).orElse(0L))
+            .setIsPinned(getIsPinned()));
     return builder.build();
   }
 }

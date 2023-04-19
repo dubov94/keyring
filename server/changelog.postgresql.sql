@@ -251,3 +251,8 @@ ALTER TABLE "public"."mail_tokens" ADD COLUMN "ip_address" TEXT;
 
 -- changeset liquibase:35
 CREATE INDEX IF NOT EXISTS "idxl5uyiwnyq34h45vftpj88ganp" ON "public"."mail_tokens" ("ip_address");
+
+-- changeset liquibase:36
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'keys' and column_name = 'is_pinned'
+ALTER TABLE "public"."keys" ADD COLUMN "is_pinned" BOOLEAN DEFAULT FALSE;

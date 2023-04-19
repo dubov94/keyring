@@ -9,6 +9,7 @@ import {
   creationSignal,
   deletionSignal,
   emplace,
+  keyPinTogglingSignal,
   NIL_KEY_ID,
   shadowElectionSignal,
   updationSignal
@@ -163,5 +164,25 @@ describe('shadowElectionSignal', () => {
 
     expect(state.userKeys).to.deep.equal([result])
     expect(state.idToClique).to.deep.equal({ 1: 'uid-1' })
+  })
+})
+
+describe('keyPinTogglingSignal', () => {
+  beforeEach(() => {
+    container.register<UidService>(UID_SERVICE_TOKEN, {
+      useValue: new SequentialFakeUidService()
+    })
+  })
+
+  it('pins a key', () => {
+    const state = reduce(reducer, undefined, [
+      emplace([createUserKey({ identifier: '1' })]),
+      keyPinTogglingSignal(success({
+        identifier: '1',
+        isPinned: true
+      }), { uid: 'random', clique: 'clique' })
+    ])
+
+    expect(state.userKeys[0].attrs.isPinned).to.be.true
   })
 })

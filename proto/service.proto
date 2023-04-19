@@ -178,6 +178,7 @@ message Password {
 message KeyAttrs {
     bool is_shadow = 1;
     int64 parent = 2;
+    bool is_pinned = 3;
 }
 
 message KeyProto {
@@ -238,6 +239,14 @@ message ElectShadowRequest {
 message ElectShadowResponse {
     int64 parent = 1;
     repeated int64 deleted_shadows = 2;
+}
+
+message TogglePinRequest {
+    int64 identifier = 1;
+    bool is_pinned = 2;
+}
+
+message TogglePinResponse {
 }
 
 message ChangeMasterKeyRequest {
@@ -410,6 +419,12 @@ service Administration {
     rpc ElectShadow (ElectShadowRequest) returns (ElectShadowResponse) {
         option (google.api.http) = {
             post: "/administration/elect-shadow"
+            body: "*"
+        };
+    }
+    rpc TogglePin (TogglePinRequest) returns (TogglePinResponse) {
+        option (google.api.http) = {
+            post: "/administration/toggle-pin"
             body: "*"
         };
     }

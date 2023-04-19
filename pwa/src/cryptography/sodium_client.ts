@@ -64,33 +64,36 @@ export class SodiumClient {
     return this.extractAuthDigestAndEncryptionKey(hash)
   }
 
-  async encryptMessage (encryptionKey: string, message: string): Promise<string> {
+  private async encryptMessage (encryptionKey: string, message: Uint8Array): Promise<string> {
     const nonce = await this.swi.generateNonce()
     const cipher = await this.swi.encryptMessage(
       await this.swi.fromBase64(encryptionKey),
       nonce,
-      await this.swi.pad(await this.swi.fromString(message), PADDING_BLOCK_SIZE)
+      await this.swi.pad(message, PADDING_BLOCK_SIZE)
     )
     const pack = await this.swi.toBase64(
       await this.swi.joinNonceCipher(nonce, cipher))
     return `${LETTER_BETA}:${pack}`
   }
 
-  private async decryptPreBeta (encryptionKey: string, pack: string): Promise<string> {
+  async encryptString (encryptionKey: string, message: string): Promise<string> {
+    return this.encryptMessage(encryptionKey, await this.swi.fromString(message))
+  }
+
+  private async decryptPreBeta (encryptionKey: string, pack: string): Promise<Uint8Array> {
     const nonceBase64Length = await this.swi.nonceBase64Length()
     const [nonce, cipher] = await Promise.all([
       pack.slice(0, nonceBase64Length),
       pack.slice(nonceBase64Length)
     ].map(this.swi.fromBase64))
-    const message = await this.swi.decryptMessage(
+    return this.swi.decryptMessage(
       await this.swi.fromBase64(encryptionKey),
       nonce,
       cipher
     )
-    return this.swi.toString(message)
   }
 
-  async decryptMessage (encryptionKey: string, pack: string): Promise<string> {
+  private async decryptMessage (encryptionKey: string, pack: string): Promise<Uint8Array> {
     if (!pack.includes(':')) {
       // We can get rid of `decryptPreBeta` once everyone migrates.
       return this.decryptPreBeta(encryptionKey, pack)
@@ -101,7 +104,7 @@ export class SodiumClient {
     }
     const [nonce, cipher] = await this.swi.splitNonceCipher(
       await this.swi.fromBase64(payload))
-    const message = await this.swi.unpad(
+    return this.swi.unpad(
       await this.swi.decryptMessage(
         await this.swi.fromBase64(encryptionKey),
         nonce,
@@ -109,22 +112,25 @@ export class SodiumClient {
       ),
       PADDING_BLOCK_SIZE
     )
-    return await this.swi.toString(message)
+  }
+
+  async decryptString (encryptionKey: string, pack: string): Promise<string> {
+    return this.swi.toString(await this.decryptMessage(encryptionKey, pack))
   }
 
   async encryptPassword (encryptionKey: string, { value, tags }: DeepReadonly<Password>): Promise<Password> {
     return {
-      value: await this.encryptMessage(encryptionKey, value),
+      value: await this.encryptString(encryptionKey, value),
       tags: await Promise.all(tags.map(
-        (tag: string) => this.encryptMessage(encryptionKey, tag)))
+        (tag: string) => this.encryptString(encryptionKey, tag)))
     }
   }
 
   async decryptPassword (encryptionKey: string, { value, tags }: DeepReadonly<Password>): Promise<Password> {
     return {
-      value: await this.decryptMessage(encryptionKey, value),
+      value: await this.decryptString(encryptionKey, value),
       tags: await Promise.all(tags.map(
-        (tag: string) => this.decryptMessage(encryptionKey, tag)))
+        (tag: string) => this.decryptString(encryptionKey, tag)))
     }
   }
 }

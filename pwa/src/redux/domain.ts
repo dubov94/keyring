@@ -7,6 +7,7 @@ export interface Password {
 export interface KeyAttrs {
   isShadow: boolean;
   parent: string;
+  isPinned: boolean;
 }
 
 export interface WithKeyId {

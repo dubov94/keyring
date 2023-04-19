@@ -77,6 +77,8 @@ import keyring.server.main.proto.service.ReleaseMailTokenRequest;
 import keyring.server.main.proto.service.ReleaseMailTokenResponse;
 import keyring.server.main.proto.service.ResetOtpRequest;
 import keyring.server.main.proto.service.ResetOtpResponse;
+import keyring.server.main.proto.service.TogglePinRequest;
+import keyring.server.main.proto.service.TogglePinResponse;
 import keyring.server.main.proto.service.UpdateKeyRequest;
 import keyring.server.main.proto.service.UpdateKeyResponse;
 import keyring.server.main.storage.AccountOperationsInterface;
@@ -280,6 +282,16 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
             .setParent(election._1.getIdentifier())
             .addAllDeletedShadows(election._2.stream().map(Key::getIdentifier).collect(toList()))
             .build());
+    response.onCompleted();
+  }
+
+  @Override
+  @WithEntityManager
+  @ValidateUser
+  public void togglePin(TogglePinRequest request, StreamObserver<TogglePinResponse> response) {
+    keyOperationsInterface.togglePin(
+        sessionAccessor.getSessionEntityId(), request.getIdentifier(), request.getIsPinned());
+    response.onNext(TogglePinResponse.getDefaultInstance());
     response.onCompleted();
   }
 

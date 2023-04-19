@@ -199,4 +199,24 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     }
     return _electShadow(session, target);
   }
+
+  @LockEntity(name = "session")
+  @ActivatedSession(name = "session")
+  private void _togglePin(Session session, Key key, boolean isPinned) {
+    key.setIsPinned(isPinned);
+    entityManager.persist(key);
+  }
+
+  @Override
+  @WithEntityTransaction
+  public void togglePin(long sessionId, long keyId, boolean isPinned) {
+    Session session = mustGetSession(sessionId);
+    Key key = mustGetKey(keyId);
+    long requesterId = session.getUser().getIdentifier();
+    if (!Objects.equals(key.getUser().getIdentifier(), requesterId)) {
+      throw new IllegalArgumentException(
+          String.format("`Key` %d does not belong to user %d", key.getIdentifier(), requesterId));
+    }
+    _togglePin(session, key, isPinned);
+  }
 }

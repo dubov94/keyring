@@ -6,6 +6,7 @@ import sortBy from 'lodash/sortBy'
 import { DeepReadonly } from 'ts-essentials'
 import { Key, Password } from '@/redux/domain'
 import { RootState } from '@/redux/root_reducer'
+import { NIL_KEY_ID } from './actions'
 
 const userKeys = (state: RootState): DeepReadonly<Key[]> => state.user.keys.userKeys
 export const idToClique = (state: RootState): DeepReadonly<{ [key: string]: string }> => state.user.keys.idToClique
@@ -36,7 +37,8 @@ export const createCliqueFromPassword = (
     identifier: keyId,
     attrs: {
       isShadow: false,
-      parent: ''
+      parent: NIL_KEY_ID,
+      isPinned: false
     },
     ...password,
     creationTimeInMillis

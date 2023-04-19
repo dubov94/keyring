@@ -39,7 +39,7 @@ describe('updateVaultEpic', () => {
       store.dispatch(emplace(userKeys))
       const { action$, actionSubject, state$ } = setUpEpicChannels(store)
       const mockSodiumClient = mock(SodiumClient)
-      when(mockSodiumClient.encryptMessage(
+      when(mockSodiumClient.encryptString(
         'depotKey', JSON.stringify([userKeys[1]]))).thenResolve('vault')
       container.register(SodiumClient, {
         useValue: instance(mockSodiumClient)
@@ -73,7 +73,7 @@ describe('updateEncryptedOtpTokenEpic', () => {
       store.dispatch(remoteAuthnCompleteAction)
       const { action$, actionSubject, state$ } = setUpEpicChannels(store)
       const mockSodiumClient = mock(SodiumClient)
-      when(mockSodiumClient.encryptMessage('depotKey', 'otpToken')).thenResolve('encryptedOtpToken')
+      when(mockSodiumClient.encryptString('depotKey', 'otpToken')).thenResolve('encryptedOtpToken')
       container.register(SodiumClient, {
         useValue: instance(mockSodiumClient)
       })

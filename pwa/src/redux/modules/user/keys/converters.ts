@@ -7,7 +7,8 @@ export const fromKeyProto = (encryptionKey: string) => {
     identifier: item.identifier!,
     attrs: {
       isShadow: item.attrs!.isShadow!,
-      parent: item.attrs!.parent!
+      parent: item.attrs!.parent!,
+      isPinned: item.attrs!.isPinned!
     },
     ...(await getSodiumClient().decryptPassword(encryptionKey, {
       value: item.password!.value!,

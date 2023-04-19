@@ -16,14 +16,19 @@ export const createKeyProto = (partial: DeepPartial<ServiceKeyProto>): ServiceKe
   },
   attrs: {
     isShadow: false,
-    parent: NIL_KEY_ID
+    parent: NIL_KEY_ID,
+    isPinned: false
   },
   creationTimeInMillis: ''
 }, partial)
 
 export const createUserKey = (partial: DeepPartial<Key>): Key => merge({
   identifier: '',
-  attrs: { isShadow: false, parent: NIL_KEY_ID },
+  attrs: {
+    isShadow: false,
+    parent: NIL_KEY_ID,
+    isPinned: false
+  },
   creationTimeInMillis: 0,
   value: '',
   tags: []

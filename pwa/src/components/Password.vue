@@ -29,6 +29,10 @@
           <v-icon>{{ reveal ? 'visibility_off' : 'visibility' }}</v-icon>
         </v-btn>
         <v-spacer></v-spacer>
+        <v-btn icon :disabled="!canAccessApi || autosavePrompt || togglingPin"
+          @click="togglePin">
+          <v-icon :class="{ 'material-icons-outlined': !isPinned }">push_pin</v-icon>
+        </v-btn>
         <v-btn text @click="editBaseline" :loading="clique.busyness > 0"
           :disabled="!canAccessApi || autosavePrompt" v-if="editable">
           Edit
@@ -141,7 +145,9 @@ import {
   obliterateClique,
   cliqueIntegrationSignal,
   cliqueObliterationSignal,
-  extractPassword
+  extractPassword,
+  toggleCliquePin,
+  keyPinTogglingSignal
 } from '@/redux/modules/user/keys/actions'
 import {
   Clique,
@@ -220,6 +226,7 @@ export default Vue.extend({
       reveal: false,
       edited: this.initEdit,
       content: clonePassword(EMPTY_PASSWORD),
+      togglingPin: false,
       autosaveQueue$: new Subject<AutosaveEvent>(),
       saving: false,
       deleting: false,
@@ -228,6 +235,17 @@ export default Vue.extend({
     }
   },
   created () {
+    this.$data.$actions.pipe(
+      filter(isActionOf(keyPinTogglingSignal)),
+      filter((action: ReturnType<typeof keyPinTogglingSignal>) => {
+        return action.meta.clique === this.clique.name
+      }),
+      takeUntil(this.$data.$destruction)
+    ).subscribe((action: ReturnType<typeof keyPinTogglingSignal>) => {
+      if (isSignalFinale(action.payload)) {
+        this.togglingPin = false
+      }
+    })
     this.autosaveQueue$.pipe(
       switchMap((event: AutosaveEvent) => {
         switch (event.type) {
@@ -329,6 +347,15 @@ export default Vue.extend({
     },
     hasNoParent (): boolean {
       return this.clique.parent === null
+    },
+    isPinned (): boolean {
+      return fn.pipe(
+        getCliqueRoot(this.clique),
+        option.fold(
+          () => false,
+          (root) => root.attrs.isPinned
+        )
+      )
     }
   },
   methods: {
@@ -342,6 +369,13 @@ export default Vue.extend({
     },
     toggleReveal () {
       this.reveal = !this.reveal
+    },
+    togglePin () {
+      this.dispatch(toggleCliquePin({
+        clique: this.clique.name,
+        isPinned: !this.isPinned
+      }))
+      this.togglingPin = true
     },
     edit (source: DeepReadonly<Password>) {
       this.reveal = false

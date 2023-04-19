@@ -1,8 +1,9 @@
+import { function as fn, option, readonlyArray, string } from 'fp-ts'
 import { DeepReadonly } from 'ts-essentials'
 import { createAction } from 'typesafe-actions'
 import { Key, Password, WithKeyAttrs, WithKeyId } from '@/redux/domain'
 import { StandardError, FlowSignal } from '@/redux/flow_signal'
-import { Clique } from './selectors'
+import { Clique, getCliqueRepr, getCliqueRoot } from './selectors'
 
 export const extractPassword = <T extends DeepReadonly<Password>>(object: T): DeepReadonly<Password> => ({
   value: object.value,
@@ -35,7 +36,22 @@ export const updationSignal = createAction('user/keys/updationSignal')<DeepReado
 export const delete_ = createAction('user/keys/delete')<DeepReadonly<WithKeyId>, DeepReadonly<OperationMetadata>>()
 export const deletionSignal = createAction('user/keys/deletionSignal')<DeepReadonly<FlowSignal<OperationIndicator, string, StandardError<never>>>, DeepReadonly<OperationMetadata>>()
 export const userKeysUpdate = createAction('user/keys/userKeysUpdate')<DeepReadonly<Key[]>>()
-export const initialCliqueOrder = createAction('user/keys/initialCliqueOrder')<DeepReadonly<string[]>>()
+
+export const CLIQUE_ORDER_ITERATEES: ((clique: DeepReadonly<Clique>) => any)[] = [
+  (clique) => clique.shadows.length === 0,
+  (clique) => fn.pipe(
+    getCliqueRoot(clique),
+    option.fold(() => -1, (root) => root.attrs.isPinned ? 0 : 1)
+  ),
+  (clique) => fn.pipe(
+    getCliqueRepr(clique),
+    option.fold(
+      () => <DeepReadonly<string[]>>[],
+      (repr) => fn.pipe(repr.tags, readonlyArray.map(string.toLowerCase))
+    )
+  )
+]
+export const newCliqueOrder = createAction('user/keys/newCliqueOrder')<DeepReadonly<string[]>>()
 export const cliqueAddition = createAction('user/keys/cliqueAddition')<string>()
 
 export const NIL_KEY_ID = '0'
@@ -62,6 +78,18 @@ export const obliterateClique = createAction('user/keys/obliterateClique')<DeepR
 export const cliqueObliterationSignal = createAction('user/keys/cliqueObliterationSignal')<DeepReadonly<
   FlowSignal<OperationIndicator, string, StandardError<never>>
 >, DeepReadonly<WithClique>>()
+
+export interface WithPinState {
+  isPinned: boolean;
+}
+export const toggleCliquePin = createAction('user/keys/toggleCliquePin')<DeepReadonly<WithClique & WithPinState>>()
+export const toggleKeyPin = createAction('user/keys/toggleKeyPin')<
+  DeepReadonly<WithKeyId & WithPinState>,
+  DeepReadonly<OperationMetadata & WithClique>
+>()
+export const keyPinTogglingSignal = createAction('user/keys/keyPinTogglingSignal')<DeepReadonly<
+  FlowSignal<OperationIndicator, WithKeyId & WithPinState, StandardError<never>>
+>, DeepReadonly<OperationMetadata & WithClique>>()
 
 export const acquireCliqueLock = createAction('user/keys/acquireCliqueLock')<string>()
 export const releaseCliqueLock = createAction('user/keys/releaseCliqueLock')<string>()

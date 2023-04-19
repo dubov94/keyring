@@ -84,6 +84,7 @@ SOURCES = [
 
 DEPENDENCIES = [
     "@pwa_npm//@fontsource/material-icons",
+    "@pwa_npm//@fontsource/material-icons-outlined",
     "@pwa_npm//@fontsource/roboto",
     "@pwa_npm//@fontsource/roboto-mono",
     "@pwa_npm//@types/file-saver",

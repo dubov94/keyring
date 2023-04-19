@@ -1,6 +1,7 @@
 import './register_service_worker'
 
 import '@fontsource/material-icons'
+import '@fontsource/material-icons-outlined'
 import '@fontsource/roboto'
 import '@fontsource/roboto-mono'
 

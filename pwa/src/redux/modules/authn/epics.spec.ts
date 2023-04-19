@@ -420,8 +420,8 @@ describe('logInViaDepotEpic', () => {
       value: 'value',
       tags: ['tag']
     })]
-    when(mockSodiumClient.decryptMessage('depotKey', 'vault')).thenResolve(JSON.stringify(userKeys))
-    when(mockSodiumClient.decryptMessage('depotKey', 'encryptedOtpToken')).thenResolve('otpToken')
+    when(mockSodiumClient.decryptString('depotKey', 'vault')).thenResolve(JSON.stringify(userKeys))
+    when(mockSodiumClient.decryptString('depotKey', 'encryptedOtpToken')).thenResolve('otpToken')
     container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)
     })
@@ -530,7 +530,7 @@ describe('backgroundOtpProvisionEpic', () => {
       encryptionKey: 'encryptionKey'
     }
     const mockSodiumClient = mock(SodiumClient)
-    when(mockSodiumClient.decryptMessage('depotKey', 'encryptedOtpToken')).thenResolve('otpToken')
+    when(mockSodiumClient.decryptString('depotKey', 'encryptedOtpToken')).thenResolve('otpToken')
     container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)
     })

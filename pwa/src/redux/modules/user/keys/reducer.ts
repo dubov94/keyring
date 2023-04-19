@@ -7,7 +7,7 @@ import { Key } from '@/redux/domain'
 import { FlowSignalKind, isActionSuccess } from '@/redux/flow_signal'
 import {
   acquireCliqueLock,
-  initialCliqueOrder,
+  newCliqueOrder,
   creationSignal,
   deletionSignal,
   emplace,
@@ -17,7 +17,8 @@ import {
   shadowCommitmentSignal,
   shadowElectionSignal,
   updationSignal,
-  importSignal
+  importSignal,
+  keyPinTogglingSignal
 } from './actions'
 import { getUidService } from '@/cryptography/uid_service'
 
@@ -57,7 +58,7 @@ export default createReducer<{
           ? rootToMarker[item.identifier] : rootToMarker[item.attrs.parent]
       }
     })
-    .addMatcher(isActionOf(initialCliqueOrder), (state, action) => {
+    .addMatcher(isActionOf(newCliqueOrder), (state, action) => {
       state.cliquesInOrder = castDraft(action.payload)
     })
     .addMatcher(isActionSuccess(importSignal), (state, action) => {
@@ -111,6 +112,16 @@ export default createReducer<{
         }
       }
       state.userKeys = castDraft(newUserKeys)
+    })
+    .addMatcher(isActionSuccess(keyPinTogglingSignal), (state, action) => {
+      const { data } = action.payload
+      const index = state.userKeys.findIndex((userKey) => {
+        return userKey.identifier === data.identifier
+      })
+      if (index === -1) {
+        return
+      }
+      state.userKeys[index].attrs.isPinned = data.isPinned
     })
     .addMatcher(isActionOf(acquireCliqueLock), (state, action) => {
       if (!(action.payload in state.busyness)) {

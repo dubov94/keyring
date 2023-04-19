@@ -75,7 +75,7 @@ store.dispatch(rehydrateDepot({
   salt: LOCAL_STORAGE_ACCESSOR.get<string>('depot.salt'),
   hash: LOCAL_STORAGE_ACCESSOR.get<string>('depot.hash'),
   vault: LOCAL_STORAGE_ACCESSOR.get<string>('depot.vault'),
-  encryptedOtpToken: LOCAL_STORAGE_ACCESSOR.get<string>('depot.encrypted_otp_token')
+  encryptedOtpToken: LOCAL_STORAGE_ACCESSOR.get<string | null>('depot.encrypted_otp_token')
 }))
 state$.pipe(
   map((state) => ({

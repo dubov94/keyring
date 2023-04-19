@@ -19,4 +19,6 @@ public interface KeyOperationsInterface {
   void deleteKey(long sessionId, long keyId);
 
   Tuple2<Key, List<Key>> electShadow(long sessionId, long shadowId);
+
+  void togglePin(long sessionId, long keyId, boolean isPinned);
 }

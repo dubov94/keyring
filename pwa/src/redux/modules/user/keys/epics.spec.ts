@@ -9,7 +9,8 @@ import {
   ServiceCreateKeyResponse,
   ServiceUpdateKeyResponse,
   ServiceDeleteKeyResponse,
-  ServiceElectShadowResponse
+  ServiceElectShadowResponse,
+  ServiceTogglePinResponse
 } from '@/api/definitions'
 import { SodiumClient } from '@/cryptography/sodium_client'
 import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
@@ -28,6 +29,7 @@ import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testin
 import {
   createAuthnViaDepotFlowResult,
   createDepotActivationData,
+  createKeyProto,
   createRegistrationFlowResult,
   createRemoteAuthnCompleteResult,
   createUserKey
@@ -38,7 +40,7 @@ import {
   cliqueAddition,
   cliqueIntegrationSignal,
   cliqueObliterationSignal,
-  initialCliqueOrder,
+  newCliqueOrder,
   commitShadow,
   create,
   creationSignal,
@@ -59,20 +61,25 @@ import {
   import_,
   export_,
   exportSignal,
-  ExportError
+  ExportError,
+  toggleKeyPin,
+  keyPinTogglingSignal,
+  toggleCliquePin
 } from './actions'
 import {
   cliqueAdditionEpic,
-  initialCliqueOrderEpic,
+  cliqueOrderOnEmplaceEpic,
   creationEpic,
   deletionEpic,
   inheritKeysFromAuthnDataEpic,
-  shadowDigestionEpic,
+  cliqueDigestionEpic,
   shadowElectionEpic,
   updationEpic,
   userKeysUpdateEpic,
   importEpic,
-  exportEpic
+  exportEpic,
+  keyPinTogglingEpic,
+  cliqueOrderOnPinEpic
 } from './epics'
 
 describe('importEpic', () => {
@@ -108,15 +115,14 @@ describe('importEpic', () => {
       }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceImportKeysResponse>{
-      keys: [{
+      keys: [createKeyProto({
         identifier: 'identifier',
-        attrs: { isShadow: false, parent: '' },
         password: {
           value: '$value',
           tags: ['$tag']
         },
         creationTimeInMillis: '1'
-      }]
+      })]
     })
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
       useValue: instance(mockAdministrationApi)
@@ -132,13 +138,12 @@ describe('importEpic', () => {
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       importSignal(indicator(OperationIndicator.WORKING)),
-      importSignal(success([{
+      importSignal(success([createUserKey({
         identifier: 'identifier',
-        attrs: { isShadow: false, parent: '' },
         value: 'value',
         tags: ['tag'],
         creationTimeInMillis: 1
-      }]))
+      })]))
     ])
   })
 
@@ -190,7 +195,11 @@ describe('creationEpic', () => {
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationCreateKey(
       deepEqual({
-        attrs: { isShadow: true, parent: 'parent' },
+        attrs: {
+          isShadow: true,
+          parent: 'parent',
+          isPinned: true
+        },
         password: {
           value: '$value',
           tags: ['$tag']
@@ -207,7 +216,11 @@ describe('creationEpic', () => {
 
     const epicTracker = new EpicTracker(creationEpic(action$, state$, {}))
     actionSubject.next(create({
-      attrs: { isShadow: true, parent: 'parent' },
+      attrs: {
+        isShadow: true,
+        parent: 'parent',
+        isPinned: true
+      },
       value: 'value',
       tags: ['tag']
     }, { uid: 'random', clique: 'clique' }))
@@ -219,13 +232,13 @@ describe('creationEpic', () => {
         indicator(OperationIndicator.WORKING),
         { uid: 'random', clique: 'clique' }
       ),
-      creationSignal(success({
+      creationSignal(success(createUserKey({
         identifier: 'identifier',
         attrs: { isShadow: true, parent: 'parent' },
         value: 'value',
         tags: ['tag'],
         creationTimeInMillis: 1
-      }), { uid: 'random', clique: 'clique' })
+      })), { uid: 'random', clique: 'clique' })
     ])
   })
 })
@@ -310,6 +323,39 @@ describe('deletionEpic', () => {
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       deletionSignal(indicator(OperationIndicator.WORKING), { uid: 'random' }),
       deletionSignal(success('identifier'), { uid: 'random' })
+    ])
+  })
+})
+
+describe('keyPinTogglingEpic', () => {
+  it('emits pin toggling sequence', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
+    when(mockAdministrationApi.administrationTogglePin({
+      identifier: 'identifier',
+      isPinned: true
+    })).thenResolve(<ServiceTogglePinResponse>{})
+    container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
+      useValue: instance(mockAdministrationApi)
+    })
+    const meta = { uid: 'random', clique: 'clique' }
+
+    const epicTracker = new EpicTracker(keyPinTogglingEpic(action$, state$, {}))
+    actionSubject.next(toggleKeyPin({
+      identifier: 'identifier',
+      isPinned: true
+    }, meta))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      keyPinTogglingSignal(indicator(OperationIndicator.WORKING), meta),
+      keyPinTogglingSignal(success({
+        identifier: 'identifier',
+        isPinned: true
+      }), meta)
     ])
   })
 })
@@ -434,7 +480,7 @@ describe('shadowElectionEpic', () => {
   })
 })
 
-describe('initialCliqueOrderEpic', () => {
+describe('cliqueOrderOnEmplaceEpic', () => {
   it('lowers & sorts on `emplace`', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const shadow = createUserKey({ identifier: 'shadow', attrs: { isShadow: true }, tags: ['a', 'a'] })
@@ -449,13 +495,60 @@ describe('initialCliqueOrderEpic', () => {
     )
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-    const epicTracker = new EpicTracker(initialCliqueOrderEpic(action$, state$, {}))
+    const epicTracker = new EpicTracker(cliqueOrderOnEmplaceEpic(action$, state$, {}))
     actionSubject.next(emplace([upper, sample, shadow]))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      initialCliqueOrder(['x', 'z', 'y'])
+      newCliqueOrder(['x', 'z', 'y'])
+    ])
+  })
+})
+
+describe('cliqueOrderOnPinEpic', () => {
+  const userKeys = [
+    createUserKey({ identifier: '1', attrs: { isPinned: true }, tags: ['c'] }),
+    createUserKey({ identifier: '2', attrs: { isPinned: true }, tags: ['d'] }),
+    createUserKey({ identifier: '3', attrs: { isPinned: false }, tags: ['a'] }),
+    createUserKey({ identifier: '4', attrs: { isPinned: false }, tags: ['b'] }),
+  ]
+
+  it('sifts up', async () => {
+    const store = createStore(reducer)
+    store.dispatch(emplace(userKeys))
+    store.dispatch(newCliqueOrder(['1', '2', '3', '4']))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(cliqueOrderOnPinEpic(action$, state$, {}))
+    actionSubject.next(keyPinTogglingSignal(
+      success({ identifier: '4', isPinned: true }),
+      { uid: 'random', clique: 'clique' })
+    )
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      newCliqueOrder(['4', '1', '2', '3'])
+    ])
+  })
+
+  it('sifts down', async () => {
+    const store = createStore(reducer)
+    store.dispatch(emplace(userKeys))
+    store.dispatch(newCliqueOrder(['1', '2', '3', '4']))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(cliqueOrderOnPinEpic(action$, state$, {}))
+    actionSubject.next(keyPinTogglingSignal(
+      success({ identifier: '1', isPinned: false }),
+      { uid: 'random', clique: 'clique' })
+    )
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      newCliqueOrder(['2', '3', '4', '1'])
     ])
   })
 })
@@ -479,7 +572,7 @@ describe('cliqueAdditionEpic', () => {
   })
 })
 
-describe('shadowDigestionEpic', () => {
+describe('cliqueDigestionEpic', () => {
   beforeEach(() => {
     container.register<UidService>(UID_SERVICE_TOKEN, {
       useValue: new SequentialFakeUidService()
@@ -494,14 +587,18 @@ describe('shadowDigestionEpic', () => {
     ))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-    const epicTracker = new EpicTracker(shadowDigestionEpic(action$, state$, {}))
+    const epicTracker = new EpicTracker(cliqueDigestionEpic(action$, state$, {}))
     actionSubject.next(commitShadow({
       clique: 'parent-only',
       value: 'value',
       tags: ['tag']
     }))
     expect(await epicTracker.nextEmission()).to.deep.equal(create(
-      { attrs: { isShadow: true, parent: '1' }, value: 'value', tags: ['tag'] },
+      {
+        attrs: { isShadow: true, parent: '1', isPinned: false },
+        value: 'value',
+        tags: ['tag']
+      },
       { uid: 'uid-1', clique: 'parent-only' }
     ))
     actionSubject.next(creationSignal(
@@ -524,7 +621,7 @@ describe('shadowDigestionEpic', () => {
     ))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-    const epicTracker = new EpicTracker(shadowDigestionEpic(action$, state$, {}))
+    const epicTracker = new EpicTracker(cliqueDigestionEpic(action$, state$, {}))
     actionSubject.next(commitShadow({
       clique: 'shadow-only',
       value: 'value',
@@ -561,7 +658,7 @@ describe('shadowDigestionEpic', () => {
     ))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-    const epicTracker = new EpicTracker(shadowDigestionEpic(action$, state$, {}))
+    const epicTracker = new EpicTracker(cliqueDigestionEpic(action$, state$, {}))
     actionSubject.next(integrateClique({ clique: 'parent-with-shadow' }))
     expect(await epicTracker.nextEmission()).to.deep.equal(
       electShadow('2', { uid: 'uid-1' })
@@ -590,7 +687,7 @@ describe('shadowDigestionEpic', () => {
     ))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-    const epicTracker = new EpicTracker(shadowDigestionEpic(action$, state$, {}))
+    const epicTracker = new EpicTracker(cliqueDigestionEpic(action$, state$, {}))
     actionSubject.next(cancelShadow({ clique: 'shadow-only' }))
     expect(await epicTracker.nextEmission()).to.deep.equal(delete_(
       { identifier: '1' }, { uid: 'uid-1' }
@@ -617,7 +714,7 @@ describe('shadowDigestionEpic', () => {
     ))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-    const epicTracker = new EpicTracker(shadowDigestionEpic(action$, state$, {}))
+    const epicTracker = new EpicTracker(cliqueDigestionEpic(action$, state$, {}))
     actionSubject.next(cancelShadow({ clique: 'parent-with-shadow' }))
     expect(await epicTracker.nextEmission()).to.deep.equal(
       electShadow('1', { uid: 'uid-1' })
@@ -643,7 +740,7 @@ describe('shadowDigestionEpic', () => {
     ))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
-    const epicTracker = new EpicTracker(shadowDigestionEpic(action$, state$, {}))
+    const epicTracker = new EpicTracker(cliqueDigestionEpic(action$, state$, {}))
     actionSubject.next(obliterateClique({ clique: 'parent-only' }))
     expect(await epicTracker.nextEmission()).to.deep.equal(delete_(
       { identifier: '1' }, { uid: 'uid-1' }
@@ -654,6 +751,25 @@ describe('shadowDigestionEpic', () => {
     ))
     expect(await epicTracker.nextEmission()).to.deep.equal(
       releaseCliqueLock('parent-only')
+    )
+  })
+
+  it('pins a clique', async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+
+    const epicTracker = new EpicTracker(cliqueDigestionEpic(action$, state$, {}))
+    actionSubject.next(toggleCliquePin({ clique: 'clique', isPinned: true }))
+    expect(await epicTracker.nextEmission()).to.deep.equal(toggleKeyPin(
+      { identifier: 'key', isPinned: true },
+      { uid: 'uid-1', clique: 'clique' }
+    ))
+    actionSubject.next(keyPinTogglingSignal(
+      success({ identifier: 'key', isPinned: true }),
+      { uid: 'uid-1', clique: 'clique' }
+    ))
+    expect(await epicTracker.nextEmission()).to.deep.equal(
+      releaseCliqueLock('clique')
     )
   })
 })
