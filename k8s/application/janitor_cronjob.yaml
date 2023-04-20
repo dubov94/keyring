@@ -15,7 +15,7 @@ spec:
         spec:
           containers:
           - name: janitor
-            image: dubov94/keyring-janitor:da128e2b5e80385649ffa743202b0a5f705535eb
+            image: dubov94/keyring-janitor:ee13ef48aa3f671dd2f53267473c221631725f85
             env:
             - name: POSTGRES_PASSWORD
               valueFrom:
