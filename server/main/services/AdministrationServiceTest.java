@@ -24,7 +24,7 @@ import javax.persistence.EntityManagerFactory;
 import keyring.server.main.Chronometry;
 import keyring.server.main.Cryptography;
 import keyring.server.main.MailClient;
-import keyring.server.main.MailNormaliser;
+import keyring.server.main.MailValidation;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.aspects.ValidateUserAspect;
 import keyring.server.main.entities.MailToken;
@@ -84,7 +84,7 @@ class AdministrationServiceTest {
   @Mock private MailClient mockMailClient;
   @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
   @Mock private Chronometry mockChronometry;
-  @Mock private MailNormaliser mockMailNormaliser;
+  @Mock private MailValidation mockMailValidation;
   @Mock private AgentAccessor mockAgentAccessor;
 
   private User user =
@@ -114,7 +114,7 @@ class AdministrationServiceTest {
             mockMailClient,
             mockGoogleAuthenticator,
             mockChronometry,
-            mockMailNormaliser,
+            mockMailValidation,
             mockAgentAccessor);
     when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
     when(mockSessionAccessor.getUserId()).thenReturn(kvSession.getUserId());
@@ -272,7 +272,7 @@ class AdministrationServiceTest {
 
   @Test
   void acquireMailToken_digestsMismatch_repliesWithError() {
-    when(mockMailNormaliser.checkAddress("mail@example.com")).thenReturn(true);
+    when(mockMailValidation.checkAddress("mail@example.com")).thenReturn(true);
     when(mockCryptography.doesDigestMatchHash("digest", "random")).thenReturn(false);
     administrationService.acquireMailToken(
         AcquireMailTokenRequest.newBuilder()
@@ -291,7 +291,7 @@ class AdministrationServiceTest {
 
   @Test
   void acquireMailToken_digestsMatch_repliesWithTokenId() {
-    when(mockMailNormaliser.checkAddress("user@mail.com")).thenReturn(true);
+    when(mockMailValidation.checkAddress("user@mail.com")).thenReturn(true);
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.generateUacs()).thenReturn("17");
     when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");

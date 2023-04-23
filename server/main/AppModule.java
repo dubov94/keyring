@@ -77,7 +77,7 @@ class AppModule {
 
   @Provides
   @Singleton
-  static MailNormaliser provideMailNormaliser() {
-    return new MailNormaliser(EmailValidator.getInstance());
+  static MailValidation provideMailValidation() {
+    return new MailValidation(EmailValidator.getInstance());
   }
 }

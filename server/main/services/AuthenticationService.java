@@ -18,7 +18,7 @@ import java.util.function.Function;
 import javax.inject.Inject;
 import keyring.server.main.Cryptography;
 import keyring.server.main.MailClient;
-import keyring.server.main.MailNormaliser;
+import keyring.server.main.MailValidation;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.entities.FeaturePrompts;
 import keyring.server.main.entities.Key;
@@ -70,7 +70,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private VersionAccessor versionAccessor;
   private IGoogleAuthenticator googleAuthenticator;
   private TurnstileValidator turnstileValidator;
-  private MailNormaliser mailNormaliser;
+  private MailValidation mailValidation;
 
   @Inject
   AuthenticationService(
@@ -83,7 +83,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       VersionAccessor versionAccessor,
       IGoogleAuthenticator googleAuthenticator,
       TurnstileValidator turnstileValidator,
-      MailNormaliser mailNormaliser) {
+      MailValidation mailValidation) {
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
     this.cryptography = cryptography;
@@ -93,7 +93,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.versionAccessor = versionAccessor;
     this.googleAuthenticator = googleAuthenticator;
     this.turnstileValidator = turnstileValidator;
-    this.mailNormaliser = mailNormaliser;
+    this.mailValidation = mailValidation;
   }
 
   private Optional<StatusException> validateRegisterRequest(RegisterRequest request) {
@@ -112,7 +112,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     if (!cryptography.validateDigest(request.getDigest())) {
       return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
     }
-    if (!mailNormaliser.checkAddress(request.getMail())) {
+    if (!mailValidation.checkAddress(request.getMail())) {
       return Optional.of(new StatusException(Status.INVALID_ARGUMENT));
     }
     return Optional.empty();

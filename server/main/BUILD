@@ -64,8 +64,8 @@ java_library(
 )
 
 java_library(
-    name = "mail_normaliser",
-    srcs = ["MailNormaliser.java"],
+    name = "mail_validation",
+    srcs = ["MailValidation.java"],
     visibility = ["//server:internal"],
     deps = [
         "@maven//:commons_validator_commons_validator",
@@ -83,7 +83,7 @@ java_library(
         ":chronometry",
         ":cryptography",
         ":environment",
-        ":mail_normaliser",
+        ":mail_validation",
         "//server/main/interceptors:agent_accessor",
         "//server/main/interceptors:agent_interceptor",
         "//server/main/interceptors:session_accessor",

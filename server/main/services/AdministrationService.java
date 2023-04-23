@@ -26,7 +26,7 @@ import javax.inject.Inject;
 import keyring.server.main.Chronometry;
 import keyring.server.main.Cryptography;
 import keyring.server.main.MailClient;
-import keyring.server.main.MailNormaliser;
+import keyring.server.main.MailValidation;
 import keyring.server.main.aspects.Annotations.ValidateUser;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.entities.Key;
@@ -94,7 +94,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private MailClient mailClient;
   private IGoogleAuthenticator googleAuthenticator;
   private Chronometry chronometry;
-  private MailNormaliser mailNormaliser;
+  private MailValidation mailValidation;
   private AgentAccessor agentAccessor;
 
   private static final int OTP_TTS_COUNT = 5;
@@ -111,7 +111,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       MailClient mailClient,
       IGoogleAuthenticator googleAuthenticator,
       Chronometry chronometry,
-      MailNormaliser mailNormaliser,
+      MailValidation mailValidation,
       AgentAccessor agentAccessor) {
     this.keyOperationsInterface = keyOperationsInterface;
     this.accountOperationsInterface = accountOperationsInterface;
@@ -122,14 +122,14 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     this.mailClient = mailClient;
     this.googleAuthenticator = googleAuthenticator;
     this.chronometry = chronometry;
-    this.mailNormaliser = mailNormaliser;
+    this.mailValidation = mailValidation;
     this.agentAccessor = agentAccessor;
   }
 
   private Either<StatusException, AcquireMailTokenResponse> _acquireMailToken(
       AcquireMailTokenRequest request) {
     String mail = request.getMail();
-    if (!mailNormaliser.checkAddress(mail)) {
+    if (!mailValidation.checkAddress(mail)) {
       return Either.left(new StatusException(Status.INVALID_ARGUMENT));
     }
     long userId = sessionAccessor.getUserId();

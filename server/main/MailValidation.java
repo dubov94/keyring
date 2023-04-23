@@ -2,10 +2,10 @@ package keyring.server.main;
 
 import org.apache.commons.validator.routines.EmailValidator;
 
-public class MailNormaliser {
+public class MailValidation {
   private EmailValidator emailValidator;
 
-  MailNormaliser(EmailValidator emailValidator) {
+  MailValidation(EmailValidator emailValidator) {
     this.emailValidator = emailValidator;
   }
 
