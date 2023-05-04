@@ -1,7 +1,8 @@
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
 load("@rules_proto_grpc//java:defs.bzl", "java_proto_library")
 load("//bazel/java:junit5.bzl", "junit5_test")
 load("//bazel/java:packaging.bzl", "java_package")
+
+exports_files(["entrypoint.sh"])
 
 proto_library(
     name = "requests_proto",
@@ -137,14 +138,5 @@ java_binary(
 java_package(
     name = "mailer_package",
     deploy_jar = "main_deploy.jar",
-)
-
-container_image(
-    name = "mailer",
-    base = "@io_docker_index_library_eclipse_temurin//image",
-    cmd = ["./entrypoint.sh"],
-    directory = "/root",
-    files = ["entrypoint.sh"],
-    tars = [":mailer_package"],
-    workdir = "/root",
+    visibility = ["//server:internal"],
 )

@@ -19,6 +19,16 @@ container_image(
 )
 
 container_image(
+    name = "mailer",
+    base = "@io_docker_index_library_eclipse_temurin//image",
+    cmd = ["./entrypoint.sh"],
+    directory = "/root",
+    files = ["//server/mailer:entrypoint.sh"],
+    tars = ["//server/mailer:mailer_package"],
+    workdir = "/root",
+)
+
+container_image(
     name = "janitor",
     base = "@io_docker_index_library_eclipse_temurin//image",
     cmd = ["./entrypoint.sh"],
