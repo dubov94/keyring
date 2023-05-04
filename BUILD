@@ -23,6 +23,11 @@ alias(
 )
 
 alias(
+    name = "mailer",
+    actual = "//server/mailer:main",
+)
+
+alias(
     name = "janitor",
     actual = "//server/janitor",
 )
@@ -31,6 +36,7 @@ multirun(
     name = "backends",
     commands = [
         ":grpc_gateway",
+        ":mailer",
         ":server",
     ],
     parallel = True,

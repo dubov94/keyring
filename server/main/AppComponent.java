@@ -14,7 +14,6 @@ import keyring.server.main.services.AdministrationService;
 import keyring.server.main.services.AuthenticationService;
 import keyring.server.main.storage.AccountOperationsInterface;
 import keyring.server.main.storage.StorageModule;
-import keyring.server.main.templates.TemplatesModule;
 
 @Component(
     modules = {
@@ -22,7 +21,6 @@ import keyring.server.main.templates.TemplatesModule;
       GeolocationModule.class,
       KeyValueModule.class,
       StorageModule.class,
-      TemplatesModule.class
     })
 @Singleton
 interface AppComponent {

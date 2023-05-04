@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package server.mailer.requests;
+
+option java_multiple_files = true;
+option java_package = "keyring.server.mailer.requests";
+
+message MailVcRequest {
+    string mail = 1;
+    string code = 2;
+}
+
+message MailerRequest {
+    oneof request {
+        MailVcRequest mail_vc_request = 1;
+    }
+}

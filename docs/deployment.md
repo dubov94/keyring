@@ -28,7 +28,7 @@ Infrastructurally the service uses (managed) Kubernetes on DigitalOcean and Goog
 ### Cloudflare
 
 * Caching for the frontends at 1 hour TTL.
-* Throttling for the backends (`/api/...`) at 80 RQ10S for one IP.
+* Throttling for the backends (`/api/...`) at 80 QP10S for one IP.
 
 ### Alerts
 

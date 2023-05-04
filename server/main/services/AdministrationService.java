@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import keyring.server.main.Chronometry;
 import keyring.server.main.Cryptography;
-import keyring.server.main.MailClient;
 import keyring.server.main.MailValidation;
 import keyring.server.main.aspects.Annotations.ValidateUser;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
@@ -42,6 +41,7 @@ import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.SessionAccessor;
 import keyring.server.main.keyvalue.KeyValueClient;
 import keyring.server.main.keyvalue.values.KvSession;
+import keyring.server.main.messagebroker.MessageBrokerClient;
 import keyring.server.main.proto.service.AcceptOtpParamsRequest;
 import keyring.server.main.proto.service.AcceptOtpParamsResponse;
 import keyring.server.main.proto.service.AckFeaturePromptRequest;
@@ -91,7 +91,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private SessionAccessor sessionAccessor;
   private KeyValueClient keyValueClient;
   private Cryptography cryptography;
-  private MailClient mailClient;
+  private MessageBrokerClient messageBrokerClient;
   private IGoogleAuthenticator googleAuthenticator;
   private Chronometry chronometry;
   private MailValidation mailValidation;
@@ -108,7 +108,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       SessionAccessor sessionAccessor,
       KeyValueClient keyValueClient,
       Cryptography cryptography,
-      MailClient mailClient,
+      MessageBrokerClient messageBrokerClient,
       IGoogleAuthenticator googleAuthenticator,
       Chronometry chronometry,
       MailValidation mailValidation,
@@ -119,7 +119,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     this.sessionAccessor = sessionAccessor;
     this.keyValueClient = keyValueClient;
     this.cryptography = cryptography;
-    this.mailClient = mailClient;
+    this.messageBrokerClient = messageBrokerClient;
     this.googleAuthenticator = googleAuthenticator;
     this.chronometry = chronometry;
     this.mailValidation = mailValidation;
@@ -146,7 +146,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     MailToken mailToken =
         accountOperationsInterface.createMailToken(
             userId, agentAccessor.getIpAddress(), mail, code);
-    mailClient.sendMailVc(mail, code);
+    messageBrokerClient.publishMailVcRequest(mail, code);
     return Either.right(builder.setTokenId(mailToken.getIdentifier()).build());
   }
 

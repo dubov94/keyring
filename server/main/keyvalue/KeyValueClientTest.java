@@ -69,7 +69,7 @@ class KeyValueClientTest {
         assertThrows(
             KeyValueException.class, () -> keyValueClient.createSession(sessionToken, 2L, 14L));
 
-    assertEquals("https://redis.io/topics/protocol#nil-reply", exception.getMessage());
+    assertTrue(exception.getMessage().endsWith("#nil-reply"));
   }
 
   @Test

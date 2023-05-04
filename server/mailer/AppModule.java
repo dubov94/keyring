@@ -1,11 +1,15 @@
-package keyring.server.main.keyvalue;
+package keyring.server.mailer;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import dagger.Module;
 import dagger.Provides;
 import java.net.URI;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import javax.inject.Singleton;
-import keyring.server.main.Environment;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisSentinelPool;
@@ -13,7 +17,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.Pool;
 
 @Module
-public class KeyValueModule {
+class AppModule {
   @Provides
   @Singleton
   static Pool<Jedis> provideJedisPool(Environment environment) {
@@ -29,5 +33,15 @@ public class KeyValueModule {
     return new JedisPool(
         URI.create(
             String.format("redis://%s:%d", environment.getRedisHost(), Protocol.DEFAULT_PORT)));
+  }
+
+  @Provides
+  static ListeningExecutorService provideMessageConsumerExecutorService() {
+    return MoreExecutors.listeningDecorator(
+        MoreExecutors.getExitingExecutorService(
+            (ThreadPoolExecutor)
+                Executors.newFixedThreadPool(ConsumerSettings.MAX_MESSAGES_PER_READ),
+            ConsumerSettings.K8S_GRACE_PERIOD_MILLIS,
+            TimeUnit.MILLISECONDS));
   }
 }

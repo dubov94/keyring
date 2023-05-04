@@ -16,7 +16,6 @@ import java.util.Optional;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import keyring.server.main.Cryptography;
-import keyring.server.main.MailClient;
 import keyring.server.main.MailValidation;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.entities.FeaturePrompts;
@@ -30,6 +29,7 @@ import keyring.server.main.interceptors.VersionAccessor;
 import keyring.server.main.keyvalue.KeyValueClient;
 import keyring.server.main.keyvalue.values.KvAuthn;
 import keyring.server.main.keyvalue.values.KvSession;
+import keyring.server.main.messagebroker.MessageBrokerClient;
 import keyring.server.main.proto.service.GetSaltRequest;
 import keyring.server.main.proto.service.GetSaltResponse;
 import keyring.server.main.proto.service.LogInRequest;
@@ -61,7 +61,7 @@ class AuthenticationServiceTest {
   @Mock private AccountOperationsInterface mockAccountOperationsInterface;
   @Mock private KeyOperationsInterface mockKeyOperationsInterface;
   @Mock private Cryptography mockCryptography;
-  @Mock private MailClient mockMailClient;
+  @Mock private MessageBrokerClient mockMessageBrokerClient;
   @Mock private KeyValueClient mockKeyValueClient;
   @Mock private AgentAccessor mockAgentAccessor;
   @Mock private VersionAccessor mockVersionAccessor;
@@ -80,7 +80,7 @@ class AuthenticationServiceTest {
             mockAccountOperationsInterface,
             mockKeyOperationsInterface,
             mockCryptography,
-            mockMailClient,
+            mockMessageBrokerClient,
             mockKeyValueClient,
             mockAgentAccessor,
             mockVersionAccessor,
@@ -167,7 +167,7 @@ class AuthenticationServiceTest {
     verify(mockAccountOperationsInterface).createSession(1L, 0L, IP_ADDRESS, USER_AGENT, VERSION);
     verify(mockKeyValueClient).createSession(sessionToken, 1L, 3L);
     verify(mockAccountOperationsInterface).activateSession(1L, 3L, IP_ADDRESS, "key");
-    verify(mockMailClient).sendMailVc("mail@example.com", "0");
+    verify(mockMessageBrokerClient).publishMailVcRequest("mail@example.com", "0");
     verify(mockStreamObserver)
         .onNext(
             RegisterResponse.newBuilder().setSessionKey(sessionToken).setMailTokenId(2L).build());

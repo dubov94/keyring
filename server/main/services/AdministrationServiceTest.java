@@ -23,7 +23,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import keyring.server.main.Chronometry;
 import keyring.server.main.Cryptography;
-import keyring.server.main.MailClient;
 import keyring.server.main.MailValidation;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.aspects.ValidateUserAspect;
@@ -39,6 +38,7 @@ import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.SessionAccessor;
 import keyring.server.main.keyvalue.KeyValueClient;
 import keyring.server.main.keyvalue.values.KvSession;
+import keyring.server.main.messagebroker.MessageBrokerClient;
 import keyring.server.main.proto.service.AcceptOtpParamsRequest;
 import keyring.server.main.proto.service.AcceptOtpParamsResponse;
 import keyring.server.main.proto.service.AcquireMailTokenRequest;
@@ -81,7 +81,7 @@ class AdministrationServiceTest {
   @Mock private KeyValueClient mockKeyValueClient;
   @Mock private StreamObserver mockStreamObserver;
   @Mock private Cryptography mockCryptography;
-  @Mock private MailClient mockMailClient;
+  @Mock private MessageBrokerClient mockMessageBrokerClient;
   @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
   @Mock private Chronometry mockChronometry;
   @Mock private MailValidation mockMailValidation;
@@ -111,7 +111,7 @@ class AdministrationServiceTest {
             mockSessionAccessor,
             mockKeyValueClient,
             mockCryptography,
-            mockMailClient,
+            mockMessageBrokerClient,
             mockGoogleAuthenticator,
             mockChronometry,
             mockMailValidation,
@@ -302,7 +302,7 @@ class AdministrationServiceTest {
         AcquireMailTokenRequest.newBuilder().setDigest("digest").setMail("user@mail.com").build(),
         mockStreamObserver);
 
-    verify(mockMailClient).sendMailVc("user@mail.com", "17");
+    verify(mockMessageBrokerClient).publishMailVcRequest("user@mail.com", "17");
     verify(mockStreamObserver).onNext(AcquireMailTokenResponse.newBuilder().setTokenId(1L).build());
     verify(mockStreamObserver).onCompleted();
   }

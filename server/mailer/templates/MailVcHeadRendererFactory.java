@@ -1,4 +1,4 @@
-package keyring.server.main.templates;
+package keyring.server.mailer.templates;
 
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;

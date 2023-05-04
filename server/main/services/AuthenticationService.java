@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import javax.inject.Inject;
 import keyring.server.main.Cryptography;
-import keyring.server.main.MailClient;
 import keyring.server.main.MailValidation;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.entities.FeaturePrompts;
@@ -31,6 +30,7 @@ import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.VersionAccessor;
 import keyring.server.main.keyvalue.KeyValueClient;
 import keyring.server.main.keyvalue.values.KvAuthn;
+import keyring.server.main.messagebroker.MessageBrokerClient;
 import keyring.server.main.proto.service.AuthenticationGrpc;
 import keyring.server.main.proto.service.FeaturePrompt;
 import keyring.server.main.proto.service.FeatureType;
@@ -65,7 +65,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private KeyOperationsInterface keyOperationsInterface;
   private KeyValueClient keyValueClient;
   private Cryptography cryptography;
-  private MailClient mailClient;
+  private MessageBrokerClient messageBrokerClient;
   private AgentAccessor agentAccessor;
   private VersionAccessor versionAccessor;
   private IGoogleAuthenticator googleAuthenticator;
@@ -77,7 +77,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       AccountOperationsInterface accountOperationsInterface,
       KeyOperationsInterface keyOperationsInterface,
       Cryptography cryptography,
-      MailClient mailClient,
+      MessageBrokerClient messageBrokerClient,
       KeyValueClient keyValueClient,
       AgentAccessor agentAccessor,
       VersionAccessor versionAccessor,
@@ -87,7 +87,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
     this.cryptography = cryptography;
-    this.mailClient = mailClient;
+    this.messageBrokerClient = messageBrokerClient;
     this.keyValueClient = keyValueClient;
     this.agentAccessor = agentAccessor;
     this.versionAccessor = versionAccessor;
@@ -150,7 +150,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     accountOperationsInterface.activateSession(
         userId, sessionId, ipAddress, keyValueClient.convertSessionTokenToKey(sessionToken));
     keyValueClient.createSession(sessionToken, userId, sessionId);
-    mailClient.sendMailVc(mail, code);
+    messageBrokerClient.publishMailVcRequest(mail, code);
     return Either.right(
         builder.setSessionKey(sessionToken).setMailTokenId(entities._2.getIdentifier()).build());
   }

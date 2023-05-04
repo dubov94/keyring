@@ -2,11 +2,13 @@ def junit5_test(
         name,
         srcs,
         test_package,
-        deps = [],
-        runtime_deps = [],
-        data = [],
-        resources = [],
-        jvm_flags = []):
+        deps = None,
+        runtime_deps = None,
+        data = None,
+        resources = None,
+        jvm_flags = None):
+    deps = deps or []
+    runtime_deps = runtime_deps or []
     native.java_test(
         name = name,
         srcs = srcs,

@@ -51,19 +51,6 @@ java_library(
 )
 
 java_library(
-    name = "mail_client",
-    srcs = ["MailClient.java"],
-    visibility = ["//server:internal"],
-    deps = [
-        ":environment",
-        "//server/main/templates:mail_vc_body_renderer_factory",
-        "//server/main/templates:mail_vc_head_renderer_factory",
-        "@maven//:javax_inject_javax_inject",
-        "@maven//:net_sargue_mailgun",
-    ],
-)
-
-java_library(
     name = "mail_validation",
     srcs = ["MailValidation.java"],
     visibility = ["//server:internal"],
@@ -115,7 +102,6 @@ java_library(
         "//server/main/services:authentication_service",
         "//server/main/storage:account_operations_interface",
         "//server/main/storage:storage_module",
-        "//server/main/templates:templates_module",
         "@maven//:com_google_dagger_dagger",
         "@maven//:javax_inject_javax_inject",
         "@maven//:javax_persistence_javax_persistence_api",
@@ -150,8 +136,6 @@ woven_java_binary(
     resources = [
         "//server/java/META-INF:persistence.xml",
         "//server/main/java:mrgn_version",
-        "//server/main/java/templates:mail_vc.body.twig",
-        "//server/main/java/templates:mail_vc.head.twig",
     ],
     visibility = [
         "//:root",

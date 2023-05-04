@@ -1,17 +1,17 @@
-package keyring.server.main;
+package keyring.server.mailer;
 
 import java.util.Optional;
 import java.util.logging.Logger;
 import javax.inject.Inject;
-import keyring.server.main.templates.MailVcBodyRendererFactory;
-import keyring.server.main.templates.MailVcHeadRendererFactory;
+import keyring.server.mailer.templates.MailVcBodyRendererFactory;
+import keyring.server.mailer.templates.MailVcHeadRendererFactory;
 import net.sargue.mailgun.Configuration;
 import net.sargue.mailgun.Mail;
 
-public class MailClient {
+class MailClient {
   private static final Logger logger = Logger.getLogger(MailClient.class.getName());
   private Environment environment;
-  private Optional<Configuration> maybeConfiguration;
+  private Optional<Configuration> configuration;
   private MailVcHeadRendererFactory mailVcHeadRendererFactory;
   private MailVcBodyRendererFactory mailVcBodyRendererFactory;
 
@@ -21,7 +21,7 @@ public class MailClient {
       MailVcHeadRendererFactory mailVcHeadRendererFactory,
       MailVcBodyRendererFactory mailVcBodyRendererFactory) {
     this.environment = environment;
-    maybeConfiguration =
+    configuration =
         environment.isProduction()
             ? Optional.of(
                 new Configuration()
@@ -34,14 +34,14 @@ public class MailClient {
   }
 
   public void sendMailVc(String address, String code) {
-    if (!maybeConfiguration.isPresent()) {
-      logger.info(String.format("sendMailVc: %s", code));
+    if (!configuration.isPresent()) {
+      logger.info(String.format("sendMailVc(%s, %s)", address, code));
       return;
     }
 
     String head = mailVcHeadRendererFactory.newRenderer().setCode(code).render();
     String body = mailVcBodyRendererFactory.newRenderer().setCode(code).render();
-    Mail.using(maybeConfiguration.get())
+    Mail.using(configuration.get())
         .from(environment.getEmailFromName(), environment.getEmailFromAddress())
         .to(address)
         .subject(head)

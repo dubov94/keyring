@@ -10,9 +10,10 @@ graph LR;
     server --> ip_geolocation[MaxMind IP Geolocation];
     server --> postgres[Postgres];
     server --> redis[Redis];
+    mailer -- stream --> redis;
     janitor[TTL CronJob] --> postgres;
-    archiver --> server;
-    restorer[/restorer/] -.-> server;
+    archiver --> postgres;
+    restorer[/restorer/] -.-> postgres;
   end
   style k8s fill:#deffff,stroke:#33aaaa;
   archiver --> gcs[Google Cloud Storage];

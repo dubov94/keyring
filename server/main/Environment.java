@@ -15,18 +15,6 @@ public class Environment {
   @Parameter(names = "--geolocation_address")
   private String geolocationAddress = "localhost:5003";
 
-  @Parameter(names = "--mailgun_api_url")
-  private String mailgunApiUrl = "";
-
-  @Parameter(names = "--mailgun_domain")
-  private String mailgunDomain = "";
-
-  @Parameter(names = "--email_from_name")
-  private String emailFromName = "";
-
-  @Parameter(names = "--email_from_address")
-  private String emailFromAddress = "";
-
   private String mrgnVersion = "";
 
   public Environment(String mrgnVersion) {
@@ -43,26 +31,6 @@ public class Environment {
 
   public boolean isProduction() {
     return "production".equals(type);
-  }
-
-  public String getMailgunApiUrl() {
-    return mailgunApiUrl;
-  }
-
-  public String getMailgunDomain() {
-    return mailgunDomain;
-  }
-
-  public String getEmailFromName() {
-    return emailFromName;
-  }
-
-  public String getEmailFromAddress() {
-    return emailFromAddress;
-  }
-
-  public String getMailgunApiKey() {
-    return getVariable("MAILGUN_API_KEY");
   }
 
   public String getRedisHost() {

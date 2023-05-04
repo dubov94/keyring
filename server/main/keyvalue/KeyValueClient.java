@@ -17,6 +17,8 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.Pool;
 
 public class KeyValueClient {
+  private static final String NIL_DOCS_URL =
+      "https://redis.io/docs/reference/protocol-spec/#nil-reply";
   private static final String DELETED_VALUE = "";
 
   private Pool<Jedis> jedisPool;
@@ -30,6 +32,10 @@ public class KeyValueClient {
     this.chronometry = chronometry;
     this.base64Encoder = Base64.getEncoder();
     this.base64Decoder = Base64.getDecoder();
+  }
+
+  public String convertSessionTokenToKey(String sessionToken) {
+    return String.format("session:%s", sessionToken);
   }
 
   public KvSession createSession(String sessionToken, long userId, long sessionEntityId) {
@@ -47,7 +53,7 @@ public class KeyValueClient {
               base64Encoder.encodeToString(kvSession.toByteArray()),
               new SetParams().nx().ex(Session.SESSION_RELATIVE_DURATION_M * 60));
       if (status == null) {
-        throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
+        throw new KeyValueException(NIL_DOCS_URL);
       }
       return kvSession;
     }
@@ -85,8 +91,8 @@ public class KeyValueClient {
     }
   }
 
-  public String convertSessionTokenToKey(String sessionToken) {
-    return String.format("session:%s", sessionToken);
+  public String convertAuthnTokenToKey(String authnToken) {
+    return String.format("authn:%s", authnToken);
   }
 
   public KvAuthn createAuthn(String authnToken, long userId, long sessionEntityId) {
@@ -104,7 +110,7 @@ public class KeyValueClient {
               base64Encoder.encodeToString(kvAuthn.toByteArray()),
               new SetParams().nx().ex(Session.AUTHN_EXPIRATION_M * 60));
       if (status == null) {
-        throw new KeyValueException("https://redis.io/topics/protocol#nil-reply");
+        throw new KeyValueException(NIL_DOCS_URL);
       }
       return kvAuthn;
     }
@@ -134,12 +140,10 @@ public class KeyValueClient {
     }
   }
 
-  public String convertAuthnTokenToKey(String authnToken) {
-    return String.format("authn:%s", authnToken);
-  }
-
   public void safelyDeleteSeRefs(List<Session> entities) {
-    // `SET` in case `Session` has not been written yet.
+    // `SET` in case a `Session` has already been saved into RDBMS, but its
+    // reference (`KvAuthn` or `KvSession`) has not been written yet due to a
+    // race condition.
     SetParams setParams = new SetParams().ex(60);
 
     try (Jedis jedis = jedisPool.getResource()) {
