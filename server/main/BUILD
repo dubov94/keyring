@@ -147,7 +147,6 @@ woven_java_binary(
         "@maven//:io_grpc_grpc_netty_shaded",
         "@maven//:io_grpc_grpc_protobuf",
         "@maven//:io_grpc_grpc_stub",
-        "@maven//:javax_activation_activation",
         "@maven//:javax_xml_bind_jaxb_api",
         "@maven//:org_hibernate_hibernate_c3p0",
         "@maven//:org_postgresql_postgresql",

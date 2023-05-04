@@ -124,6 +124,7 @@ java_binary(
     ],
     visibility = ["//:root"],
     runtime_deps = [
+        "@maven//:javax_activation_activation",
         "@maven//:org_slf4j_slf4j_simple",
     ],
     deps = [
