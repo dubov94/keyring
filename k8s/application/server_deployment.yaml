@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: dubov94/keyring-server:ee13ef48aa3f671dd2f53267473c221631725f85
+        image: dubov94/keyring-server:11316035b1ac31e13d24d3ba84470470c8526cfd
         ports:
         - containerPort: 5001
         env:
