@@ -35,7 +35,7 @@ class MessageConsumer implements Runnable {
   private Pool<Jedis> jedisPool;
   private Base64.Decoder base64Decoder;
   private ListeningExecutorService executorService;
-  private MailClient mailClient;
+  private MailInterface mailInterface;
 
   private enum State {
     READ_PENDING,
@@ -58,12 +58,12 @@ class MessageConsumer implements Runnable {
       Environment environment,
       Pool<Jedis> jedisPool,
       ListeningExecutorService executorService,
-      MailClient mailClient) {
+      MailInterface mailInterface) {
     this.consumerName = environment.getConsumerName();
     this.jedisPool = jedisPool;
     this.base64Decoder = Base64.getDecoder();
     this.executorService = executorService;
-    this.mailClient = mailClient;
+    this.mailInterface = mailInterface;
   }
 
   private void createGroup(Jedis jedis) {
@@ -133,7 +133,7 @@ class MessageConsumer implements Runnable {
         MailVcRequest mailVcRequest = mailerRequest.getMailVcRequest();
         ListenableFuture<Void> future =
             executorService.submit(
-                () -> mailClient.sendMailVc(mailVcRequest.getMail(), mailVcRequest.getCode()),
+                () -> mailInterface.sendMailVc(mailVcRequest.getMail(), mailVcRequest.getCode()),
                 null);
         Futures.addCallback(future, new FailureLoggingCallback(), executorService);
         break;

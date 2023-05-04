@@ -1,48 +1,37 @@
 package keyring.server.mailer;
 
-import java.util.Optional;
-import java.util.logging.Logger;
-import javax.inject.Inject;
 import keyring.server.mailer.templates.MailVcBodyRendererFactory;
 import keyring.server.mailer.templates.MailVcHeadRendererFactory;
 import net.sargue.mailgun.Configuration;
 import net.sargue.mailgun.Mail;
 
-class MailClient {
-  private static final Logger logger = Logger.getLogger(MailClient.class.getName());
-  private Environment environment;
-  private Optional<Configuration> configuration;
+class MailClient implements MailInterface {
   private MailVcHeadRendererFactory mailVcHeadRendererFactory;
   private MailVcBodyRendererFactory mailVcBodyRendererFactory;
+  private Configuration configuration;
+  private String fromName;
+  private String fromAddress;
 
-  @Inject
   MailClient(
       Environment environment,
       MailVcHeadRendererFactory mailVcHeadRendererFactory,
       MailVcBodyRendererFactory mailVcBodyRendererFactory) {
-    this.environment = environment;
-    configuration =
-        environment.isProduction()
-            ? Optional.of(
-                new Configuration()
-                    .apiUrl(environment.getMailgunApiUrl())
-                    .domain(environment.getMailgunDomain())
-                    .apiKey(environment.getMailgunApiKey()))
-            : Optional.empty();
     this.mailVcHeadRendererFactory = mailVcHeadRendererFactory;
     this.mailVcBodyRendererFactory = mailVcBodyRendererFactory;
+    this.configuration =
+        new Configuration()
+            .apiUrl(environment.getMailgunApiUrl())
+            .domain(environment.getMailgunDomain())
+            .apiKey(environment.getMailgunApiKey());
+    this.fromName = environment.getEmailFromName();
+    this.fromAddress = environment.getEmailFromAddress();
   }
 
   public void sendMailVc(String address, String code) {
-    if (!configuration.isPresent()) {
-      logger.info(String.format("sendMailVc(%s, %s)", address, code));
-      return;
-    }
-
     String head = mailVcHeadRendererFactory.newRenderer().setCode(code).render();
     String body = mailVcBodyRendererFactory.newRenderer().setCode(code).render();
-    Mail.using(configuration.get())
-        .from(environment.getEmailFromName(), environment.getEmailFromAddress())
+    Mail.using(configuration)
+        .from(fromName, fromAddress)
         .to(address)
         .subject(head)
         .html(body)

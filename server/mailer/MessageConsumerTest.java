@@ -30,7 +30,7 @@ class MessageConsumerTest {
 
   @Mock private Environment mockEnvironment;
   private static JedisPool jedisPool;
-  @Mock private MailClient mockMailClient;
+  @Mock private MailInterface mockMailInterface;
   private MessageBrokerClient messageBrokerClient;
   private MessageConsumer messageConsumer;
 
@@ -43,7 +43,10 @@ class MessageConsumerTest {
     messageBrokerClient = new MessageBrokerClient(jedisPool);
     messageConsumer =
         new MessageConsumer(
-            mockEnvironment, jedisPool, MoreExecutors.newDirectExecutorService(), mockMailClient);
+            mockEnvironment,
+            jedisPool,
+            MoreExecutors.newDirectExecutorService(),
+            mockMailInterface);
   }
 
   @Test
@@ -53,7 +56,7 @@ class MessageConsumerTest {
               messageConsumer.stop();
               return null;
             })
-        .when(mockMailClient)
+        .when(mockMailInterface)
         .sendMailVc(MAIL, CODE);
     messageBrokerClient.publishMailVcRequest(MAIL, CODE);
 
@@ -61,6 +64,6 @@ class MessageConsumerTest {
     thread.start();
     thread.join();
 
-    verify(mockMailClient).sendMailVc(MAIL, CODE);
+    verify(mockMailInterface).sendMailVc(MAIL, CODE);
   }
 }

@@ -40,7 +40,7 @@ java_library(
         ":broker_keys",
         ":consumer_settings",
         ":environment",
-        ":mail_client",
+        ":mail_interface",
         ":requests_java_proto",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_inject_javax_inject",
@@ -58,7 +58,7 @@ junit5_test(
     ],
     deps = [
         ":environment",
-        ":mail_client",
+        ":mail_interface",
         ":message_consumer",
         "//server/main/messagebroker:message_broker_client",
         "@maven//:com_google_guava_guava",
@@ -71,13 +71,18 @@ junit5_test(
 )
 
 java_library(
+    name = "mail_interface",
+    srcs = ["MailInterface.java"],
+)
+
+java_library(
     name = "mail_client",
     srcs = ["MailClient.java"],
     deps = [
         ":environment",
+        ":mail_interface",
         "//server/mailer/templates:mail_vc_body_renderer_factory",
         "//server/mailer/templates:mail_vc_head_renderer_factory",
-        "@maven//:javax_inject_javax_inject",
         "@maven//:net_sargue_mailgun",
     ],
 )
@@ -91,6 +96,10 @@ java_library(
     deps = [
         ":consumer_settings",
         ":environment",
+        ":mail_client",
+        ":mail_interface",
+        "//server/mailer/templates:mail_vc_body_renderer_factory",
+        "//server/mailer/templates:mail_vc_head_renderer_factory",
         "@maven//:com_google_dagger_dagger",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_inject_javax_inject",

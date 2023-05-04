@@ -3,13 +3,17 @@ package keyring.server.mailer;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 import java.net.URI;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import javax.inject.Singleton;
+import keyring.server.mailer.templates.MailVcBodyRendererFactory;
+import keyring.server.mailer.templates.MailVcHeadRendererFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisSentinelPool;
@@ -43,5 +47,26 @@ class AppModule {
                 Executors.newFixedThreadPool(ConsumerSettings.MAX_MESSAGES_PER_READ),
             ConsumerSettings.K8S_GRACE_PERIOD_MILLIS,
             TimeUnit.MILLISECONDS));
+  }
+
+  private static class LocalMailInterface implements MailInterface {
+    private static final Logger logger = Logger.getLogger(LocalMailInterface.class.getName());
+
+    @Override
+    public void sendMailVc(String address, String code) {
+      logger.info(String.format("sendMailVc(%s, %s)", address, code));
+    }
+  }
+
+  @Provides
+  static MailInterface provideMailInterface(
+      Environment environment,
+      Lazy<MailVcHeadRendererFactory> mailVcHeadRendererFactory,
+      Lazy<MailVcBodyRendererFactory> mailVcBodyRendererFactory) {
+    if (environment.isProduction()) {
+      return new MailClient(
+          environment, mailVcHeadRendererFactory.get(), mailVcBodyRendererFactory.get());
+    }
+    return new LocalMailInterface();
   }
 }
