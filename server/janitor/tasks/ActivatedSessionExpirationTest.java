@@ -25,11 +25,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
-final class SessionRecordExpirationTest {
+final class ActivatedSessionExpirationTest {
   private static final EntityManagerFactory entityManagerFactory =
       Persistence.createEntityManagerFactory("testing");
   private EntityManager entityManager;
-  private SessionRecordExpiration sessionRecordExpiration;
+  private ActivatedSessionExpiration activatedSessionExpiration;
 
   @Mock private Chronometry mockChronometry;
 
@@ -41,48 +41,8 @@ final class SessionRecordExpirationTest {
   @BeforeEach
   void beforeEach() {
     entityManager = entityManagerFactory.createEntityManager();
-    sessionRecordExpiration = new SessionRecordExpiration(mockChronometry);
+    activatedSessionExpiration = new ActivatedSessionExpiration(mockChronometry);
     when(mockChronometry.currentTime()).thenReturn(Instant.now());
-  }
-
-  @Test
-  void relevantInitiated_keeps() {
-    when(mockChronometry.pastTimestamp(Session.SESSION_AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
-        .thenReturn(Timestamp.from(Instant.ofEpochSecond(1)));
-    when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
-        .thenReturn(Timestamp.from(Instant.now()));
-    User user = new User().setUsername(newRandomUuid());
-    persistEntity(user);
-    Session session =
-        new Session()
-            .setUser(user)
-            .setStage(SessionStage.SESSION_INITIATED, Instant.ofEpochSecond(2));
-    persistEntity(session);
-
-    sessionRecordExpiration.run();
-
-    entityManager.refresh(session);
-    assertEquals(SessionStage.SESSION_INITIATED, session.getStage());
-  }
-
-  @Test
-  void expiredInitiated_disables() {
-    when(mockChronometry.pastTimestamp(Session.SESSION_AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
-        .thenReturn(Timestamp.from(Instant.ofEpochSecond(2)));
-    when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
-        .thenReturn(Timestamp.from(Instant.now()));
-    User user = new User().setUsername(newRandomUuid());
-    persistEntity(user);
-    Session session =
-        new Session()
-            .setUser(user)
-            .setStage(SessionStage.SESSION_INITIATED, Instant.ofEpochSecond(1));
-    persistEntity(session);
-
-    sessionRecordExpiration.run();
-
-    entityManager.refresh(session);
-    assertEquals(SessionStage.SESSION_DISABLED, session.getStage());
   }
 
   @Test
@@ -99,7 +59,7 @@ final class SessionRecordExpirationTest {
             .setStage(SessionStage.SESSION_ACTIVATED, Instant.ofEpochSecond(2));
     persistEntity(session);
 
-    sessionRecordExpiration.run();
+    activatedSessionExpiration.run();
 
     entityManager.refresh(session);
     assertEquals(SessionStage.SESSION_ACTIVATED, session.getStage());
@@ -119,7 +79,7 @@ final class SessionRecordExpirationTest {
             .setStage(SessionStage.SESSION_ACTIVATED, Instant.ofEpochSecond(1));
     persistEntity(session);
 
-    sessionRecordExpiration.run();
+    activatedSessionExpiration.run();
 
     entityManager.refresh(session);
     assertEquals(SessionStage.SESSION_DISABLED, session.getStage());

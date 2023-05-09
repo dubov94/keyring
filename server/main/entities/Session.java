@@ -112,10 +112,8 @@ public class Session {
   }
 
   public Session setStage(SessionStage stage, Instant instant) {
-    // if_change
     this.lastStageChange = Timestamp.from(instant);
     this.stage = stage;
-    // then_change(server/janitor/tasks/DisabledSessionRecords.java:session_disablement)
     return this;
   }
 
