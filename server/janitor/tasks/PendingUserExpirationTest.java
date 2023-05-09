@@ -1,7 +1,6 @@
 package keyring.server.janitor.tasks;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import java.sql.Timestamp;
@@ -10,7 +9,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import keyring.server.main.Chronometry;
@@ -54,7 +52,8 @@ final class PendingUserExpirationTest {
 
     pendingUserExpiration.run();
 
-    assertTrue(isEntityInStorage(user));
+    entityManager.refresh(user);
+    assertEquals(UserState.USER_ACTIVE, user.getState());
   }
 
   @Test
@@ -66,11 +65,12 @@ final class PendingUserExpirationTest {
 
     pendingUserExpiration.run();
 
-    assertTrue(isEntityInStorage(user));
+    entityManager.refresh(user);
+    assertEquals(UserState.USER_PENDING, user.getState());
   }
 
   @Test
-  void oldPendingUser_removes() {
+  void oldPendingUser_deletes() {
     User user = new User().setState(UserState.USER_PENDING).setUsername(newRandomUuid());
     persistEntity(user);
     when(mockChronometry.pastTimestamp(User.PENDING_USER_EXPIRATION_M, ChronoUnit.MINUTES))
@@ -78,7 +78,8 @@ final class PendingUserExpirationTest {
 
     pendingUserExpiration.run();
 
-    assertFalse(isEntityInStorage(user));
+    entityManager.refresh(user);
+    assertEquals(UserState.USER_DELETED, user.getState());
   }
 
   private String newRandomUuid() {
@@ -90,14 +91,5 @@ final class PendingUserExpirationTest {
     entityTransaction.begin();
     entityManager.persist(entity);
     entityTransaction.commit();
-  }
-
-  private boolean isEntityInStorage(Object entity) {
-    try {
-      entityManager.refresh(entity);
-      return true;
-    } catch (EntityNotFoundException exception) {
-      return false;
-    }
   }
 }
