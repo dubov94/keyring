@@ -16,13 +16,13 @@ import keyring.server.main.entities.Session;
 import keyring.server.main.entities.Session_;
 import keyring.server.main.entities.columns.SessionStage;
 
-public final class DisabledSessionRecords implements Runnable {
+public final class SessionRecordExpiration implements Runnable {
   private Chronometry chronometry;
 
   @ContextualEntityManager private EntityManager entityManager;
 
   @Inject
-  DisabledSessionRecords(Chronometry chronometry) {
+  SessionRecordExpiration(Chronometry chronometry) {
     this.chronometry = chronometry;
   }
 
@@ -42,7 +42,7 @@ public final class DisabledSessionRecords implements Runnable {
             criteriaBuilder.equal(sessionRoot.get(Session_.stage), SessionStage.SESSION_INITIATED),
             criteriaBuilder.lessThan(
                 sessionRoot.get(Session_.lastStageChange),
-                chronometry.pastTimestamp(Session.AUTHN_EXPIRATION_M, ChronoUnit.MINUTES)));
+                chronometry.pastTimestamp(Session.SESSION_AUTHN_EXPIRATION_M, ChronoUnit.MINUTES)));
     Predicate predicateForActivated =
         criteriaBuilder.and(
             criteriaBuilder.equal(sessionRoot.get(Session_.stage), SessionStage.SESSION_ACTIVATED),

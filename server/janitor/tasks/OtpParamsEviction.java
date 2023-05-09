@@ -13,13 +13,13 @@ import keyring.server.main.aspects.Annotations.WithEntityTransaction;
 import keyring.server.main.entities.OtpParams;
 import keyring.server.main.entities.OtpParams_;
 
-public final class ExpiredOtpParams implements Runnable {
+public final class OtpParamsEviction implements Runnable {
   private Chronometry chronometry;
 
   @ContextualEntityManager private EntityManager entityManager;
 
   @Inject
-  ExpiredOtpParams(Chronometry chronometry) {
+  OtpParamsEviction(Chronometry chronometry) {
     this.chronometry = chronometry;
   }
 
@@ -33,7 +33,8 @@ public final class ExpiredOtpParams implements Runnable {
     criteriaDelete.where(
         criteriaBuilder.lessThan(
             otpParamsRoot.get(OtpParams_.creationTimestamp),
-            chronometry.pastTimestamp(OtpParams.OTP_PARAMS_EXPIRATION_M, ChronoUnit.MINUTES)));
+            chronometry.pastTimestamp(
+                OtpParams.OTP_PARAMS_STORAGE_EVICTION_M, ChronoUnit.MINUTES)));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }
 }

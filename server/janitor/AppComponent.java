@@ -5,12 +5,12 @@ import dagger.Component;
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 import keyring.server.janitor.tasks.DeletedUsers;
-import keyring.server.janitor.tasks.DisabledSessionRecords;
-import keyring.server.janitor.tasks.ExpiredOtpParams;
-import keyring.server.janitor.tasks.ExpiredOtpTokens;
 import keyring.server.janitor.tasks.ExpiredPendingUsers;
-import keyring.server.janitor.tasks.ExpiredSessionRecords;
 import keyring.server.janitor.tasks.MailTokenEviction;
+import keyring.server.janitor.tasks.OtpParamsEviction;
+import keyring.server.janitor.tasks.OtpTokenEviction;
+import keyring.server.janitor.tasks.SessionRecordEviction;
+import keyring.server.janitor.tasks.SessionRecordExpiration;
 
 @Component(modules = {AppModule.class})
 @Singleton
@@ -19,17 +19,17 @@ interface AppComponent {
 
   DeletedUsers deletedUsers();
 
-  DisabledSessionRecords disabledSessionRecords();
-
-  ExpiredOtpParams expiredOtpParams();
-
-  ExpiredOtpTokens expiredOtpTokens();
-
   ExpiredPendingUsers expiredPendingUsers();
 
-  ExpiredSessionRecords expiredSessionRecords();
-
   MailTokenEviction mailTokenEviction();
+
+  OtpParamsEviction otpParamsEviction();
+
+  OtpTokenEviction otpTokenEviction();
+
+  SessionRecordEviction sessionRecordEviction();
+
+  SessionRecordExpiration sessionRecordExpiration();
 
   @Component.Builder
   interface Builder {

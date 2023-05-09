@@ -25,11 +25,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
-final class DisabledSessionRecordsTest {
+final class SessionRecordExpirationTest {
   private static final EntityManagerFactory entityManagerFactory =
       Persistence.createEntityManagerFactory("testing");
   private EntityManager entityManager;
-  private DisabledSessionRecords disabledSessionRecords;
+  private SessionRecordExpiration sessionRecordExpiration;
 
   @Mock private Chronometry mockChronometry;
 
@@ -41,13 +41,13 @@ final class DisabledSessionRecordsTest {
   @BeforeEach
   void beforeEach() {
     entityManager = entityManagerFactory.createEntityManager();
-    disabledSessionRecords = new DisabledSessionRecords(mockChronometry);
+    sessionRecordExpiration = new SessionRecordExpiration(mockChronometry);
     when(mockChronometry.currentTime()).thenReturn(Instant.now());
   }
 
   @Test
   void relevantInitiated_keeps() {
-    when(mockChronometry.pastTimestamp(Session.AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
+    when(mockChronometry.pastTimestamp(Session.SESSION_AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.ofEpochSecond(1)));
     when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
         .thenReturn(Timestamp.from(Instant.now()));
@@ -59,7 +59,7 @@ final class DisabledSessionRecordsTest {
             .setStage(SessionStage.SESSION_INITIATED, Instant.ofEpochSecond(2));
     persistEntity(session);
 
-    disabledSessionRecords.run();
+    sessionRecordExpiration.run();
 
     entityManager.refresh(session);
     assertEquals(SessionStage.SESSION_INITIATED, session.getStage());
@@ -67,7 +67,7 @@ final class DisabledSessionRecordsTest {
 
   @Test
   void expiredInitiated_disables() {
-    when(mockChronometry.pastTimestamp(Session.AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
+    when(mockChronometry.pastTimestamp(Session.SESSION_AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.ofEpochSecond(2)));
     when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
         .thenReturn(Timestamp.from(Instant.now()));
@@ -79,7 +79,7 @@ final class DisabledSessionRecordsTest {
             .setStage(SessionStage.SESSION_INITIATED, Instant.ofEpochSecond(1));
     persistEntity(session);
 
-    disabledSessionRecords.run();
+    sessionRecordExpiration.run();
 
     entityManager.refresh(session);
     assertEquals(SessionStage.SESSION_DISABLED, session.getStage());
@@ -87,7 +87,7 @@ final class DisabledSessionRecordsTest {
 
   @Test
   void relevantActivated_keeps() {
-    when(mockChronometry.pastTimestamp(Session.AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
+    when(mockChronometry.pastTimestamp(Session.SESSION_AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.now()));
     when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
         .thenReturn(Timestamp.from(Instant.ofEpochSecond(1)));
@@ -99,7 +99,7 @@ final class DisabledSessionRecordsTest {
             .setStage(SessionStage.SESSION_ACTIVATED, Instant.ofEpochSecond(2));
     persistEntity(session);
 
-    disabledSessionRecords.run();
+    sessionRecordExpiration.run();
 
     entityManager.refresh(session);
     assertEquals(SessionStage.SESSION_ACTIVATED, session.getStage());
@@ -107,7 +107,7 @@ final class DisabledSessionRecordsTest {
 
   @Test
   void expiredActivated_disables() {
-    when(mockChronometry.pastTimestamp(Session.AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
+    when(mockChronometry.pastTimestamp(Session.SESSION_AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))
         .thenReturn(Timestamp.from(Instant.now()));
     when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
         .thenReturn(Timestamp.from(Instant.ofEpochSecond(2)));
@@ -119,7 +119,7 @@ final class DisabledSessionRecordsTest {
             .setStage(SessionStage.SESSION_ACTIVATED, Instant.ofEpochSecond(1));
     persistEntity(session);
 
-    disabledSessionRecords.run();
+    sessionRecordExpiration.run();
 
     entityManager.refresh(session);
     assertEquals(SessionStage.SESSION_DISABLED, session.getStage());

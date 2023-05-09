@@ -10,16 +10,16 @@ import keyring.server.main.Chronometry;
 import keyring.server.main.aspects.Annotations.ContextualEntityManager;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.aspects.Annotations.WithEntityTransaction;
-import keyring.server.main.entities.OtpToken;
-import keyring.server.main.entities.OtpToken_;
+import keyring.server.main.entities.Session;
+import keyring.server.main.entities.Session_;
 
-public final class ExpiredOtpTokens implements Runnable {
+public final class SessionRecordEviction implements Runnable {
   private Chronometry chronometry;
 
   @ContextualEntityManager private EntityManager entityManager;
 
   @Inject
-  ExpiredOtpTokens(Chronometry chronometry) {
+  SessionRecordEviction(Chronometry chronometry) {
     this.chronometry = chronometry;
   }
 
@@ -27,14 +27,12 @@ public final class ExpiredOtpTokens implements Runnable {
   @WithEntityTransaction
   public void run() {
     CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-    CriteriaDelete<OtpToken> criteriaDelete = criteriaBuilder.createCriteriaDelete(OtpToken.class);
-    Root<OtpToken> otpTokenRoot = criteriaDelete.from(OtpToken.class);
+    CriteriaDelete<Session> criteriaDelete = criteriaBuilder.createCriteriaDelete(Session.class);
+    Root<Session> sessionRoot = criteriaDelete.from(Session.class);
     criteriaDelete.where(
-        criteriaBuilder.and(
-            criteriaBuilder.lessThan(
-                otpTokenRoot.get(OtpToken_.creationTimestamp),
-                chronometry.pastTimestamp(OtpToken.OTP_TOKEN_EXPIRATION_D, ChronoUnit.DAYS)),
-            criteriaBuilder.isFalse(otpTokenRoot.get(OtpToken_.isInitial))));
+        criteriaBuilder.lessThan(
+            sessionRoot.get(Session_.timestamp),
+            chronometry.pastTimestamp(Session.SESSION_STORAGE_EVICTION_D, ChronoUnit.DAYS)));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }
 }

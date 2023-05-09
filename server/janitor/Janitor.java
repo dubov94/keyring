@@ -23,12 +23,12 @@ final class Janitor {
     tasks =
         ImmutableList.of(
             appComponent.deletedUsers(),
-            appComponent.disabledSessionRecords(),
-            appComponent.expiredOtpParams(),
-            appComponent.expiredOtpTokens(),
             appComponent.expiredPendingUsers(),
-            appComponent.expiredSessionRecords(),
-            appComponent.mailTokenEviction());
+            appComponent.mailTokenEviction(),
+            appComponent.otpParamsEviction(),
+            appComponent.otpTokenEviction(),
+            appComponent.sessionRecordEviction(),
+            appComponent.sessionRecordExpiration());
   }
 
   private void start() {

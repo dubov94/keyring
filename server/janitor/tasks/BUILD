@@ -39,8 +39,8 @@ woven_junit5_test(
 )
 
 java_library(
-    name = "disabled_session_records",
-    srcs = ["DisabledSessionRecords.java"],
+    name = "session_record_expiration",
+    srcs = ["SessionRecordExpiration.java"],
     deps = [
         "//server/main:chronometry",
         "//server/main/aspects:annotations",
@@ -53,8 +53,8 @@ java_library(
 )
 
 woven_junit5_test(
-    name = "disabled_session_records_test",
-    srcs = ["DisabledSessionRecordsTest.java"],
+    name = "session_record_expiration_test",
+    srcs = ["SessionRecordExpirationTest.java"],
     aop_xml = "//server/janitor/java/META-INF:aop.xml",
     aspects = ASPECTS,
     resources = ["//server/java/META-INF:persistence.xml"],
@@ -64,7 +64,7 @@ woven_junit5_test(
         "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
-        ":disabled_session_records",
+        ":session_record_expiration",
         "//server/main:chronometry",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:columns_java_proto",
@@ -129,8 +129,8 @@ woven_junit5_test(
 )
 
 java_library(
-    name = "expired_session_records",
-    srcs = ["ExpiredSessionRecords.java"],
+    name = "session_record_eviction",
+    srcs = ["SessionRecordEviction.java"],
     deps = [
         "//server/main:chronometry",
         "//server/main/aspects:annotations",
@@ -141,8 +141,8 @@ java_library(
 )
 
 java_library(
-    name = "expired_otp_params",
-    srcs = ["ExpiredOtpParams.java"],
+    name = "otp_params_eviction",
+    srcs = ["OtpParamsEviction.java"],
     deps = [
         "//server/main:chronometry",
         "//server/main/aspects:annotations",
@@ -153,8 +153,8 @@ java_library(
 )
 
 java_library(
-    name = "expired_otp_tokens",
-    srcs = ["ExpiredOtpTokens.java"],
+    name = "otp_token_eviction",
+    srcs = ["OtpTokenEviction.java"],
     deps = [
         "//server/main:chronometry",
         "//server/main/aspects:annotations",

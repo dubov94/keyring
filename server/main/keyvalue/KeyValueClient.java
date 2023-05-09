@@ -108,7 +108,7 @@ public class KeyValueClient {
           jedis.set(
               convertAuthnTokenToKey(authnToken),
               base64Encoder.encodeToString(kvAuthn.toByteArray()),
-              new SetParams().nx().ex(Session.AUTHN_EXPIRATION_M * 60));
+              new SetParams().nx().ex(Session.SESSION_AUTHN_EXPIRATION_M * 60));
       if (status == null) {
         throw new KeyValueException(NIL_DOCS_URL);
       }
