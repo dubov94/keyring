@@ -3,6 +3,7 @@ package keyring.server.janitor;
 import com.google.common.collect.ImmutableMap;
 import dagger.Module;
 import dagger.Provides;
+import java.time.Instant;
 import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -32,6 +33,6 @@ class AppModule {
   @Provides
   @Singleton
   static Chronometry provideChronometry(Arithmetic arithmetic) {
-    return new Chronometry(arithmetic);
+    return new Chronometry(arithmetic, Instant::now);
   }
 }

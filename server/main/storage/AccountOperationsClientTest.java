@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -18,7 +17,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import javax.persistence.Persistence;
+import keyring.server.main.Arithmetic;
 import keyring.server.main.Chronometry;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.aspects.StorageManagerAspect;
@@ -39,13 +40,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
 class AccountOperationsClientTest {
   private static final String IP_ADDRESS = "127.0.0.1";
 
-  @Mock private Chronometry mockChronometry;
+  private Supplier<Instant> nowSupplier = Instant::now;
   private AccountOperationsClient accountOperationsClient;
   private KeyOperationsClient keyOperationsClient;
 
@@ -65,7 +65,10 @@ class AccountOperationsClientTest {
             Session.APPROX_MAX_LAST_HOUR_SESSIONS_PER_USER,
             OtpParams.APPROX_MAX_OTP_PARAMS_PER_USER);
     accountOperationsClient =
-        new AccountOperationsClient(mockChronometry, limiters, /* initialSpareAttempts */ 5);
+        new AccountOperationsClient(
+            new Chronometry(new Arithmetic(), () -> nowSupplier.get()),
+            limiters,
+            /* initialSpareAttempts */ 5);
     keyOperationsClient = new KeyOperationsClient(limiters);
   }
 
@@ -112,24 +115,46 @@ class AccountOperationsClientTest {
     String username = newRandomUuid();
     Tuple2<User, MailToken> user =
         accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "A");
+    long wrongUserId = user._1.getIdentifier() + 1;
+    long tokenId = user._2.getIdentifier();
 
-    assertFalse(
-        accountOperationsClient
-            .getMailToken(user._1.getIdentifier() + 1, user._2.getIdentifier())
-            .isPresent());
+    assertFalse(accountOperationsClient.getMailToken(wrongUserId, tokenId).isPresent());
+  }
+
+  @Test
+  @WithEntityManager
+  void getMailToken_unavailableToken_returnsEmpty() {
+    String username = newRandomUuid();
+    Tuple2<User, MailToken> user =
+        accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "A");
+    nowSupplier = () -> Instant.MAX;
+    long userId = user._1.getIdentifier();
+    long tokenId = user._2.getIdentifier();
+
+    assertFalse(accountOperationsClient.getMailToken(userId, tokenId).isPresent());
   }
 
   @Test
   @WithEntityManager
   void latestMailToken_sortsByCreationTime() {
     long userId = createActiveUser()._1;
-
     accountOperationsClient.createMailToken(userId, IP_ADDRESS, "fst@domain.com", "fst");
     accountOperationsClient.createMailToken(userId, IP_ADDRESS, "snd@domain.com", "snd");
     accountOperationsClient.createMailToken(userId, IP_ADDRESS, "trd@domain.com", "trd");
+
     MailToken mailToken = accountOperationsClient.latestMailToken(userId).get();
 
     assertEquals("trd@domain.com", mailToken.getMail());
+  }
+
+  @Test
+  @WithEntityManager
+  void latestMailToken_ignoresUnavailable() {
+    long userId = createActiveUser()._1;
+    accountOperationsClient.createMailToken(userId, IP_ADDRESS, "mail@example.com", "0");
+    nowSupplier = () -> Instant.MAX;
+
+    assertFalse(accountOperationsClient.latestMailToken(userId).isPresent());
   }
 
   @Test
@@ -191,7 +216,6 @@ class AccountOperationsClientTest {
   void changeMasterKey_updatesSaltHashAndKeys() {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
-    when(mockChronometry.currentTime()).thenReturn(Instant.now());
     long sessionId = createActiveSession(userId, userRefs._2);
     long keyId =
         keyOperationsClient
@@ -230,7 +254,6 @@ class AccountOperationsClientTest {
   void changeMasterKey_lacksKeyUpdates_throwsException() {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
-    when(mockChronometry.currentTime()).thenReturn(Instant.now());
     long sessionId = createActiveSession(userId, userRefs._2);
     long keyId =
         keyOperationsClient
@@ -252,7 +275,6 @@ class AccountOperationsClientTest {
   void createSession_putsSession() {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
-    when(mockChronometry.currentTime()).thenReturn(Instant.now());
     long sessionId =
         accountOperationsClient
             .createSession(userId, userRefs._2, "127.0.0.1", "Chrome/0.0.0", "version")
@@ -270,7 +292,6 @@ class AccountOperationsClientTest {
   void initiateSession_checksIp() {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
-    when(mockChronometry.currentTime()).thenReturn(Instant.now());
     long sessionId =
         accountOperationsClient
             .createSession(userId, userRefs._2, "127.0.0.1", "Chrome/0.0.0", "version")
@@ -296,7 +317,6 @@ class AccountOperationsClientTest {
   void initiateSession_setsSession() {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
-    when(mockChronometry.currentTime()).thenReturn(Instant.now());
     String ipAddress = "127.0.0.1";
     long sessionId =
         accountOperationsClient
@@ -315,7 +335,6 @@ class AccountOperationsClientTest {
   void activateSession_checksIp() {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
-    when(mockChronometry.currentTime()).thenReturn(Instant.now());
     long sessionId =
         accountOperationsClient
             .createSession(userId, userRefs._2, "127.0.0.1", "Chrome/0.0.0", "version")
@@ -341,7 +360,6 @@ class AccountOperationsClientTest {
   void activateSession_setsSession() {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
-    when(mockChronometry.currentTime()).thenReturn(Instant.now());
     String ipAddress = "127.0.0.1";
     long sessionId =
         accountOperationsClient
@@ -517,10 +535,9 @@ class AccountOperationsClientTest {
         accountOperationsClient
             .createMailToken(userId, IP_ADDRESS, "mail@domain.com", "A")
             .getIdentifier();
-    Instant epochPlusFour = Instant.ofEpochSecond(4);
     Instant epochPlusTwo = Instant.ofEpochSecond(2);
-    when(mockChronometry.currentTime()).thenReturn(epochPlusTwo);
-    when(mockChronometry.isBefore(epochPlusFour, epochPlusTwo)).thenReturn(false);
+    Instant epochPlusFour = Instant.ofEpochSecond(4);
+    nowSupplier = () -> epochPlusTwo;
 
     Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsClient.nudgeMailToken(
@@ -539,8 +556,7 @@ class AccountOperationsClientTest {
             .getIdentifier();
     Instant epochPlusOne = Instant.ofEpochSecond(1);
     Instant epochPlusTwo = Instant.ofEpochSecond(2);
-    when(mockChronometry.currentTime()).thenReturn(epochPlusTwo);
-    when(mockChronometry.isBefore(epochPlusOne, epochPlusTwo)).thenReturn(true);
+    nowSupplier = () -> epochPlusTwo;
 
     Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsClient.nudgeMailToken(

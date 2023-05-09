@@ -76,6 +76,7 @@ woven_junit5_test(
         ":account_operations_interface",
         ":limiters",
         "//proto:service_java_grpc",
+        "//server/main:arithmetic",
         "//server/main:chronometry",
         "//server/main/aspects:annotations",
         "//server/main/aspects:storage_manager_aspect",

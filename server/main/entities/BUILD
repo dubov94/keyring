@@ -47,6 +47,7 @@ java_library(
         ":mail_token_state_converter",
         ":user",
         ":validators",
+        "//server/main:chronometry",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_annotation_javax_annotation_api",
         "@maven//:javax_persistence_javax_persistence_api",

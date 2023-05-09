@@ -78,8 +78,8 @@ woven_junit5_test(
 )
 
 java_library(
-    name = "expired_mail_tokens",
-    srcs = ["ExpiredMailTokens.java"],
+    name = "mail_token_eviction",
+    srcs = ["MailTokenEviction.java"],
     deps = [
         "//server/main:chronometry",
         "//server/main/aspects:annotations",

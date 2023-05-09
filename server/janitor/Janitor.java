@@ -24,11 +24,11 @@ final class Janitor {
         ImmutableList.of(
             appComponent.deletedUsers(),
             appComponent.disabledSessionRecords(),
-            appComponent.expiredMailTokens(),
             appComponent.expiredOtpParams(),
             appComponent.expiredOtpTokens(),
             appComponent.expiredPendingUsers(),
-            appComponent.expiredSessionRecords());
+            appComponent.expiredSessionRecords(),
+            appComponent.mailTokenEviction());
   }
 
   private void start() {

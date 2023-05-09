@@ -3,16 +3,19 @@ package keyring.server.main;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.TemporalUnit;
+import java.util.function.Supplier;
 
 public class Chronometry {
   private Arithmetic arithmetic;
+  private Supplier<Instant> nowSupplier;
 
-  public Chronometry(Arithmetic arithmetic) {
+  public Chronometry(Arithmetic arithmetic, Supplier<Instant> nowSupplier) {
     this.arithmetic = arithmetic;
+    this.nowSupplier = nowSupplier;
   }
 
   public Instant currentTime() {
-    return Instant.now();
+    return nowSupplier.get();
   }
 
   public Instant subtract(Instant instant, long amountToSubtract, TemporalUnit temporalUnit) {

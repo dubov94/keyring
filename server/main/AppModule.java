@@ -6,6 +6,7 @@ import dagger.Module;
 import dagger.Provides;
 import io.paveldubov.turnstile.TurnstileValidator;
 import java.security.SecureRandom;
+import java.time.Instant;
 import javax.inject.Singleton;
 import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.AgentInterceptor;
@@ -50,7 +51,7 @@ class AppModule {
   @Provides
   @Singleton
   static Chronometry provideChronometry(Arithmetic arithmetic) {
-    return new Chronometry(arithmetic);
+    return new Chronometry(arithmetic, Instant::now);
   }
 
   @Provides

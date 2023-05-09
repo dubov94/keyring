@@ -102,6 +102,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public Optional<MailToken> getMailToken(long userId, long tokenId) {
     return Queries.findManyToOne(entityManager, MailToken.class, MailToken_.user, userId).stream()
         .filter(mailToken -> Objects.equals(mailToken.getIdentifier(), tokenId))
+        .filter(mailToken -> mailToken.isAvailable(chronometry))
         .findFirst();
   }
 
@@ -110,6 +111,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public Optional<MailToken> latestMailToken(long userIdentifier) {
     return Queries.findManyToOne(entityManager, MailToken.class, MailToken_.user, userIdentifier)
         .stream()
+        .filter(mailToken -> mailToken.isAvailable(chronometry))
         .max((left, right) -> left.getTimestamp().compareTo(right.getTimestamp()));
   }
 

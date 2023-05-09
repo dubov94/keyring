@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple2;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -35,6 +36,7 @@ class KeyOperationsClientTest {
   private static Random random = new Random();
   private AccountOperationsClient accountOperationsClient;
   private KeyOperationsClient keyOperationsClient;
+  private Instant now = Instant.EPOCH;
 
   @BeforeAll
   static void beforeAll() throws ClassNotFoundException {
@@ -52,7 +54,7 @@ class KeyOperationsClientTest {
             /* approxMaxOtpParamsPerUser */ 4);
     accountOperationsClient =
         new AccountOperationsClient(
-            new Chronometry(new Arithmetic()), limiters, /* initialSpareAttempts */ 5);
+            new Chronometry(new Arithmetic(), () -> now), limiters, /* initialSpareAttempts */ 5);
     keyOperationsClient = new KeyOperationsClient(limiters);
   }
 

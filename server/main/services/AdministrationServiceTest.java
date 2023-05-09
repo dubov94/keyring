@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
@@ -64,6 +65,7 @@ import keyring.server.main.storage.AccountOperationsInterface;
 import keyring.server.main.storage.KeyOperationsInterface;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -121,6 +123,11 @@ class AdministrationServiceTest {
     when(mockSessionAccessor.getKvSession()).thenReturn(kvSession);
     when(mockAccountOperationsInterface.getUserById(user.getIdentifier()))
         .thenAnswer(invocation -> Optional.of(user));
+  }
+
+  @AfterEach
+  void afterEach() {
+    verifyNoMoreInteractions(mockChronometry);
   }
 
   @Test

@@ -4,13 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import keyring.server.main.Arithmetic;
 import keyring.server.main.Chronometry;
 import keyring.server.main.keyvalue.values.KvAuthn;
 import keyring.server.main.keyvalue.values.KvSession;
@@ -18,7 +16,6 @@ import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -35,7 +32,6 @@ class KeyValueClientTest {
       new GenericContainer(DockerImageName.parse("redis")).withExposedPorts(6379);
 
   private static JedisPool jedisPool;
-  @Mock private Chronometry mockChronometry;
   private KeyValueClient keyValueClient;
 
   @BeforeEach
@@ -43,9 +39,8 @@ class KeyValueClientTest {
     jedisPool =
         new JedisPool(
             new JedisPoolConfig(), redisContainer.getHost(), redisContainer.getFirstMappedPort());
-    keyValueClient = new KeyValueClient(jedisPool, mockChronometry);
-    when(mockChronometry.currentTime()).thenReturn(Instant.EPOCH);
-    when(mockChronometry.isBefore(eq(Instant.EPOCH), any(Instant.class))).thenReturn(false);
+    keyValueClient =
+        new KeyValueClient(jedisPool, new Chronometry(new Arithmetic(), () -> Instant.EPOCH));
   }
 
   @Test

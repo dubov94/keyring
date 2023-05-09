@@ -6,11 +6,11 @@ import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 import keyring.server.janitor.tasks.DeletedUsers;
 import keyring.server.janitor.tasks.DisabledSessionRecords;
-import keyring.server.janitor.tasks.ExpiredMailTokens;
 import keyring.server.janitor.tasks.ExpiredOtpParams;
 import keyring.server.janitor.tasks.ExpiredOtpTokens;
 import keyring.server.janitor.tasks.ExpiredPendingUsers;
 import keyring.server.janitor.tasks.ExpiredSessionRecords;
+import keyring.server.janitor.tasks.MailTokenEviction;
 
 @Component(modules = {AppModule.class})
 @Singleton
@@ -21,8 +21,6 @@ interface AppComponent {
 
   DisabledSessionRecords disabledSessionRecords();
 
-  ExpiredMailTokens expiredMailTokens();
-
   ExpiredOtpParams expiredOtpParams();
 
   ExpiredOtpTokens expiredOtpTokens();
@@ -30,6 +28,8 @@ interface AppComponent {
   ExpiredPendingUsers expiredPendingUsers();
 
   ExpiredSessionRecords expiredSessionRecords();
+
+  MailTokenEviction mailTokenEviction();
 
   @Component.Builder
   interface Builder {

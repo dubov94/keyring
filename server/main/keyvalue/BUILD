@@ -47,6 +47,7 @@ junit5_test(
         ":key_value_client",
         ":key_value_exception",
         ":values_java_proto",
+        "//server/main:arithmetic",
         "//server/main:chronometry",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_mockito_mockito_core",
@@ -63,6 +64,6 @@ proto_library(
 
 java_proto_library(
     name = "values_java_proto",
-    visibility = ["//server:internal"],
     protos = [":values_proto"],
+    visibility = ["//server:internal"],
 )

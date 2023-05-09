@@ -3,6 +3,7 @@ package keyring.server.main.entities;
 import com.google.common.base.Preconditions;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -13,6 +14,7 @@ import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Version;
+import keyring.server.main.Chronometry;
 import keyring.server.main.entities.columns.MailTokenState;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
@@ -24,7 +26,8 @@ import org.hibernate.annotations.OnDeleteAction;
     name = "mail_tokens",
     indexes = {@Index(columnList = "user_identifier"), @Index(columnList = "ip_address")})
 public class MailToken {
-  public static final long MAIL_TOKEN_EXPIRATION_H = 1;
+  public static final long MAIL_TOKEN_EXPIRATION_M = 10;
+  public static final long MAIL_TOKEN_STORAGE_EVICTION_H = 1;
   public static final long APPROX_MAX_MAIL_TOKENS_PER_USER = 4;
   public static final long APPROX_MAX_MAIL_TOKENS_PER_IP_ADDRESS = 64;
 
@@ -69,8 +72,15 @@ public class MailToken {
     return this;
   }
 
-  public Timestamp getTimestamp() {
-    return timestamp;
+  public Instant getTimestamp() {
+    return timestamp.toInstant();
+  }
+
+  public boolean isAvailable(Chronometry chronometry) {
+    return chronometry.isBefore(
+        chronometry.subtract(
+            chronometry.currentTime(), MAIL_TOKEN_EXPIRATION_M, ChronoUnit.MINUTES),
+        getTimestamp());
   }
 
   public User getUser() {

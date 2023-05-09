@@ -13,13 +13,13 @@ import keyring.server.main.aspects.Annotations.WithEntityTransaction;
 import keyring.server.main.entities.MailToken;
 import keyring.server.main.entities.MailToken_;
 
-public final class ExpiredMailTokens implements Runnable {
+public final class MailTokenEviction implements Runnable {
   private Chronometry chronometry;
 
   @ContextualEntityManager private EntityManager entityManager;
 
   @Inject
-  ExpiredMailTokens(Chronometry chronometry) {
+  MailTokenEviction(Chronometry chronometry) {
     this.chronometry = chronometry;
   }
 
@@ -33,7 +33,7 @@ public final class ExpiredMailTokens implements Runnable {
     criteriaDelete.where(
         criteriaBuilder.lessThan(
             mailTokenRoot.get(MailToken_.timestamp),
-            chronometry.pastTimestamp(MailToken.MAIL_TOKEN_EXPIRATION_H, ChronoUnit.HOURS)));
+            chronometry.pastTimestamp(MailToken.MAIL_TOKEN_STORAGE_EVICTION_H, ChronoUnit.HOURS)));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }
 }
