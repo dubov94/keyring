@@ -36,11 +36,11 @@ java_library(
     deps = [
         ":app_module",
         ":environment",
-        "//server/janitor/tasks:deleted_users",
-        "//server/janitor/tasks:expired_pending_users",
+        "//server/janitor/tasks:deleted_user_eviction",
         "//server/janitor/tasks:mail_token_eviction",
         "//server/janitor/tasks:otp_params_eviction",
         "//server/janitor/tasks:otp_token_eviction",
+        "//server/janitor/tasks:pending_user_expiration",
         "//server/janitor/tasks:session_record_eviction",
         "//server/janitor/tasks:session_record_expiration",
         "@maven//:com_google_dagger_dagger",

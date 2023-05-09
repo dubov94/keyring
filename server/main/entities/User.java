@@ -20,6 +20,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @Table(name = "users")
 public class User {
   public static final long PENDING_USER_EXPIRATION_M = 15;
+  public static final long DELETED_USER_STORAGE_EVICTION_D = 1;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -26,11 +26,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
-final class ExpiredPendingUsersTest {
+final class DeletedUserEvictionTest {
   private static final EntityManagerFactory entityManagerFactory =
       Persistence.createEntityManagerFactory("testing");
   private EntityManager entityManager;
-  private ExpiredPendingUsers expiredPendingUsers;
+  private DeletedUserEviction deletedUserEviction;
 
   @Mock private Chronometry mockChronometry;
 
@@ -42,29 +42,41 @@ final class ExpiredPendingUsersTest {
   @BeforeEach
   void beforeEach() {
     entityManager = entityManagerFactory.createEntityManager();
-    expiredPendingUsers = new ExpiredPendingUsers(mockChronometry);
+    deletedUserEviction = new DeletedUserEviction(mockChronometry);
   }
 
   @Test
   void oldActiveUser_keeps() {
     User user = new User().setState(UserState.USER_ACTIVE).setUsername(newRandomUuid());
     persistEntity(user);
-    when(mockChronometry.pastTimestamp(User.PENDING_USER_EXPIRATION_M, ChronoUnit.MINUTES))
+    when(mockChronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))
         .thenReturn(Timestamp.from(Instant.now()));
 
-    expiredPendingUsers.run();
+    deletedUserEviction.run();
 
     assertTrue(isEntityInStorage(user));
   }
 
   @Test
-  void oldPendingUser_removes() {
-    User user = new User().setState(UserState.USER_PENDING).setUsername(newRandomUuid());
+  void newDeletedUser_keeps() {
+    User user = new User().setState(UserState.USER_DELETED).setUsername(newRandomUuid());
     persistEntity(user);
-    when(mockChronometry.pastTimestamp(User.PENDING_USER_EXPIRATION_M, ChronoUnit.MINUTES))
+    when(mockChronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))
+        .thenReturn(Timestamp.from(Instant.EPOCH));
+
+    deletedUserEviction.run();
+
+    assertTrue(isEntityInStorage(user));
+  }
+
+  @Test
+  void oldDeletedUser_removes() {
+    User user = new User().setState(UserState.USER_DELETED).setUsername(newRandomUuid());
+    persistEntity(user);
+    when(mockChronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))
         .thenReturn(Timestamp.from(Instant.now()));
 
-    expiredPendingUsers.run();
+    deletedUserEviction.run();
 
     assertFalse(isEntityInStorage(user));
   }

@@ -4,9 +4,10 @@ load("//server/janitor:aspectj.bzl", "ASPECTS")
 package(default_visibility = ["//server:internal"])
 
 java_library(
-    name = "deleted_users",
-    srcs = ["DeletedUsers.java"],
+    name = "deleted_user_eviction",
+    srcs = ["DeletedUserEviction.java"],
     deps = [
+        "//server/main:chronometry",
         "//server/main/aspects:annotations",
         "//server/main/entities:columns_java_proto",
         "//server/main/entities:user",
@@ -16,8 +17,8 @@ java_library(
 )
 
 woven_junit5_test(
-    name = "deleted_users_test",
-    srcs = ["DeletedUsersTest.java"],
+    name = "deleted_user_eviction_test",
+    srcs = ["DeletedUserEvictionTest.java"],
     aop_xml = "//server/janitor/java/META-INF:aop.xml",
     aspects = ASPECTS,
     resources = ["//server/java/META-INF:persistence.xml"],
@@ -27,14 +28,16 @@ woven_junit5_test(
         "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
-        ":deleted_users",
+        ":deleted_user_eviction",
+        "//server/main:chronometry",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:columns_java_proto",
-        "//server/main/entities:key",
         "//server/main/entities:user",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_persistence_javax_persistence_api",
+        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
+        "@maven//:org_mockito_mockito_core",
     ],
 )
 
@@ -90,8 +93,8 @@ java_library(
 )
 
 java_library(
-    name = "expired_pending_users",
-    srcs = ["ExpiredPendingUsers.java"],
+    name = "pending_user_expiration",
+    srcs = ["PendingUserExpiration.java"],
     deps = [
         "//server/main:chronometry",
         "//server/main/aspects:annotations",
@@ -103,8 +106,8 @@ java_library(
 )
 
 woven_junit5_test(
-    name = "expired_pending_users_test",
-    srcs = ["ExpiredPendingUsersTest.java"],
+    name = "pending_user_expiration_test",
+    srcs = ["PendingUserExpirationTest.java"],
     aop_xml = "//server/janitor/java/META-INF:aop.xml",
     aspects = ASPECTS,
     resources = ["//server/java/META-INF:persistence.xml"],
@@ -114,7 +117,7 @@ woven_junit5_test(
         "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
-        ":expired_pending_users",
+        ":pending_user_expiration",
         "//server/main:chronometry",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:columns_java_proto",

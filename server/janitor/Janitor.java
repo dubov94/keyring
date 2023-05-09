@@ -22,8 +22,8 @@ final class Janitor {
     Aspects.aspectOf(StorageManagerAspect.class).initialize(appComponent.entityManagerFactory());
     tasks =
         ImmutableList.of(
-            appComponent.deletedUsers(),
-            appComponent.expiredPendingUsers(),
+            appComponent.deletedUserEviction(),
+            appComponent.pendingUserExpiration(),
             appComponent.mailTokenEviction(),
             appComponent.otpParamsEviction(),
             appComponent.otpTokenEviction(),

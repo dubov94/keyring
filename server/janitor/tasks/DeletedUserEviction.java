@@ -14,13 +14,13 @@ import keyring.server.main.entities.User;
 import keyring.server.main.entities.User_;
 import keyring.server.main.entities.columns.UserState;
 
-public final class ExpiredPendingUsers implements Runnable {
+public final class DeletedUserEviction implements Runnable {
   private Chronometry chronometry;
 
   @ContextualEntityManager private EntityManager entityManager;
 
   @Inject
-  ExpiredPendingUsers(Chronometry chronometry) {
+  DeletedUserEviction(Chronometry chronometry) {
     this.chronometry = chronometry;
   }
 
@@ -32,10 +32,10 @@ public final class ExpiredPendingUsers implements Runnable {
     Root<User> userRoot = criteriaDelete.from(User.class);
     criteriaDelete.where(
         criteriaBuilder.and(
-            criteriaBuilder.equal(userRoot.get(User_.state), UserState.USER_PENDING),
+            criteriaBuilder.equal(userRoot.get(User_.state), UserState.USER_DELETED),
             criteriaBuilder.lessThan(
                 userRoot.get(User_.timestamp),
-                chronometry.pastTimestamp(User.PENDING_USER_EXPIRATION_M, ChronoUnit.MINUTES))));
+                chronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }
 }

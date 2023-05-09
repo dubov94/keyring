@@ -2,28 +2,37 @@ package keyring.server.janitor.tasks;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableList;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import keyring.server.main.Chronometry;
 import keyring.server.main.aspects.StorageManagerAspect;
-import keyring.server.main.entities.Key;
 import keyring.server.main.entities.User;
 import keyring.server.main.entities.columns.UserState;
+import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 
-final class DeletedUsersTest {
+@ExtendWith(MockitoExtension.class)
+final class PendingUserExpirationTest {
   private static final EntityManagerFactory entityManagerFactory =
       Persistence.createEntityManagerFactory("testing");
   private EntityManager entityManager;
-  private DeletedUsers deletedUsers;
+  private PendingUserExpiration pendingUserExpiration;
+
+  @Mock private Chronometry mockChronometry;
 
   @BeforeAll
   static void beforeAll() {
@@ -33,32 +42,42 @@ final class DeletedUsersTest {
   @BeforeEach
   void beforeEach() {
     entityManager = entityManagerFactory.createEntityManager();
-    deletedUsers = new DeletedUsers();
+    pendingUserExpiration = new PendingUserExpiration(mockChronometry);
   }
 
   @Test
-  void activeUser_keeps() {
+  void oldActiveUser_keeps() {
     User user = new User().setState(UserState.USER_ACTIVE).setUsername(newRandomUuid());
     persistEntity(user);
-    Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of("tag"));
-    persistEntity(key);
+    when(mockChronometry.pastTimestamp(User.PENDING_USER_EXPIRATION_M, ChronoUnit.MINUTES))
+        .thenReturn(Timestamp.from(Instant.now()));
 
-    deletedUsers.run();
+    pendingUserExpiration.run();
 
-    assertTrue(isEntityInStorage(key));
     assertTrue(isEntityInStorage(user));
   }
 
   @Test
-  void deletedUser_removes() {
-    User user = new User().setState(UserState.USER_DELETED).setUsername(newRandomUuid());
+  void newPendingUser_keeps() {
+    User user = new User().setState(UserState.USER_PENDING).setUsername(newRandomUuid());
     persistEntity(user);
-    Key key = new Key().setUser(user).setValue("secret").setTags(ImmutableList.of("tag"));
-    persistEntity(key);
+    when(mockChronometry.pastTimestamp(User.PENDING_USER_EXPIRATION_M, ChronoUnit.MINUTES))
+        .thenReturn(Timestamp.from(Instant.EPOCH));
 
-    deletedUsers.run();
+    pendingUserExpiration.run();
 
-    assertFalse(isEntityInStorage(key));
+    assertTrue(isEntityInStorage(user));
+  }
+
+  @Test
+  void oldPendingUser_removes() {
+    User user = new User().setState(UserState.USER_PENDING).setUsername(newRandomUuid());
+    persistEntity(user);
+    when(mockChronometry.pastTimestamp(User.PENDING_USER_EXPIRATION_M, ChronoUnit.MINUTES))
+        .thenReturn(Timestamp.from(Instant.now()));
+
+    pendingUserExpiration.run();
+
     assertFalse(isEntityInStorage(user));
   }
 
