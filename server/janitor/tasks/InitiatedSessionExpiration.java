@@ -4,6 +4,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -41,7 +42,11 @@ public final class InitiatedSessionExpiration implements Runnable {
                     sessionRoot.get(Session_.lastStageChange),
                     chronometry.pastTimestamp(
                         Session.SESSION_AUTHN_EXPIRATION_M, ChronoUnit.MINUTES))));
-    List<Session> entities = entityManager.createQuery(criteriaQuery).getResultList();
+    List<Session> entities =
+        entityManager
+            .createQuery(criteriaQuery)
+            .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+            .getResultList();
     for (Session entity : entities) {
       entity.setStage(SessionStage.SESSION_DISABLED, chronometry.currentTime());
       entityManager.persist(entity);

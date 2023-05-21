@@ -1,10 +1,12 @@
 package keyring.server.janitor.tasks;
 
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.LockModeType;
 import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaUpdate;
+import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import keyring.server.main.Chronometry;
 import keyring.server.main.aspects.Annotations.ContextualEntityManager;
@@ -28,15 +30,22 @@ public final class PendingUserExpiration implements Runnable {
   @WithEntityTransaction
   public void run() {
     CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-    CriteriaUpdate<User> criteriaUpdate = criteriaBuilder.createCriteriaUpdate(User.class);
-    Root<User> userRoot = criteriaUpdate.from(User.class);
-    criteriaUpdate.set(userRoot.get(User_.state), UserState.USER_DELETED);
-    criteriaUpdate.where(
+    CriteriaQuery<User> criteriaQuery = criteriaBuilder.createQuery(User.class);
+    Root<User> userRoot = criteriaQuery.from(User.class);
+    criteriaQuery.where(
         criteriaBuilder.and(
             criteriaBuilder.equal(userRoot.get(User_.state), UserState.USER_PENDING),
             criteriaBuilder.lessThan(
                 userRoot.get(User_.timestamp),
                 chronometry.pastTimestamp(User.PENDING_USER_EXPIRATION_M, ChronoUnit.MINUTES))));
-    entityManager.createQuery(criteriaUpdate).executeUpdate();
+    List<User> entities =
+        entityManager
+            .createQuery(criteriaQuery)
+            .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+            .getResultList();
+    for (User entity : entities) {
+      entity.setState(UserState.USER_DELETED);
+      entityManager.persist(entity);
+    }
   }
 }
