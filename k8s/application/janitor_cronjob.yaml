@@ -15,11 +15,16 @@ spec:
         spec:
           containers:
           - name: janitor
-            image: dubov94/keyring-janitor:ee13ef48aa3f671dd2f53267473c221631725f85
+            image: dubov94/keyring-janitor:69454ff9bfdf9d0dbe0919b312fd7f411779635a
             env:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgres-postgresql-ha-postgresql
                   key: postgresql-password
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis
+                  key: redis-password
           restartPolicy: OnFailure

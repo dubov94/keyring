@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: grpc-gateway
-        image: dubov94/keyring-grpc-gateway:ee13ef48aa3f671dd2f53267473c221631725f85
+        image: dubov94/keyring-grpc-gateway:69454ff9bfdf9d0dbe0919b312fd7f411779635a
         ports:
         - containerPort: 5002
