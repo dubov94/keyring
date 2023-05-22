@@ -43,6 +43,7 @@ java_library(
         ":mail_interface",
         ":requests_java_proto",
         "@maven//:com_google_guava_guava",
+        "@maven//:io_vavr_vavr",
         "@maven//:javax_inject_javax_inject",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:redis_clients_jedis",
@@ -83,6 +84,8 @@ java_library(
         ":mail_interface",
         "//server/mailer/templates:mail_vc_body_renderer_factory",
         "//server/mailer/templates:mail_vc_head_renderer_factory",
+        "//server/mailer/templates:uncompleted_authn_body_renderer_factory",
+        "//server/mailer/templates:uncompleted_authn_head_renderer_factory",
         "@maven//:net_sargue_mailgun",
     ],
 )
@@ -100,6 +103,8 @@ java_library(
         ":mail_interface",
         "//server/mailer/templates:mail_vc_body_renderer_factory",
         "//server/mailer/templates:mail_vc_head_renderer_factory",
+        "//server/mailer/templates:uncompleted_authn_body_renderer_factory",
+        "//server/mailer/templates:uncompleted_authn_head_renderer_factory",
         "@maven//:com_google_dagger_dagger",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_inject_javax_inject",
@@ -130,6 +135,8 @@ java_binary(
     resources = [
         "//server/mailer/java/templates:mail_vc.body.twig",
         "//server/mailer/java/templates:mail_vc.head.twig",
+        "//server/mailer/java/templates:uncompleted_authn.body.twig",
+        "//server/mailer/java/templates:uncompleted_authn.head.twig",
     ],
     visibility = ["//:root"],
     runtime_deps = [

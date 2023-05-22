@@ -1,6 +1,8 @@
 package keyring.server.janitor.tasks;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.sql.Timestamp;
@@ -16,6 +18,7 @@ import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.entities.Session;
 import keyring.server.main.entities.User;
 import keyring.server.main.entities.columns.SessionStage;
+import keyring.server.main.messagebroker.MessageBrokerClient;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,6 +35,7 @@ final class InitiatedSessionExpirationTest {
   private InitiatedSessionExpiration initiatedSessionExpiration;
 
   @Mock private Chronometry mockChronometry;
+  @Mock private MessageBrokerClient mockMessageBrokerClient;
 
   @BeforeAll
   static void beforeAll() {
@@ -41,7 +45,8 @@ final class InitiatedSessionExpirationTest {
   @BeforeEach
   void beforeEach() {
     entityManager = entityManagerFactory.createEntityManager();
-    initiatedSessionExpiration = new InitiatedSessionExpiration(mockChronometry);
+    initiatedSessionExpiration =
+        new InitiatedSessionExpiration(mockChronometry, mockMessageBrokerClient);
     when(mockChronometry.currentTime()).thenReturn(Instant.now());
   }
 
@@ -63,6 +68,7 @@ final class InitiatedSessionExpirationTest {
 
     entityManager.refresh(session);
     assertEquals(SessionStage.SESSION_INITIATED, session.getStage());
+    verifyNoMoreInteractions(mockMessageBrokerClient);
   }
 
   @Test
@@ -71,11 +77,12 @@ final class InitiatedSessionExpirationTest {
         .thenReturn(Timestamp.from(Instant.ofEpochSecond(2)));
     when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
         .thenReturn(Timestamp.from(Instant.now()));
-    User user = new User().setUsername(newRandomUuid());
+    User user = new User().setUsername(newRandomUuid()).setMail("mail@example.com");
     persistEntity(user);
     Session session =
         new Session()
             .setUser(user)
+            .setIpAddress("127.0.0.1")
             .setStage(SessionStage.SESSION_INITIATED, Instant.ofEpochSecond(1));
     persistEntity(session);
 
@@ -83,6 +90,7 @@ final class InitiatedSessionExpirationTest {
 
     entityManager.refresh(session);
     assertEquals(SessionStage.SESSION_DISABLED, session.getStage());
+    verify(mockMessageBrokerClient).publishUncompletedAuthn("mail@example.com", "127.0.0.1");
   }
 
   private String newRandomUuid() {

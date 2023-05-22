@@ -58,7 +58,7 @@ class MessageConsumerTest {
             })
         .when(mockMailInterface)
         .sendMailVc(MAIL, CODE);
-    messageBrokerClient.publishMailVcRequest(MAIL, CODE);
+    messageBrokerClient.publishMailVc(MAIL, CODE);
 
     Thread thread = new Thread(messageConsumer);
     thread.start();

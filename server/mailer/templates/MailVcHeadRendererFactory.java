@@ -18,7 +18,7 @@ public class MailVcHeadRendererFactory implements TemplateRendererFactory {
     private final JtwigModel model;
 
     MailVcHeadRenderer() {
-      this.model = new JtwigModel();
+      this.model = JtwigModel.newModel();
     }
 
     public MailVcHeadRenderer setCode(String code) {

@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 import javax.inject.Singleton;
 import keyring.server.mailer.templates.MailVcBodyRendererFactory;
 import keyring.server.mailer.templates.MailVcHeadRendererFactory;
+import keyring.server.mailer.templates.UncompletedAuthnBodyRendererFactory;
+import keyring.server.mailer.templates.UncompletedAuthnHeadRendererFactory;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisSentinelPool;
@@ -53,8 +55,13 @@ class AppModule {
     private static final Logger logger = Logger.getLogger(LocalMailInterface.class.getName());
 
     @Override
-    public void sendMailVc(String address, String code) {
-      logger.info(String.format("sendMailVc(%s, %s)", address, code));
+    public void sendMailVc(String to, String code) {
+      logger.info(String.format("sendMailVc(%s, %s)", to, code));
+    }
+
+    @Override
+    public void sendUncompletedAuthn(String to, String ipAddress) {
+      logger.info(String.format("sendUncompletedAuthn(%s, %s)", to, ipAddress));
     }
   }
 
@@ -62,10 +69,16 @@ class AppModule {
   static MailInterface provideMailInterface(
       Environment environment,
       Lazy<MailVcHeadRendererFactory> mailVcHeadRendererFactory,
-      Lazy<MailVcBodyRendererFactory> mailVcBodyRendererFactory) {
+      Lazy<MailVcBodyRendererFactory> mailVcBodyRendererFactory,
+      Lazy<UncompletedAuthnHeadRendererFactory> uncompletedAuthnHeadRendererFactory,
+      Lazy<UncompletedAuthnBodyRendererFactory> uncompletedAuthnBodyRendererFactory) {
     if (environment.isProduction()) {
       return new MailClient(
-          environment, mailVcHeadRendererFactory.get(), mailVcBodyRendererFactory.get());
+          environment,
+          mailVcHeadRendererFactory.get(),
+          mailVcBodyRendererFactory.get(),
+          uncompletedAuthnHeadRendererFactory.get(),
+          uncompletedAuthnBodyRendererFactory.get());
     }
     return new LocalMailInterface();
   }

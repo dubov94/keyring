@@ -18,7 +18,7 @@ public class MailVcBodyRendererFactory implements TemplateRendererFactory {
     private final JtwigModel model;
 
     MailVcBodyRenderer() {
-      this.model = new JtwigModel();
+      this.model = JtwigModel.newModel();
     }
 
     public MailVcBodyRenderer setCode(String code) {

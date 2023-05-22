@@ -150,7 +150,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     accountOperationsInterface.activateSession(
         userId, sessionId, ipAddress, keyValueClient.convertSessionTokenToKey(sessionToken));
     keyValueClient.createSession(sessionToken, userId, sessionId);
-    messageBrokerClient.publishMailVcRequest(mail, code);
+    messageBrokerClient.publishMailVc(mail, code);
     return Either.right(
         builder.setSessionKey(sessionToken).setMailTokenId(entities._2.getIdentifier()).build());
   }

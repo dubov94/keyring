@@ -309,7 +309,7 @@ class AdministrationServiceTest {
         AcquireMailTokenRequest.newBuilder().setDigest("digest").setMail("user@mail.com").build(),
         mockStreamObserver);
 
-    verify(mockMessageBrokerClient).publishMailVcRequest("user@mail.com", "17");
+    verify(mockMessageBrokerClient).publishMailVc("user@mail.com", "17");
     verify(mockStreamObserver).onNext(AcquireMailTokenResponse.newBuilder().setTokenId(1L).build());
     verify(mockStreamObserver).onCompleted();
   }

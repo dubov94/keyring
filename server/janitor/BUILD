@@ -26,6 +26,7 @@ java_library(
         "@maven//:com_google_guava_guava",
         "@maven//:javax_inject_javax_inject",
         "@maven//:javax_persistence_javax_persistence_api",
+        "@maven//:redis_clients_jedis",
     ],
 )
 

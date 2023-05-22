@@ -24,6 +24,26 @@ java_library(
 )
 
 java_library(
+    name = "uncompleted_authn_head_renderer_factory",
+    srcs = ["UncompletedAuthnHeadRendererFactory.java"],
+    visibility = ["//server:internal"],
+    deps = [
+        ":template_renderer_factory",
+        "@maven//:org_jtwig_jtwig_core",
+    ],
+)
+
+java_library(
+    name = "uncompleted_authn_body_renderer_factory",
+    srcs = ["UncompletedAuthnBodyRendererFactory.java"],
+    visibility = ["//server:internal"],
+    deps = [
+        ":template_renderer_factory",
+        "@maven//:org_jtwig_jtwig_core",
+    ],
+)
+
+java_library(
     name = "templates_module",
     srcs = ["TemplatesModule.java"],
     plugins = [
@@ -33,6 +53,8 @@ java_library(
     deps = [
         ":mail_vc_body_renderer_factory",
         ":mail_vc_head_renderer_factory",
+        ":uncompleted_authn_body_renderer_factory",
+        ":uncompleted_authn_head_renderer_factory",
         "@maven//:com_google_dagger_dagger",
         "@maven//:javax_inject_javax_inject",
         "@maven//:org_jtwig_jtwig_core",

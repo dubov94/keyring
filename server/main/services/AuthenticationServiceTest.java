@@ -167,7 +167,7 @@ class AuthenticationServiceTest {
     verify(mockAccountOperationsInterface).createSession(1L, 0L, IP_ADDRESS, USER_AGENT, VERSION);
     verify(mockKeyValueClient).createSession(sessionToken, 1L, 3L);
     verify(mockAccountOperationsInterface).activateSession(1L, 3L, IP_ADDRESS, "key");
-    verify(mockMessageBrokerClient).publishMailVcRequest("mail@example.com", "0");
+    verify(mockMessageBrokerClient).publishMailVc("mail@example.com", "0");
     verify(mockStreamObserver)
         .onNext(
             RegisterResponse.newBuilder().setSessionKey(sessionToken).setMailTokenId(2L).build());

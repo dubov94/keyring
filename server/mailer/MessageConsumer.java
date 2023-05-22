@@ -1,5 +1,6 @@
 package keyring.server.mailer;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
@@ -7,16 +8,20 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.protobuf.InvalidProtocolBufferException;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
-import keyring.server.mailer.requests.MailVcRequest;
+import keyring.server.mailer.requests.MailVc;
 import keyring.server.mailer.requests.MailerRequest;
+import keyring.server.mailer.requests.UncompletedAuthn;
 import org.apache.commons.lang3.time.DateUtils;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.StreamEntryID;
@@ -43,9 +48,17 @@ class MessageConsumer implements Runnable {
     READ_UNRECEIVED
   }
 
-  private static final class FailureLoggingCallback implements FutureCallback<Void> {
+  private static final class ConsumerCallback implements FutureCallback<Void> {
+    private CountDownLatch latch;
+
+    ConsumerCallback(CountDownLatch latch) {
+      this.latch = latch;
+    }
+
     @Override
-    public void onSuccess(Void result) {}
+    public void onSuccess(Void result) {
+      latch.countDown();
+    }
 
     @Override
     public void onFailure(Throwable throwable) {
@@ -115,37 +128,62 @@ class MessageConsumer implements Runnable {
     return Optional.of(Iterables.getOnlyElement(streamToEntries).getValue());
   }
 
-  private void routeRequest(StreamEntry entry) {
-    MailerRequest mailerRequest = MailerRequest.getDefaultInstance();
-    try {
-      mailerRequest =
-          MailerRequest.parseFrom(
-              base64Decoder.decode(entry.getFields().get(BrokerKeys.REQUEST_FIELD)));
-    } catch (InvalidProtocolBufferException exception) {
-      logger.severe(
-          String.format(
-              "Unable to parse `MailerRequest` from `%s`: %s",
-              entry.getID(), exception.getMessage()));
-    }
+  private Optional<Runnable> routeRequest(MailerRequest mailerRequest) {
     MailerRequest.RequestCase requestCase = mailerRequest.getRequestCase();
     switch (requestCase) {
-      case MAIL_VC_REQUEST:
-        MailVcRequest mailVcRequest = mailerRequest.getMailVcRequest();
-        ListenableFuture<Void> future =
-            executorService.submit(
-                () -> mailInterface.sendMailVc(mailVcRequest.getMail(), mailVcRequest.getCode()),
-                null);
-        Futures.addCallback(future, new FailureLoggingCallback(), executorService);
-        break;
+      case MAIL_VC:
+        MailVc mailVc = mailerRequest.getMailVc();
+        return Optional.of(() -> mailInterface.sendMailVc(mailVc.getMail(), mailVc.getCode()));
+      case UNCOMPLETED_AUTHN:
+        UncompletedAuthn uncompletedAuthn = mailerRequest.getUncompletedAuthn();
+        return Optional.of(
+            () ->
+                mailInterface.sendUncompletedAuthn(
+                    uncompletedAuthn.getMail(), uncompletedAuthn.getIpAddress()));
       default:
         logger.severe(String.format("Unsupported `RequestCase`: %s", requestCase.name()));
     }
+    return Optional.empty();
   }
 
   private void consumeRequests(Jedis jedis, List<StreamEntry> entries) {
+    ImmutableList.Builder<Tuple2<StreamEntryID, Runnable>> itemsBuilder = ImmutableList.builder();
     for (StreamEntry entry : entries) {
-      routeRequest(entry);
-      acknowledge(jedis, entry.getID());
+      StreamEntryID entryId = entry.getID();
+      MailerRequest mailerRequest = MailerRequest.getDefaultInstance();
+      try {
+        mailerRequest =
+            MailerRequest.parseFrom(
+                base64Decoder.decode(entry.getFields().get(BrokerKeys.REQUEST_FIELD)));
+      } catch (InvalidProtocolBufferException exception) {
+        logger.severe(
+            String.format(
+                "Unable to parse `MailerRequest` from `%s`: %s", entryId, exception.getMessage()));
+        continue;
+      }
+      Optional<Runnable> route = routeRequest(mailerRequest);
+      if (!route.isPresent()) {
+        continue;
+      }
+      itemsBuilder.add(Tuple.of(entryId, route.get()));
+    }
+    ImmutableList<Tuple2<StreamEntryID, Runnable>> items = itemsBuilder.build();
+    CountDownLatch latch = new CountDownLatch(items.size());
+    ConsumerCallback callback = new ConsumerCallback(latch);
+    for (Tuple2<StreamEntryID, Runnable> item : items) {
+      ListenableFuture<Void> future =
+          executorService.submit(
+              () -> {
+                item._2.run();
+                acknowledge(jedis, item._1);
+              },
+              null);
+      Futures.addCallback(future, callback, executorService);
+    }
+    try {
+      latch.await();
+    } catch (InterruptedException exception) {
+      logger.severe(String.format("`CountDownLatch::await` exception: %s", exception.getMessage()));
     }
   }
 

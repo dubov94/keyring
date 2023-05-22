@@ -5,13 +5,19 @@ package server.mailer.requests;
 option java_multiple_files = true;
 option java_package = "keyring.server.mailer.requests";
 
-message MailVcRequest {
+message MailVc {
     string mail = 1;
     string code = 2;
 }
 
+message UncompletedAuthn {
+    string mail = 1;
+    string ip_address = 2;
+}
+
 message MailerRequest {
     oneof request {
-        MailVcRequest mail_vc_request = 1;
+        MailVc mail_vc = 1;
+        UncompletedAuthn uncompleted_authn = 2;
     }
 }

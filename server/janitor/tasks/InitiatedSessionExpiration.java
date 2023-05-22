@@ -15,15 +15,18 @@ import keyring.server.main.aspects.Annotations.WithEntityTransaction;
 import keyring.server.main.entities.Session;
 import keyring.server.main.entities.Session_;
 import keyring.server.main.entities.columns.SessionStage;
+import keyring.server.main.messagebroker.MessageBrokerClient;
 
 public final class InitiatedSessionExpiration implements Runnable {
   private Chronometry chronometry;
+  private MessageBrokerClient messageBrokerClient;
 
   @ContextualEntityManager private EntityManager entityManager;
 
   @Inject
-  InitiatedSessionExpiration(Chronometry chronometry) {
+  InitiatedSessionExpiration(Chronometry chronometry, MessageBrokerClient messageBrokerClient) {
     this.chronometry = chronometry;
+    this.messageBrokerClient = messageBrokerClient;
   }
 
   @WithEntityManager
@@ -48,6 +51,8 @@ public final class InitiatedSessionExpiration implements Runnable {
             .setLockMode(LockModeType.PESSIMISTIC_WRITE)
             .getResultList();
     for (Session entity : entities) {
+      messageBrokerClient.publishUncompletedAuthn(
+          entity.getUser().getMail(), entity.getIpAddress());
       entity.setStage(SessionStage.SESSION_DISABLED, chronometry.currentTime());
       entityManager.persist(entity);
     }
