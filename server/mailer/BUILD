@@ -43,7 +43,6 @@ java_library(
         ":mail_interface",
         ":requests_java_proto",
         "@maven//:com_google_guava_guava",
-        "@maven//:io_vavr_vavr",
         "@maven//:javax_inject_javax_inject",
         "@maven//:org_apache_commons_commons_lang3",
         "@maven//:redis_clients_jedis",

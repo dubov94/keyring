@@ -8,14 +8,11 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.vavr.Tuple;
-import io.vavr.Tuple2;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -48,17 +45,9 @@ class MessageConsumer implements Runnable {
     READ_UNRECEIVED
   }
 
-  private static final class ConsumerCallback implements FutureCallback<Void> {
-    private CountDownLatch latch;
-
-    ConsumerCallback(CountDownLatch latch) {
-      this.latch = latch;
-    }
-
+  private static final class FailureLoggingCallback implements FutureCallback<Void> {
     @Override
-    public void onSuccess(Void result) {
-      latch.countDown();
-    }
+    public void onSuccess(Void result) {}
 
     @Override
     public void onFailure(Throwable throwable) {
@@ -147,7 +136,7 @@ class MessageConsumer implements Runnable {
   }
 
   private void consumeRequests(Jedis jedis, List<StreamEntry> entries) {
-    ImmutableList.Builder<Tuple2<StreamEntryID, Runnable>> itemsBuilder = ImmutableList.builder();
+    ImmutableList.Builder<ListenableFuture> futuresBuilder = ImmutableList.builder();
     for (StreamEntry entry : entries) {
       StreamEntryID entryId = entry.getID();
       MailerRequest mailerRequest = MailerRequest.getDefaultInstance();
@@ -165,26 +154,18 @@ class MessageConsumer implements Runnable {
       if (!route.isPresent()) {
         continue;
       }
-      itemsBuilder.add(Tuple.of(entryId, route.get()));
-    }
-    ImmutableList<Tuple2<StreamEntryID, Runnable>> items = itemsBuilder.build();
-    CountDownLatch latch = new CountDownLatch(items.size());
-    ConsumerCallback callback = new ConsumerCallback(latch);
-    for (Tuple2<StreamEntryID, Runnable> item : items) {
       ListenableFuture<Void> future =
           executorService.submit(
               () -> {
-                item._2.run();
-                acknowledge(jedis, item._1);
+                route.get().run();
+                acknowledge(jedis, entryId);
               },
               null);
-      Futures.addCallback(future, callback, executorService);
+      Futures.addCallback(future, new FailureLoggingCallback(), executorService);
+      futuresBuilder.add(future);
     }
-    try {
-      latch.await();
-    } catch (InterruptedException exception) {
-      logger.severe(String.format("`CountDownLatch::await` exception: %s", exception.getMessage()));
-    }
+    Futures.getUnchecked(
+        Futures.successfulAsList(futuresBuilder.build().toArray(new ListenableFuture[0])));
   }
 
   private void acknowledge(Jedis jedis, StreamEntryID entryId) {
