@@ -89,7 +89,9 @@ import {
   ServiceAcceptOtpParamsResponseError,
   ServiceResetOtpResponseError
 } from '@/api/definitions'
+import { remoteDataErrorIndicator } from '@/components/form_validators'
 import { isActionSuccess } from '@/redux/flow_signal'
+import { showToast } from '@/redux/modules/ui/toast/actions'
 import {
   generateOtpParams,
   otpParamsGenerationReset,
@@ -112,7 +114,6 @@ import {
   otpReset
 } from '@/redux/modules/user/account/selectors'
 import { hasIndicator, data } from '@/redux/remote_data'
-import { remoteDataErrorIndicator } from '@/components/form_validators'
 
 const activationIncorrectValidator = remoteDataErrorIndicator(ServiceAcceptOtpParamsResponseError.INVALIDCODE)
 const deactivationIncorrectValidator = remoteDataErrorIndicator(ServiceResetOtpResponseError.INVALIDCODE)
@@ -199,6 +200,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.$v.activation.$reset()
       this.dispatch(otpParamsGenerationReset())
       this.dispatch(otpParamsAcceptanceReset())
+      this.dispatch(showToast({ message: this.$t('DONE') as string }))
     })
     this.$data.$actions.pipe(
       filter(isActionSuccess(otpResetSignal)),
@@ -208,6 +210,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.deactivation.untouchedSinceDispatch = false
       this.$v.deactivation.$reset()
       this.dispatch(cancelOtpReset())
+      this.dispatch(showToast({ message: this.$t('DONE') as string }))
     })
   },
   methods: {
