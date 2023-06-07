@@ -59,7 +59,7 @@ public class KeyValueClient {
     }
   }
 
-  public Optional<KvSession> getExSession(String sessionToken) {
+  public Optional<KvSession> getExKvSession(String sessionToken) {
     try (Jedis jedis = jedisPool.getResource()) {
       String sessionKey = convertSessionTokenToKey(sessionToken);
       Optional<String> serializedKvSession =

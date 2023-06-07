@@ -52,7 +52,7 @@ class KeyValueClientTest {
     assertEquals(sessionToken, kvSession.getSessionToken());
     assertEquals(1L, kvSession.getUserId());
     assertEquals(7L, kvSession.getSessionEntityId());
-    assertEquals(Optional.of(kvSession), keyValueClient.getExSession(sessionToken));
+    assertEquals(Optional.of(kvSession), keyValueClient.getExKvSession(sessionToken));
   }
 
   @Test
@@ -68,19 +68,19 @@ class KeyValueClientTest {
   }
 
   @Test
-  void getExSession_noSuchToken_returnsEmpty() {
-    assertFalse(keyValueClient.getExSession(generateUniqueToken()).isPresent());
+  void getExKvSession_noSuchToken_returnsEmpty() {
+    assertFalse(keyValueClient.getExKvSession(generateUniqueToken()).isPresent());
   }
 
   @Test
-  void getExSession_findToken_updatesExpirationTime() throws Exception {
+  void getExKvSession_findToken_updatesExpirationTime() throws Exception {
     try (Jedis jedis = jedisPool.getResource()) {
       String sessionToken = generateUniqueToken();
       keyValueClient.createSession(sessionToken, 1L, 7L);
       Thread.sleep(8 + 2);
       long ttlBefore = jedis.pttl("session:" + sessionToken);
 
-      Optional<KvSession> storedKvSession = keyValueClient.getExSession(sessionToken);
+      Optional<KvSession> storedKvSession = keyValueClient.getExKvSession(sessionToken);
       long ttlAfter = jedis.pttl("session:" + sessionToken);
 
       assertEquals(1L, storedKvSession.get().getUserId());

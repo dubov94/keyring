@@ -26,7 +26,7 @@ public class SessionInterceptor implements ServerInterceptor {
     if (sessionToken == null) {
       return Either.left(Status.UNAUTHENTICATED);
     }
-    Optional<KvSession> kvSession = keyValueClient.getExSession(sessionToken);
+    Optional<KvSession> kvSession = keyValueClient.getExKvSession(sessionToken);
     // We might want to have `ip_address` in `KvSession` eventually to ensure
     // that all requests are coming from the same IP address.
     if (!kvSession.isPresent()) {
