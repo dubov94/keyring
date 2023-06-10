@@ -9,6 +9,7 @@ message KvAuthn {
     string authn_token = 1;
     int64 creation_time_millis = 2;
     int64 user_id = 3;
+    string ip_address = 5;
     int64 session_entity_id = 4;
 }
 
@@ -16,5 +17,6 @@ message KvSession {
     string session_token = 1;
     int64 creation_time_millis = 2;
     int64 user_id = 3;
+    string ip_address = 5;
     int64 session_entity_id = 4;
 }

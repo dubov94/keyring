@@ -35,6 +35,7 @@ java_library(
     srcs = ["SessionInterceptor.java"],
     visibility = ["//server:internal"],
     deps = [
+        ":agent_accessor",
         ":session_accessor",
         "//server/main/keyvalue:key_value_client",
         "//server/main/keyvalue:values_java_proto",

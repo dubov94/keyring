@@ -39,8 +39,8 @@ import keyring.server.main.entities.columns.UserState;
 import keyring.server.main.geolocation.GeolocationServiceInterface;
 import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.SessionAccessor;
+import keyring.server.main.interceptors.VersionAccessor;
 import keyring.server.main.keyvalue.KeyValueClient;
-import keyring.server.main.keyvalue.values.KvSession;
 import keyring.server.main.messagebroker.MessageBrokerClient;
 import keyring.server.main.proto.service.AcceptOtpParamsRequest;
 import keyring.server.main.proto.service.AcceptOtpParamsResponse;
@@ -96,6 +96,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   private Chronometry chronometry;
   private MailValidation mailValidation;
   private AgentAccessor agentAccessor;
+  private VersionAccessor versionAccessor;
 
   private static final int OTP_TTS_COUNT = 5;
   private static final String OTP_ISSUER = "parolica.com";
@@ -112,7 +113,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       IGoogleAuthenticator googleAuthenticator,
       Chronometry chronometry,
       MailValidation mailValidation,
-      AgentAccessor agentAccessor) {
+      AgentAccessor agentAccessor,
+      VersionAccessor versionAccessor) {
     this.keyOperationsInterface = keyOperationsInterface;
     this.accountOperationsInterface = accountOperationsInterface;
     this.geolocationServiceInterface = geolocationServiceInterface;
@@ -124,6 +126,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     this.chronometry = chronometry;
     this.mailValidation = mailValidation;
     this.agentAccessor = agentAccessor;
+    this.versionAccessor = versionAccessor;
   }
 
   private Either<StatusException, AcquireMailTokenResponse> _acquireMailToken(
@@ -312,8 +315,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (validation.isPresent()) {
       return Either.left(validation.get());
     }
-    KvSession oldKvSession = sessionAccessor.getKvSession();
-    long userId = oldKvSession.getUserId();
+    long userId = sessionAccessor.getUserId();
     Optional<User> maybeUser = accountOperationsInterface.getUserById(userId);
     if (!maybeUser.isPresent()) {
       return Either.left(new StatusException(Status.ABORTED));
@@ -334,24 +336,19 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
             renewal.getKeysList());
     keyValueClient.safelyDeleteSeRefs(disabledSessions);
 
-    Session oldSessionRecord =
-        accountOperationsInterface.mustGetSession(userId, oldKvSession.getSessionEntityId());
-    String newIpAddress = agentAccessor.getIpAddress();
     Session newSessionRecord =
         accountOperationsInterface.createSession(
             userId,
             user.getVersion(),
-            newIpAddress,
-            oldSessionRecord.getUserAgent(),
-            oldSessionRecord.getClientVersion());
+            agentAccessor.getIpAddress(),
+            agentAccessor.getUserAgent(),
+            versionAccessor.getVersion());
     long newSessionId = newSessionRecord.getIdentifier();
     String newSessionToken = cryptography.generateTts();
     accountOperationsInterface.activateSession(
-        userId,
-        newSessionId,
-        newIpAddress,
-        keyValueClient.convertSessionTokenToKey(newSessionToken));
-    keyValueClient.createSession(newSessionToken, userId, newSessionId);
+        userId, newSessionId, keyValueClient.convertSessionTokenToKey(newSessionToken));
+    keyValueClient.createSession(
+        newSessionToken, userId, agentAccessor.getIpAddress(), newSessionId);
     return Either.right(builder.setSessionKey(newSessionToken).build());
   }
 

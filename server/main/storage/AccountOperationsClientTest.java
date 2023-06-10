@@ -289,41 +289,15 @@ class AccountOperationsClientTest {
 
   @Test
   @WithEntityManager
-  void initiateSession_checksIp() {
-    Tuple2<Long, Long> userRefs = createActiveUser();
-    long userId = userRefs._1;
-    long sessionId =
-        accountOperationsClient
-            .createSession(userId, userRefs._2, "127.0.0.1", "Chrome/0.0.0", "version")
-            .getIdentifier();
-
-    StorageException exception =
-        assertThrows(
-            StorageException.class,
-            () ->
-                accountOperationsClient.initiateSession(
-                    userId, sessionId, "127.0.0.2", "prefix:initiation-key"));
-
-    assertEquals(
-        String.format(
-            "java.lang.IllegalArgumentException:"
-                + " 127.0.0.2 does not match the IP address of session %d",
-            sessionId),
-        exception.getMessage());
-  }
-
-  @Test
-  @WithEntityManager
   void initiateSession_setsSession() {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
-    String ipAddress = "127.0.0.1";
     long sessionId =
         accountOperationsClient
-            .createSession(userId, userRefs._2, ipAddress, "Chrome/0.0.0", "version")
+            .createSession(userId, userRefs._2, IP_ADDRESS, "Chrome/0.0.0", "version")
             .getIdentifier();
 
-    accountOperationsClient.initiateSession(userId, sessionId, ipAddress, "prefix:initiation-key");
+    accountOperationsClient.initiateSession(userId, sessionId, "prefix:initiation-key");
 
     Session session = accountOperationsClient.mustGetSession(userId, sessionId);
     assertEquals("prefix:initiation-key", session.getKey());
@@ -332,42 +306,16 @@ class AccountOperationsClientTest {
 
   @Test
   @WithEntityManager
-  void activateSession_checksIp() {
-    Tuple2<Long, Long> userRefs = createActiveUser();
-    long userId = userRefs._1;
-    long sessionId =
-        accountOperationsClient
-            .createSession(userId, userRefs._2, "127.0.0.1", "Chrome/0.0.0", "version")
-            .getIdentifier();
-
-    StorageException exception =
-        assertThrows(
-            StorageException.class,
-            () ->
-                accountOperationsClient.activateSession(
-                    userId, sessionId, "127.0.0.2", "prefix:initiation-key"));
-
-    assertEquals(
-        String.format(
-            "java.lang.IllegalArgumentException:"
-                + " 127.0.0.2 does not match the IP address of session %d",
-            sessionId),
-        exception.getMessage());
-  }
-
-  @Test
-  @WithEntityManager
   void activateSession_setsSession() {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
-    String ipAddress = "127.0.0.1";
     long sessionId =
         accountOperationsClient
-            .createSession(userId, userRefs._2, ipAddress, "Chrome/0.0.0", "version")
+            .createSession(userId, userRefs._2, IP_ADDRESS, "Chrome/0.0.0", "version")
             .getIdentifier();
-    accountOperationsClient.initiateSession(userId, sessionId, ipAddress, "before:initiation-key");
+    accountOperationsClient.initiateSession(userId, sessionId, "before:initiation-key");
 
-    accountOperationsClient.activateSession(userId, sessionId, ipAddress, "after:activation-key");
+    accountOperationsClient.activateSession(userId, sessionId, "after:activation-key");
 
     Session session = accountOperationsClient.mustGetSession(userId, sessionId);
     assertEquals("after:activation-key", session.getKey());
@@ -583,15 +531,14 @@ class AccountOperationsClientTest {
   }
 
   private long createActiveSession(long userId, long userVersion) {
-    String ipAddress = "127.0.0.1";
     long sessionId =
         accountOperationsClient
-            .createSession(userId, userVersion, ipAddress, "Chrome/0.0.0", "version")
+            .createSession(userId, userVersion, IP_ADDRESS, "Chrome/0.0.0", "version")
             .getIdentifier();
     accountOperationsClient.initiateSession(
-        userId, sessionId, ipAddress, String.format("authn:%s", newRandomUuid()));
+        userId, sessionId, String.format("authn:%s", newRandomUuid()));
     accountOperationsClient.activateSession(
-        userId, sessionId, ipAddress, String.format("session:%s", newRandomUuid()));
+        userId, sessionId, String.format("session:%s", newRandomUuid()));
     return sessionId;
   }
 }

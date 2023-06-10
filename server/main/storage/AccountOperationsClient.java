@@ -303,14 +303,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public void initiateSession(long userId, long sessionId, String ipAddress, String key) {
+  public void initiateSession(long userId, long sessionId, String key) {
     Session session = mustGetSession(userId, sessionId);
-    if (!Objects.equals(session.getIpAddress(), ipAddress)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "%s does not match the IP address of session %d",
-              ipAddress, session.getIdentifier()));
-    }
     _initiateSession(session, key);
   }
 
@@ -335,14 +329,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public void activateSession(long userId, long sessionId, String ipAddress, String key) {
+  public void activateSession(long userId, long sessionId, String key) {
     Session session = mustGetSession(userId, sessionId);
-    if (!Objects.equals(session.getIpAddress(), ipAddress)) {
-      throw new IllegalArgumentException(
-          String.format(
-              "%s does not match the IP address of session %d",
-              ipAddress, session.getIdentifier()));
-    }
     _activateSession(session, key);
     _updateLastSession(session.getUser(), session.getTimestamp());
   }

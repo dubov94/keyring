@@ -364,12 +364,11 @@ class KeyOperationsClientTest {
 
   private long createActiveSession(User user) {
     long userId = user.getIdentifier();
-    String ipAddress = "127.0.0.1";
-    long sessionId = createNewSession(userId, user.getVersion(), ipAddress);
+    long sessionId = createNewSession(userId, user.getVersion(), "127.0.0.1");
     accountOperationsClient.initiateSession(
-        userId, sessionId, ipAddress, String.format("authn:%s", newRandomUuid()));
+        userId, sessionId, String.format("authn:%s", newRandomUuid()));
     accountOperationsClient.activateSession(
-        userId, sessionId, ipAddress, String.format("session:%s", newRandomUuid()));
+        userId, sessionId, String.format("session:%s", newRandomUuid()));
     return sessionId;
   }
 }

@@ -14,10 +14,12 @@ import keyring.server.main.keyvalue.KeyValueClient;
 import keyring.server.main.keyvalue.values.KvSession;
 
 public class SessionInterceptor implements ServerInterceptor {
+  private AgentAccessor agentAccessor;
   private KeyValueClient keyValueClient;
 
   @Inject
-  SessionInterceptor(KeyValueClient keyValueClient) {
+  SessionInterceptor(AgentAccessor agentAccessor, KeyValueClient keyValueClient) {
+    this.agentAccessor = agentAccessor;
     this.keyValueClient = keyValueClient;
   }
 
@@ -26,9 +28,8 @@ public class SessionInterceptor implements ServerInterceptor {
     if (sessionToken == null) {
       return Either.left(Status.UNAUTHENTICATED);
     }
-    Optional<KvSession> kvSession = keyValueClient.getExKvSession(sessionToken);
-    // We might want to have `ip_address` in `KvSession` eventually to ensure
-    // that all requests are coming from the same IP address.
+    Optional<KvSession> kvSession =
+        keyValueClient.getExKvSession(sessionToken, agentAccessor.getIpAddress());
     if (!kvSession.isPresent()) {
       return Either.left(Status.UNAUTHENTICATED);
     }

@@ -148,8 +148,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
             versionAccessor.getVersion());
     long sessionId = session.getIdentifier();
     accountOperationsInterface.activateSession(
-        userId, sessionId, ipAddress, keyValueClient.convertSessionTokenToKey(sessionToken));
-    keyValueClient.createSession(sessionToken, userId, sessionId);
+        userId, sessionId, keyValueClient.convertSessionTokenToKey(sessionToken));
+    keyValueClient.createSession(sessionToken, userId, ipAddress, sessionId);
     messageBrokerClient.publishMailVc(mail, code);
     return Either.right(
         builder.setSessionKey(sessionToken).setMailTokenId(entities._2.getIdentifier()).build());
@@ -235,8 +235,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     if (user.getOtpSharedSecret() != null) {
       String authnToken = cryptography.generateTts();
       accountOperationsInterface.initiateSession(
-          userId, sessionEntityId, ipAddress, keyValueClient.convertAuthnTokenToKey(authnToken));
-      keyValueClient.createAuthn(authnToken, userId, sessionEntityId);
+          userId, sessionEntityId, keyValueClient.convertAuthnTokenToKey(authnToken));
+      keyValueClient.createAuthn(authnToken, userId, ipAddress, sessionEntityId);
       return builder
           .setOtpContext(
               OtpContext.newBuilder()
@@ -246,8 +246,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     }
     String sessionToken = cryptography.generateTts();
     accountOperationsInterface.activateSession(
-        userId, sessionEntityId, ipAddress, keyValueClient.convertSessionTokenToKey(sessionToken));
-    keyValueClient.createSession(sessionToken, userId, sessionEntityId);
+        userId, sessionEntityId, keyValueClient.convertSessionTokenToKey(sessionToken));
+    keyValueClient.createSession(sessionToken, userId, ipAddress, sessionEntityId);
     return builder.setUserData(newUserData(sessionEntityId, sessionToken, user)).build();
   }
 
@@ -261,7 +261,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private Either<StatusException, ProvideOtpResponse> _provideOtp(ProvideOtpRequest request) {
     ProvideOtpResponse.Builder builder = ProvideOtpResponse.newBuilder();
     String authnKey = request.getAuthnKey();
-    Optional<KvAuthn> maybeKvAuthn = keyValueClient.getKvAuthn(authnKey);
+    Optional<KvAuthn> maybeKvAuthn =
+        keyValueClient.getKvAuthn(authnKey, agentAccessor.getIpAddress());
     if (!maybeKvAuthn.isPresent()) {
       return Either.left(new StatusException(Status.UNAUTHENTICATED));
     }
@@ -308,11 +309,9 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     long sessionEntityId = kvAuthn.getSessionEntityId();
     String sessionToken = cryptography.generateTts();
     accountOperationsInterface.activateSession(
-        userId,
-        sessionEntityId,
-        agentAccessor.getIpAddress(),
-        keyValueClient.convertSessionTokenToKey(sessionToken));
-    keyValueClient.createSession(sessionToken, userId, sessionEntityId);
+        userId, sessionEntityId, keyValueClient.convertSessionTokenToKey(sessionToken));
+    keyValueClient.createSession(
+        sessionToken, userId, agentAccessor.getIpAddress(), sessionEntityId);
     return Either.right(
         builder.setUserData(newUserData(sessionEntityId, sessionToken, user)).build());
   }

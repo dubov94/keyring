@@ -31,6 +31,8 @@ class KeyValueClientTest {
   public GenericContainer redisContainer =
       new GenericContainer(DockerImageName.parse("redis")).withExposedPorts(6379);
 
+  private static final String IP_ADDRESS = "127.0.0.1";
+
   private static JedisPool jedisPool;
   private KeyValueClient keyValueClient;
 
@@ -47,40 +49,51 @@ class KeyValueClientTest {
   void createSession_getsUniqueToken_putsKeyToKvSession() {
     String sessionToken = generateUniqueToken();
 
-    KvSession kvSession = keyValueClient.createSession(sessionToken, 1L, 7L);
+    KvSession kvSession = keyValueClient.createSession(sessionToken, 1L, IP_ADDRESS, 7L);
 
     assertEquals(sessionToken, kvSession.getSessionToken());
     assertEquals(1L, kvSession.getUserId());
     assertEquals(7L, kvSession.getSessionEntityId());
-    assertEquals(Optional.of(kvSession), keyValueClient.getExKvSession(sessionToken));
+    assertEquals(Optional.of(kvSession), keyValueClient.getExKvSession(sessionToken, IP_ADDRESS));
   }
 
   @Test
   void createSession_getsDuplicateToken_throwsException() {
     String sessionToken = generateUniqueToken();
-    keyValueClient.createSession(sessionToken, 1L, 7L);
+    keyValueClient.createSession(sessionToken, 1L, IP_ADDRESS, 7L);
 
     KeyValueException exception =
         assertThrows(
-            KeyValueException.class, () -> keyValueClient.createSession(sessionToken, 2L, 14L));
+            KeyValueException.class,
+            () -> keyValueClient.createSession(sessionToken, 2L, IP_ADDRESS, 14L));
 
     assertTrue(exception.getMessage().endsWith("#nil-reply"));
   }
 
   @Test
   void getExKvSession_noSuchToken_returnsEmpty() {
-    assertFalse(keyValueClient.getExKvSession(generateUniqueToken()).isPresent());
+    assertFalse(keyValueClient.getExKvSession(generateUniqueToken(), IP_ADDRESS).isPresent());
   }
 
   @Test
-  void getExKvSession_findToken_updatesExpirationTime() throws Exception {
+  void getExKvSession_ipMismatch_returnsEmpty() {
     try (Jedis jedis = jedisPool.getResource()) {
       String sessionToken = generateUniqueToken();
-      keyValueClient.createSession(sessionToken, 1L, 7L);
+      keyValueClient.createSession(sessionToken, 1L, IP_ADDRESS, 7L);
+
+      assertFalse(keyValueClient.getExKvSession(sessionToken, "0.0.0.0").isPresent());
+    }
+  }
+
+  @Test
+  void getExKvSession_findsToken_updatesExpirationTime() throws Exception {
+    try (Jedis jedis = jedisPool.getResource()) {
+      String sessionToken = generateUniqueToken();
+      keyValueClient.createSession(sessionToken, 1L, IP_ADDRESS, 7L);
       Thread.sleep(8 + 2);
       long ttlBefore = jedis.pttl("session:" + sessionToken);
 
-      Optional<KvSession> storedKvSession = keyValueClient.getExKvSession(sessionToken);
+      Optional<KvSession> storedKvSession = keyValueClient.getExKvSession(sessionToken, IP_ADDRESS);
       long ttlAfter = jedis.pttl("session:" + sessionToken);
 
       assertEquals(1L, storedKvSession.get().getUserId());
@@ -92,12 +105,22 @@ class KeyValueClientTest {
   void createAuthn_getsUniqueToken_putsKeyToKvAuthn() {
     String authnToken = generateUniqueToken();
 
-    KvAuthn kvAuthn = keyValueClient.createAuthn(authnToken, 1L, 7L);
+    KvAuthn kvAuthn = keyValueClient.createAuthn(authnToken, 1L, IP_ADDRESS, 7L);
 
     assertEquals(authnToken, kvAuthn.getAuthnToken());
     assertEquals(1L, kvAuthn.getUserId());
     assertEquals(7L, kvAuthn.getSessionEntityId());
-    assertEquals(Optional.of(kvAuthn), keyValueClient.getKvAuthn(authnToken));
+    assertEquals(Optional.of(kvAuthn), keyValueClient.getKvAuthn(authnToken, IP_ADDRESS));
+  }
+
+  @Test
+  void getKvAuthn_ipMismatch_returnsEmpty() {
+    try (Jedis jedis = jedisPool.getResource()) {
+      String authnToken = generateUniqueToken();
+      keyValueClient.createAuthn(authnToken, 1L, IP_ADDRESS, 7L);
+
+      assertFalse(keyValueClient.getKvAuthn(authnToken, "0.0.0.0").isPresent());
+    }
   }
 
   private String generateUniqueToken() {

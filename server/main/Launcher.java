@@ -44,12 +44,12 @@ class Launcher {
     server =
         ServerBuilder.forPort(port)
             .addService(
-                ServerInterceptors.intercept(
+                ServerInterceptors.interceptForward(
                     appComponent.authenticationService(),
                     appComponent.versionInterceptor(),
                     appComponent.agentInterceptor()))
             .addService(
-                ServerInterceptors.intercept(
+                ServerInterceptors.interceptForward(
                     appComponent.administrationService(),
                     appComponent.versionInterceptor(),
                     appComponent.agentInterceptor(),

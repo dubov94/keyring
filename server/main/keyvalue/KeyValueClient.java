@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 import javax.inject.Inject;
 import keyring.server.main.Chronometry;
 import keyring.server.main.entities.Session;
@@ -17,6 +19,7 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.Pool;
 
 public class KeyValueClient {
+  private static final Logger logger = Logger.getLogger(KeyValueClient.class.getName());
   private static final String NIL_DOCS_URL =
       "https://redis.io/docs/reference/protocol-spec/#nil-reply";
   private static final String DELETED_VALUE = "";
@@ -38,12 +41,14 @@ public class KeyValueClient {
     return String.format("session:%s", sessionToken);
   }
 
-  public KvSession createSession(String sessionToken, long userId, long sessionEntityId) {
+  public KvSession createSession(
+      String sessionToken, long userId, String ipAddress, long sessionEntityId) {
     KvSession kvSession =
         KvSession.newBuilder()
             .setSessionToken(sessionToken)
             .setCreationTimeMillis(chronometry.currentTime().toEpochMilli())
             .setUserId(userId)
+            .setIpAddress(ipAddress)
             .setSessionEntityId(sessionEntityId)
             .build();
     try (Jedis jedis = jedisPool.getResource()) {
@@ -59,7 +64,7 @@ public class KeyValueClient {
     }
   }
 
-  public Optional<KvSession> getExKvSession(String sessionToken) {
+  public Optional<KvSession> getExKvSession(String sessionToken, String ipAddress) {
     try (Jedis jedis = jedisPool.getResource()) {
       String sessionKey = convertSessionTokenToKey(sessionToken);
       Optional<String> serializedKvSession =
@@ -71,9 +76,17 @@ public class KeyValueClient {
               string -> {
                 try {
                   if (DELETED_VALUE.equals(string)) {
-                    throw new KeyValueException("`KvSession` has been deleted");
+                    logger.warning(String.format("`KvSession` %s has been deleted", sessionToken));
+                    return null;
                   }
-                  return KvSession.parseFrom(base64Decoder.decode(string));
+                  KvSession kvSession = KvSession.parseFrom(base64Decoder.decode(string));
+                  if (!Objects.equals(kvSession.getIpAddress(), ipAddress)) {
+                    logger.warning(
+                        String.format(
+                            "`KvSession` %s IP address is not %s", sessionToken, ipAddress));
+                    return null;
+                  }
+                  return kvSession;
                 } catch (InvalidProtocolBufferException exception) {
                   throw new KeyValueException(exception);
                 }
@@ -95,12 +108,14 @@ public class KeyValueClient {
     return String.format("authn:%s", authnToken);
   }
 
-  public KvAuthn createAuthn(String authnToken, long userId, long sessionEntityId) {
+  public KvAuthn createAuthn(
+      String authnToken, long userId, String ipAddress, long sessionEntityId) {
     KvAuthn kvAuthn =
         KvAuthn.newBuilder()
             .setAuthnToken(authnToken)
             .setCreationTimeMillis(chronometry.currentTime().toEpochMilli())
             .setUserId(userId)
+            .setIpAddress(ipAddress)
             .setSessionEntityId(sessionEntityId)
             .build();
     try (Jedis jedis = jedisPool.getResource()) {
@@ -116,7 +131,7 @@ public class KeyValueClient {
     }
   }
 
-  public Optional<KvAuthn> getKvAuthn(String authnToken) {
+  public Optional<KvAuthn> getKvAuthn(String authnToken, String ipAddress) {
     try (Jedis jedis = jedisPool.getResource()) {
       String authnKey = convertAuthnTokenToKey(authnToken);
       return Optional.ofNullable(jedis.get(authnKey))
@@ -124,9 +139,16 @@ public class KeyValueClient {
               string -> {
                 try {
                   if (DELETED_VALUE.equals(string)) {
-                    throw new KeyValueException("`KvAuthn` has been deleted");
+                    logger.warning(String.format("`KvAuthn` %s has been deleted", authnToken));
+                    return null;
                   }
-                  return KvAuthn.parseFrom(base64Decoder.decode(string));
+                  KvAuthn kvAuthn = KvAuthn.parseFrom(base64Decoder.decode(string));
+                  if (!Objects.equals(kvAuthn.getIpAddress(), ipAddress)) {
+                    logger.warning(
+                        String.format("`KvAuthn` %s IP address is not %s", authnToken, ipAddress));
+                    return null;
+                  }
+                  return kvAuthn;
                 } catch (InvalidProtocolBufferException exception) {
                   throw new KeyValueException(exception);
                 }
