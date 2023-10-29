@@ -7,6 +7,8 @@ releases:
   - name: kube-prometheus-stack
     namespace: monitoring
     chart: prometheus-community/kube-prometheus-stack
+    values:
+    - kube_prometheus_stack_values.yaml
   - name: loki-stack
     namespace: monitoring
     chart: grafana/loki-stack
