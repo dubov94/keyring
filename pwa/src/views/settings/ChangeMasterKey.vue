@@ -1,3 +1,9 @@
+<style scoped>
+  .password-strength {
+    padding-left: calc(24px + 9px);
+  }
+</style>
+
 <template>
   <v-expansion-panel :disabled="!canAccessApi">
     <v-expansion-panel-header>
@@ -20,6 +26,10 @@
           :value="renewal" @input="setRenewal"
           :dirty="$v.renewal.$dirty" :errors="renewalErrors"
           @touch="$v.renewal.$touch()" @reset="$v.renewal.$reset()"></form-text-field>
+        <div class="password-strength my-3">
+          <strength-score :color="passwordStrength.color" :value="passwordStrength.value">
+          </strength-score>
+        </div>
         <form-text-field type="password" label="Repeat new password" prepend-icon="repeat"
           :value="repeat" @input="setRepeat"
           :dirty="$v.repeat.$dirty" :errors="repeatErrors"
@@ -40,17 +50,20 @@
 </template>
 
 <script lang="ts">
+import { function as fn, option, map, eq } from 'fp-ts'
+import { filter, takeUntil } from 'rxjs/operators'
+import { DeepReadonly } from 'ts-essentials'
 import Vue, { VueConstructor } from 'vue'
 import { required, sameAs } from 'vuelidate/lib/validators'
 import { ServiceChangeMasterKeyResponseError } from '@/api/definitions'
-import { function as fn, option, map, eq } from 'fp-ts'
-import { canAccessApi, masterKeyChange, MasterKeyChange } from '@/redux/modules/user/account/selectors'
-import { MasterKeyChangeFlowIndicator, changeMasterKey, masterKeyChangeReset, masterKeyChangeSignal } from '@/redux/modules/user/account/actions'
-import { filter, takeUntil } from 'rxjs/operators'
-import { isActionSuccess } from '@/redux/flow_signal'
-import { DeepReadonly } from 'ts-essentials'
-import { showToast } from '@/redux/modules/ui/toast/actions'
+import StrengthScore from '@/components/StrengthScore.vue'
 import { remoteDataErrorIndicator } from '@/components/form_validators'
+import { Score, getStrengthTestService } from '@/cryptography/strength_test_service'
+import { isActionSuccess } from '@/redux/flow_signal'
+import { sessionUsername } from '@/redux/modules/session/selectors'
+import { showToast } from '@/redux/modules/ui/toast/actions'
+import { MasterKeyChangeFlowIndicator, changeMasterKey, masterKeyChangeReset, masterKeyChangeSignal } from '@/redux/modules/user/account/actions'
+import { canAccessApi, masterKeyChange, MasterKeyChange, accountMail } from '@/redux/modules/user/account/selectors'
 
 const currentIncorrectIndicator = remoteDataErrorIndicator(ServiceChangeMasterKeyResponseError.INVALIDCURRENTDIGEST)
 
@@ -65,6 +78,9 @@ interface Mixins {
 }
 
 export default (Vue as VueConstructor<Vue & Mixins>).extend({
+  components: {
+    strengthScore: StrengthScore
+  },
   props: { eagerPanel: { type: Boolean, default: false } },
   data () {
     return {
@@ -104,6 +120,12 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     canAccessApi (): boolean {
       return canAccessApi(this.$data.$state)
     },
+    username (): string | null {
+      return sessionUsername(this.$data.$state)
+    },
+    accountMail (): string | null {
+      return accountMail(this.$data.$state)
+    },
     masterKeyChange (): DeepReadonly<MasterKeyChange> {
       return masterKeyChange(this.$data.$state)
     },
@@ -121,6 +143,16 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       return {
         [this.$t('PASSWORDS_DO_NOT_MATCH') as string]: !this.$v.repeat.sameAs
       }
+    },
+    passwordStrength (): Score {
+      const inputs: string[] = []
+      if (this.username !== null) {
+        inputs.push(this.username)
+      }
+      if (this.accountMail !== null) {
+        inputs.push(this.accountMail)
+      }
+      return getStrengthTestService().score(this.renewal, inputs)
     },
     indicatorMessage (): string | null {
       return fn.pipe(
