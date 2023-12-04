@@ -13,7 +13,8 @@ proto_library(
 
 java_grpc_library(
     name = "service_java_grpc",
-    deps = [":service_proto"],
+    protos = [":service_proto"],
+    deps = ["@maven//:com_google_api_grpc_proto_google_common_protos"],
 )
 
 proto_library(
@@ -24,10 +25,10 @@ proto_library(
 go_grpc_library(
     name = "geo_ip_go_grpc",
     importpath = "github.com/dubov94/keyring/proto/geo_ip_go_grpc",
-    deps = [":geo_ip_proto"],
+    protos = [":geo_ip_proto"],
 )
 
 java_grpc_library(
     name = "geo_ip_java_grpc",
-    deps = [":geo_ip_proto"],
+    protos = [":geo_ip_proto"],
 )

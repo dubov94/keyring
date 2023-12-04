@@ -5,7 +5,7 @@ load("@rules_proto_grpc//grpc-gateway:defs.bzl", "gateway_grpc_library", "gatewa
 gateway_grpc_library(
     name = "service_gateway_library",
     importpath = "github.com/dubov94/keyring/grpc_gateway/service_gateway_library",
-    deps = ["//proto:service_proto"],
+    protos = ["//proto:service_proto"],
 )
 
 gateway_openapiv2_compile(
