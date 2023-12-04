@@ -110,13 +110,14 @@ Vue.component('external-link', ExternalLink)
 Vue.mixin({
   data () {
     const subject = new Subject<void>()
-    Object.freeze(subject)
     return {
       $destruction: subject
     }
   },
   beforeDestroy () {
-    ;(<Vue> this).$data.$destruction.next()
+    const subject = (<Vue> this).$data.$destruction
+    subject.next()
+    subject.complete()
   }
 })
 
