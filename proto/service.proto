@@ -6,6 +6,7 @@ import "google/api/annotations.proto";
 
 option java_multiple_files = true;
 option java_package = "keyring.server.main.proto.service";
+option go_package = "github.com/dubov94/keyring/proto/service";
 
 message RegisterRequest {
     string username = 1;
