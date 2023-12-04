@@ -175,10 +175,10 @@ class AuthenticationServiceTest {
   }
 
   @Test
-  void getSalt_invalidUsername_repliesWithError() {
+  void fetchSalt_invalidUsername_repliesWithError() {
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
 
-    authenticationService.getSalt(
+    authenticationService.fetchSalt(
         GetSaltRequest.newBuilder().setUsername("username").build(), mockStreamObserver);
 
     verify(mockStreamObserver)
@@ -186,12 +186,12 @@ class AuthenticationServiceTest {
   }
 
   @Test
-  void getSalt_validUsername_repliesWithAuthenticationSalt() {
+  void fetchSalt_validUsername_repliesWithAuthenticationSalt() {
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(new User().setIdentifier(1L).setUsername("username").setSalt("salt")));
 
-    authenticationService.getSalt(
+    authenticationService.fetchSalt(
         GetSaltRequest.newBuilder().setUsername("username").build(), mockStreamObserver);
 
     verify(mockStreamObserver).onNext(GetSaltResponse.newBuilder().setSalt("salt").build());

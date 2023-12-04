@@ -143,7 +143,7 @@ const apiAuthn = <T extends TypeConstant>(
 ): Observable<RootAction> => {
   return concat(
     of(signalCreator(indicator(AuthnViaApiFlowIndicator.RETRIEVING_PARAMETRIZATION))),
-    from(getAuthenticationApi().authenticationGetSalt(username)).pipe(
+    from(getAuthenticationApi().authenticationFetchSalt({ username })).pipe(
       switchMap((getSaltResponse: ServiceGetSaltResponse) => {
         switch (getSaltResponse.error) {
           case ServiceGetSaltResponseError.NONE:

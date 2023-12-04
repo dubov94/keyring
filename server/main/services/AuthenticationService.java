@@ -182,6 +182,12 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     response.onCompleted();
   }
 
+  @Override
+  public void fetchSalt(GetSaltRequest request, StreamObserver<GetSaltResponse> response) {
+    response.onNext(_getSalt(request));
+    response.onCompleted();
+  }
+
   private UserData newUserData(long sessionEntityId, String sessionToken, User user) {
     long userId = user.getIdentifier();
     UserData.Builder userDataBuilder = UserData.newBuilder();

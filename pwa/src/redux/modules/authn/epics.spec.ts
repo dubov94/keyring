@@ -162,7 +162,9 @@ describe('logInViaApiEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
-    when(mockAuthenticationApi.authenticationGetSalt('username')).thenResolve(<ServiceGetSaltResponse>{
+    when(mockAuthenticationApi.authenticationFetchSalt({
+      username: 'username'
+    })).thenResolve(<ServiceGetSaltResponse>{
       error: ServiceGetSaltResponseError.NONE,
       salt: 'parametrization'
     })
@@ -244,7 +246,9 @@ describe('logInViaApiEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
-    when(mockAuthenticationApi.authenticationGetSalt('username')).thenResolve(<ServiceGetSaltResponse>{
+    when(mockAuthenticationApi.authenticationFetchSalt({
+      username: 'username'
+    })).thenResolve(<ServiceGetSaltResponse>{
       error: ServiceGetSaltResponseError.NONE,
       salt: 'parametrization'
     })
