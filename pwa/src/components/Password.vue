@@ -1,7 +1,12 @@
 <style scoped>
-  pre {
+  .header__password {
     white-space: pre-wrap;
     word-break: break-all;
+  }
+
+  .header__password,
+  .editor__password {
+    font-family: 'Roboto Mono';
   }
 </style>
 
@@ -67,7 +72,9 @@
       <div v-if="reveal">
         <v-divider></v-divider>
         <v-card-text>
-          <pre>{{ reprPassword.value }}</pre>
+          <div class="header__password">
+            {{ reprPassword.value }}
+          </div>
         </v-card-text>
       </div>
     </v-expand-transition>
@@ -107,7 +114,7 @@
         </strength-score>
         <div class="pa-4">
           <v-textarea solo hide-details :value="content.value" :rows="3"
-            placeholder="Passphrase" @input="setValue"></v-textarea>
+            placeholder="Passphrase" @input="setValue" class="editor__password"></v-textarea>
           <div class="d-flex mt-4">
             <div class="flex-1">
               <v-btn block depressed @click="suggest">Generate</v-btn>
