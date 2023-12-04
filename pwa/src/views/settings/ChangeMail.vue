@@ -217,7 +217,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     codeErrors (): { [key: string]: boolean } {
       return {
         [this.$t('MAIL_CODE_INCORRECT') as string]: !this.$v.code.nonRetryable!.correct,
-        [this.$t('MAIL_CODE_EXPIRED') as string]: !this.$v.code.nonRetryable!.notExpired,
+        [this.$t('MAIL_TOKEN_EXPIRED') as string]: !this.$v.code.nonRetryable!.notExpired,
         [this.$t('MAIL_TOKEN_THROTTLED') as string]: !this.$v.code.notThrottled
       }
     }
