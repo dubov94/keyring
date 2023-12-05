@@ -1,18 +1,21 @@
 {
     "dependency_tree": {
         "conflict_resolution": {
-            "com.google.guava:guava:29.0-android": "com.google.guava:guava:30.1.1-android",
+            "com.google.guava:guava:29.0-android": "com.google.guava:guava:32.1.3-jre",
+            "com.google.j2objc:j2objc-annotations:1.3": "com.google.j2objc:j2objc-annotations:2.8",
             "org.apiguardian:apiguardian-api:1.0.0": "org.apiguardian:apiguardian-api:1.1.2",
+            "org.codehaus.mojo:animal-sniffer-annotations:1.19": "org.codehaus.mojo:animal-sniffer-annotations:1.23",
             "junit:junit:4.12": "junit:junit:4.13.2",
+            "io.perfmark:perfmark-api:0.23.0": "io.perfmark:perfmark-api:0.26.0",
             "io.opencensus:opencensus-api:0.24.0": "io.opencensus:opencensus-api:0.31.1",
-            "com.google.code.gson:gson:2.8.6": "com.google.code.gson:gson:2.10",
+            "com.google.code.gson:gson:2.8.6": "com.google.code.gson:gson:2.10.1",
             "javax.xml.bind:jaxb-api:2.3.0": "javax.xml.bind:jaxb-api:2.3.1",
             "org.opentest4j:opentest4j:1.1.1": "org.opentest4j:opentest4j:1.2.0",
             "org.junit.platform:junit-platform-engine:1.5.0": "org.junit.platform:junit-platform-engine:1.6.2",
-            "com.google.guava:guava:24.0-jre": "com.google.guava:guava:30.1.1-android",
             "org.junit.jupiter:junit-jupiter-api:5.6.2": "org.junit.jupiter:junit-jupiter-api:5.8.1",
+            "com.google.api.grpc:proto-google-common-protos:2.0.1": "com.google.api.grpc:proto-google-common-protos:2.22.0",
             "org.junit.platform:junit-platform-commons:1.5.0": "org.junit.platform:junit-platform-commons:1.8.1",
-            "com.google.errorprone:error_prone_annotations:2.4.0": "com.google.errorprone:error_prone_annotations:2.16"
+            "com.google.errorprone:error_prone_annotations:2.4.0": "com.google.errorprone:error_prone_annotations:2.21.1"
         },
         "dependencies": [
             {
@@ -175,19 +178,19 @@
                 "sha256": "ba734e1e84c09d615af6a09d33034b4f0442f8772dec120efb376d86a565ae15"
             },
             {
-                "coord": "com.google.api.grpc:proto-google-common-protos:2.0.1",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/api/grpc/proto-google-common-protos/2.0.1/proto-google-common-protos-2.0.1.jar",
+                "coord": "com.google.api.grpc:proto-google-common-protos:2.22.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/api/grpc/proto-google-common-protos/2.22.0/proto-google-common-protos-2.22.0.jar",
                 "directDependencies": [
-                    "com.google.protobuf:protobuf-java:3.16.3"
+                    "com.google.protobuf:protobuf-java:3.24.0"
                 ],
                 "dependencies": [
-                    "com.google.protobuf:protobuf-java:3.16.3"
+                    "com.google.protobuf:protobuf-java:3.24.0"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/api/grpc/proto-google-common-protos/2.0.1/proto-google-common-protos-2.0.1.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/api/grpc/proto-google-common-protos/2.22.0/proto-google-common-protos-2.22.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/api/grpc/proto-google-common-protos/2.0.1/proto-google-common-protos-2.0.1.jar"
+                    "https://repo1.maven.org/maven2/com/google/api/grpc/proto-google-common-protos/2.22.0/proto-google-common-protos-2.22.0.jar"
                 ],
-                "sha256": "5ce71656118618731e34a5d4c61aa3a031be23446dc7de8b5a5e77b66ebcd6ef"
+                "sha256": "002eebc53d27e4fb2e8cf823ea1f3565b90c4b0b4380ff508bf61bd42f2be0d3"
             },
             {
                 "coord": "com.google.auth:google-auth-library-credentials:0.22.0",
@@ -205,19 +208,20 @@
                 "file": "v1/https/repo1.maven.org/maven2/com/google/auth/google-auth-library-oauth2-http/0.22.0/google-auth-library-oauth2-http-0.22.0.jar",
                 "directDependencies": [
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
                     "com.google.http-client:google-http-client:1.42.3",
                     "com.google.auth:google-auth-library-credentials:0.22.0",
                     "com.google.http-client:google-http-client-jackson2:1.37.0",
-                    "com.google.auto.value:auto-value-annotations:1.10"
+                    "com.google.auto.value:auto-value-annotations:1.10",
+                    "com.google.guava:guava:32.1.3-jre"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "io.grpc:grpc-context:1.59.1",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "io.grpc:grpc-context:1.36.3",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "commons-codec:commons-codec:1.11",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
@@ -228,9 +232,9 @@
                     "org.apache.httpcomponents:httpclient:4.5.13",
                     "org.apache.httpcomponents:httpcore:4.4.15",
                     "com.google.auto.value:auto-value-annotations:1.10",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "com.fasterxml.jackson.core:jackson-core:2.11.3",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1",
+                    "com.fasterxml.jackson.core:jackson-core:2.11.3"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/google/auth/google-auth-library-oauth2-http/0.22.0/google-auth-library-oauth2-http-0.22.0.jar",
                 "mirror_urls": [
@@ -272,130 +276,174 @@
                 "sha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7"
             },
             {
-                "coord": "com.google.code.gson:gson:2.10",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/code/gson/gson/2.10/gson-2.10.jar",
+                "coord": "com.google.code.gson:gson:2.10.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10/gson-2.10.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10/gson-2.10.jar"
+                    "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10.1/gson-2.10.1.jar"
                 ],
-                "sha256": "0cdd163ce3598a20fc04eee71b140b24f6f2a3b35f0a499dbbdd9852e83fbfaf"
+                "sha256": "4241c14a7727c34feea6507ec801318a3d4a90f070e4525681079fb94ee4c593"
             },
             {
-                "coord": "com.google.dagger:dagger-compiler:2.14.1",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/dagger/dagger-compiler/2.14.1/dagger-compiler-2.14.1.jar",
+                "coord": "com.google.dagger:dagger-compiler:2.46.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/dagger/dagger-compiler/2.46.1/dagger-compiler-2.46.1.jar",
                 "directDependencies": [
-                    "com.google.guava:guava:30.1.1-android",
-                    "com.google.dagger:dagger-producers:2.14.1",
+                    "com.google.devtools.ksp:symbol-processing-api:1.8.0-1.0.9",
+                    "net.ltgt.gradle.incap:incap:0.2",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.dagger:dagger-producers:2.46.1",
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
+                    "com.squareup:javapoet:1.13.0",
+                    "com.google.dagger:dagger:2.46.1",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "com.squareup:kotlinpoet:1.11.0",
                     "javax.inject:javax.inject:1",
-                    "com.google.googlejavaformat:google-java-format:1.4",
-                    "javax.annotation:jsr250-api:1.0",
-                    "com.google.dagger:dagger-spi:2.14.1",
-                    "com.google.dagger:dagger:2.14.1",
-                    "com.squareup:javapoet:1.8.0"
+                    "com.google.guava:guava:32.1.3-jre",
+                    "com.google.dagger:dagger-spi:2.46.1",
+                    "com.google.googlejavaformat:google-java-format:1.5",
+                    "org.checkerframework:checker-compat-qual:2.5.5"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
+                    "com.google.devtools.ksp:symbol-processing-api:1.8.0-1.0.9",
+                    "net.ltgt.gradle.incap:incap:0.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "com.google.dagger:dagger-producers:2.14.1",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "com.google.dagger:dagger-producers:2.46.1",
+                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10",
+                    "com.squareup:javapoet:1.13.0",
                     "com.google.errorprone:javac-shaded:9-dev-r4023-3",
+                    "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10",
+                    "com.google.dagger:dagger:2.46.1",
+                    "org.jetbrains:annotations:17.0.0",
                     "com.google.guava:failureaccess:1.0.1",
+                    "com.squareup:kotlinpoet:1.11.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0",
                     "javax.inject:javax.inject:1",
-                    "com.google.googlejavaformat:google-java-format:1.4",
-                    "javax.annotation:jsr250-api:1.0",
-                    "com.google.dagger:dagger-spi:2.14.1",
-                    "com.google.dagger:dagger:2.14.1",
-                    "com.squareup:javapoet:1.8.0",
-                    "com.google.errorprone:error_prone_annotations:2.16",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "com.google.dagger:dagger-spi:2.46.1",
+                    "com.google.googlejavaformat:google-java-format:1.5",
+                    "org.jetbrains.kotlin:kotlin-reflect:1.6.10",
                     "org.checkerframework:checker-compat-qual:2.5.5"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/dagger/dagger-compiler/2.14.1/dagger-compiler-2.14.1.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/dagger/dagger-compiler/2.46.1/dagger-compiler-2.46.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/dagger/dagger-compiler/2.14.1/dagger-compiler-2.14.1.jar"
+                    "https://repo1.maven.org/maven2/com/google/dagger/dagger-compiler/2.46.1/dagger-compiler-2.46.1.jar"
                 ],
-                "sha256": "ff16d55273e375349537fc82292b00de04d8a2caca2d4aa6c642692b1a68194d"
+                "sha256": "57ad3b3ffc0f033cc71bf4673b49965b79837fbd950eb7a5d6d70cdc8b00accc"
             },
             {
-                "coord": "com.google.dagger:dagger-producers:2.14.1",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/dagger/dagger-producers/2.14.1/dagger-producers-2.14.1.jar",
+                "coord": "com.google.dagger:dagger-producers:2.46.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/dagger/dagger-producers/2.46.1/dagger-producers-2.46.1.jar",
                 "directDependencies": [
-                    "com.google.dagger:dagger:2.14.1",
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.dagger:dagger:2.46.1",
+                    "com.google.guava:failureaccess:1.0.1",
                     "javax.inject:javax.inject:1",
+                    "com.google.guava:guava:32.1.3-jre",
                     "org.checkerframework:checker-compat-qual:2.5.5"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
+                    "com.google.dagger:dagger:2.46.1",
                     "com.google.guava:failureaccess:1.0.1",
                     "javax.inject:javax.inject:1",
-                    "com.google.dagger:dagger:2.14.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
+                    "com.google.guava:guava:32.1.3-jre",
                     "org.checkerframework:checker-compat-qual:2.5.5"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/dagger/dagger-producers/2.14.1/dagger-producers-2.14.1.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/dagger/dagger-producers/2.46.1/dagger-producers-2.46.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/dagger/dagger-producers/2.14.1/dagger-producers-2.14.1.jar"
+                    "https://repo1.maven.org/maven2/com/google/dagger/dagger-producers/2.46.1/dagger-producers-2.46.1.jar"
                 ],
-                "sha256": "96f950bc4b94d013b0c538632a4bc630f33eda8b01f63ae752b76c5e48783859"
+                "sha256": "2910ce57e60731d676e26c4cd2e02ae1e9b570b5e469c6d96f47ff42a8a6e72f"
             },
             {
-                "coord": "com.google.dagger:dagger-spi:2.14.1",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/dagger/dagger-spi/2.14.1/dagger-spi-2.14.1.jar",
+                "coord": "com.google.dagger:dagger-spi:2.46.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/dagger/dagger-spi/2.46.1/dagger-spi-2.46.1.jar",
                 "directDependencies": [
-                    "com.google.dagger:dagger:2.14.1",
-                    "com.google.dagger:dagger-producers:2.14.1",
-                    "com.google.guava:guava:30.1.1-android",
-                    "javax.inject:javax.inject:1"
+                    "com.google.devtools.ksp:symbol-processing-api:1.8.0-1.0.9",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.dagger:dagger-producers:2.46.1",
+                    "com.squareup:javapoet:1.13.0",
+                    "com.google.dagger:dagger:2.46.1",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "javax.inject:javax.inject:1",
+                    "com.google.guava:guava:32.1.3-jre"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
+                    "com.google.devtools.ksp:symbol-processing-api:1.8.0-1.0.9",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "com.google.dagger:dagger-producers:2.14.1",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "com.google.dagger:dagger-producers:2.46.1",
+                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
+                    "com.squareup:javapoet:1.13.0",
+                    "com.google.dagger:dagger:2.46.1",
+                    "org.jetbrains:annotations:17.0.0",
                     "com.google.guava:failureaccess:1.0.1",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0",
                     "javax.inject:javax.inject:1",
-                    "com.google.dagger:dagger:2.14.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
+                    "com.google.guava:guava:32.1.3-jre",
                     "org.checkerframework:checker-compat-qual:2.5.5"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/dagger/dagger-spi/2.14.1/dagger-spi-2.14.1.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/dagger/dagger-spi/2.46.1/dagger-spi-2.46.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/dagger/dagger-spi/2.14.1/dagger-spi-2.14.1.jar"
+                    "https://repo1.maven.org/maven2/com/google/dagger/dagger-spi/2.46.1/dagger-spi-2.46.1.jar"
                 ],
-                "sha256": "6a20d6c6620fefe50747e9e910e0d0c178cf39d76b67ccffb505ac9a167302cb"
+                "sha256": "53de7434288bc765879c9e52fe1a47cf382845fba629f9a61f37a429804a1c61"
             },
             {
-                "coord": "com.google.dagger:dagger:2.14.1",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/dagger/dagger/2.14.1/dagger-2.14.1.jar",
+                "coord": "com.google.dagger:dagger:2.46.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/dagger/dagger/2.46.1/dagger-2.46.1.jar",
                 "directDependencies": [
                     "javax.inject:javax.inject:1"
                 ],
                 "dependencies": [
                     "javax.inject:javax.inject:1"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/dagger/dagger/2.14.1/dagger-2.14.1.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/dagger/dagger/2.46.1/dagger-2.46.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/dagger/dagger/2.14.1/dagger-2.14.1.jar"
+                    "https://repo1.maven.org/maven2/com/google/dagger/dagger/2.46.1/dagger-2.46.1.jar"
                 ],
-                "sha256": "374cfee26c9c93f44caa1946583c9edc135bb9a42838476522551ec46aa55c7c"
+                "sha256": "20b0d4689bd1b4f5fd5e03a702d530f7faf7820fda29af6d120838ba7587352c"
             },
             {
-                "coord": "com.google.errorprone:error_prone_annotations:2.16",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.16/error_prone_annotations-2.16.jar",
+                "coord": "com.google.devtools.ksp:symbol-processing-api:1.8.0-1.0.9",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/devtools/ksp/symbol-processing-api/1.8.0-1.0.9/symbol-processing-api-1.8.0-1.0.9.jar",
+                "directDependencies": [
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0"
+                ],
+                "dependencies": [
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
+                    "org.jetbrains:annotations:17.0.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/devtools/ksp/symbol-processing-api/1.8.0-1.0.9/symbol-processing-api-1.8.0-1.0.9.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/devtools/ksp/symbol-processing-api/1.8.0-1.0.9/symbol-processing-api-1.8.0-1.0.9.jar"
+                ],
+                "sha256": "431aa88afe78425c5baae19619acae44c4454cc505be3e437e6e353c23a585ed"
+            },
+            {
+                "coord": "com.google.errorprone:error_prone_annotations:2.21.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.16/error_prone_annotations-2.16.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.16/error_prone_annotations-2.16.jar"
+                    "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.21.1/error_prone_annotations-2.21.1.jar"
                 ],
-                "sha256": "2668536a354cda63d19885fcabdecd8d6298aec4260cdfdf34b722e964d60396"
+                "sha256": "d1f3c66aa91ac52549e00ae3b208ba4b9af7d72d68f230643553beb38e6118ac"
             },
             {
                 "coord": "com.google.errorprone:javac-shaded:9-dev-r4023-3",
@@ -409,27 +457,27 @@
                 "sha256": "65bfccf60986c47fbc17c9ebab0be626afc41741e0a6ec7109e0768817a36f30"
             },
             {
-                "coord": "com.google.googlejavaformat:google-java-format:1.4",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/googlejavaformat/google-java-format/1.4/google-java-format-1.4.jar",
+                "coord": "com.google.googlejavaformat:google-java-format:1.5",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/googlejavaformat/google-java-format/1.5/google-java-format-1.5.jar",
                 "directDependencies": [
                     "com.google.errorprone:javac-shaded:9-dev-r4023-3",
-                    "com.google.guava:guava:30.1.1-android"
+                    "com.google.guava:guava:32.1.3-jre"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "com.google.errorprone:javac-shaded:9-dev-r4023-3",
                     "com.google.guava:failureaccess:1.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/googlejavaformat/google-java-format/1.4/google-java-format-1.4.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/googlejavaformat/google-java-format/1.5/google-java-format-1.5.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/googlejavaformat/google-java-format/1.4/google-java-format-1.4.jar"
+                    "https://repo1.maven.org/maven2/com/google/googlejavaformat/google-java-format/1.5/google-java-format-1.5.jar"
                 ],
-                "sha256": "39d18ec9ab610097074bf49e971285488eaf5d0bc2369df0a0d5a3f9f9de2faa"
+                "sha256": "aa19ad7850fb85178aa22f2fddb163b84d6ce4d0035872f30d4408195ca1144e"
             },
             {
                 "coord": "com.google.guava:failureaccess:1.0.1",
@@ -443,29 +491,29 @@
                 "sha256": "a171ee4c734dd2da837e4b16be9df4661afab72a41adaf31eb84dfdaf936ca26"
             },
             {
-                "coord": "com.google.guava:guava:30.1.1-android",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava/30.1.1-android/guava-30.1.1-android.jar",
+                "coord": "com.google.guava:guava:32.1.3-jre",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.jar",
                 "directDependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:failureaccess:1.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
+                    "com.google.guava:failureaccess:1.0.1"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:failureaccess:1.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
+                    "com.google.guava:failureaccess:1.0.1"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/guava/guava/30.1.1-android/guava-30.1.1-android.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/guava/guava/30.1.1-android/guava-30.1.1-android.jar"
+                    "https://repo1.maven.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.jar"
                 ],
-                "sha256": "355f79352f8c252f2bdaa06c687c4836a38016caccfc4c28d16ae77ecfdffa2f"
+                "sha256": "6d4e2b5a118aab62e6e5e29d185a0224eed82c85c40ac3d33cf04a270c3b3744"
             },
             {
                 "coord": "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
@@ -482,26 +530,27 @@
                 "coord": "com.google.http-client:google-http-client-gson:1.42.3",
                 "file": "v1/https/repo1.maven.org/maven2/com/google/http-client/google-http-client-gson/1.42.3/google-http-client-gson-1.42.3.jar",
                 "directDependencies": [
-                    "com.google.code.gson:gson:2.10",
+                    "com.google.code.gson:gson:2.10.1",
                     "com.google.http-client:google-http-client:1.42.3"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "io.grpc:grpc-context:1.59.1",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "io.grpc:grpc-context:1.36.3",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "commons-codec:commons-codec:1.11",
                     "io.opencensus:opencensus-api:0.31.1",
+                    "com.google.code.gson:gson:2.10.1",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.http-client:google-http-client:1.42.3",
                     "org.apache.httpcomponents:httpclient:4.5.13",
-                    "com.google.code.gson:gson:2.10",
                     "org.apache.httpcomponents:httpcore:4.4.15",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/google/http-client/google-http-client-gson/1.42.3/google-http-client-gson-1.42.3.jar",
                 "mirror_urls": [
@@ -518,11 +567,12 @@
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "io.grpc:grpc-context:1.59.1",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "io.grpc:grpc-context:1.36.3",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "commons-codec:commons-codec:1.11",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
@@ -530,9 +580,9 @@
                     "com.google.http-client:google-http-client:1.42.3",
                     "org.apache.httpcomponents:httpclient:4.5.13",
                     "org.apache.httpcomponents:httpcore:4.4.15",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "com.fasterxml.jackson.core:jackson-core:2.11.3",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1",
+                    "com.fasterxml.jackson.core:jackson-core:2.11.3"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/google/http-client/google-http-client-jackson2/1.37.0/google-http-client-jackson2-1.37.0.jar",
                 "mirror_urls": [
@@ -544,30 +594,31 @@
                 "coord": "com.google.http-client:google-http-client:1.42.3",
                 "file": "v1/https/repo1.maven.org/maven2/com/google/http-client/google-http-client/1.42.3/google-http-client-1.42.3.jar",
                 "directDependencies": [
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
                     "org.apache.httpcomponents:httpclient:4.5.13",
                     "org.apache.httpcomponents:httpcore:4.4.15",
-                    "com.google.errorprone:error_prone_annotations:2.16"
+                    "com.google.guava:guava:32.1.3-jre"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "io.grpc:grpc-context:1.59.1",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "io.grpc:grpc-context:1.36.3",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "commons-codec:commons-codec:1.11",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
                     "com.google.guava:failureaccess:1.0.1",
                     "org.apache.httpcomponents:httpclient:4.5.13",
                     "org.apache.httpcomponents:httpcore:4.4.15",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/google/http-client/google-http-client/1.42.3/google-http-client-1.42.3.jar",
                 "mirror_urls": [
@@ -576,49 +627,50 @@
                 "sha256": "e395dd1765e3e6bceb0c610706bcf4128de84bd6e65cf1d4adbf998b4114161c"
             },
             {
-                "coord": "com.google.j2objc:j2objc-annotations:1.3",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar",
+                "coord": "com.google.j2objc:j2objc-annotations:2.8",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/1.3/j2objc-annotations-1.3.jar"
+                    "https://repo1.maven.org/maven2/com/google/j2objc/j2objc-annotations/2.8/j2objc-annotations-2.8.jar"
                 ],
-                "sha256": "21af30c92267bd6122c0e0b4d20cccb6641a37eaf956c6540ec471d584e64a7b"
+                "sha256": "f02a95fa1a5e95edb3ed859fd0fb7df709d121a35290eff8b74dce2ab7f4d6ed"
             },
             {
-                "coord": "com.google.protobuf:protobuf-java:3.16.3",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.16.3/protobuf-java-3.16.3.jar",
+                "coord": "com.google.protobuf:protobuf-java:3.24.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.24.0/protobuf-java-3.24.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.16.3/protobuf-java-3.16.3.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.24.0/protobuf-java-3.24.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.16.3/protobuf-java-3.16.3.jar"
+                    "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.24.0/protobuf-java-3.24.0.jar"
                 ],
-                "sha256": "6d3758b483e1ac7505649371a5b058a717260ef470100fefad7a1e2aba75e06f"
+                "sha256": "60e27148de168286dd441fa66f96cc8d91b7672c8a5caad631f966f406b10071"
             },
             {
                 "coord": "com.google.truth:truth:1.0.1",
                 "file": "v1/https/repo1.maven.org/maven2/com/google/truth/truth/1.0.1/truth-1.0.1.jar",
                 "directDependencies": [
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
                     "com.googlecode.java-diff-utils:diffutils:1.3.0",
                     "com.google.auto.value:auto-value-annotations:1.10",
                     "junit:junit:4.13.2",
-                    "com.google.errorprone:error_prone_annotations:2.16",
+                    "com.google.guava:guava:32.1.3-jre",
                     "org.checkerframework:checker-compat-qual:2.5.5"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "org.hamcrest:hamcrest-core:1.3",
                     "com.googlecode.java-diff-utils:diffutils:1.3.0",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.auto.value:auto-value-annotations:1.10",
                     "junit:junit:4.13.2",
-                    "com.google.errorprone:error_prone_annotations:2.16",
+                    "com.google.guava:guava:32.1.3-jre",
                     "org.checkerframework:checker-compat-qual:2.5.5"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/google/truth/truth/1.0.1/truth-1.0.1.jar",
@@ -708,15 +760,36 @@
                 "sha256": "19a7ff48d86d3cf4497f7f250fbf295f430c13a528dd5b7b203f821802b886ad"
             },
             {
-                "coord": "com.squareup:javapoet:1.8.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/squareup/javapoet/1.8.0/javapoet-1.8.0.jar",
+                "coord": "com.squareup:javapoet:1.13.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/javapoet/1.13.0/javapoet-1.13.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/com/squareup/javapoet/1.8.0/javapoet-1.8.0.jar",
+                "url": "https://repo1.maven.org/maven2/com/squareup/javapoet/1.13.0/javapoet-1.13.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/squareup/javapoet/1.8.0/javapoet-1.8.0.jar"
+                    "https://repo1.maven.org/maven2/com/squareup/javapoet/1.13.0/javapoet-1.13.0.jar"
                 ],
-                "sha256": "8e108c92027bb428196f10fa11cffbe589f7648a6af2016d652279385fdfd789"
+                "sha256": "4c7517e848a71b36d069d12bb3bf46a70fd4cda3105d822b0ed2e19c00b69291"
+            },
+            {
+                "coord": "com.squareup:kotlinpoet:1.11.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/squareup/kotlinpoet/1.11.0/kotlinpoet-1.11.0.jar",
+                "directDependencies": [
+                    "org.jetbrains.kotlin:kotlin-reflect:1.6.10",
+                    "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10"
+                ],
+                "dependencies": [
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10",
+                    "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10",
+                    "org.jetbrains:annotations:17.0.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0",
+                    "org.jetbrains.kotlin:kotlin-reflect:1.6.10"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/squareup/kotlinpoet/1.11.0/kotlinpoet-1.11.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/squareup/kotlinpoet/1.11.0/kotlinpoet-1.11.0.jar"
+                ],
+                "sha256": "2887ada1ca03dd83baa2758640d87e840d1907564db0ef88d2289c868a980492"
             },
             {
                 "coord": "com.sun.istack:istack-commons-runtime:3.0.7",
@@ -884,161 +957,223 @@
                 "sha256": "4d74f4ce4fb68b2617edad086df6defdf9338467d2377d2c62e69038e1c4f02f"
             },
             {
-                "coord": "io.grpc:grpc-api:1.36.3",
-                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-api/1.36.3/grpc-api-1.36.3.jar",
+                "coord": "io.grpc:grpc-api:1.59.1",
+                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-api/1.59.1/grpc-api-1.59.1.jar",
                 "directDependencies": [
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.19",
-                    "io.grpc:grpc-context:1.36.3",
-                    "com.google.errorprone:error_prone_annotations:2.16"
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "com.google.guava:guava:32.1.3-jre"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.19",
-                    "io.grpc:grpc-context:1.36.3",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "com.google.guava:failureaccess:1.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-api/1.36.3/grpc-api-1.36.3.jar",
+                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-api/1.59.1/grpc-api-1.59.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/grpc/grpc-api/1.36.3/grpc-api-1.36.3.jar"
+                    "https://repo1.maven.org/maven2/io/grpc/grpc-api/1.59.1/grpc-api-1.59.1.jar"
                 ],
-                "sha256": "fe997def3afb1d62a107e75107adfb083917dbb232b83a06e394c35b782933e5"
+                "sha256": "c7950f19abe8289f54fdf887d235eb989337929390d534a0dcb3cbe731cd2ac2"
             },
             {
-                "coord": "io.grpc:grpc-context:1.36.3",
-                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-context/1.36.3/grpc-context-1.36.3.jar",
-                "directDependencies": [],
-                "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-context/1.36.3/grpc-context-1.36.3.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/grpc/grpc-context/1.36.3/grpc-context-1.36.3.jar"
-                ],
-                "sha256": "bd0e6c2cb4c2b3ceeb60f4c1828f9ad21276b79b04e287a236692617bc6994cd"
-            },
-            {
-                "coord": "io.grpc:grpc-core:1.36.3",
-                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-core/1.36.3/grpc-core-1.36.3.jar",
-                "directDependencies": [],
-                "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-core/1.36.3/grpc-core-1.36.3.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/grpc/grpc-core/1.36.3/grpc-core-1.36.3.jar"
-                ],
-                "sha256": "d3f4343df90e130ecc3d5006b114b1c23653437eb1b16fc2081089611d5fe0e4"
-            },
-            {
-                "coord": "io.grpc:grpc-netty-shaded:1.36.3",
-                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-netty-shaded/1.36.3/grpc-netty-shaded-1.36.3.jar",
+                "coord": "io.grpc:grpc-context:1.59.1",
+                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-context/1.59.1/grpc-context-1.59.1.jar",
                 "directDependencies": [
-                    "io.grpc:grpc-core:1.36.3"
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "dependencies": [
-                    "io.grpc:grpc-core:1.36.3"
+                    "io.grpc:grpc-api:1.59.1"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-netty-shaded/1.36.3/grpc-netty-shaded-1.36.3.jar",
+                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-context/1.59.1/grpc-context-1.59.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/grpc/grpc-netty-shaded/1.36.3/grpc-netty-shaded-1.36.3.jar"
+                    "https://repo1.maven.org/maven2/io/grpc/grpc-context/1.59.1/grpc-context-1.59.1.jar"
                 ],
-                "sha256": "3ef758965d6004316a3e4014dc83d602e71c92a80d11e3cfd36a742f93bd23fe"
+                "sha256": "056bde0434b2bf30fe074a87223447a7745f8deb28a045362570c65988a69383"
             },
             {
-                "coord": "io.grpc:grpc-protobuf-lite:1.36.3",
-                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-protobuf-lite/1.36.3/grpc-protobuf-lite-1.36.3.jar",
+                "coord": "io.grpc:grpc-core:1.59.1",
+                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-core/1.59.1/grpc-core-1.59.1.jar",
                 "directDependencies": [
-                    "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.19",
-                    "io.grpc:grpc-api:1.36.3",
-                    "com.google.errorprone:error_prone_annotations:2.16"
+                    "io.grpc:grpc-context:1.59.1",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.23",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "com.google.android:annotations:4.1.1.4",
+                    "io.perfmark:perfmark-api:0.26.0",
+                    "com.google.code.gson:gson:2.10.1",
+                    "io.grpc:grpc-util:1.59.1",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "io.grpc:grpc-context:1.59.1",
+                    "com.google.j2objc:j2objc-annotations:2.8",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.23",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.19",
-                    "io.grpc:grpc-context:1.36.3",
-                    "io.grpc:grpc-api:1.36.3",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "com.google.android:annotations:4.1.1.4",
+                    "org.checkerframework:checker-qual:3.37.0",
+                    "io.perfmark:perfmark-api:0.26.0",
+                    "com.google.code.gson:gson:2.10.1",
+                    "io.grpc:grpc-util:1.59.1",
                     "com.google.guava:failureaccess:1.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "io.grpc:grpc-core:1.59.1",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-core/1.59.1/grpc-core-1.59.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/grpc/grpc-core/1.59.1/grpc-core-1.59.1.jar"
+                ],
+                "sha256": "db80d044f30f687513d6416ddf0d863b070ce6663ac3cb79ab16e5376d51501c"
+            },
+            {
+                "coord": "io.grpc:grpc-netty-shaded:1.59.1",
+                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-netty-shaded/1.59.1/grpc-netty-shaded-1.59.1.jar",
+                "directDependencies": [
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-core:1.59.1",
+                    "io.perfmark:perfmark-api:0.26.0"
+                ],
+                "dependencies": [
+                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                    "io.grpc:grpc-context:1.59.1",
+                    "com.google.j2objc:j2objc-annotations:2.8",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.23",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "com.google.android:annotations:4.1.1.4",
+                    "org.checkerframework:checker-qual:3.37.0",
+                    "io.perfmark:perfmark-api:0.26.0",
+                    "com.google.code.gson:gson:2.10.1",
+                    "io.grpc:grpc-util:1.59.1",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "io.grpc:grpc-core:1.59.1",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-netty-shaded/1.59.1/grpc-netty-shaded-1.59.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/grpc/grpc-netty-shaded/1.59.1/grpc-netty-shaded-1.59.1.jar"
+                ],
+                "sha256": "75dc5d37ffab389a211aeddd25fce5c53c44eb04d734149b30e45cf0892724e1"
+            },
+            {
+                "coord": "io.grpc:grpc-protobuf-lite:1.59.1",
+                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-protobuf-lite/1.59.1/grpc-protobuf-lite-1.59.1.jar",
+                "directDependencies": [
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
+                ],
+                "dependencies": [
+                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                    "com.google.j2objc:j2objc-annotations:2.8",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "exclusions": [
                     "com.google.protobuf:protobuf-javalite"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-protobuf-lite/1.36.3/grpc-protobuf-lite-1.36.3.jar",
+                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-protobuf-lite/1.59.1/grpc-protobuf-lite-1.59.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/grpc/grpc-protobuf-lite/1.36.3/grpc-protobuf-lite-1.36.3.jar"
+                    "https://repo1.maven.org/maven2/io/grpc/grpc-protobuf-lite/1.59.1/grpc-protobuf-lite-1.59.1.jar"
                 ],
-                "sha256": "1fd2f25df1e7e422d5db7db9a798b6b609b44980c16460d3329c24f549c28065"
+                "sha256": "5a3e34f19f49d5031e9e0194909cbe22fce6177413c019b4ff3b01174815c7ca"
             },
             {
-                "coord": "io.grpc:grpc-protobuf:1.36.3",
-                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-protobuf/1.36.3/grpc-protobuf-1.36.3.jar",
+                "coord": "io.grpc:grpc-protobuf:1.59.1",
+                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-protobuf/1.59.1/grpc-protobuf-1.59.1.jar",
                 "directDependencies": [
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "io.grpc:grpc-protobuf-lite:1.36.3",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.19",
-                    "com.google.protobuf:protobuf-java:3.16.3",
-                    "io.grpc:grpc-api:1.36.3",
-                    "com.google.api.grpc:proto-google-common-protos:2.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.16"
+                    "io.grpc:grpc-protobuf-lite:1.59.1",
+                    "com.google.api.grpc:proto-google-common-protos:2.22.0",
+                    "com.google.protobuf:protobuf-java:3.24.0",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "io.grpc:grpc-protobuf-lite:1.36.3",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.19",
-                    "io.grpc:grpc-context:1.36.3",
-                    "com.google.protobuf:protobuf-java:3.16.3",
-                    "io.grpc:grpc-api:1.36.3",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
+                    "io.grpc:grpc-protobuf-lite:1.59.1",
+                    "com.google.api.grpc:proto-google-common-protos:2.22.0",
                     "com.google.guava:failureaccess:1.0.1",
-                    "com.google.api.grpc:proto-google-common-protos:2.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.protobuf:protobuf-java:3.24.0",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-protobuf/1.36.3/grpc-protobuf-1.36.3.jar",
+                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-protobuf/1.59.1/grpc-protobuf-1.59.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/grpc/grpc-protobuf/1.36.3/grpc-protobuf-1.36.3.jar"
+                    "https://repo1.maven.org/maven2/io/grpc/grpc-protobuf/1.59.1/grpc-protobuf-1.59.1.jar"
                 ],
-                "sha256": "29cdd767aad4d8c3f08651f2457eeb93e0e38334ebfc731b9b607a2279bf4516"
+                "sha256": "4755cc5c9b08961e240268b260ca11ee178ca29d29b9afef2a334f7f9c525d00"
             },
             {
-                "coord": "io.grpc:grpc-stub:1.36.3",
-                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-stub/1.36.3/grpc-stub-1.36.3.jar",
+                "coord": "io.grpc:grpc-stub:1.59.1",
+                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-stub/1.59.1/grpc-stub-1.59.1.jar",
                 "directDependencies": [
-                    "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.19",
-                    "io.grpc:grpc-api:1.36.3",
-                    "com.google.errorprone:error_prone_annotations:2.16"
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "org.codehaus.mojo:animal-sniffer-annotations:1.19",
-                    "io.grpc:grpc-context:1.36.3",
-                    "io.grpc:grpc-api:1.36.3",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "com.google.guava:failureaccess:1.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
                 ],
-                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-stub/1.36.3/grpc-stub-1.36.3.jar",
+                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-stub/1.59.1/grpc-stub-1.59.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/grpc/grpc-stub/1.36.3/grpc-stub-1.36.3.jar"
+                    "https://repo1.maven.org/maven2/io/grpc/grpc-stub/1.59.1/grpc-stub-1.59.1.jar"
                 ],
-                "sha256": "6ee98dfb4ed8950c455cad0d3ed0122d5daab7ee0704fa6f6e8cbe01945a68ef"
+                "sha256": "e16a22045eee6c135c6a41448bf234a5b8b79eb27373848137489fd5d30da5e2"
+            },
+            {
+                "coord": "io.grpc:grpc-util:1.59.1",
+                "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-util/1.59.1/grpc-util-1.59.1.jar",
+                "directDependencies": [
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-core:1.59.1",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.23"
+                ],
+                "dependencies": [
+                    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+                    "io.grpc:grpc-context:1.59.1",
+                    "com.google.j2objc:j2objc-annotations:2.8",
+                    "org.codehaus.mojo:animal-sniffer-annotations:1.23",
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "com.google.android:annotations:4.1.1.4",
+                    "org.checkerframework:checker-qual:3.37.0",
+                    "io.perfmark:perfmark-api:0.26.0",
+                    "com.google.code.gson:gson:2.10.1",
+                    "io.grpc:grpc-util:1.59.1",
+                    "com.google.guava:failureaccess:1.0.1",
+                    "io.grpc:grpc-core:1.59.1",
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
+                ],
+                "url": "https://repo1.maven.org/maven2/io/grpc/grpc-util/1.59.1/grpc-util-1.59.1.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/io/grpc/grpc-util/1.59.1/grpc-util-1.59.1.jar"
+                ],
+                "sha256": "d9ebfcd9cdc106e0a34e97de66a8da2cdbbb7ef1cbdde9aa259fdd4756959f68"
             },
             {
                 "coord": "io.netty:netty-buffer:4.1.52.Final",
@@ -1299,10 +1434,11 @@
                 "coord": "io.opencensus:opencensus-api:0.31.1",
                 "file": "v1/https/repo1.maven.org/maven2/io/opencensus/opencensus-api/0.31.1/opencensus-api-0.31.1.jar",
                 "directDependencies": [
-                    "io.grpc:grpc-context:1.36.3"
+                    "io.grpc:grpc-context:1.59.1"
                 ],
                 "dependencies": [
-                    "io.grpc:grpc-context:1.36.3"
+                    "io.grpc:grpc-api:1.59.1",
+                    "io.grpc:grpc-context:1.59.1"
                 ],
                 "url": "https://repo1.maven.org/maven2/io/opencensus/opencensus-api/0.31.1/opencensus-api-0.31.1.jar",
                 "mirror_urls": [
@@ -1314,19 +1450,20 @@
                 "coord": "io.opencensus:opencensus-contrib-grpc-metrics:0.24.0",
                 "file": "v1/https/repo1.maven.org/maven2/io/opencensus/opencensus-contrib-grpc-metrics/0.24.0/opencensus-contrib-grpc-metrics-0.24.0.jar",
                 "directDependencies": [
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.guava:guava:32.1.3-jre",
                     "io.opencensus:opencensus-api:0.31.1"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "io.grpc:grpc-context:1.59.1",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "io.grpc:grpc-context:1.36.3",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "io.opencensus:opencensus-api:0.31.1",
                     "com.google.guava:failureaccess:1.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "url": "https://repo1.maven.org/maven2/io/opencensus/opencensus-contrib-grpc-metrics/0.24.0/opencensus-contrib-grpc-metrics-0.24.0.jar",
                 "mirror_urls": [
@@ -1338,19 +1475,20 @@
                 "coord": "io.opencensus:opencensus-contrib-http-util:0.31.1",
                 "file": "v1/https/repo1.maven.org/maven2/io/opencensus/opencensus-contrib-http-util/0.31.1/opencensus-contrib-http-util-0.31.1.jar",
                 "directDependencies": [
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.guava:guava:32.1.3-jre",
                     "io.opencensus:opencensus-api:0.31.1"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "io.grpc:grpc-context:1.59.1",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
-                    "io.grpc:grpc-context:1.36.3",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "io.opencensus:opencensus-api:0.31.1",
                     "com.google.guava:failureaccess:1.0.1",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre",
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "url": "https://repo1.maven.org/maven2/io/opencensus/opencensus-contrib-http-util/0.31.1/opencensus-contrib-http-util-0.31.1.jar",
                 "mirror_urls": [
@@ -1359,15 +1497,15 @@
                 "sha256": "3ea995b55a4068be22989b70cc29a4d788c2d328d1d50613a7a9afd13fdd2d0a"
             },
             {
-                "coord": "io.perfmark:perfmark-api:0.23.0",
-                "file": "v1/https/repo1.maven.org/maven2/io/perfmark/perfmark-api/0.23.0/perfmark-api-0.23.0.jar",
+                "coord": "io.perfmark:perfmark-api:0.26.0",
+                "file": "v1/https/repo1.maven.org/maven2/io/perfmark/perfmark-api/0.26.0/perfmark-api-0.26.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/io/perfmark/perfmark-api/0.23.0/perfmark-api-0.23.0.jar",
+                "url": "https://repo1.maven.org/maven2/io/perfmark/perfmark-api/0.26.0/perfmark-api-0.26.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/io/perfmark/perfmark-api/0.23.0/perfmark-api-0.23.0.jar"
+                    "https://repo1.maven.org/maven2/io/perfmark/perfmark-api/0.26.0/perfmark-api-0.26.0.jar"
                 ],
-                "sha256": "c705b5c10c18ff3032b9e81742bc2f6b0e5607f6a6dfc0c8ad0cff75d4913042"
+                "sha256": "b7d23e93a34537ce332708269a0d1404788a5b5e1949e82f5535fce51b3ea95b"
             },
             {
                 "coord": "io.vavr:vavr-match:0.10.3",
@@ -1469,17 +1607,6 @@
                 "sha256": "e04ba5195bcd555dc95650f7cc614d151e4bcd52d29a10b8aa2197f3ab89ab9b"
             },
             {
-                "coord": "javax.annotation:jsr250-api:1.0",
-                "file": "v1/https/repo1.maven.org/maven2/javax/annotation/jsr250-api/1.0/jsr250-api-1.0.jar",
-                "directDependencies": [],
-                "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/javax/annotation/jsr250-api/1.0/jsr250-api-1.0.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/javax/annotation/jsr250-api/1.0/jsr250-api-1.0.jar"
-                ],
-                "sha256": "a1a922d0d9b6d183ed3800dfac01d1e1eb159f0e8c6f94736931c1def54a941f"
-            },
-            {
                 "coord": "javax.inject:javax.inject:1",
                 "file": "v1/https/repo1.maven.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar",
                 "directDependencies": [],
@@ -1549,26 +1676,26 @@
                 "coord": "name.falgout.jeffrey.testing.junit5:mockito-extension:1.0.0",
                 "file": "v1/https/repo1.maven.org/maven2/name/falgout/jeffrey/testing/junit5/mockito-extension/1.0.0/mockito-extension-1.0.0.jar",
                 "directDependencies": [
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.guava:guava:32.1.3-jre",
                     "org.junit.jupiter:junit-jupiter-api:5.8.1",
                     "org.mockito:mockito-core:2.15.0"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "org.junit.jupiter:junit-jupiter-api:5.8.1",
                     "org.opentest4j:opentest4j:1.2.0",
-                    "net.bytebuddy:byte-buddy:1.10.10",
                     "org.junit.platform:junit-platform-commons:1.8.1",
                     "org.objenesis:objenesis:2.6",
+                    "net.bytebuddy:byte-buddy:1.12.18",
                     "net.bytebuddy:byte-buddy-agent:1.7.9",
                     "com.google.guava:failureaccess:1.0.1",
                     "org.apiguardian:apiguardian-api:1.1.2",
-                    "org.mockito:mockito-core:2.15.0",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre",
+                    "org.mockito:mockito-core:2.15.0"
                 ],
                 "url": "https://repo1.maven.org/maven2/name/falgout/jeffrey/testing/junit5/mockito-extension/1.0.0/mockito-extension-1.0.0.jar",
                 "mirror_urls": [
@@ -1588,15 +1715,29 @@
                 "sha256": "ac1a993befb528c3271a83a9ad9c42d363d399e9deb26e0470e3c4962066c550"
             },
             {
-                "coord": "net.bytebuddy:byte-buddy:1.10.10",
-                "file": "v1/https/repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.10/byte-buddy-1.10.10.jar",
+                "coord": "net.bytebuddy:byte-buddy:1.12.18",
+                "file": "v1/https/repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.12.18/byte-buddy-1.12.18.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.10/byte-buddy-1.10.10.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.10/byte-buddy-1.10.10.jar"
+                "exclusions": [
+                    "xml-apis:xml-apis"
                 ],
-                "sha256": "3f6d8dbbfcd98291eaedca5a5da644215f76a2a1233ef79519492c043bb3a5b1"
+                "url": "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.12.18/byte-buddy-1.12.18.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.12.18/byte-buddy-1.12.18.jar"
+                ],
+                "sha256": "39200c13a72b6a3f4ec43c7b6d2fb78ecbeb25c29e986f4efa572636b39d750e"
+            },
+            {
+                "coord": "net.bytebuddy:byte-buddy:1.12.18",
+                "file": "v1/https/repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.12.18/byte-buddy-1.12.18.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "url": "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.12.18/byte-buddy-1.12.18.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.12.18/byte-buddy-1.12.18.jar"
+                ],
+                "sha256": "39200c13a72b6a3f4ec43c7b6d2fb78ecbeb25c29e986f4efa572636b39d750e"
             },
             {
                 "coord": "net.java.dev.jna:jna:5.8.0",
@@ -1610,6 +1751,17 @@
                 "sha256": "930273cc1c492f25661ea62413a6da3fd7f6e01bf1c4dcc0817fc8696a7b07ac"
             },
             {
+                "coord": "net.ltgt.gradle.incap:incap:0.2",
+                "file": "v1/https/repo1.maven.org/maven2/net/ltgt/gradle/incap/incap/0.2/incap-0.2.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "url": "https://repo1.maven.org/maven2/net/ltgt/gradle/incap/incap/0.2/incap-0.2.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/net/ltgt/gradle/incap/incap/0.2/incap-0.2.jar"
+                ],
+                "sha256": "b625b9806b0f1e4bc7a2e3457119488de3cd57ea20feedd513db070a573a4ffd"
+            },
+            {
                 "coord": "net.sargue:mailgun:1.10.0",
                 "file": "v1/https/repo1.maven.org/maven2/net/sargue/mailgun/1.10.0/mailgun-1.10.0.jar",
                 "directDependencies": [
@@ -1618,6 +1770,7 @@
                 ],
                 "dependencies": [
                     "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.javassist:javassist:3.20.0-GA",
                     "org.glassfish.jersey.core:jersey-common:2.25",
                     "org.glassfish.jersey.bundles.repackaged:jersey-guava:2.25",
                     "org.glassfish.jersey.media:jersey-media-multipart:2.25",
@@ -1630,7 +1783,6 @@
                     "org.glassfish.jersey.core:jersey-client:2.25",
                     "javax.inject:javax.inject:1",
                     "org.glassfish.hk2:hk2-api:2.5.0-b30",
-                    "org.javassist:javassist:3.24.0-GA",
                     "org.glassfish.hk2.external:javax.inject:2.5.0-b30"
                 ],
                 "url": "https://repo1.maven.org/maven2/net/sargue/mailgun/1.10.0/mailgun-1.10.0.jar",
@@ -1758,40 +1910,26 @@
                 "sha256": "11d134b245e9cacc474514d2d66b5b8618f8039a1465cdc55bbc0b34e0008b7a"
             },
             {
-                "coord": "org.checkerframework:checker-qual:3.5.0",
-                "file": "v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/3.5.0/checker-qual-3.5.0.jar",
+                "coord": "org.checkerframework:checker-qual:3.37.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.5.0/checker-qual-3.5.0.jar",
+                "url": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.5.0/checker-qual-3.5.0.jar"
+                    "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.jar"
                 ],
-                "sha256": "729990b3f18a95606fc2573836b6958bcdb44cb52bfbd1b7aa9c339cff35a5a4"
+                "sha256": "e4ce1376cc2735e1dde220b62ad0913f51297704daad155a33f386bc5db0d9f7"
             },
             {
-                "coord": "org.codehaus.mojo:animal-sniffer-annotations:1.19",
-                "file": "v1/https/repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.19/animal-sniffer-annotations-1.19.jar",
+                "coord": "org.codehaus.mojo:animal-sniffer-annotations:1.23",
+                "file": "v1/https/repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.23/animal-sniffer-annotations-1.23.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.19/animal-sniffer-annotations-1.19.jar",
+                "url": "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.23/animal-sniffer-annotations-1.23.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.19/animal-sniffer-annotations-1.19.jar"
+                    "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.23/animal-sniffer-annotations-1.23.jar"
                 ],
-                "sha256": "e67ec27ceeaf13ab5d54cf5fdbcc544c41b4db8d02d9f006678cca2c7c13ee9d"
-            },
-            {
-                "coord": "org.dom4j:dom4j:2.1.3",
-                "file": "v1/https/repo1.maven.org/maven2/org/dom4j/dom4j/2.1.3/dom4j-2.1.3.jar",
-                "directDependencies": [],
-                "dependencies": [],
-                "exclusions": [
-                    "*:*"
-                ],
-                "url": "https://repo1.maven.org/maven2/org/dom4j/dom4j/2.1.3/dom4j-2.1.3.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/dom4j/dom4j/2.1.3/dom4j-2.1.3.jar"
-                ],
-                "sha256": "549f3007c6290f6a901e57d1d331b4ed0e6bf7384f78bf10316ffceeca834de6"
+                "sha256": "9ffe526bf43a6348e9d8b33b9cd6f580a7f5eed0cf055913007eda263de974d0"
             },
             {
                 "coord": "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b30",
@@ -1886,18 +2024,18 @@
                 "coord": "org.glassfish.hk2:hk2-locator:2.5.0-b30",
                 "file": "v1/https/repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator/2.5.0-b30/hk2-locator-2.5.0-b30.jar",
                 "directDependencies": [
+                    "org.javassist:javassist:3.20.0-GA",
                     "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b30",
                     "org.glassfish.hk2:hk2-utils:2.5.0-b30",
                     "org.glassfish.hk2:hk2-api:2.5.0-b30",
-                    "org.javassist:javassist:3.24.0-GA",
                     "org.glassfish.hk2.external:javax.inject:2.5.0-b30"
                 ],
                 "dependencies": [
+                    "org.javassist:javassist:3.20.0-GA",
                     "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b30",
                     "org.glassfish.hk2:hk2-utils:2.5.0-b30",
                     "javax.inject:javax.inject:1",
                     "org.glassfish.hk2:hk2-api:2.5.0-b30",
-                    "org.javassist:javassist:3.24.0-GA",
                     "org.glassfish.hk2.external:javax.inject:2.5.0-b30"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/glassfish/hk2/hk2-locator/2.5.0-b30/hk2-locator-2.5.0-b30.jar",
@@ -2011,6 +2149,7 @@
                 ],
                 "dependencies": [
                     "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.javassist:javassist:3.20.0-GA",
                     "org.glassfish.jersey.core:jersey-common:2.25",
                     "org.glassfish.jersey.bundles.repackaged:jersey-guava:2.25",
                     "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b30",
@@ -2020,7 +2159,6 @@
                     "javax.ws.rs:javax.ws.rs-api:2.0.1",
                     "javax.inject:javax.inject:1",
                     "org.glassfish.hk2:hk2-api:2.5.0-b30",
-                    "org.javassist:javassist:3.24.0-GA",
                     "org.glassfish.hk2.external:javax.inject:2.5.0-b30"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-client/2.25/jersey-client-2.25.jar",
@@ -2043,6 +2181,7 @@
                 ],
                 "dependencies": [
                     "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.javassist:javassist:3.20.0-GA",
                     "org.glassfish.jersey.bundles.repackaged:jersey-guava:2.25",
                     "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b30",
                     "org.glassfish.hk2:hk2-utils:2.5.0-b30",
@@ -2051,7 +2190,6 @@
                     "javax.ws.rs:javax.ws.rs-api:2.0.1",
                     "javax.inject:javax.inject:1",
                     "org.glassfish.hk2:hk2-api:2.5.0-b30",
-                    "org.javassist:javassist:3.24.0-GA",
                     "org.glassfish.hk2.external:javax.inject:2.5.0-b30"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/core/jersey-common/2.25/jersey-common-2.25.jar",
@@ -2069,6 +2207,7 @@
                 ],
                 "dependencies": [
                     "org.glassfish.hk2:osgi-resource-locator:1.0.1",
+                    "org.javassist:javassist:3.20.0-GA",
                     "org.glassfish.jersey.core:jersey-common:2.25",
                     "org.glassfish.jersey.bundles.repackaged:jersey-guava:2.25",
                     "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b30",
@@ -2079,7 +2218,6 @@
                     "javax.ws.rs:javax.ws.rs-api:2.0.1",
                     "javax.inject:javax.inject:1",
                     "org.glassfish.hk2:hk2-api:2.5.0-b30",
-                    "org.javassist:javassist:3.24.0-GA",
                     "org.glassfish.hk2.external:javax.inject:2.5.0-b30"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/glassfish/jersey/media/jersey-media-multipart/2.25/jersey-media-multipart-2.25.jar",
@@ -2100,164 +2238,144 @@
                 "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
             },
             {
-                "coord": "org.hibernate.common:hibernate-commons-annotations:5.1.0.Final",
-                "file": "v1/https/repo1.maven.org/maven2/org/hibernate/common/hibernate-commons-annotations/5.1.0.Final/hibernate-commons-annotations-5.1.0.Final.jar",
+                "coord": "org.hibernate.common:hibernate-commons-annotations:5.1.2.Final",
+                "file": "v1/https/repo1.maven.org/maven2/org/hibernate/common/hibernate-commons-annotations/5.1.2.Final/hibernate-commons-annotations-5.1.2.Final.jar",
                 "directDependencies": [
-                    "org.jboss.logging:jboss-logging:3.3.2.Final"
+                    "org.jboss.logging:jboss-logging:3.4.3.Final"
                 ],
                 "dependencies": [
-                    "org.jboss.logging:jboss-logging:3.3.2.Final"
+                    "org.jboss.logging:jboss-logging:3.4.3.Final"
                 ],
                 "exclusions": [
                     "xml-apis:xml-apis"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/hibernate/common/hibernate-commons-annotations/5.1.0.Final/hibernate-commons-annotations-5.1.0.Final.jar",
+                "url": "https://repo1.maven.org/maven2/org/hibernate/common/hibernate-commons-annotations/5.1.2.Final/hibernate-commons-annotations-5.1.2.Final.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/hibernate/common/hibernate-commons-annotations/5.1.0.Final/hibernate-commons-annotations-5.1.0.Final.jar"
+                    "https://repo1.maven.org/maven2/org/hibernate/common/hibernate-commons-annotations/5.1.2.Final/hibernate-commons-annotations-5.1.2.Final.jar"
                 ],
-                "sha256": "1e3bfcfe9efdb40e9d3c084c9bcf8597e492e30294c7e40b56ed18a67c2838cd"
+                "sha256": "1c7ce712b2679fea0a5441eb02a04144297125b768944819be0765befb996275"
             },
             {
-                "coord": "org.hibernate:hibernate-c3p0:5.4.19.Final",
-                "file": "v1/https/repo1.maven.org/maven2/org/hibernate/hibernate-c3p0/5.4.19.Final/hibernate-c3p0-5.4.19.Final.jar",
+                "coord": "org.hibernate:hibernate-c3p0:5.6.15.Final",
+                "file": "v1/https/repo1.maven.org/maven2/org/hibernate/hibernate-c3p0/5.6.15.Final/hibernate-c3p0-5.6.15.Final.jar",
                 "directDependencies": [
                     "com.mchange:c3p0:0.9.5.5",
-                    "org.hibernate:hibernate-core:5.4.19.Final",
-                    "org.jboss.logging:jboss-logging:3.3.2.Final"
+                    "org.hibernate:hibernate-core:5.6.15.Final",
+                    "org.jboss.logging:jboss-logging:3.4.3.Final"
                 ],
                 "dependencies": [
                     "javax.persistence:javax.persistence-api:2.2",
                     "javax.xml.bind:jaxb-api:2.3.1",
                     "com.sun.istack:istack-commons-runtime:3.0.7",
+                    "org.jboss:jandex:2.4.2.Final",
                     "com.sun.xml.fastinfoset:FastInfoset:1.2.15",
                     "javax.activation:javax.activation-api:1.2.0",
                     "org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.1.1.Final",
+                    "org.jboss.logging:jboss-logging:3.4.3.Final",
                     "org.jvnet.staxex:stax-ex:1.8",
                     "com.mchange:c3p0:0.9.5.5",
-                    "org.hibernate:hibernate-core:5.4.19.Final",
                     "org.glassfish.jaxb:txw2:2.3.1",
                     "antlr:antlr:2.7.7",
-                    "net.bytebuddy:byte-buddy:1.10.10",
                     "com.mchange:mchange-commons-java:0.2.19",
-                    "org.hibernate.common:hibernate-commons-annotations:5.1.0.Final",
-                    "org.jboss.logging:jboss-logging:3.3.2.Final",
+                    "net.bytebuddy:byte-buddy:1.12.18",
                     "com.fasterxml:classmate:1.5.1",
-                    "org.jboss:jandex:2.1.3.Final",
-                    "org.glassfish.jaxb:jaxb-runtime:2.3.1",
-                    "org.javassist:javassist:3.24.0-GA",
-                    "org.dom4j:dom4j:2.1.3"
-                ],
-                "url": "https://repo1.maven.org/maven2/org/hibernate/hibernate-c3p0/5.4.19.Final/hibernate-c3p0-5.4.19.Final.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/hibernate/hibernate-c3p0/5.4.19.Final/hibernate-c3p0-5.4.19.Final.jar"
-                ],
-                "sha256": "927f4ab5d8fc47f0803ed5b01c017378bfb7d3e1c40a13d90ddc31801a90ee2c"
-            },
-            {
-                "coord": "org.hibernate:hibernate-core:5.4.19.Final",
-                "file": "v1/https/repo1.maven.org/maven2/org/hibernate/hibernate-core/5.4.19.Final/hibernate-core-5.4.19.Final.jar",
-                "directDependencies": [
-                    "javax.persistence:javax.persistence-api:2.2",
-                    "javax.xml.bind:jaxb-api:2.3.1",
-                    "javax.activation:javax.activation-api:1.2.0",
-                    "org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.1.1.Final",
-                    "antlr:antlr:2.7.7",
-                    "net.bytebuddy:byte-buddy:1.10.10",
-                    "org.hibernate.common:hibernate-commons-annotations:5.1.0.Final",
-                    "org.jboss.logging:jboss-logging:3.3.2.Final",
-                    "com.fasterxml:classmate:1.5.1",
-                    "org.jboss:jandex:2.1.3.Final",
-                    "org.glassfish.jaxb:jaxb-runtime:2.3.1",
-                    "org.javassist:javassist:3.24.0-GA",
-                    "org.dom4j:dom4j:2.1.3"
-                ],
-                "dependencies": [
-                    "javax.persistence:javax.persistence-api:2.2",
-                    "javax.xml.bind:jaxb-api:2.3.1",
-                    "com.sun.istack:istack-commons-runtime:3.0.7",
-                    "com.sun.xml.fastinfoset:FastInfoset:1.2.15",
-                    "javax.activation:javax.activation-api:1.2.0",
-                    "org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.1.1.Final",
-                    "org.jvnet.staxex:stax-ex:1.8",
-                    "org.glassfish.jaxb:txw2:2.3.1",
-                    "antlr:antlr:2.7.7",
-                    "net.bytebuddy:byte-buddy:1.10.10",
-                    "org.hibernate.common:hibernate-commons-annotations:5.1.0.Final",
-                    "org.jboss.logging:jboss-logging:3.3.2.Final",
-                    "com.fasterxml:classmate:1.5.1",
-                    "org.jboss:jandex:2.1.3.Final",
-                    "org.glassfish.jaxb:jaxb-runtime:2.3.1",
-                    "org.javassist:javassist:3.24.0-GA",
-                    "org.dom4j:dom4j:2.1.3"
-                ],
-                "url": "https://repo1.maven.org/maven2/org/hibernate/hibernate-core/5.4.19.Final/hibernate-core-5.4.19.Final.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/hibernate/hibernate-core/5.4.19.Final/hibernate-core-5.4.19.Final.jar"
-                ],
-                "sha256": "fc53563c0c691ff7b30936aa62fa6d73ff1669496d5eb70a3bb2aed34e4f40d3"
-            },
-            {
-                "coord": "org.hibernate:hibernate-jpamodelgen:5.4.19.Final",
-                "file": "v1/https/repo1.maven.org/maven2/org/hibernate/hibernate-jpamodelgen/5.4.19.Final/hibernate-jpamodelgen-5.4.19.Final.jar",
-                "directDependencies": [
-                    "javax.xml.bind:jaxb-api:2.3.1",
-                    "org.glassfish.jaxb:jaxb-runtime:2.3.1",
-                    "org.jboss.logging:jboss-logging:3.3.2.Final"
-                ],
-                "dependencies": [
-                    "javax.xml.bind:jaxb-api:2.3.1",
-                    "com.sun.istack:istack-commons-runtime:3.0.7",
-                    "com.sun.xml.fastinfoset:FastInfoset:1.2.15",
-                    "javax.activation:javax.activation-api:1.2.0",
-                    "org.jvnet.staxex:stax-ex:1.8",
-                    "org.glassfish.jaxb:txw2:2.3.1",
-                    "org.jboss.logging:jboss-logging:3.3.2.Final",
+                    "org.hibernate:hibernate-core:5.6.15.Final",
+                    "org.hibernate.common:hibernate-commons-annotations:5.1.2.Final",
                     "org.glassfish.jaxb:jaxb-runtime:2.3.1"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/hibernate/hibernate-jpamodelgen/5.4.19.Final/hibernate-jpamodelgen-5.4.19.Final.jar",
+                "url": "https://repo1.maven.org/maven2/org/hibernate/hibernate-c3p0/5.6.15.Final/hibernate-c3p0-5.6.15.Final.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/hibernate/hibernate-jpamodelgen/5.4.19.Final/hibernate-jpamodelgen-5.4.19.Final.jar"
+                    "https://repo1.maven.org/maven2/org/hibernate/hibernate-c3p0/5.6.15.Final/hibernate-c3p0-5.6.15.Final.jar"
                 ],
-                "sha256": "fd1c0ac42dab94564120289b80b8a89b5b4d598fc80caf296aadee72b28fce43"
+                "sha256": "02714f37cc3a35d7a2197de91db631a2c4dfd3f705ab2f66c5aab7401e0d4cc3"
             },
             {
-                "coord": "org.javassist:javassist:3.24.0-GA",
-                "file": "v1/https/repo1.maven.org/maven2/org/javassist/javassist/3.24.0-GA/javassist-3.24.0-GA.jar",
+                "coord": "org.hibernate:hibernate-core:5.6.15.Final",
+                "file": "v1/https/repo1.maven.org/maven2/org/hibernate/hibernate-core/5.6.15.Final/hibernate-core-5.6.15.Final.jar",
+                "directDependencies": [
+                    "javax.persistence:javax.persistence-api:2.2",
+                    "javax.xml.bind:jaxb-api:2.3.1",
+                    "org.jboss:jandex:2.4.2.Final",
+                    "javax.activation:javax.activation-api:1.2.0",
+                    "org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.1.1.Final",
+                    "org.jboss.logging:jboss-logging:3.4.3.Final",
+                    "antlr:antlr:2.7.7",
+                    "net.bytebuddy:byte-buddy:1.12.18",
+                    "com.fasterxml:classmate:1.5.1",
+                    "org.hibernate.common:hibernate-commons-annotations:5.1.2.Final",
+                    "org.glassfish.jaxb:jaxb-runtime:2.3.1"
+                ],
+                "dependencies": [
+                    "javax.persistence:javax.persistence-api:2.2",
+                    "javax.xml.bind:jaxb-api:2.3.1",
+                    "com.sun.istack:istack-commons-runtime:3.0.7",
+                    "org.jboss:jandex:2.4.2.Final",
+                    "com.sun.xml.fastinfoset:FastInfoset:1.2.15",
+                    "javax.activation:javax.activation-api:1.2.0",
+                    "org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.1.1.Final",
+                    "org.jboss.logging:jboss-logging:3.4.3.Final",
+                    "org.jvnet.staxex:stax-ex:1.8",
+                    "org.glassfish.jaxb:txw2:2.3.1",
+                    "antlr:antlr:2.7.7",
+                    "net.bytebuddy:byte-buddy:1.12.18",
+                    "com.fasterxml:classmate:1.5.1",
+                    "org.hibernate.common:hibernate-commons-annotations:5.1.2.Final",
+                    "org.glassfish.jaxb:jaxb-runtime:2.3.1"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/hibernate/hibernate-core/5.6.15.Final/hibernate-core-5.6.15.Final.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/hibernate/hibernate-core/5.6.15.Final/hibernate-core-5.6.15.Final.jar"
+                ],
+                "sha256": "9b5a7e1faf094d98c9e33b6a27c4cae42e52f65b139091c08b9a0b4a9858b207"
+            },
+            {
+                "coord": "org.hibernate:hibernate-jpamodelgen:5.6.15.Final",
+                "file": "v1/https/repo1.maven.org/maven2/org/hibernate/hibernate-jpamodelgen/5.6.15.Final/hibernate-jpamodelgen-5.6.15.Final.jar",
+                "directDependencies": [
+                    "javax.xml.bind:jaxb-api:2.3.1",
+                    "org.glassfish.jaxb:jaxb-runtime:2.3.1",
+                    "org.jboss.logging:jboss-logging:3.4.3.Final"
+                ],
+                "dependencies": [
+                    "javax.xml.bind:jaxb-api:2.3.1",
+                    "com.sun.istack:istack-commons-runtime:3.0.7",
+                    "com.sun.xml.fastinfoset:FastInfoset:1.2.15",
+                    "javax.activation:javax.activation-api:1.2.0",
+                    "org.jboss.logging:jboss-logging:3.4.3.Final",
+                    "org.jvnet.staxex:stax-ex:1.8",
+                    "org.glassfish.jaxb:txw2:2.3.1",
+                    "org.glassfish.jaxb:jaxb-runtime:2.3.1"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/hibernate/hibernate-jpamodelgen/5.6.15.Final/hibernate-jpamodelgen-5.6.15.Final.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/hibernate/hibernate-jpamodelgen/5.6.15.Final/hibernate-jpamodelgen-5.6.15.Final.jar"
+                ],
+                "sha256": "4eeb2fa1dc071da4ee73c195abba636edeaf859772f08df77f9d00861ec37ef5"
+            },
+            {
+                "coord": "org.javassist:javassist:3.20.0-GA",
+                "file": "v1/https/repo1.maven.org/maven2/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/org/javassist/javassist/3.24.0-GA/javassist-3.24.0-GA.jar",
+                "url": "https://repo1.maven.org/maven2/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/javassist/javassist/3.24.0-GA/javassist-3.24.0-GA.jar"
+                    "https://repo1.maven.org/maven2/org/javassist/javassist/3.20.0-GA/javassist-3.20.0-GA.jar"
                 ],
-                "sha256": "aba81efa678b621203fb89aeff81d6f126f7a9dd709401e5609c42976684ae23"
+                "sha256": "d7691062fb779c2381640c8f72acba2c23873b01c243866d41c15dc4c8848ea2"
             },
             {
-                "coord": "org.javassist:javassist:3.24.0-GA",
-                "file": "v1/https/repo1.maven.org/maven2/org/javassist/javassist/3.24.0-GA/javassist-3.24.0-GA.jar",
+                "coord": "org.jboss.logging:jboss-logging:3.4.3.Final",
+                "file": "v1/https/repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.4.3.Final/jboss-logging-3.4.3.Final.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "xml-apis:xml-apis"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/javassist/javassist/3.24.0-GA/javassist-3.24.0-GA.jar",
+                "url": "https://repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.4.3.Final/jboss-logging-3.4.3.Final.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/javassist/javassist/3.24.0-GA/javassist-3.24.0-GA.jar"
+                    "https://repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.4.3.Final/jboss-logging-3.4.3.Final.jar"
                 ],
-                "sha256": "aba81efa678b621203fb89aeff81d6f126f7a9dd709401e5609c42976684ae23"
-            },
-            {
-                "coord": "org.jboss.logging:jboss-logging:3.3.2.Final",
-                "file": "v1/https/repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.3.2.Final/jboss-logging-3.3.2.Final.jar",
-                "directDependencies": [],
-                "dependencies": [],
-                "exclusions": [
-                    "xml-apis:xml-apis"
-                ],
-                "url": "https://repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.3.2.Final/jboss-logging-3.3.2.Final.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.3.2.Final/jboss-logging-3.3.2.Final.jar"
-                ],
-                "sha256": "cb914bfe888da7d9162e965ac8b0d6f28f2f32eca944a00fbbf6dd3cf1aacc13"
+                "sha256": "0b324cca4d550060e51e70cc0045a6cce62f264278ec1f5082aafeb670fcac49"
             },
             {
                 "coord": "org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:1.1.1.Final",
@@ -2274,18 +2392,99 @@
                 "sha256": "a310a50b9bdc44aaf36362dc9bb212235a147ffa8ef72dc9544a39c329eabbc3"
             },
             {
-                "coord": "org.jboss:jandex:2.1.3.Final",
-                "file": "v1/https/repo1.maven.org/maven2/org/jboss/jandex/2.1.3.Final/jandex-2.1.3.Final.jar",
+                "coord": "org.jboss:jandex:2.4.2.Final",
+                "file": "v1/https/repo1.maven.org/maven2/org/jboss/jandex/2.4.2.Final/jandex-2.4.2.Final.jar",
                 "directDependencies": [],
                 "dependencies": [],
                 "exclusions": [
                     "xml-apis:xml-apis"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/jboss/jandex/2.1.3.Final/jandex-2.1.3.Final.jar",
+                "url": "https://repo1.maven.org/maven2/org/jboss/jandex/2.4.2.Final/jandex-2.4.2.Final.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/jboss/jandex/2.1.3.Final/jandex-2.1.3.Final.jar"
+                    "https://repo1.maven.org/maven2/org/jboss/jandex/2.4.2.Final/jandex-2.4.2.Final.jar"
                 ],
-                "sha256": "a003dcfe44818b7e02166a153342fcf792b8c569ac660496aaddc86ea7c2a0f0"
+                "sha256": "3f2ce55c7d71e744581488dc5105806aa8084c08e6e916a019bab8f8698994f0"
+            },
+            {
+                "coord": "org.jetbrains.kotlin:kotlin-reflect:1.6.10",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.6.10/kotlin-reflect-1.6.10.jar",
+                "directDependencies": [
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0"
+                ],
+                "dependencies": [
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
+                    "org.jetbrains:annotations:17.0.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.6.10/kotlin-reflect-1.6.10.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-reflect/1.6.10/kotlin-reflect-1.6.10.jar"
+                ],
+                "sha256": "3277ac102ae17aad10a55abec75ff5696c8d109790396434b496e75087854203"
+            },
+            {
+                "coord": "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0/kotlin-stdlib-common-1.8.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0/kotlin-stdlib-common-1.8.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.8.0/kotlin-stdlib-common-1.8.0.jar"
+                ],
+                "sha256": "78ef93b59e603cc0fe51def9bd4c037b07cbace3b3b7806d1a490a42bc1f4cb2"
+            },
+            {
+                "coord": "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.6.10/kotlin-stdlib-jdk7-1.6.10.jar",
+                "directDependencies": [
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0"
+                ],
+                "dependencies": [
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
+                    "org.jetbrains:annotations:17.0.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.6.10/kotlin-stdlib-jdk7-1.6.10.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk7/1.6.10/kotlin-stdlib-jdk7-1.6.10.jar"
+                ],
+                "sha256": "2aedcdc6b69b33bdf5cc235bcea88e7cf6601146bb6bcdffdb312bbacd7be261"
+            },
+            {
+                "coord": "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.6.10/kotlin-stdlib-jdk8-1.6.10.jar",
+                "directDependencies": [
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10"
+                ],
+                "dependencies": [
+                    "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
+                    "org.jetbrains:annotations:17.0.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.6.10/kotlin-stdlib-jdk8-1.6.10.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.6.10/kotlin-stdlib-jdk8-1.6.10.jar"
+                ],
+                "sha256": "1456d82d039ea30d8485b032901f52bbf07e7cdbe8bb1f8708ad32a8574c41ce"
+            },
+            {
+                "coord": "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.8.0/kotlin-stdlib-1.8.0.jar",
+                "directDependencies": [
+                    "org.jetbrains:annotations:17.0.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0"
+                ],
+                "dependencies": [
+                    "org.jetbrains:annotations:17.0.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0"
+                ],
+                "url": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.8.0/kotlin-stdlib-1.8.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.8.0/kotlin-stdlib-1.8.0.jar"
+                ],
+                "sha256": "c77bef8774640b9fb9d6e217459ff220dae59878beb7d2e4b430506feffc654e"
             },
             {
                 "coord": "org.jetbrains:annotations:17.0.0",
@@ -2314,30 +2513,30 @@
                 "file": "v1/https/repo1.maven.org/maven2/org/jtwig/jtwig-core/5.86.1.RELEASE/jtwig-core-5.86.1.RELEASE.jar",
                 "directDependencies": [
                     "org.jtwig:jtwig-reflection:5.86.1.RELEASE",
-                    "com.google.guava:guava:30.1.1-android",
                     "org.parboiled:parboiled-java:1.1.7",
                     "org.slf4j:slf4j-api:1.7.32",
                     "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2",
-                    "org.apache.commons:commons-lang3:3.11"
+                    "org.apache.commons:commons-lang3:3.11",
+                    "com.google.guava:guava:32.1.3-jre"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "org.ow2.asm:asm-tree:5.0.3",
                     "org.jtwig:jtwig-reflection:5.86.1.RELEASE",
                     "org.parboiled:parboiled-core:1.1.7",
                     "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
                     "org.ow2.asm:asm:5.0.3",
-                    "com.google.guava:guava:30.1.1-android",
                     "org.parboiled:parboiled-java:1.1.7",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "org.ow2.asm:asm-analysis:5.0.3",
                     "org.slf4j:slf4j-api:1.7.32",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2",
                     "org.apache.commons:commons-lang3:3.11",
                     "org.ow2.asm:asm-util:5.0.3",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/jtwig/jtwig-core/5.86.1.RELEASE/jtwig-core-5.86.1.RELEASE.jar",
                 "mirror_urls": [
@@ -2349,20 +2548,20 @@
                 "coord": "org.jtwig:jtwig-reflection:5.86.1.RELEASE",
                 "file": "v1/https/repo1.maven.org/maven2/org/jtwig/jtwig-reflection/5.86.1.RELEASE/jtwig-reflection-5.86.1.RELEASE.jar",
                 "directDependencies": [
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.guava:guava:32.1.3-jre",
                     "org.apache.commons:commons-lang3:3.11",
                     "org.slf4j:slf4j-api:1.7.32"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.j2objc:j2objc-annotations:1.3",
+                    "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.guava:guava:30.1.1-android",
+                    "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.37.0",
                     "org.slf4j:slf4j-api:1.7.32",
                     "com.google.guava:failureaccess:1.0.1",
                     "org.apache.commons:commons-lang3:3.11",
-                    "com.google.errorprone:error_prone_annotations:2.16",
-                    "org.checkerframework:checker-compat-qual:2.5.5"
+                    "com.google.guava:guava:32.1.3-jre"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/jtwig/jtwig-reflection/5.86.1.RELEASE/jtwig-reflection-5.86.1.RELEASE.jar",
                 "mirror_urls": [
@@ -2569,13 +2768,13 @@
                 "coord": "org.mockito:mockito-core:2.15.0",
                 "file": "v1/https/repo1.maven.org/maven2/org/mockito/mockito-core/2.15.0/mockito-core-2.15.0.jar",
                 "directDependencies": [
-                    "net.bytebuddy:byte-buddy:1.10.10",
+                    "net.bytebuddy:byte-buddy:1.12.18",
                     "net.bytebuddy:byte-buddy-agent:1.7.9",
                     "org.objenesis:objenesis:2.6"
                 ],
                 "dependencies": [
                     "net.bytebuddy:byte-buddy-agent:1.7.9",
-                    "net.bytebuddy:byte-buddy:1.10.10",
+                    "net.bytebuddy:byte-buddy:1.12.18",
                     "org.objenesis:objenesis:2.6"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/mockito/mockito-core/2.15.0/mockito-core-2.15.0.jar",
@@ -2702,10 +2901,10 @@
                 "coord": "org.postgresql:postgresql:42.3.8",
                 "file": "v1/https/repo1.maven.org/maven2/org/postgresql/postgresql/42.3.8/postgresql-42.3.8.jar",
                 "directDependencies": [
-                    "org.checkerframework:checker-qual:3.5.0"
+                    "org.checkerframework:checker-qual:3.37.0"
                 ],
                 "dependencies": [
-                    "org.checkerframework:checker-qual:3.5.0"
+                    "org.checkerframework:checker-qual:3.37.0"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.3.8/postgresql-42.3.8.jar",
                 "mirror_urls": [
@@ -2900,13 +3099,13 @@
                 "coord": "redis.clients:jedis:4.2.3",
                 "file": "v1/https/repo1.maven.org/maven2/redis/clients/jedis/4.2.3/jedis-4.2.3.jar",
                 "directDependencies": [
-                    "com.google.code.gson:gson:2.10",
+                    "com.google.code.gson:gson:2.10.1",
                     "org.apache.commons:commons-pool2:2.11.1",
                     "org.json:json:20211205",
                     "org.slf4j:slf4j-api:1.7.32"
                 ],
                 "dependencies": [
-                    "com.google.code.gson:gson:2.10",
+                    "com.google.code.gson:gson:2.10.1",
                     "org.json:json:20211205",
                     "org.apache.commons:commons-pool2:2.11.1",
                     "org.slf4j:slf4j-api:1.7.32"
@@ -2919,6 +3118,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": 1832705369
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -1205233796
     }
 }
