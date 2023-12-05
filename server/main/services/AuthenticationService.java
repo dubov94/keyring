@@ -177,12 +177,6 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   }
 
   @Override
-  public void getSalt(GetSaltRequest request, StreamObserver<GetSaltResponse> response) {
-    response.onNext(_getSalt(request));
-    response.onCompleted();
-  }
-
-  @Override
   public void fetchSalt(GetSaltRequest request, StreamObserver<GetSaltResponse> response) {
     response.onNext(_getSalt(request));
     response.onCompleted();

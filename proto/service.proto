@@ -116,10 +116,6 @@ service Authentication {
             body: "*"
         };
     }
-    rpc GetSalt (GetSaltRequest) returns (GetSaltResponse) {
-        option deprecated = true;
-        option (google.api.http) = { get: "/authentication/get-salt/{username}" };
-    }
     rpc FetchSalt (GetSaltRequest) returns (GetSaltResponse) {
         option (google.api.http) = {
             // Not `GET` to hide the credentials.
