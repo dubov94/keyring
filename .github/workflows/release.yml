@@ -9,12 +9,12 @@ jobs:
   grpc_gateway:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: mishas/setup-bazelisk-action@v1
+      - uses: bazelbuild/setup-bazelisk@v2
       - run: bazelisk run //grpc_gateway
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -25,12 +25,12 @@ jobs:
   ip_geolocation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: mishas/setup-bazelisk-action@v1
+      - uses: bazelbuild/setup-bazelisk@v2
       - run: bazelisk run //ip_geolocation
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -41,13 +41,13 @@ jobs:
   pwa:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: mishas/setup-bazelisk-action@v1
+      - uses: bazelbuild/setup-bazelisk@v2
       - run: bazelisk test $(bazelisk query 'tests(//pwa/...)')
       - run: bazelisk run //pwa
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -58,16 +58,16 @@ jobs:
   server:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/setup-java@v1
         with:
           java-version: 11
-      - uses: mishas/setup-bazelisk-action@v1
+      - uses: bazelbuild/setup-bazelisk@v2
       - run: bazelisk test $(bazelisk query 'tests(//server/main/...)')
       - run: bazelisk run //server
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -78,16 +78,16 @@ jobs:
   mailer:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/setup-java@v1
         with:
           java-version: 11
-      - uses: mishas/setup-bazelisk-action@v1
+      - uses: bazelbuild/setup-bazelisk@v2
       - run: bazelisk test $(bazelisk query 'tests(//server/mailer/...)')
       - run: bazelisk run //server:mailer
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -98,16 +98,16 @@ jobs:
   janitor:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/setup-java@v1
         with:
           java-version: 11
-      - uses: mishas/setup-bazelisk-action@v1
+      - uses: bazelbuild/setup-bazelisk@v2
       - run: bazelisk test $(bazelisk query 'tests(//server/janitor/...)')
       - run: bazelisk run //server:janitor
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -118,12 +118,12 @@ jobs:
   liquibase:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: mishas/setup-bazelisk-action@v1
+      - uses: bazelbuild/setup-bazelisk@v2
       - run: bazelisk run //server:liquibase
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -134,12 +134,12 @@ jobs:
   archiver:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: mishas/setup-bazelisk-action@v1
+      - uses: bazelbuild/setup-bazelisk@v2
       - run: bazelisk run //server/archiver
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -150,12 +150,12 @@ jobs:
   restorer:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: mishas/setup-bazelisk-action@v1
+      - uses: bazelbuild/setup-bazelisk@v2
       - run: bazelisk run //server/restorer
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -166,12 +166,12 @@ jobs:
   redirection:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: mishas/setup-bazelisk-action@v1
+      - uses: bazelbuild/setup-bazelisk@v2
       - run: bazelisk run //redirection
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
