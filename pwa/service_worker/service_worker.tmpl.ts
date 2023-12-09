@@ -214,7 +214,10 @@ const saveClient = async (clientId: string, origin: ClientOrigin) => {
 const loadEntryPoint = async (clientId: string): Promise<Response> => {
   const indexCacheKey = precacheController.getCacheKeyForURL('/index.html');
   // `workbox-precaching` fetches by `indexCacheKey`.
-  const networkPromise: Promise<Response> = fetch(indexCacheKey);
+  const networkPromise: Promise<Response> = fetch(
+    indexCacheKey,
+    { cache: 'reload' }
+  );
   const timeoutPromise: Promise<null> = new Promise((resolve) => {
     setTimeout(() => resolve(null), 2 * 1000);
   });
