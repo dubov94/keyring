@@ -100,7 +100,8 @@ state$.pipe(
 const SESSION_RELATIVE_DURATION_MILLIS = 10 * 60 * 1000
 // then_change
 
-createIdleDetector(1000).pipe(
+//https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timers
+createIdleDetector(4 * 16).pipe(
   // To avoid dispatching `logOut` multiple times.
   takeUntil(action$.pipe(filter(isActionOf(logOut))))
 ).subscribe((periodMillis) => {
