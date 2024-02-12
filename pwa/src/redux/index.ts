@@ -34,7 +34,8 @@ Object.freeze(action$)
 const epicMiddleware = createEpicMiddleware<RootAction, RootAction, RootState>()
 export const store = configureStore({
   reducer,
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(epicMiddleware)
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(epicMiddleware),
+  devTools: !['production'].includes(process.env.NODE_ENV)
 })
 epicMiddleware.run(combineEpics(
   ...Object.values(authnEpics),
@@ -100,7 +101,7 @@ state$.pipe(
 const SESSION_RELATIVE_DURATION_MILLIS = 10 * 60 * 1000
 // then_change
 
-//https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timers
+// https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#timers
 createIdleDetector(4 * 16).pipe(
   // To avoid dispatching `logOut` multiple times.
   takeUntil(action$.pipe(filter(isActionOf(logOut))))
