@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: dubov94/keyring-server:7c6ebb890b58a416316fd0b0da9fa3f663b10814
+        image: dubov94/keyring-server:f85718adef2ab439c40968b792e9517d03ba9c17
         ports:
         - containerPort: 5001
         env:
@@ -41,7 +41,7 @@ spec:
               key: turnstile-secret-key
       initContainers:
       - name: liquibase
-        image: dubov94/keyring-liquibase
+        image: dubov94/keyring-liquibase:f85718adef2ab439c40968b792e9517d03ba9c17
         imagePullPolicy: Always
         env:
         - name: POSTGRES_PASSWORD
