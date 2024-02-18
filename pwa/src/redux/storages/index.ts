@@ -1,6 +1,8 @@
+import { container } from 'tsyringe'
 import { initializeStorage, JsonAccessor } from './accessor'
 
-export const SESSION_STORAGE_ACCESSOR = initializeStorage(sessionStorage, [
+export const SESSION_STORAGE_ACCESSOR_TOKEN = 'SessionStorageAccessorToken'
+export const creatSessionStorageAccessor = () => initializeStorage(sessionStorage, [
   [2, (storageAdapter) => {
     const accessor = new JsonAccessor(storageAdapter)
     const VUEX_KEY = 'vuex'
@@ -11,9 +13,13 @@ export const SESSION_STORAGE_ACCESSOR = initializeStorage(sessionStorage, [
     accessor.del(VUEX_KEY)
   }]
 ])
+export const getSessionStorageAccessor = () => {
+  return container.resolve<JsonAccessor>(SESSION_STORAGE_ACCESSOR_TOKEN)
+}
 
+export const LOCAL_STORAGE_ACCESSOR_TOKEN = 'LocalStorageAccessorToken'
 // if_change(storage_migration)
-export const LOCAL_STORAGE_ACCESSOR = initializeStorage(localStorage, [
+export const createLocalStorageAccessor = () => initializeStorage(localStorage, [
   [2, (storageAdapter) => {
     const accessor = new JsonAccessor(storageAdapter)
     const VUEX_KEY = 'vuex'
@@ -36,3 +42,6 @@ export const LOCAL_STORAGE_ACCESSOR = initializeStorage(localStorage, [
   }]
 ])
 // then_change
+export const getLocalStorageAccessor = () => {
+  return container.resolve<JsonAccessor>(LOCAL_STORAGE_ACCESSOR_TOKEN)
+}

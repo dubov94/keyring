@@ -39,13 +39,27 @@ import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
 import { Flags, FLAGS_TOKEN, readFlagsFromPage } from '@/flags'
 import { getVueI18n } from '@/i18n'
 import { store, state$, action$ } from '@/redux'
-import { injectionsSetUp } from '@/redux/actions'
-import { Router } from '@/router'
+import { injected } from '@/redux/actions'
+import {
+  creatSessionStorageAccessor,
+  SESSION_STORAGE_ACCESSOR_TOKEN,
+  createLocalStorageAccessor,
+  LOCAL_STORAGE_ACCESSOR_TOKEN
+} from '@/redux/storages'
+import { JsonAccessor } from '@/redux/storages/accessor'
+import { router } from '@/router'
 import { TURNSTILE_API_TOKEN } from '@/turnstile_di'
 import { VUE_CONSTRUCTOR_TOKEN } from '@/vue_di'
 
 container.register<Flags>(FLAGS_TOKEN, {
   useValue: readFlagsFromPage()
+})
+
+container.register<JsonAccessor>(SESSION_STORAGE_ACCESSOR_TOKEN, {
+  useValue: creatSessionStorageAccessor()
+})
+container.register<JsonAccessor>(LOCAL_STORAGE_ACCESSOR_TOKEN, {
+  useValue: createLocalStorageAccessor()
 })
 
 container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
@@ -90,7 +104,7 @@ container.register<VueConstructor>(VUE_CONSTRUCTOR_TOKEN, {
   useValue: Vue
 })
 
-store.dispatch(injectionsSetUp())
+store.dispatch(injected())
 
 Vue.use(Vuetify)
 Vue.use(Vuelidate)
@@ -142,7 +156,7 @@ Vue.mixin({
   }
 })
 
-const THEME: Partial<VuetifyThemeVariant> = {
+const variant: Partial<VuetifyThemeVariant> = {
   primary: '#052842',
   secondary: '#b31d1f',
   accent: '#b31d1f'
@@ -158,14 +172,15 @@ const vuetify = new Vuetify({
   },
   theme: {
     themes: {
-      light: THEME,
-      dark: THEME
+      light: variant,
+      dark: variant
     }
   }
 })
-new Vue({
+
+const application = new Vue({
   vuetify,
   render: h => h(Application),
-  router: Router,
+  router,
   i18n: getVueI18n()
 }).$mount('#application')

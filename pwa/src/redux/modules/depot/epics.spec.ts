@@ -13,8 +13,8 @@ import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
 import { createAuthnViaDepotFlowResult, createDepotActivationData, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
-import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
-import { activateDepotEpic, localRehashEpic, masterKeyUpdateEpic, updateEncryptedOtpTokenEpic, updateVaultEpic } from './epics'
+import { generateDepotKeys, depotActivationData, newEncryptedOtpToken, newVault, rehydration } from './actions'
+import { generateDepotKeysEpic, localRehashEpic, masterKeyUpdateEpic, updateEncryptedOtpTokenEpic, updateVaultEpic } from './epics'
 
 describe('updateVaultEpic', () => {
   const depotActivationDataAction = depotActivationData(createDepotActivationData({}))
@@ -101,7 +101,7 @@ describe('updateEncryptedOtpTokenEpic', () => {
   })
 })
 
-describe('activateDepotEpic', () => {
+describe('generateDepotKeysEpic', () => {
   it('emits activation data', async () => {
     const { action$, actionSubject, state$ } = setUpEpicChannels(createStore(reducer))
     const mockSodiumClient = mock(SodiumClient)
@@ -114,8 +114,8 @@ describe('activateDepotEpic', () => {
       useValue: instance(mockSodiumClient)
     })
 
-    const epicTracker = new EpicTracker(activateDepotEpic(action$, state$, {}))
-    actionSubject.next(activateDepot({
+    const epicTracker = new EpicTracker(generateDepotKeysEpic(action$, state$, {}))
+    actionSubject.next(generateDepotKeys({
       username: 'username',
       password: 'password'
     }))
@@ -149,7 +149,7 @@ describe('masterKeyUpdateEpic', () => {
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
-    expect(await drainEpicActions(epicTracker)).to.deep.equal([activateDepot({
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([generateDepotKeys({
       username: 'username',
       password: 'masterKey'
     })])
@@ -159,7 +159,7 @@ describe('masterKeyUpdateEpic', () => {
 describe('localRehashEpic', () => {
   it('activates the depot', async () => {
     const store = createStore(reducer)
-    store.dispatch(rehydrateDepot({
+    store.dispatch(rehydration({
       username: 'username',
       salt: 'salt',
       hash: 'hash',
@@ -179,7 +179,7 @@ describe('localRehashEpic', () => {
     await epicTracker.waitForCompletion()
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      activateDepot({
+      generateDepotKeys({
         username: 'username',
         password: 'password'
       })

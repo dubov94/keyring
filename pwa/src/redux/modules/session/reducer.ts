@@ -3,7 +3,7 @@ import { isActionOf } from 'typesafe-actions'
 import { isActionSuccess } from '@/redux/flow_signal'
 import { remoteAuthnComplete, authnViaDepotSignal, registrationSignal } from '@/redux/modules/authn/actions'
 import { logOut, LogoutTrigger, usernameChangeSignal } from '@/redux/modules/user/account/actions'
-import { rehydrateSession } from './actions'
+import { rehydration } from './actions'
 
 export default createReducer<{
   username: string | null;
@@ -26,7 +26,7 @@ export default createReducer<{
     .addMatcher(isActionSuccess(usernameChangeSignal), (state, action) => {
       state.username = action.payload.data.update
     })
-    .addMatcher(isActionOf(rehydrateSession), (state, action) => {
+    .addMatcher(isActionOf(rehydration), (state, action) => {
       state.username = action.payload.username
     })
     .addMatcher(isActionOf(logOut), (state, action) => {

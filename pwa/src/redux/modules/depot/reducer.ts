@@ -5,7 +5,7 @@ import { isActionSuccess } from '@/redux/flow_signal'
 import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
 import { accountDeletionSignal, localOtpTokenFailure, remoteCredentialsMismatchLocal, usernameChangeSignal } from '@/redux/modules/user/account/actions'
 import { RootAction } from '@/redux/root_action'
-import { clearDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
+import { clearDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydration } from './actions'
 
 type State = {
   username: string | null;
@@ -16,7 +16,7 @@ type State = {
   encryptedOtpToken: string | null;
 }
 
-const initialState = (): State => ({
+const emptyState = (): State => ({
   username: null,
   salt: null,
   hash: null,
@@ -25,14 +25,14 @@ const initialState = (): State => ({
   encryptedOtpToken: null
 })
 
-const toInitialState = (state: State) => {
-  Object.assign(state, initialState())
+const toEmptyState = (state: State) => {
+  Object.assign(state, emptyState())
 }
 
 export default createReducer<State>(
-  initialState(),
+  emptyState(),
   (builder) => builder
-    .addMatcher(isActionOf(rehydrateDepot), (state, action) => {
+    .addMatcher(isActionOf(rehydration), (state, action) => {
       state.username = action.payload.username
       state.salt = action.payload.salt
       state.hash = action.payload.hash
@@ -64,9 +64,9 @@ export default createReducer<State>(
       state.hash = action.payload.hash
       state.depotKey = action.payload.depotKey
     })
-    .addMatcher(isActionOf(clearDepot), toInitialState)
-    // As a reducer to ensure we clear the storage before synchronization is
-    // cut off.
+    .addMatcher(isActionOf(clearDepot), toEmptyState)
+    // As a reducer (and not an epic) to ensure we clear the storage before
+    // synchronization may be cut off via `logOut`.
     .addMatcher(
       monoid.concatAll(predicate.getMonoidAny<RootAction>())([
         isActionSuccess(registrationSignal),
@@ -74,6 +74,6 @@ export default createReducer<State>(
         isActionOf(remoteCredentialsMismatchLocal),
         isActionOf(localOtpTokenFailure)
       ]),
-      toInitialState
+      toEmptyState
     )
 )

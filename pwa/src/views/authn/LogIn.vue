@@ -61,7 +61,7 @@ import {
   authnOtpProvision,
   AuthnOtpProvision
 } from '@/redux/modules/authn/selectors'
-import { activateDepot, clearDepot } from '@/redux/modules/depot/actions'
+import { generateDepotKeys, clearDepot } from '@/redux/modules/depot/actions'
 import { depotUsername } from '@/redux/modules/depot/selectors'
 import { sessionUsername } from '@/redux/modules/session/selectors'
 import { showToast } from '@/redux/modules/ui/toast/actions'
@@ -93,7 +93,7 @@ export default Vue.extend({
       takeUntil(this.$data.$destruction)
     ).subscribe((action) => {
       if (this.persist) {
-        this.dispatch(activateDepot({
+        this.dispatch(generateDepotKeys({
           username: action.payload.username,
           password: action.payload.password
         }))

@@ -1,4 +1,4 @@
-import { AnyAction, configureStore } from '@reduxjs/toolkit'
+import { AnyAction, Dispatch, Middleware, configureStore } from '@reduxjs/toolkit'
 import { retryBackoff } from 'backoff-rxjs'
 import isEqual from 'lodash/isEqual'
 import { combineEpics, createEpicMiddleware, Epic } from 'redux-observable'
@@ -7,10 +7,11 @@ import { concatMapTo, distinctUntilChanged, exhaustMap, filter, map, switchMap, 
 import { isActionOf } from 'typesafe-actions'
 import { getAdministrationApi } from '@/api/api_di'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
+import { injected, terminate } from './actions'
 import * as authnEpics from './modules/authn/epics'
-import { rehydrateDepot } from './modules/depot/actions'
+import { rehydration as depotRehydration } from './modules/depot/actions'
 import * as depotEpics from './modules/depot/epics'
-import { rehydrateSession } from './modules/session/actions'
+import { rehydration as sessionRehydration } from './modules/session/actions'
 import * as sessionEpics from './modules/session/epics'
 import * as uiToastEpics from './modules/ui/toast/epics'
 import { logOut, LogoutTrigger } from './modules/user/account/actions'
@@ -20,7 +21,7 @@ import * as userSecurityEpics from './modules/user/security/epics'
 import { createIdleDetector } from './idle'
 import { RootAction } from './root_action'
 import { reducer, RootState } from './root_reducer'
-import { LOCAL_STORAGE_ACCESSOR, SESSION_STORAGE_ACCESSOR } from './storages'
+import { getLocalStorageAccessor, getSessionStorageAccessor } from './storages'
 
 // Stream of actions for use in components.
 export const action$ = new Subject<AnyAction>()
@@ -28,13 +29,36 @@ const actionsObservableEpic: Epic<RootAction, RootAction, RootState> = (actionsO
   tap(action$),
   concatMapTo(EMPTY)
 )
-Object.freeze(action$)
 
 // Store initialization.
+const terminatingReducer: typeof reducer = (state, action) => {
+  https://web.dev/articles/bfcache#update_stale_or_sensitive_data_after_bfcache_restore
+  return reducer(isActionOf(terminate, action) ? undefined : state, action)
+}
+const terminatingMiddleware: Middleware<Record<string, never>, RootState, Dispatch<RootAction>> = () => {
+  let isTerminated = false
+  return (next: Dispatch<AnyAction>) => (action: AnyAction) => {
+    if (isTerminated) {
+      console.warn(`Ignoring ${action.type} after termination`)
+      // https://redux.js.org/usage/writing-logic-thunks#returning-values-from-thunks
+      return action
+    }
+    const result = next(action)
+    if (isActionOf(logOut, action)) {
+      isTerminated = true
+      next(terminate())
+    }
+    return result
+  }
+}
 const epicMiddleware = createEpicMiddleware<RootAction, RootAction, RootState>()
 export const store = configureStore({
-  reducer,
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(epicMiddleware),
+  reducer: terminatingReducer,
+  middleware: (getDefaultMiddleware) => [
+    terminatingMiddleware,
+    ...getDefaultMiddleware(),
+    epicMiddleware
+  ],
   devTools: !['production'].includes(process.env.NODE_ENV)
 })
 epicMiddleware.run(combineEpics(
@@ -54,46 +78,69 @@ store.subscribe(() => {
   state$.next(store.getState())
 })
 
-// Persistance and rehydration.
-store.dispatch(rehydrateSession({
-  username: SESSION_STORAGE_ACCESSOR.get<string>('username'),
-  logoutTrigger: SESSION_STORAGE_ACCESSOR.get<LogoutTrigger>('logout_trigger')
-}))
-state$.pipe(
-  map((state) => ({
-    username: state.session.username,
-    logoutTrigger: state.session.logoutTrigger
-  })),
-  distinctUntilChanged(isEqual),
-  takeUntil(action$.pipe(filter(isActionOf(logOut))))
-).subscribe(({ username, logoutTrigger }) => {
-  SESSION_STORAGE_ACCESSOR.set('username', username)
-  SESSION_STORAGE_ACCESSOR.set('logout_trigger', logoutTrigger)
+// `sessionStorage` rehydration.
+action$.pipe(
+  filter(isActionOf(injected))
+).subscribe(() => {
+  const accessor = getSessionStorageAccessor()
+  store.dispatch(sessionRehydration({
+    username: accessor.get<string>('username'),
+    logoutTrigger: accessor.get<LogoutTrigger>('logout_trigger')
+  }))
 })
 
-store.dispatch(rehydrateDepot({
-  username: LOCAL_STORAGE_ACCESSOR.get<string>('depot.username'),
-  salt: LOCAL_STORAGE_ACCESSOR.get<string>('depot.salt'),
-  hash: LOCAL_STORAGE_ACCESSOR.get<string>('depot.hash'),
-  vault: LOCAL_STORAGE_ACCESSOR.get<string>('depot.vault'),
-  encryptedOtpToken: LOCAL_STORAGE_ACCESSOR.get<string | null>('depot.encrypted_otp_token')
-}))
-state$.pipe(
-  map((state) => ({
-    username: state.depot.username,
-    salt: state.depot.salt,
-    hash: state.depot.hash,
-    vault: state.depot.vault,
-    encryptedOtpToken: state.depot.encryptedOtpToken
-  })),
-  distinctUntilChanged(isEqual),
+// `sessionStorage` persistance.
+action$.pipe(
+  filter(isActionOf(injected)),
+  switchMap(() => state$.pipe(
+    map((state) => ({
+      username: state.session.username,
+      logoutTrigger: state.session.logoutTrigger
+    })),
+    distinctUntilChanged(isEqual)
+  )),
+  takeUntil(action$.pipe(filter(isActionOf(logOut))))
+).subscribe(({ username, logoutTrigger }) => {
+  const accessor = getSessionStorageAccessor()
+  accessor.set('username', username)
+  accessor.set('logout_trigger', logoutTrigger)
+})
+
+// `localStorage` rehydration.
+action$.pipe(
+  filter(isActionOf(injected))
+).subscribe(() => {
+  const accessor = getLocalStorageAccessor()
+  store.dispatch(depotRehydration({
+    username: accessor.get<string>('depot.username'),
+    salt: accessor.get<string>('depot.salt'),
+    hash: accessor.get<string>('depot.hash'),
+    vault: accessor.get<string>('depot.vault'),
+    encryptedOtpToken: accessor.get<string>('depot.encrypted_otp_token')
+  }))
+})
+
+// `localStorage` persistance.
+action$.pipe(
+  filter(isActionOf(injected)),
+  switchMap(() => state$.pipe(
+    map((state) => ({
+      username: state.depot.username,
+      salt: state.depot.salt,
+      hash: state.depot.hash,
+      vault: state.depot.vault,
+      encryptedOtpToken: state.depot.encryptedOtpToken
+    })),
+    distinctUntilChanged(isEqual)
+  )),
   takeUntil(action$.pipe(filter(isActionOf(logOut))))
 ).subscribe(({ username, salt, hash, vault, encryptedOtpToken }) => {
-  LOCAL_STORAGE_ACCESSOR.set('depot.username', username)
-  LOCAL_STORAGE_ACCESSOR.set('depot.salt', salt)
-  LOCAL_STORAGE_ACCESSOR.set('depot.hash', hash)
-  LOCAL_STORAGE_ACCESSOR.set('depot.vault', vault)
-  LOCAL_STORAGE_ACCESSOR.set('depot.encrypted_otp_token', encryptedOtpToken)
+  const accessor = getLocalStorageAccessor()
+  accessor.set('depot.username', username)
+  accessor.set('depot.salt', salt)
+  accessor.set('depot.hash', hash)
+  accessor.set('depot.vault', vault)
+  accessor.set('depot.encrypted_otp_token', encryptedOtpToken)
 })
 
 // Session maintenance.

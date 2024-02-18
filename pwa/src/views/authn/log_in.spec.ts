@@ -10,7 +10,7 @@ import LogIn from './LogIn.vue'
 import { function as fn } from 'fp-ts'
 import { expect } from 'chai'
 import { authnViaApiReset, authnViaDepotReset, authnViaDepotSignal, initiateBackgroundAuthn, logInViaApi, logInViaDepot, remoteAuthnComplete } from '@/redux/modules/authn/actions'
-import { activateDepot, rehydrateDepot } from '@/redux/modules/depot/actions'
+import { generateDepotKeys, rehydration as depotRehydration } from '@/redux/modules/depot/actions'
 import { success } from '@/redux/flow_signal'
 import { createAuthnViaDepotFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
 
@@ -67,7 +67,7 @@ describe('LogIn', () => {
   })
 
   it('dispatches depot authentication action', async () => {
-    store.dispatch(rehydrateDepot({
+    store.dispatch(depotRehydration({
       username: 'username',
       salt: 'salt',
       hash: 'hash',
@@ -109,7 +109,7 @@ describe('LogIn', () => {
     await wrapper.vm.$nextTick()
 
     expect(await drainActionQueue(actionQueue)).to.include.deep.members([
-      activateDepot({
+      generateDepotKeys({
         username: 'username',
         password: 'password'
       })

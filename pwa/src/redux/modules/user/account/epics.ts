@@ -30,8 +30,10 @@ import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success } from '@/redux/flow_signal'
 import { remoteAuthnComplete } from '@/redux/modules/authn/actions'
 import { isDepotActive } from '@/redux/modules/depot/selectors'
+import { rehydration as sessionRehydration } from '@/redux/modules/session/actions'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
+import { router } from '@/router'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,
@@ -78,9 +80,24 @@ import {
 export const logOutEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(logOut)),
   concatMap(() => {
+    // https://rxjs.dev/api/index/const/asapScheduler
     asapScheduler.schedule(() => {
-      location.assign('/')
+      // To suppress https://web.dev/articles/bfcache. Further redirections
+      // happen in `redirectAfterLogoutEpic` afterwards.
+      location.reload()
     })
+    return EMPTY
+  })
+)
+
+export const redirectAfterLogoutEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+  filter(isActionOf(sessionRehydration)),
+  concatMap((action) => {
+    if (action.payload.logoutTrigger !== null) {
+      const homeTarget = '/'
+      console.log(`Redirecting to ${homeTarget}`)
+      router.push(homeTarget)
+    }
     return EMPTY
   })
 )

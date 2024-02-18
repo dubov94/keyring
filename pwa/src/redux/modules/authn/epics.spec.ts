@@ -22,7 +22,7 @@ import {
 import { SodiumClient } from '@/cryptography/sodium_client'
 import { Key } from '@/redux/domain'
 import { cancel, exception, failure, FlowSignal, indicator, StandardError, success } from '@/redux/flow_signal'
-import { rehydrateDepot } from '@/redux/modules/depot/actions'
+import { rehydration as depotRehydration } from '@/redux/modules/depot/actions'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 import { defaultMailVerification, remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
 import { RootAction } from '@/redux/root_action'
@@ -406,7 +406,7 @@ describe('displayAuthnOtpProvisionExceptionsEpic', () => {
 describe('logInViaDepotEpic', () => {
   it('emits authentication sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(rehydrateDepot({
+    store.dispatch(depotRehydration({
       username: 'username',
       salt: 'parametrization',
       hash: 'authDigest',
@@ -453,7 +453,7 @@ describe('logInViaDepotEpic', () => {
 
   it('emits failure when usernames do not match', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(rehydrateDepot({
+    store.dispatch(depotRehydration({
       username: 'username',
       salt: 'parametrization',
       hash: 'authDigest',
@@ -477,7 +477,7 @@ describe('logInViaDepotEpic', () => {
 
   it('emits failure when digests do not match', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(rehydrateDepot({
+    store.dispatch(depotRehydration({
       username: 'username',
       salt: 'parametrization',
       hash: 'authDigest',
@@ -518,7 +518,7 @@ describe('displayAuthnViaDepotExceptionsEpic', () => {
 describe('backgroundOtpProvisionEpic', () => {
   it('emits provision sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(rehydrateDepot({
+    store.dispatch(depotRehydration({
       username: 'username',
       salt: 'salt',
       hash: 'hash',

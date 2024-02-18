@@ -10,7 +10,7 @@ import { masterKeyChangeSignal, otpParamsAcceptanceSignal, otpResetSignal } from
 import { userKeysUpdate } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
-import { activateDepot, depotActivationData, newEncryptedOtpToken, newVault } from './actions'
+import { generateDepotKeys, depotActivationData, newEncryptedOtpToken, newVault } from './actions'
 
 export const updateVaultEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(monoid.concatAll(predicate.getMonoidAny<RootAction>())([
@@ -50,8 +50,8 @@ export const updateEncryptedOtpTokenEpic: Epic<RootAction, RootAction, RootState
   ))
 )
 
-export const activateDepotEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
-  filter(isActionOf(activateDepot)),
+export const generateDepotKeysEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+  filter(isActionOf(generateDepotKeys)),
   switchMap((action) => from(getSodiumClient().generateNewParametrization()).pipe(switchMap((parametrization) => {
     return from(getSodiumClient().computeAuthDigestAndEncryptionKey(parametrization, action.payload.password)).pipe(
       switchMap(({ authDigest, encryptionKey }) => of(depotActivationData({
@@ -67,7 +67,7 @@ export const activateDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
 export const masterKeyUpdateEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionSuccess(masterKeyChangeSignal)),
   withLatestFrom(state$),
-  switchMap(([action, state]) => state.depot.username === null ? EMPTY : of(activateDepot({
+  switchMap(([action, state]) => state.depot.username === null ? EMPTY : of(generateDepotKeys({
     username: state.depot.username,
     password: action.payload.data.newMasterKey
   })))
@@ -80,7 +80,7 @@ export const localRehashEpic: Epic<RootAction, RootAction, RootState> = (action$
     const { salt } = state.depot
     if (salt !== null && !getSodiumClient().isParametrizationUpToDate(salt)) {
       const { username, password } = action.payload.data
-      return of(activateDepot({ username, password }))
+      return of(generateDepotKeys({ username, password }))
     }
     return EMPTY
   })

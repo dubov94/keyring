@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import { success } from '@/redux/flow_signal'
 import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
 import { logOut, LogoutTrigger, usernameChangeSignal } from '@/redux/modules/user/account/actions'
-import { rehydrateSession } from './actions'
+import { rehydration } from './actions'
 import reducer from './reducer'
 import { createAuthnViaDepotFlowResult, createRegistrationFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
 
@@ -38,9 +38,9 @@ describe('usernameChangeSignal', () => {
   })
 })
 
-describe('rehydrateSession', () => {
+describe('rehydration', () => {
   it('restores values', () => {
-    const state = reducer(undefined, rehydrateSession({
+    const state = reducer(undefined, rehydration({
       username: 'username',
       logoutTrigger: LogoutTrigger.USER_REQUEST
     }))

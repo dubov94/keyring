@@ -15,7 +15,7 @@ import { isAuthenticated, mailVerificationRequired } from './redux/modules/user/
 
 Vue.use(VueRouter)
 
-const authenticationGuard: NavigationGuard = (_to, _from, next) => {
+const authenticatedGuard: NavigationGuard = (_to, _from, next) => {
   const state = store.getState()
   if (!isAuthenticated(state)) {
     next('/log-in')
@@ -34,7 +34,7 @@ const noActiveUserGuard: NavigationGuard = (_to, _from, next) => {
   }
 }
 
-export const Router = new VueRouter({
+export const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   scrollBehavior () {
@@ -69,13 +69,13 @@ export const Router = new VueRouter({
       path: '/dashboard',
       component: Dashboard,
       props: { debounceMillis: 150 },
-      beforeEnter: authenticationGuard
+      beforeEnter: authenticatedGuard
     },
     {
       path: '/security',
       component: Security,
       redirect: '/security/threat-analysis',
-      beforeEnter: authenticationGuard,
+      beforeEnter: authenticatedGuard,
       children: [
         {
           path: 'recent-sessions',
@@ -88,11 +88,11 @@ export const Router = new VueRouter({
     }, {
       path: '/settings',
       component: Settings,
-      beforeEnter: authenticationGuard
+      beforeEnter: authenticatedGuard
     }, {
       path: '/portation',
       component: Portation,
-      beforeEnter: authenticationGuard
+      beforeEnter: authenticatedGuard
     },
     {
       path: '*',

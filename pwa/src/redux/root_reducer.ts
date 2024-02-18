@@ -8,7 +8,7 @@ import userSecurityReducer from './modules/user/security/reducer'
 import uiToastReducer from './modules/ui/toast/reducer'
 import { StateType } from 'typesafe-actions'
 
-const _reducer = combineReducers({
+const appReducer = combineReducers({
   authn: authnReducer,
   depot: depotReducer,
   session: sessionReducer,
@@ -22,10 +22,10 @@ const _reducer = combineReducers({
   })
 })
 
-export const reducer: typeof _reducer = (state, action) => {
-  const accumulation = _reducer(state, action)
+export const reducer: typeof appReducer = (state, action) => {
+  const accumulation = appReducer(state, action)
   Object.freeze(accumulation)
   return accumulation
 }
 
-export type RootState = StateType<typeof _reducer>
+export type RootState = StateType<typeof appReducer>

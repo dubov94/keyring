@@ -8,13 +8,13 @@ import {
   usernameChangeSignal
 } from '@/redux/modules/user/account/actions'
 import { reduce } from '@/redux/testing'
-import { clearDepot, newEncryptedOtpToken, newVault, rehydrateDepot } from './actions'
+import { clearDepot, newEncryptedOtpToken, newVault, rehydration } from './actions'
 import reducer from './reducer'
 import { createAuthnViaDepotFlowResult, createRegistrationFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
 
-describe('rehydrateDepot', () => {
+describe('rehydration', () => {
   it('restores values', () => {
-    const state = reducer(undefined, rehydrateDepot({
+    const state = reducer(undefined, rehydration({
       username: 'username',
       salt: 'salt',
       hash: 'hash',

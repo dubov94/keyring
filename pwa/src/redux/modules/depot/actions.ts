@@ -1,7 +1,7 @@
 import { createAction } from 'typesafe-actions'
 import { DeepReadonly } from 'ts-essentials'
 
-export const rehydrateDepot = createAction('depot/rehydrate')<DeepReadonly<{
+export const rehydration = createAction('depot/rehydration')<DeepReadonly<{
   username: string | null;
   salt: string | null;
   hash: string | null;
@@ -12,7 +12,7 @@ export const rehydrateDepot = createAction('depot/rehydrate')<DeepReadonly<{
 export const newVault = createAction('depot/newVault')<string>()
 export const newEncryptedOtpToken = createAction('depot/newEncryptedOtpToken')<string | null>()
 
-export const activateDepot = createAction('depot/activate')<DeepReadonly<{
+export const generateDepotKeys = createAction('depot/generateKeys')<DeepReadonly<{
   username: string;
   password: string;
 }>>()
