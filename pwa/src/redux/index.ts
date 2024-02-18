@@ -32,13 +32,14 @@ const actionsObservableEpic: Epic<RootAction, RootAction, RootState> = (actionsO
 
 // Store initialization.
 const terminatingReducer: typeof reducer = (state, action) => {
-  https://web.dev/articles/bfcache#update_stale_or_sensitive_data_after_bfcache_restore
+  // https://web.dev/articles/bfcache#update_stale_or_sensitive_data_after_bfcache_restore
   return reducer(isActionOf(terminate, action) ? undefined : state, action)
 }
 const terminatingMiddleware: Middleware<Record<string, never>, RootState, Dispatch<RootAction>> = () => {
   let isTerminated = false
   return (next: Dispatch<AnyAction>) => (action: AnyAction) => {
     if (isTerminated) {
+      // eslint-disable-next-line no-console
       console.warn(`Ignoring ${action.type} after termination`)
       // https://redux.js.org/usage/writing-logic-thunks#returning-values-from-thunks
       return action
