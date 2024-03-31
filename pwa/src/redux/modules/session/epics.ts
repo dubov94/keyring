@@ -1,7 +1,7 @@
 import { function as fn, option } from 'fp-ts'
 import { Epic } from 'redux-observable'
 import { EMPTY, Observable, of } from 'rxjs'
-import { switchMap, filter, take } from 'rxjs/operators'
+import { switchMap, filter } from 'rxjs/operators'
 import { isActionOf } from 'typesafe-actions'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 import { LogoutTrigger } from '@/redux/modules/user/account/actions'

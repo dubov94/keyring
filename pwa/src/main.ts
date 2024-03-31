@@ -183,4 +183,5 @@ const application = new Vue({
   render: h => h(Application),
   router,
   i18n: getVueI18n()
-}).$mount('#application')
+})
+application.$mount('#application')
