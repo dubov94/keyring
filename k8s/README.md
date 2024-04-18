@@ -8,5 +8,5 @@
 *Assuming configured `kubectl`.*
 
 * [`helm`](https://github.com/helm/helm)
-* [`helmfile`](https://github.com/roboll/helmfile)
+* [`helmfile`](https://github.com/helmfile/helmfile)
   * [`helm-diff`](https://github.com/databus23/helm-diff)
