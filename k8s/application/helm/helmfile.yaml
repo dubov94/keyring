@@ -5,6 +5,8 @@ repositories:
     url: https://charts.jetstack.io
   - name: bitnami
     url: https://charts.bitnami.com/bitnami
+  - name: descheduler
+    url: https://kubernetes-sigs.github.io/descheduler
 releases:
   - name: nginx-ingress
     chart: ingress-nginx/ingress-nginx
@@ -24,4 +26,6 @@ releases:
     version: ^9.4.11
     values:
     - postgres_values.yaml
-  
+  - name: descheduler
+    namespace: kube-system
+    chart: descheduler/descheduler
