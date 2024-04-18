@@ -29,3 +29,5 @@ releases:
   - name: descheduler
     namespace: kube-system
     chart: descheduler/descheduler
+    values:
+    - descheduler_values.yaml
