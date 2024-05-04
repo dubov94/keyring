@@ -13,9 +13,9 @@ deschedulerPolicy:
         nodeResourceUtilizationThresholds:
           thresholds:
             cpu: 100
-            memory: 55
+            memory: 70
             pods: 15
           targetThresholds:
             cpu: 100
-            memory: 55
+            memory: 70
             pods: 15
