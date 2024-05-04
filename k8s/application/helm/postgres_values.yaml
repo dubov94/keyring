@@ -4,3 +4,5 @@ postgresql:
 persistence:
   enabled: true
   size: 2Gi
+pgpool:
+  replicaCount: 2
