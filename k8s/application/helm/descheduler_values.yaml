@@ -5,3 +5,17 @@ resources:
   limits:
     cpu: 100m
     memory: 128Mi
+deschedulerPolicy:
+  strategies:
+    LowNodeUtilization:
+      enabled: true
+      params:
+        nodeResourceUtilizationThresholds:
+          thresholds:
+            cpu: 100
+            memory: 55
+            pods: 15
+          targetThresholds:
+            cpu: 100
+            memory: 55
+            pods: 15
