@@ -15,6 +15,7 @@ Secrets in italic are populated automatically by Helm charts.
 | email-service-credentials | mailgun-api-key |
 | geoipupdate-credentials | account-id |
 | geoipupdate-credentials | license-key |
+| *postgres-postgresql-ha-pgpool* | |
 | *postgres-postgresql-ha-postgresql* | |
 | *redis* | |
 
