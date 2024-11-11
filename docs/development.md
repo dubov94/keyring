@@ -12,6 +12,7 @@ starting a local instance on Linux (or
 
 * <i>`build-essential` or an alternative</i>
 * Python (with PIP and `python-is-python3`)
+* G++ 10
 * Java 11
 
 ### Services
