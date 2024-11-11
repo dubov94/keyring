@@ -1,6 +1,7 @@
 postgresql:
   replicaCount: 3
   database: keyring
+  syncReplication: true
 persistence:
   enabled: true
   size: 2Gi
