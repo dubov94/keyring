@@ -6,16 +6,16 @@ resources:
     cpu: 100m
     memory: 128Mi
 deschedulerPolicy:
-  strategies:
-    LowNodeUtilization:
-      enabled: true
-      params:
-        nodeResourceUtilizationThresholds:
+  profiles:
+    - name: default
+      pluginConfig:
+      - name: LowNodeUtilization
+        args:
           thresholds:
-            cpu: 100
-            memory: 70
-            pods: 15
+            memory: 44
           targetThresholds:
-            cpu: 100
-            memory: 70
-            pods: 15
+            memory: 48
+      plugins:
+        balance:
+          enabled:
+            - LowNodeUtilization
