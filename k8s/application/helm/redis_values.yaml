@@ -1,6 +1,7 @@
 architecture: replication
 auth:
   enabled: true
+  existingSecret: redis
 replica:
   replicaCount: 3
   persistence:
