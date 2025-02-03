@@ -119,11 +119,15 @@ export default Vue.extend({
   },
   methods: {
     itemStyles (index: number): { [key: string]: string } {
+      const mustBreak = index >= this.cellsInFull
+        ? (index - this.cellsInFull + 1) % (this.height - 1) === 0
+        : (index + 1) % this.height === 0
+      // https://caniuse.com/mdn-css_properties_break-after_column
+      const breakValue = CSS.supports('break-after', 'column')
+        ? 'column' : 'always'
       return {
-        'break-after': (index >= this.cellsInFull
-          ? (index - this.cellsInFull + 1) % (this.height - 1) === 0
-          : (index + 1) % this.height === 0) ? 'column' : 'auto',
-        'break-inside': 'avoid',
+        breakAfter: mustBreak ? breakValue : 'auto',
+        breakInside: 'avoid',
         // Firefox still breaks single item by default.
         overflow: 'hidden'
       }
