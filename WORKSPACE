@@ -113,7 +113,7 @@ maven_install(
         "com.google.guava:guava:32.1.3-jre",
         "com.google.http-client:google-http-client:1.42.3",
         "com.google.http-client:google-http-client-gson:1.42.3",
-        "com.vladmihalcea:hibernate-types-52:2.11.1",
+        "com.vladmihalcea:hibernate-types-52:2.17.1",
         "com.warrenstrange:googleauth:1.4.0",
         "commons-io:commons-io:2.11.0",
         "commons-validator:commons-validator:1.7",
@@ -131,7 +131,7 @@ maven_install(
         "org.hibernate:hibernate-core:5.6.15.Final",
         "org.hibernate:hibernate-jpamodelgen:5.6.15.Final",
         "org.jtwig:jtwig-core:5.86.1.RELEASE",
-        "org.postgresql:postgresql:42.3.8",
+        "org.postgresql:postgresql:42.7.2",
         "org.slf4j:slf4j-simple:1.7.25",
         "redis.clients:jedis:4.2.3",
     ] + IO_GRPC_GRPC_JAVA_ARTIFACTS + [
