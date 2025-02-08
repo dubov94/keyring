@@ -218,31 +218,27 @@ go_repository(
 )
 
 go_repository(
-    name = "com_google_cloud_go_compute",
-    importpath = "cloud.google.com/go/compute",
-    sum = "h1:v/k9Eueb8aAJ0vZuxKMrgm6kPhCLZU9HxFU+AFDs9Uk=",
-    version = "v1.7.0",
+    name = "com_github_googleapis_gax_go_v2",
+    importpath = "github.com/googleapis/gax-go/v2",
+    tag = "v2.14.1",
 )
 
 go_repository(
-    name = "com_google_cloud_go_iam",
-    importpath = "cloud.google.com/go/iam",
-    sum = "h1:exkAomrVUuzx9kWFI1wm3KI0uoDeUFPB4kKGzx6x+Gc=",
-    version = "v0.3.0",
+    name = "com_google_cloud_go",
+    importpath = "cloud.google.com/go",
+    tag = "v0.118.2",
 )
 
 go_repository(
     name = "com_google_cloud_go_storage",
     importpath = "cloud.google.com/go/storage",
-    sum = "h1:S8N1cAStu7BOeFfE8KAQzmyyLkK8p/vmRq6kuBTW58Y=",
-    version = "v1.22.1",
+    tag = "v1.50.0",
 )
 
 go_repository(
     name = "org_golang_google_api",
     importpath = "google.golang.org/api",
-    sum = "h1:NTsGnUFJMYROtiquksZHBWtHfeMC7iYthki7Eq3pa8o=",
-    version = "v0.84.0",
+    tag = "v0.84.0",
 )
 
 # language_specific_dependencies.external_node_dependencies
