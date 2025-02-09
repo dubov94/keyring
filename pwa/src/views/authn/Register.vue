@@ -100,7 +100,8 @@
 
 <script lang="ts">
 import { option, function as fn, map, eq } from 'fp-ts'
-import { takeUntil, filter } from 'rxjs/operators'
+import { timer } from 'rxjs'
+import { filter, map as rxMap, takeUntil, takeWhile } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
 import Vue, { VueConstructor } from 'vue'
 import { email, required, sameAs } from 'vuelidate/lib/validators'
@@ -114,7 +115,7 @@ import { register, RegistrationFlowIndicator, registrationReset, registrationSig
 import { registration, Registration } from '@/redux/modules/authn/selectors'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 import { isActionSuccess } from '@/redux/flow_signal'
-import { getTurnstileApi } from '@/turnstile_di'
+import { TurnstileApi, getTurnstileApi } from '@/turnstile_di'
 
 const usernameTakenIndicator = remoteDataErrorIndicator(ServiceRegisterResponseError.NAMETAKEN)
 
@@ -242,11 +243,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         captchaToken: this.turnstileToken
       }))
     },
-    mountTurnstile () {
-      const turnstileApi = getTurnstileApi()
-      if (turnstileApi === null) {
-        return
-      }
+    mountTurnstile (turnstileApi: TurnstileApi) {
       this.turnstileWidgetId = turnstileApi.render(
         this.$refs.captcha as HTMLElement,
         {
@@ -266,7 +263,11 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   mounted () {
-    this.mountTurnstile()
+    timer(0, 1000).pipe(
+      takeUntil(this.$data.$destruction),
+      rxMap(() => getTurnstileApi()),
+      takeWhile((turnstileApi) => turnstileApi === null, true)
+    ).subscribe(this.mountTurnstile)
   },
   beforeDestroy () {
     // Ideally we should call `unmountTurnstile` here,
