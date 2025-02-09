@@ -95,7 +95,7 @@ container.register<UidService>(UID_SERVICE_TOKEN, {
 })
 
 container.register<OptionalTurnstileApi>(TURNSTILE_API_TOKEN, {
-  useValue: (globalThis as any).turnstile || null
+  useFactory: () => (globalThis as any).turnstile || null
 })
 
 Vue.config.productionTip = false
