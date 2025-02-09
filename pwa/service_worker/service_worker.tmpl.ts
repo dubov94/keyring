@@ -195,7 +195,8 @@ scope.addEventListener('activate', (event) => {
 const getFromPrecache = async (cacheKey: string): Promise<Response> => {
   const precacheName = workbox.core.cacheNames.precache;
   const precache = await scope.caches.open(precacheName);
-  const response = await precache.match(cacheKey);
+  // `ignoreSearch` accommodates `assetsVersion`.
+  const response = await precache.match(cacheKey, { ignoreSearch: true });
   if (response === undefined) {
     throw new Error(`${precacheName} does not contain ${cacheKey}`);
   }
