@@ -7,3 +7,5 @@ controller:
   service:
     annotations:
       service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
+      # https://www.digitalocean.com/community/tutorials/how-to-set-up-an-nginx-ingress-with-cert-manager-on-digitalocean-kubernetes#step-5-enabling-pod-communication-through-the-load-balancer-optional
+      service.beta.kubernetes.io/do-loadbalancer-hostname: "parolica.com"
