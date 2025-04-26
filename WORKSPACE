@@ -241,6 +241,12 @@ go_repository(
     tag = "v0.84.0",
 )
 
+go_repository(
+    name = "org_golang_x_sys",
+    importpath = "golang.org/x/sys",
+    tag = "v0.32.0",
+)
+
 # language_specific_dependencies.external_node_dependencies
 
 http_archive(
