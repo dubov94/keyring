@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk run //grpc_gateway
       - uses: docker/login-action@v3
         with:
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk run //ip_geolocation
       - uses: docker/login-action@v3
         with:
@@ -44,7 +44,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//pwa/...)')
       - run: bazelisk run //pwa
       - uses: docker/login-action@v3
@@ -61,10 +61,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v4
         with:
           java-version: 11
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//server/main/...)')
       - run: bazelisk run //server
       - uses: docker/login-action@v3
@@ -81,10 +81,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v4
         with:
           java-version: 11
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//server/mailer/...)')
       - run: bazelisk run //server:mailer
       - uses: docker/login-action@v3
@@ -101,10 +101,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v4
         with:
           java-version: 11
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//server/janitor/...)')
       - run: bazelisk run //server:janitor
       - uses: docker/login-action@v3
@@ -121,7 +121,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk run //server:liquibase
       - uses: docker/login-action@v3
         with:
@@ -137,7 +137,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk run //server/archiver
       - uses: docker/login-action@v3
         with:
@@ -153,7 +153,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk run //server/restorer
       - uses: docker/login-action@v3
         with:
@@ -169,7 +169,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk run //redirection
       - uses: docker/login-action@v3
         with:
