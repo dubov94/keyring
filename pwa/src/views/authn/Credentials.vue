@@ -7,11 +7,12 @@
           :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
           @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
           :autofocus="usernameIsEmpty" :disabled="usernameMatchesDepot"></form-text-field>
-        <form-text-field type="password" label="Password" prepend-icon="lock"
+        <form-text-field :type="passwordType" label="Password" prepend-icon="lock"
           :value="password" @input="setPassword"
           :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
           @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
-          :autofocus="!usernameIsEmpty"></form-text-field>
+          :autofocus="!usernameIsEmpty"
+          :append-icon="revealIcon" @append-click="toggleReveal"></form-text-field>
         <v-switch class="mt-2" hide-details color="primary"
           :input-value="persist" @change="setPersist">
           <template v-slot:label>
@@ -65,6 +66,7 @@ const INDICATOR_TO_MESSAGE = new Map<AuthnViaApiFlowIndicator | AuthnViaDepotFlo
 ])
 
 interface Mixins {
+  reveal: boolean;
   untouchedSinceDispatch: boolean;
   authnViaApi: DeepReadonly<AuthnViaApi>;
   authnViaDepot: DeepReadonly<AuthnViaDepot>;
@@ -83,6 +85,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   ],
   data () {
     return {
+      reveal: false,
       untouchedSinceDispatch: false
     }
   },
@@ -125,6 +128,12 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         [this.$t('INVALID_USERNAME_OR_PASSWORD') as string]: !this.$v.forCredentials.valid
       }
     },
+    passwordType () {
+      return this.reveal ? 'text' : 'password'
+    },
+    revealIcon () {
+      return this.reveal ? 'visibility_off' : 'visibility'
+    },
     passwordErrors () {
       return {
         [this.$t('INVALID_USERNAME_OR_PASSWORD') as string]: !this.$v.forCredentials.valid
@@ -151,6 +160,9 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     setPassword (value: string) {
       this.$emit('password', value)
       this.untouchedSinceDispatch = false
+    },
+    toggleReveal () {
+      this.reveal = !this.reveal
     },
     setPersist (value: boolean) {
       this.$emit('persist', value)

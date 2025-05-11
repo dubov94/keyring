@@ -12,7 +12,6 @@
 export default {
   props: [
     'appendIcon',
-    'appendEvent',
     'autofocus',
     'disabled',
     'dirty',
@@ -22,7 +21,6 @@ export default {
     'errors',
     'label',
     'prependIcon',
-    'prependEvent',
     'solo',
     'type',
     'value'
@@ -70,11 +68,11 @@ export default {
     },
     extraListeners () {
       const nameToListener = {}
-      if (this.appendEvent) {
-        nameToListener['click:append'] = (event) => this.$emit('click:append', event)
+      if (this.$listeners['append-click']) {
+        nameToListener['click:append'] = (event) => this.$emit('append-click', event)
       }
-      if (this.prependEvent) {
-        nameToListener['click:prepend'] = (event) => this.$emit('click:prepend', event)
+      if (this.$listeners['prepend-click']) {
+        nameToListener['click:prepend'] = (event) => this.$emit('prepend-click', event)
       }
       return nameToListener
     }
