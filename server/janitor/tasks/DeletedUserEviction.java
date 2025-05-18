@@ -34,7 +34,7 @@ public final class DeletedUserEviction implements Runnable {
         criteriaBuilder.and(
             criteriaBuilder.equal(userRoot.get(User_.state), UserState.USER_DELETED),
             criteriaBuilder.lessThan(
-                userRoot.get(User_.timestamp),
+                userRoot.get(User_.lastSession),
                 chronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))));
     entityManager.createQuery(criteriaDelete).executeUpdate();
   }

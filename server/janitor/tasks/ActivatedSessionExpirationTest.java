@@ -64,7 +64,7 @@ final class ActivatedSessionExpirationTest {
 
     activatedSessionExpiration.run();
 
-    entityManager.refresh(session);
+    refreshEntity(session);
     assertEquals(SessionStage.SESSION_ACTIVATED, session.getStage());
   }
 
@@ -85,12 +85,17 @@ final class ActivatedSessionExpirationTest {
 
     activatedSessionExpiration.run();
 
-    entityManager.refresh(session);
+    refreshEntity(session);
     assertEquals(SessionStage.SESSION_DISABLED, session.getStage());
   }
 
   @WithEntityTransaction
   private void persistEntity(Object entity) {
     entityManager.persist(entity);
+  }
+
+  @WithEntityTransaction
+  private void refreshEntity(Object entity) {
+    entityManager.refresh(entity);
   }
 }

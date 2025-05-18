@@ -12,18 +12,24 @@ class TemplatedMailClient implements MailClient  {
   private JtwigTemplate mailVcBodyTemplate;
   private JtwigTemplate uncompletedAuthnHeadTemplate;
   private JtwigTemplate uncompletedAuthnBodyTemplate;
+  private JtwigTemplate deactivationNoticeHeadTemplate;
+  private JtwigTemplate deactivationNoticeBodyTemplate;
 
   TemplatedMailClient(
       MailService mailService,
       JtwigTemplate mailVcHeadTemplate,
       JtwigTemplate mailVcBodyTemplate,
       JtwigTemplate uncompletedAuthnHeadTemplate,
-      JtwigTemplate uncompletedAuthnBodyTemplate) {
+      JtwigTemplate uncompletedAuthnBodyTemplate,
+      JtwigTemplate deactivationNoticeHeadTemplate,
+      JtwigTemplate deactivationNoticeBodyTemplate) {
     this.mailService = mailService;
     this.mailVcHeadTemplate = mailVcHeadTemplate;
     this.mailVcBodyTemplate = mailVcBodyTemplate;
     this.uncompletedAuthnHeadTemplate = uncompletedAuthnHeadTemplate;
     this.uncompletedAuthnBodyTemplate = uncompletedAuthnBodyTemplate;
+    this.deactivationNoticeHeadTemplate = deactivationNoticeHeadTemplate;
+    this.deactivationNoticeBodyTemplate = deactivationNoticeBodyTemplate;
   }
 
   private String convertMarkdownToHtml(String markdown) {
@@ -50,6 +56,16 @@ class TemplatedMailClient implements MailClient  {
         convertMarkdownToHtml(
             uncompletedAuthnBodyTemplate.render(
                 JtwigModel.newModel().with("username", username).with("ipAddress", ipAddress)));
+    this.mailService.send(to, head, body);
+  }
+
+  @Override
+  public void sendDeactivationNotice(String to, String username, int inactivityPeriodYears, int daysLeft) {
+    String head = deactivationNoticeHeadTemplate.render(JtwigModel.newModel());
+    String body =
+        convertMarkdownToHtml(
+            deactivationNoticeBodyTemplate.render(
+                JtwigModel.newModel().with("username", username).with("inactivityPeriodYears", inactivityPeriodYears).with("daysLeft", daysLeft)));
     this.mailService.send(to, head, body);
   }
 }

@@ -103,12 +103,16 @@ class AppModule {
       @Named("mail_vc_head") JtwigTemplate mailVcHeadTemplate,
       @Named("mail_vc_body") JtwigTemplate mailVcBodyTemplate,
       @Named("uncompleted_authn_head") JtwigTemplate uncompletedAuthnHeadTemplate,
-      @Named("uncompleted_authn_body") JtwigTemplate uncompletedAuthnBodyTemplate) {
+      @Named("uncompleted_authn_body") JtwigTemplate uncompletedAuthnBodyTemplate,
+      @Named("deactivation_notice_head") JtwigTemplate deactivationNoticeHeadTemplate,
+      @Named("deactivation_notice_body") JtwigTemplate deactivationNoticeBodyTemplate) {
     return new TemplatedMailClient(
         mailService,
         mailVcHeadTemplate,
         mailVcBodyTemplate,
         uncompletedAuthnHeadTemplate,
-        uncompletedAuthnBodyTemplate);
+        uncompletedAuthnBodyTemplate,
+        deactivationNoticeHeadTemplate,
+        deactivationNoticeBodyTemplate);
   }
 }

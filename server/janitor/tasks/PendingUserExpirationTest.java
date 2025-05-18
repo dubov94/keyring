@@ -55,7 +55,7 @@ final class PendingUserExpirationTest {
 
     pendingUserExpiration.run();
 
-    entityManager.refresh(user);
+    refreshEntity(user);
     assertEquals(UserState.USER_ACTIVE, user.getState());
   }
 
@@ -69,7 +69,7 @@ final class PendingUserExpirationTest {
 
     pendingUserExpiration.run();
 
-    entityManager.refresh(user);
+    refreshEntity(user);
     assertEquals(UserState.USER_PENDING, user.getState());
   }
 
@@ -83,12 +83,17 @@ final class PendingUserExpirationTest {
 
     pendingUserExpiration.run();
 
-    entityManager.refresh(user);
+    refreshEntity(user);
     assertEquals(UserState.USER_DELETED, user.getState());
   }
 
   @WithEntityTransaction
   private void persistEntity(Object entity) {
     entityManager.persist(entity);
+  }
+
+  @WithEntityTransaction
+  private void refreshEntity(Object entity) {
+    entityManager.refresh(entity);
   }
 }

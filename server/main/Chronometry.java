@@ -18,16 +18,8 @@ public class Chronometry {
     return nowSupplier.get();
   }
 
-  public Instant subtract(Instant instant, long amountToSubtract, TemporalUnit temporalUnit) {
-    return instant.minus(amountToSubtract, temporalUnit);
-  }
-
-  public boolean isBefore(Instant left, Instant right) {
-    return left.isBefore(right);
-  }
-
   public Timestamp pastTimestamp(long amountToSubtract, TemporalUnit temporalUnit) {
-    return Timestamp.from(subtract(currentTime(), amountToSubtract, temporalUnit));
+    return Timestamp.from(currentTime().minus(amountToSubtract, temporalUnit));
   }
 
   public Instant nextAttempt(

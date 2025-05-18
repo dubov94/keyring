@@ -102,7 +102,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 ASPECTJ_VERSION = "1.9.5"
 
-# Run `bazel run @unpinned_maven//:pin` to re-pin.
+# Run `bazelisk run @unpinned_maven//:pin` to re-pin.
 maven_install(
     artifacts = [
         "com.beust:jcommander:1.78",

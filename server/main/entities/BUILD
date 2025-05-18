@@ -8,11 +8,16 @@ java_library(
     ],
     plugins = ["//bazel/java:hibernate_jpamodelgen"],
     visibility = ["//server:internal"],
+    runtime_deps = [
+        # For `hibernate-types-52`.
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+    ],
     deps = [
         ":columns_java_proto",
         ":user_state_converter",
         ":validators",
         "@maven//:com_google_guava_guava",
+        "@maven//:com_vladmihalcea_hibernate_types_52",
         "@maven//:commons_io_commons_io",
         "@maven//:javax_annotation_javax_annotation_api",
         "@maven//:javax_persistence_javax_persistence_api",
@@ -25,6 +30,10 @@ java_library(
     srcs = ["Key.java"],
     plugins = ["//bazel/java:hibernate_jpamodelgen"],
     visibility = ["//server:internal"],
+    runtime_deps = [
+        # For `hibernate-types-52`.
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+    ],
     deps = [
         ":user",
         ":validators",
@@ -78,6 +87,10 @@ java_library(
     srcs = ["OtpParams.java"],
     plugins = ["//bazel/java:hibernate_jpamodelgen"],
     visibility = ["//server:internal"],
+    runtime_deps = [
+        # For `hibernate-types-52`.
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+    ],
     deps = [
         ":user",
         "@maven//:com_vladmihalcea_hibernate_types_52",

@@ -577,7 +577,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     Instant availabilityInstant =
         nextAvailabilityInstant.apply(mailToken.getLastAttempt(), mailToken.getAttemptCount());
     Instant currentTime = chronometry.currentTime();
-    if (!chronometry.isBefore(availabilityInstant, currentTime)) {
+    if (!availabilityInstant.isBefore(currentTime)) {
       return Tuple.of(MtNudgeStatus.NOT_AVAILABLE_YET, Optional.empty());
     }
     mailToken.setLastAttempt(currentTime);

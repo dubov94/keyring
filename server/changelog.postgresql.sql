@@ -256,3 +256,8 @@ CREATE INDEX IF NOT EXISTS "idxl5uyiwnyq34h45vftpj88ganp" ON "public"."mail_toke
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'keys' and column_name = 'is_pinned'
 ALTER TABLE "public"."keys" ADD COLUMN "is_pinned" BOOLEAN DEFAULT FALSE;
+
+-- changeset liquibase:37
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'users' and column_name = 'inactivity_reminders_iso'
+ALTER TABLE "public"."users" ADD COLUMN "inactivity_reminders_iso" TEXT [];

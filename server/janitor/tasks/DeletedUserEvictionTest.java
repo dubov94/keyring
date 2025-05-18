@@ -17,6 +17,7 @@ import keyring.server.main.aspects.Annotations.WithEntityTransaction;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.entities.User;
 import keyring.server.main.entities.columns.UserState;
+import keyring.server.main.storage.StorageException;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,40 +51,53 @@ final class DeletedUserEvictionTest {
   @Test
   @WithEntityManager
   void oldActiveUser_keeps() {
-    User user = new User().setState(UserState.USER_ACTIVE).setUsername("username");
+    Instant now = Instant.now();
+    User user =
+        new User()
+            .setState(UserState.USER_ACTIVE)
+            .setUsername("username")
+            .setLastSession(Instant.ofEpochSecond(1));
     persistEntity(user);
     when(mockChronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))
-        .thenReturn(Timestamp.from(Instant.now()));
+        .thenReturn(Timestamp.from(Instant.ofEpochSecond(2)));
 
     deletedUserEviction.run();
 
-    assertTrue(isEntityInStorage(user));
+    assertTrue(isInStorage(user));
   }
 
   @Test
   @WithEntityManager
   void newDeletedUser_keeps() {
-    User user = new User().setState(UserState.USER_DELETED).setUsername("username");
+    User user =
+        new User()
+            .setState(UserState.USER_DELETED)
+            .setUsername("username")
+            .setLastSession(Instant.ofEpochSecond(3));
     persistEntity(user);
     when(mockChronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))
-        .thenReturn(Timestamp.from(Instant.EPOCH));
+        .thenReturn(Timestamp.from(Instant.ofEpochSecond(2)));
 
     deletedUserEviction.run();
 
-    assertTrue(isEntityInStorage(user));
+    assertTrue(isInStorage(user));
   }
 
   @Test
   @WithEntityManager
   void oldDeletedUser_removes() {
-    User user = new User().setState(UserState.USER_DELETED).setUsername("username");
+    User user =
+        new User()
+            .setState(UserState.USER_DELETED)
+            .setUsername("username")
+            .setLastSession(Instant.ofEpochSecond(1));
     persistEntity(user);
     when(mockChronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))
-        .thenReturn(Timestamp.from(Instant.now()));
+        .thenReturn(Timestamp.from(Instant.ofEpochSecond(2)));
 
     deletedUserEviction.run();
 
-    assertFalse(isEntityInStorage(user));
+    assertFalse(isInStorage(user));
   }
 
   @WithEntityTransaction
@@ -92,12 +106,19 @@ final class DeletedUserEvictionTest {
   }
 
   @WithEntityTransaction
-  private boolean isEntityInStorage(Object entity) {
+  private void refreshEntity(Object entity) {
+    entityManager.refresh(entity);
+  }
+
+  private boolean isInStorage(Object entity) {
     try {
-      entityManager.refresh(entity);
+      refreshEntity(entity);
       return true;
-    } catch (EntityNotFoundException exception) {
-      return false;
+    } catch (StorageException exception) {
+      if (exception.getCause() instanceof EntityNotFoundException) {
+        return false;
+      }
+      throw exception;
     }
   }
 }

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Base64;
 import javax.inject.Inject;
 import keyring.server.mailer.BrokerKeys;
+import keyring.server.mailer.requests.DeactivationNotice;
 import keyring.server.mailer.requests.MailVc;
 import keyring.server.mailer.requests.MailerRequest;
 import keyring.server.mailer.requests.UncompletedAuthn;
@@ -49,6 +50,19 @@ public class MessageBrokerClient {
                     .setMail(mail)
                     .setUsername(username)
                     .setIpAddress(ipAddress))
+            .build());
+  }
+
+  public void publishDeactivationNotice(
+      String mail, String username, int inactivityPeriodYears, int daysLeft) {
+    publishMailerRequest(
+        MailerRequest.newBuilder()
+            .setDeactivationNotice(
+                DeactivationNotice.newBuilder()
+                    .setMail(mail)
+                    .setUsername(username)
+                    .setInactivityPeriodYears(inactivityPeriodYears)
+                    .setDaysLeft(daysLeft))
             .build());
   }
 }

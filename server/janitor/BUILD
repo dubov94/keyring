@@ -45,6 +45,7 @@ java_library(
         "//server/janitor/tasks:otp_token_eviction",
         "//server/janitor/tasks:pending_user_expiration",
         "//server/janitor/tasks:session_record_eviction",
+        "//server/janitor/tasks:stale_account_expiration",
         "@maven//:com_google_dagger_dagger",
         "@maven//:javax_inject_javax_inject",
         "@maven//:javax_persistence_javax_persistence_api",

@@ -77,10 +77,10 @@ public class MailToken {
   }
 
   public boolean isAvailable(Chronometry chronometry) {
-    return chronometry.isBefore(
-        chronometry.subtract(
-            chronometry.currentTime(), MAIL_TOKEN_EXPIRATION_M, ChronoUnit.MINUTES),
-        getTimestamp());
+    return chronometry
+        .currentTime()
+        .minus(MAIL_TOKEN_EXPIRATION_M, ChronoUnit.MINUTES)
+        .isBefore(getTimestamp());
   }
 
   public User getUser() {

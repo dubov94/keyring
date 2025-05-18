@@ -71,9 +71,7 @@ class Limiters {
         Queries.findManyToOne(entityManager, Session.class, Session_.user, userId);
     int recentCount = 0;
     for (Session session : allSessions) {
-      if (!chronometry.isBefore(
-          session.getTimestamp(),
-          chronometry.subtract(chronometry.currentTime(), 1, ChronoUnit.HOURS))) {
+      if (!session.getTimestamp().isBefore(chronometry.currentTime().minus(1, ChronoUnit.HOURS))) {
         recentCount += 1;
       }
     }

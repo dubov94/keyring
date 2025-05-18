@@ -33,6 +33,7 @@ woven_junit5_test(
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:columns_java_proto",
         "//server/main/entities:user",
+        "//server/main/storage:storage_exception",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
@@ -171,7 +172,6 @@ woven_junit5_test(
         "//server/main/entities:columns_java_proto",
         "//server/main/entities:key",
         "//server/main/entities:user",
-        "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
@@ -216,5 +216,50 @@ java_library(
         "//server/main/entities:otp_token",
         "@maven//:javax_inject_javax_inject",
         "@maven//:javax_persistence_javax_persistence_api",
+    ],
+)
+
+java_library(
+    name = "stale_account_expiration",
+    srcs = ["StaleAccountExpiration.java"],
+    deps = [
+        "//server/main:chronometry",
+        "//server/main/aspects:annotations",
+        "//server/main/entities:columns_java_proto",
+        "//server/main/entities:user",
+        "//server/main/messagebroker:message_broker_client",
+        "@maven//:com_google_guava_guava",
+        "@maven//:javax_inject_javax_inject",
+        "@maven//:javax_persistence_javax_persistence_api",
+    ],
+)
+
+woven_junit5_test(
+    name = "stale_account_expiration_test",
+    srcs = ["StaleAccountExpirationTest.java"],
+    aop_xml = "//server/janitor/java/META-INF:aop.xml",
+    aspects = ASPECTS,
+    resources = ["//server/java/META-INF:persistence.xml"],
+    test_package = "keyring.server.janitor.tasks",
+    runtime_deps = [
+        "@maven//:org_postgresql_postgresql",
+    ],
+    deps = [
+        ":stale_account_expiration",
+        "//server/main:arithmetic",
+        "//server/main:chronometry",
+        "//server/main/aspects:annotations",
+        "//server/main/aspects:storage_manager_aspect",
+        "//server/main/entities:columns_java_proto",
+        "//server/main/entities:user",
+        "//server/main/messagebroker:message_broker_client",
+        "@maven//:com_google_guava_guava",
+        "@maven//:javax_persistence_javax_persistence_api",
+        "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
+        "@maven//:org_aspectj_aspectjrt",
+        "@maven//:org_mockito_mockito_core",
+        "@maven//:org_testcontainers_junit_jupiter",
+        "@maven//:org_testcontainers_postgresql",
+        "@maven//:org_testcontainers_testcontainers",
     ],
 )

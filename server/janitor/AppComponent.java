@@ -12,6 +12,7 @@ import keyring.server.janitor.tasks.OtpParamsEviction;
 import keyring.server.janitor.tasks.OtpTokenEviction;
 import keyring.server.janitor.tasks.PendingUserExpiration;
 import keyring.server.janitor.tasks.SessionRecordEviction;
+import keyring.server.janitor.tasks.StaleAccountExpiration;
 
 @Component(modules = {AppModule.class})
 @Singleton
@@ -33,6 +34,8 @@ interface AppComponent {
   PendingUserExpiration pendingUserExpiration();
 
   SessionRecordEviction sessionRecordEviction();
+
+  StaleAccountExpiration staleAccountExpiration();
 
   @Component.Builder
   interface Builder {

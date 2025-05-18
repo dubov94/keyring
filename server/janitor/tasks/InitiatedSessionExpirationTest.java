@@ -69,7 +69,7 @@ final class InitiatedSessionExpirationTest {
 
     initiatedSessionExpiration.run();
 
-    entityManager.refresh(session);
+    refreshEntity(session);
     assertEquals(SessionStage.SESSION_INITIATED, session.getStage());
     verifyNoMoreInteractions(mockMessageBrokerClient);
   }
@@ -92,7 +92,7 @@ final class InitiatedSessionExpirationTest {
 
     initiatedSessionExpiration.run();
 
-    entityManager.refresh(session);
+    refreshEntity(session);
     assertEquals(SessionStage.SESSION_DISABLED, session.getStage());
     verify(mockMessageBrokerClient)
         .publishUncompletedAuthn("mail@example.com", "username", "127.0.0.1");
@@ -101,5 +101,10 @@ final class InitiatedSessionExpirationTest {
   @WithEntityTransaction
   private void persistEntity(Object entity) {
     entityManager.persist(entity);
+  }
+
+  @WithEntityTransaction
+  private void refreshEntity(Object entity) {
+    entityManager.refresh(entity);
   }
 }

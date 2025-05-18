@@ -93,12 +93,11 @@ public class KeyValueClient {
               })
           .map(
               kvSession ->
-                  chronometry.isBefore(
-                          Instant.ofEpochMilli(kvSession.getCreationTimeMillis()),
-                          chronometry.subtract(
-                              chronometry.currentTime(),
-                              Session.SESSION_ABSOLUTE_DURATION_H,
-                              ChronoUnit.HOURS))
+                  Instant.ofEpochMilli(kvSession.getCreationTimeMillis())
+                          .isBefore(
+                              chronometry
+                                  .currentTime()
+                                  .minus(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
                       ? null
                       : kvSession);
     }

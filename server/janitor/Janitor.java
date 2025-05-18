@@ -29,7 +29,8 @@ final class Janitor {
             appComponent.otpTokenEviction(),
             appComponent.sessionRecordEviction(),
             appComponent.initiatedSessionExpiration(),
-            appComponent.activatedSessionExpiration());
+            appComponent.activatedSessionExpiration(),
+            appComponent.staleAccountExpiration());
   }
 
   private void start() {

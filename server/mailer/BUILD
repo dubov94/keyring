@@ -133,6 +133,8 @@ java_binary(
     srcs = ["Mailer.java"],
     main_class = "keyring.server.mailer.Mailer",
     resources = [
+        "//server/mailer/java/templates:deactivation_notice_body.md.twig",
+        "//server/mailer/java/templates:deactivation_notice_head.text.twig",
         "//server/mailer/java/templates:mail_vc_body.md.twig",
         "//server/mailer/java/templates:mail_vc_head.text.twig",
         "//server/mailer/java/templates:uncompleted_authn_body.md.twig",

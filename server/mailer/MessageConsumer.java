@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import keyring.server.mailer.requests.DeactivationNotice;
 import keyring.server.mailer.requests.MailVc;
 import keyring.server.mailer.requests.MailerRequest;
 import keyring.server.mailer.requests.UncompletedAuthn;
@@ -123,8 +124,7 @@ class MessageConsumer implements Runnable {
       case MAIL_VC:
         MailVc mailVc = mailerRequest.getMailVc();
         return Optional.of(
-            () ->
-                mailClient.sendMailVc(mailVc.getMail(), mailVc.getUsername(), mailVc.getCode()));
+            () -> mailClient.sendMailVc(mailVc.getMail(), mailVc.getUsername(), mailVc.getCode()));
       case UNCOMPLETED_AUTHN:
         UncompletedAuthn uncompletedAuthn = mailerRequest.getUncompletedAuthn();
         return Optional.of(
@@ -133,6 +133,15 @@ class MessageConsumer implements Runnable {
                     uncompletedAuthn.getMail(),
                     uncompletedAuthn.getUsername(),
                     uncompletedAuthn.getIpAddress()));
+      case DEACTIVATION_NOTICE:
+        DeactivationNotice deactivationNotice = mailerRequest.getDeactivationNotice();
+        return Optional.of(
+            () ->
+                mailClient.sendDeactivationNotice(
+                    deactivationNotice.getMail(),
+                    deactivationNotice.getUsername(),
+                    deactivationNotice.getInactivityPeriodYears(),
+                    deactivationNotice.getDaysLeft()));
       default:
         logger.severe(String.format("Unsupported `RequestCase`: %s", requestCase.name()));
     }

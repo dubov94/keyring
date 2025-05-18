@@ -17,9 +17,17 @@ message UncompletedAuthn {
     string ip_address = 2;
 }
 
+message DeactivationNotice {
+    string mail = 1;
+    string username = 2;
+    int32 inactivity_period_years = 3;
+    int32 days_left = 4;
+}
+
 message MailerRequest {
     oneof request {
         MailVc mail_vc = 1;
         UncompletedAuthn uncompleted_authn = 2;
+        DeactivationNotice deactivation_notice = 3;
     }
 }

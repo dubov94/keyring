@@ -35,4 +35,18 @@ public class TemplatesModule {
   static JtwigTemplate provideUncompletedAuthnBodyTemplate() {
     return JtwigTemplate.classpathTemplate("/templates/uncompleted_authn_body.md.twig");
   }
+
+  @Provides
+  @Named("deactivation_notice_head")
+  @Singleton
+  static JtwigTemplate provideDeactivationNoticeHeadTemplate() {
+    return JtwigTemplate.classpathTemplate("/templates/deactivation_notice_head.text.twig");
+  }
+
+  @Provides
+  @Named("deactivation_notice_body")
+  @Singleton
+  static JtwigTemplate provideDeactivationNoticeBodyTemplate() {
+    return JtwigTemplate.classpathTemplate("/templates/deactivation_notice_body.md.twig");
+  }
 }

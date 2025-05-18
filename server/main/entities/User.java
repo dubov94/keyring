@@ -1,8 +1,15 @@
 package keyring.server.main.entities;
 
+import static java.util.stream.Collectors.toList;
+
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -15,9 +22,12 @@ import keyring.server.main.entities.columns.UserState;
 import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 @Entity
 @Table(name = "users")
+@TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class User {
   public static final long PENDING_USER_EXPIRATION_M = 15;
   public static final long DELETED_USER_STORAGE_EVICTION_D = 1;
@@ -55,6 +65,10 @@ public class User {
   // Latest stage change to `ACTIVATED`.
   @Column(name = "last_session")
   private Timestamp lastSession;
+
+  @Type(type = "string-array")
+  @Column(name = "inactivity_reminders_iso", columnDefinition = "text[]")
+  private String[] inactivityRemindersIso;
 
   public long getIdentifier() {
     return identifier;
@@ -149,6 +163,18 @@ public class User {
 
   public User setLastSession(Instant instant) {
     this.lastSession = Timestamp.from(instant);
+    this.inactivityRemindersIso = null;
+    return this;
+  }
+
+  public List<Instant> getInactivityReminders() {
+    return Optional.ofNullable(inactivityRemindersIso)
+        .map((array) -> Arrays.stream(array).map(Instant::parse).collect(toList()))
+        .orElseGet(() -> ImmutableList.of());
+  }
+
+  public User setInactivityReminders(List<Instant> reminders) {
+    this.inactivityRemindersIso = reminders.stream().map(Instant::toString).toArray(String[]::new);
     return this;
   }
 
