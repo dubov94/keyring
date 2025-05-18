@@ -106,6 +106,7 @@ ASPECTJ_VERSION = "1.9.5"
 maven_install(
     artifacts = [
         "com.beust:jcommander:1.78",
+        "com.fasterxml.jackson.core:jackson-databind:2.19.0",
         "com.google.auto.value:auto-value:1.10",
         "com.google.auto.value:auto-value-annotations:1.10",
         "com.google.dagger:dagger:2.46.1",
@@ -127,6 +128,7 @@ maven_install(
         "net.sargue:mailgun:1.10.0",
         "org.aspectj:aspectjrt:{}".format(ASPECTJ_VERSION),
         "org.aspectj:aspectjtools:{}".format(ASPECTJ_VERSION),
+        "org.commonmark:commonmark:0.24.0",
         "org.hibernate:hibernate-c3p0:5.6.15.Final",
         "org.hibernate:hibernate-core:5.6.15.Final",
         "org.hibernate:hibernate-jpamodelgen:5.6.15.Final",

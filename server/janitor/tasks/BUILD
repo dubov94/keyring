@@ -162,6 +162,7 @@ woven_junit5_test(
         "//server/main/entities:columns_java_proto",
         "//server/main/entities:key",
         "//server/main/entities:user",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",

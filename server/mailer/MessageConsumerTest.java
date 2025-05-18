@@ -26,11 +26,12 @@ class MessageConsumerTest {
       new GenericContainer(DockerImageName.parse("redis")).withExposedPorts(6379);
 
   private static final String MAIL = "mail@example.com";
+  private static final String USERNAME = "username";
   private static final String CODE = "0";
 
   @Mock private Environment mockEnvironment;
   private static JedisPool jedisPool;
-  @Mock private MailInterface mockMailInterface;
+  @Mock private MailClient mockMailClient;
   private MessageBrokerClient messageBrokerClient;
   private MessageConsumer messageConsumer;
 
@@ -46,7 +47,7 @@ class MessageConsumerTest {
             mockEnvironment,
             jedisPool,
             MoreExecutors.newDirectExecutorService(),
-            mockMailInterface);
+            mockMailClient);
   }
 
   @Test
@@ -56,14 +57,14 @@ class MessageConsumerTest {
               messageConsumer.stop();
               return null;
             })
-        .when(mockMailInterface)
-        .sendMailVc(MAIL, CODE);
-    messageBrokerClient.publishMailVc(MAIL, CODE);
+        .when(mockMailClient)
+        .sendMailVc(MAIL, USERNAME, CODE);
+    messageBrokerClient.publishMailVc(MAIL, USERNAME, CODE);
 
     Thread thread = new Thread(messageConsumer);
     thread.start();
     thread.join();
 
-    verify(mockMailInterface).sendMailVc(MAIL, CODE);
+    verify(mockMailClient).sendMailVc(MAIL, USERNAME, CODE);
   }
 }

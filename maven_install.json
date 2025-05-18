@@ -44,66 +44,43 @@
                 "sha256": "7891debb84b5f83e9bd57593ebece3399abbe0fd938cf306b3534c57913b9615"
             },
             {
-                "coord": "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.11.0/jackson-annotations-2.11.0.jar",
+                "coord": "com.fasterxml.jackson.core:jackson-annotations:2.19.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.19.0/jackson-annotations-2.19.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.11.0/jackson-annotations-2.11.0.jar",
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.19.0/jackson-annotations-2.19.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.11.0/jackson-annotations-2.11.0.jar"
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.19.0/jackson-annotations-2.19.0.jar"
                 ],
-                "sha256": "b3b1fca6cb6469d4ea06635d964aaea91f86cc22fe42a9757c8a315148589e8e"
+                "sha256": "ead60e9cac0e42b57092b9e2d087ff43536e9477d4486ba393037a8cc156cda7"
             },
             {
-                "coord": "com.fasterxml.jackson.core:jackson-core:2.11.3",
-                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.11.3/jackson-core-2.11.3.jar",
+                "coord": "com.fasterxml.jackson.core:jackson-core:2.19.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.19.0/jackson-core-2.19.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.11.3/jackson-core-2.11.3.jar",
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.19.0/jackson-core-2.19.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.11.3/jackson-core-2.11.3.jar"
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.19.0/jackson-core-2.19.0.jar"
                 ],
-                "sha256": "78cd0a6b936232e06dd3e38da8a0345348a09cd1ff9c4d844c6ee72c75cfc402"
+                "sha256": "da8e859bac94874528116a25f20c68560e4287acbf27628711b8a4f96b028430"
             },
             {
-                "coord": "com.fasterxml.jackson.core:jackson-databind:2.11.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.11.0/jackson-databind-2.11.0.jar",
+                "coord": "com.fasterxml.jackson.core:jackson-databind:2.19.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.19.0/jackson-databind-2.19.0.jar",
                 "directDependencies": [
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
-                    "com.fasterxml.jackson.core:jackson-core:2.11.3"
+                    "com.fasterxml.jackson.core:jackson-annotations:2.19.0",
+                    "com.fasterxml.jackson.core:jackson-core:2.19.0"
                 ],
                 "dependencies": [
-                    "com.fasterxml.jackson.core:jackson-core:2.11.3",
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0"
+                    "com.fasterxml.jackson.core:jackson-annotations:2.19.0",
+                    "com.fasterxml.jackson.core:jackson-core:2.19.0"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.11.0/jackson-databind-2.11.0.jar",
+                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.19.0/jackson-databind-2.19.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.11.0/jackson-databind-2.11.0.jar"
+                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.19.0/jackson-databind-2.19.0.jar"
                 ],
-                "sha256": "54e72b9fa38fc37986ae7f6fc30ef704eec8010206bcd4d63546dccbbb47f4d1"
-            },
-            {
-                "coord": "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.11.0/jackson-module-jaxb-annotations-2.11.0.jar",
-                "directDependencies": [
-                    "jakarta.activation:jakarta.activation-api:1.2.1",
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
-                    "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2",
-                    "com.fasterxml.jackson.core:jackson-databind:2.11.0",
-                    "com.fasterxml.jackson.core:jackson-core:2.11.3"
-                ],
-                "dependencies": [
-                    "jakarta.activation:jakarta.activation-api:1.2.1",
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
-                    "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2",
-                    "com.fasterxml.jackson.core:jackson-databind:2.11.0",
-                    "com.fasterxml.jackson.core:jackson-core:2.11.3"
-                ],
-                "url": "https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.11.0/jackson-module-jaxb-annotations-2.11.0.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.11.0/jackson-module-jaxb-annotations-2.11.0.jar"
-                ],
-                "sha256": "73e0447fa708bee956a6e53911c017b95070efb11dd88ff2987643d399adf170"
+                "sha256": "ceda311f476c3b18e1d2b240c94e2dcb9c8d44e70f8afa9facab88bac4ddc03a"
             },
             {
                 "coord": "com.fasterxml:classmate:1.5.1",
@@ -123,11 +100,11 @@
                 "coord": "com.github.docker-java:docker-java-api:3.2.12",
                 "file": "v1/https/repo1.maven.org/maven2/com/github/docker-java/docker-java-api/3.2.12/docker-java-api-3.2.12.jar",
                 "directDependencies": [
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.19.0",
                     "org.slf4j:slf4j-api:1.7.32"
                 ],
                 "dependencies": [
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.19.0",
                     "org.slf4j:slf4j-api:1.7.32"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/github/docker-java/docker-java-api/3.2.12/docker-java-api-3.2.12.jar",
@@ -221,9 +198,10 @@
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "commons-codec:commons-codec:1.11",
                     "io.opencensus:opencensus-api:0.31.1",
+                    "com.fasterxml.jackson.core:jackson-core:2.19.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.http-client:google-http-client:1.42.3",
@@ -233,8 +211,7 @@
                     "org.apache.httpcomponents:httpcore:4.4.15",
                     "com.google.auto.value:auto-value-annotations:1.10",
                     "com.google.guava:guava:32.1.3-jre",
-                    "io.grpc:grpc-api:1.59.1",
-                    "com.fasterxml.jackson.core:jackson-core:2.11.3"
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/google/auth/google-auth-library-oauth2-http/0.22.0/google-auth-library-oauth2-http-0.22.0.jar",
                 "mirror_urls": [
@@ -313,7 +290,7 @@
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
                     "com.google.dagger:dagger-producers:2.46.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
                     "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.6.10",
                     "com.squareup:javapoet:1.13.0",
@@ -352,7 +329,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "com.google.dagger:dagger:2.46.1",
                     "com.google.guava:failureaccess:1.0.1",
                     "javax.inject:javax.inject:1",
@@ -385,7 +362,7 @@
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
                     "com.google.dagger:dagger-producers:2.46.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
                     "com.squareup:javapoet:1.13.0",
                     "com.google.dagger:dagger:2.46.1",
@@ -468,7 +445,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "com.google.errorprone:javac-shaded:9-dev-r4023-3",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.guava:guava:32.1.3-jre"
@@ -498,7 +475,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "com.google.guava:failureaccess:1.0.1"
                 ],
                 "dependencies": [
@@ -506,7 +483,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "com.google.guava:failureaccess:1.0.1"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/google/guava/guava/32.1.3-jre/guava-32.1.3-jre.jar",
@@ -540,7 +517,7 @@
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "commons-codec:commons-codec:1.11",
                     "io.opencensus:opencensus-api:0.31.1",
                     "com.google.code.gson:gson:2.10.1",
@@ -562,7 +539,7 @@
                 "coord": "com.google.http-client:google-http-client-jackson2:1.37.0",
                 "file": "v1/https/repo1.maven.org/maven2/com/google/http-client/google-http-client-jackson2/1.37.0/google-http-client-jackson2-1.37.0.jar",
                 "directDependencies": [
-                    "com.fasterxml.jackson.core:jackson-core:2.11.3",
+                    "com.fasterxml.jackson.core:jackson-core:2.19.0",
                     "com.google.http-client:google-http-client:1.42.3"
                 ],
                 "dependencies": [
@@ -572,17 +549,17 @@
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "commons-codec:commons-codec:1.11",
                     "io.opencensus:opencensus-api:0.31.1",
+                    "com.fasterxml.jackson.core:jackson-core:2.19.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.http-client:google-http-client:1.42.3",
                     "org.apache.httpcomponents:httpclient:4.5.13",
                     "org.apache.httpcomponents:httpcore:4.4.15",
                     "com.google.guava:guava:32.1.3-jre",
-                    "io.grpc:grpc-api:1.59.1",
-                    "com.fasterxml.jackson.core:jackson-core:2.11.3"
+                    "io.grpc:grpc-api:1.59.1"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/google/http-client/google-http-client-jackson2/1.37.0/google-http-client-jackson2-1.37.0.jar",
                 "mirror_urls": [
@@ -610,7 +587,7 @@
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "commons-codec:commons-codec:1.11",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
@@ -664,7 +641,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "org.hamcrest:hamcrest-core:1.3",
                     "com.googlecode.java-diff-utils:diffutils:1.3.0",
                     "com.google.guava:failureaccess:1.0.1",
@@ -821,24 +798,15 @@
                 "sha256": "785861db11ca1bd0d1956682b974ad73eb19cd3e01a4b3fa82d62eca97210aec"
             },
             {
-                "coord": "com.vladmihalcea:hibernate-types-52:2.11.1",
-                "file": "v1/https/repo1.maven.org/maven2/com/vladmihalcea/hibernate-types-52/2.11.1/hibernate-types-52-2.11.1.jar",
-                "directDependencies": [
-                    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.0"
-                ],
-                "dependencies": [
-                    "jakarta.activation:jakarta.activation-api:1.2.1",
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
-                    "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2",
-                    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.11.0",
-                    "com.fasterxml.jackson.core:jackson-databind:2.11.0",
-                    "com.fasterxml.jackson.core:jackson-core:2.11.3"
-                ],
-                "url": "https://repo1.maven.org/maven2/com/vladmihalcea/hibernate-types-52/2.11.1/hibernate-types-52-2.11.1.jar",
+                "coord": "com.vladmihalcea:hibernate-types-52:2.17.1",
+                "file": "v1/https/repo1.maven.org/maven2/com/vladmihalcea/hibernate-types-52/2.17.1/hibernate-types-52-2.17.1.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "url": "https://repo1.maven.org/maven2/com/vladmihalcea/hibernate-types-52/2.17.1/hibernate-types-52-2.17.1.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/vladmihalcea/hibernate-types-52/2.11.1/hibernate-types-52-2.11.1.jar"
+                    "https://repo1.maven.org/maven2/com/vladmihalcea/hibernate-types-52/2.17.1/hibernate-types-52-2.17.1.jar"
                 ],
-                "sha256": "14da8aa840da247566d3274687152ff31219810a281241b62b0777f518b5c381"
+                "sha256": "2bd4952072e9ade7770551726147c5194b3a1c77133d43f2702ea597c057e437"
             },
             {
                 "coord": "com.warrenstrange:googleauth:1.4.0",
@@ -969,7 +937,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.guava:guava:32.1.3-jre"
                 ],
@@ -1015,8 +983,8 @@
                     "org.codehaus.mojo:animal-sniffer-annotations:1.23",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "com.google.android:annotations:4.1.1.4",
-                    "org.checkerframework:checker-qual:3.37.0",
                     "io.perfmark:perfmark-api:0.26.0",
                     "com.google.code.gson:gson:2.10.1",
                     "io.grpc:grpc-util:1.59.1",
@@ -1047,8 +1015,8 @@
                     "org.codehaus.mojo:animal-sniffer-annotations:1.23",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "com.google.android:annotations:4.1.1.4",
-                    "org.checkerframework:checker-qual:3.37.0",
                     "io.perfmark:perfmark-api:0.26.0",
                     "com.google.code.gson:gson:2.10.1",
                     "io.grpc:grpc-util:1.59.1",
@@ -1076,7 +1044,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.guava:guava:32.1.3-jre",
                     "io.grpc:grpc-api:1.59.1"
@@ -1106,7 +1074,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "io.grpc:grpc-protobuf-lite:1.59.1",
                     "com.google.api.grpc:proto-google-common-protos:2.22.0",
                     "com.google.guava:failureaccess:1.0.1",
@@ -1133,7 +1101,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.guava:guava:32.1.3-jre",
                     "io.grpc:grpc-api:1.59.1"
@@ -1159,8 +1127,8 @@
                     "org.codehaus.mojo:animal-sniffer-annotations:1.23",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "com.google.android:annotations:4.1.1.4",
-                    "org.checkerframework:checker-qual:3.37.0",
                     "io.perfmark:perfmark-api:0.26.0",
                     "com.google.code.gson:gson:2.10.1",
                     "io.grpc:grpc-util:1.59.1",
@@ -1459,7 +1427,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "io.opencensus:opencensus-api:0.31.1",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.guava:guava:32.1.3-jre",
@@ -1484,7 +1452,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "io.opencensus:opencensus-api:0.31.1",
                     "com.google.guava:failureaccess:1.0.1",
                     "com.google.guava:guava:32.1.3-jre",
@@ -1532,32 +1500,6 @@
                     "https://repo1.maven.org/maven2/io/vavr/vavr/0.10.3/vavr-0.10.3.jar"
                 ],
                 "sha256": "3f6e3309b7cc6615846a80886452a5016d13c9347981ab99e3ee3a16c8c738ba"
-            },
-            {
-                "coord": "jakarta.activation:jakarta.activation-api:1.2.1",
-                "file": "v1/https/repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar",
-                "directDependencies": [],
-                "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/jakarta/activation/jakarta.activation-api/1.2.1/jakarta.activation-api-1.2.1.jar"
-                ],
-                "sha256": "8b0a0f52fa8b05c5431921a063ed866efaa41dadf2e3a7ee3e1961f2b0d9645b"
-            },
-            {
-                "coord": "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2",
-                "file": "v1/https/repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar",
-                "directDependencies": [
-                    "jakarta.activation:jakarta.activation-api:1.2.1"
-                ],
-                "dependencies": [
-                    "jakarta.activation:jakarta.activation-api:1.2.1"
-                ],
-                "url": "https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar",
-                "mirror_urls": [
-                    "https://repo1.maven.org/maven2/jakarta/xml/bind/jakarta.xml.bind-api/2.3.2/jakarta.xml.bind-api-2.3.2.jar"
-                ],
-                "sha256": "69156304079bdeed9fc0ae3b39389f19b3cc4ba4443bc80508995394ead742ea"
             },
             {
                 "coord": "javax.activation:activation:1.1.1",
@@ -1685,7 +1627,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "org.junit.jupiter:junit-jupiter-api:5.8.1",
                     "org.opentest4j:opentest4j:1.2.0",
                     "org.junit.platform:junit-platform-commons:1.8.1",
@@ -1910,15 +1852,15 @@
                 "sha256": "11d134b245e9cacc474514d2d66b5b8618f8039a1465cdc55bbc0b34e0008b7a"
             },
             {
-                "coord": "org.checkerframework:checker-qual:3.37.0",
-                "file": "v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.jar",
+                "coord": "org.checkerframework:checker-qual:3.42.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.jar",
+                "url": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.37.0/checker-qual-3.37.0.jar"
+                    "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar"
                 ],
-                "sha256": "e4ce1376cc2735e1dde220b62ad0913f51297704daad155a33f386bc5db0d9f7"
+                "sha256": "ccaedd33af0b7894d9f2f3b644f4d19e43928e32902e61ac4d10777830f5aac7"
             },
             {
                 "coord": "org.codehaus.mojo:animal-sniffer-annotations:1.23",
@@ -1930,6 +1872,17 @@
                     "https://repo1.maven.org/maven2/org/codehaus/mojo/animal-sniffer-annotations/1.23/animal-sniffer-annotations-1.23.jar"
                 ],
                 "sha256": "9ffe526bf43a6348e9d8b33b9cd6f580a7f5eed0cf055913007eda263de974d0"
+            },
+            {
+                "coord": "org.commonmark:commonmark:0.24.0",
+                "file": "v1/https/repo1.maven.org/maven2/org/commonmark/commonmark/0.24.0/commonmark-0.24.0.jar",
+                "directDependencies": [],
+                "dependencies": [],
+                "url": "https://repo1.maven.org/maven2/org/commonmark/commonmark/0.24.0/commonmark-0.24.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/org/commonmark/commonmark/0.24.0/commonmark-0.24.0.jar"
+                ],
+                "sha256": "679338e0b7fc15c02d275d598654b01a149893bc28a87992e90123c8d06af25b"
             },
             {
                 "coord": "org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b30",
@@ -2528,8 +2481,8 @@
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
                     "org.ow2.asm:asm:5.0.3",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "org.parboiled:parboiled-java:1.1.7",
-                    "org.checkerframework:checker-qual:3.37.0",
                     "org.ow2.asm:asm-analysis:5.0.3",
                     "org.slf4j:slf4j-api:1.7.32",
                     "com.google.guava:failureaccess:1.0.1",
@@ -2557,7 +2510,7 @@
                     "com.google.j2objc:j2objc-annotations:2.8",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.errorprone:error_prone_annotations:2.21.1",
-                    "org.checkerframework:checker-qual:3.37.0",
+                    "org.checkerframework:checker-qual:3.42.0",
                     "org.slf4j:slf4j-api:1.7.32",
                     "com.google.guava:failureaccess:1.0.1",
                     "org.apache.commons:commons-lang3:3.11",
@@ -2898,19 +2851,19 @@
                 "sha256": "8cc4e7cc5731e500c077a89e9e8d22a64af7176c1e5478a5367d6252bb0b7e9e"
             },
             {
-                "coord": "org.postgresql:postgresql:42.3.8",
-                "file": "v1/https/repo1.maven.org/maven2/org/postgresql/postgresql/42.3.8/postgresql-42.3.8.jar",
+                "coord": "org.postgresql:postgresql:42.7.2",
+                "file": "v1/https/repo1.maven.org/maven2/org/postgresql/postgresql/42.7.2/postgresql-42.7.2.jar",
                 "directDependencies": [
-                    "org.checkerframework:checker-qual:3.37.0"
+                    "org.checkerframework:checker-qual:3.42.0"
                 ],
                 "dependencies": [
-                    "org.checkerframework:checker-qual:3.37.0"
+                    "org.checkerframework:checker-qual:3.42.0"
                 ],
-                "url": "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.3.8/postgresql-42.3.8.jar",
+                "url": "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.2/postgresql-42.7.2.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.3.8/postgresql-42.3.8.jar"
+                    "https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.2/postgresql-42.7.2.jar"
                 ],
-                "sha256": "b0eb10c469bb409447914fa6ec4076212779c7a7e93844bf3136b8884e2b6989"
+                "sha256": "0c244ac7d02cf89d8e29852eace6595d75bc4d78581b85b2768460081646a57b"
             },
             {
                 "coord": "org.rnorth.duct-tape:duct-tape:1.0.8",
@@ -2962,7 +2915,7 @@
                 "dependencies": [
                     "org.testcontainers:testcontainers:1.16.1",
                     "org.apache.commons:commons-compress:1.21",
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.19.0",
                     "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
                     "org.hamcrest:hamcrest-core:1.3",
                     "com.github.docker-java:docker-java-transport:3.2.12",
@@ -2988,7 +2941,7 @@
                 "dependencies": [
                     "org.testcontainers:testcontainers:1.16.1",
                     "org.apache.commons:commons-compress:1.21",
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.19.0",
                     "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
                     "org.hamcrest:hamcrest-core:1.3",
                     "com.github.docker-java:docker-java-transport:3.2.12",
@@ -3016,7 +2969,7 @@
                 "dependencies": [
                     "org.testcontainers:testcontainers:1.16.1",
                     "org.apache.commons:commons-compress:1.21",
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.19.0",
                     "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
                     "org.junit.jupiter:junit-jupiter-api:5.8.1",
                     "org.hamcrest:hamcrest-core:1.3",
@@ -3047,7 +3000,7 @@
                     "org.testcontainers:testcontainers:1.16.1",
                     "org.testcontainers:jdbc:1.16.1",
                     "org.apache.commons:commons-compress:1.21",
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.19.0",
                     "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
                     "org.hamcrest:hamcrest-core:1.3",
                     "com.github.docker-java:docker-java-transport:3.2.12",
@@ -3078,7 +3031,7 @@
                 ],
                 "dependencies": [
                     "org.apache.commons:commons-compress:1.21",
-                    "com.fasterxml.jackson.core:jackson-annotations:2.11.0",
+                    "com.fasterxml.jackson.core:jackson-annotations:2.19.0",
                     "com.github.docker-java:docker-java-transport-zerodep:3.2.12",
                     "org.hamcrest:hamcrest-core:1.3",
                     "com.github.docker-java:docker-java-transport:3.2.12",
@@ -3118,6 +3071,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -1205233796
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -381815637
     }
 }

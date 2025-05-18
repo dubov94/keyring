@@ -37,7 +37,7 @@ class MessageConsumer implements Runnable {
   private Pool<Jedis> jedisPool;
   private Base64.Decoder base64Decoder;
   private ListeningExecutorService executorService;
-  private MailInterface mailInterface;
+  private MailClient mailClient;
 
   private enum State {
     READ_PENDING,
@@ -60,12 +60,12 @@ class MessageConsumer implements Runnable {
       Environment environment,
       Pool<Jedis> jedisPool,
       ListeningExecutorService executorService,
-      MailInterface mailInterface) {
+      MailClient mailClient) {
     this.consumerName = environment.getConsumerName();
     this.jedisPool = jedisPool;
     this.base64Decoder = Base64.getDecoder();
     this.executorService = executorService;
-    this.mailInterface = mailInterface;
+    this.mailClient = mailClient;
   }
 
   private void createGroup(Jedis jedis) {
@@ -122,13 +122,17 @@ class MessageConsumer implements Runnable {
     switch (requestCase) {
       case MAIL_VC:
         MailVc mailVc = mailerRequest.getMailVc();
-        return Optional.of(() -> mailInterface.sendMailVc(mailVc.getMail(), mailVc.getCode()));
+        return Optional.of(
+            () ->
+                mailClient.sendMailVc(mailVc.getMail(), mailVc.getUsername(), mailVc.getCode()));
       case UNCOMPLETED_AUTHN:
         UncompletedAuthn uncompletedAuthn = mailerRequest.getUncompletedAuthn();
         return Optional.of(
             () ->
-                mailInterface.sendUncompletedAuthn(
-                    uncompletedAuthn.getMail(), uncompletedAuthn.getIpAddress()));
+                mailClient.sendUncompletedAuthn(
+                    uncompletedAuthn.getMail(),
+                    uncompletedAuthn.getUsername(),
+                    uncompletedAuthn.getIpAddress()));
       default:
         logger.severe(String.format("Unsupported `RequestCase`: %s", requestCase.name()));
     }

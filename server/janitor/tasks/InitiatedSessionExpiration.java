@@ -52,7 +52,7 @@ public final class InitiatedSessionExpiration implements Runnable {
             .getResultList();
     for (Session entity : entities) {
       messageBrokerClient.publishUncompletedAuthn(
-          entity.getUser().getMail(), entity.getIpAddress());
+          entity.getUser().getMail(), entity.getUser().getUsername(), entity.getIpAddress());
       entity.setStage(SessionStage.SESSION_DISABLED, chronometry.currentTime());
       entityManager.persist(entity);
     }

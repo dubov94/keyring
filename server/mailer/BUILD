@@ -40,7 +40,7 @@ java_library(
         ":broker_keys",
         ":consumer_settings",
         ":environment",
-        ":mail_interface",
+        ":mail_client",
         ":requests_java_proto",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_inject_javax_inject",
@@ -58,7 +58,7 @@ junit5_test(
     ],
     deps = [
         ":environment",
-        ":mail_interface",
+        ":mail_client",
         ":message_consumer",
         "//server/main/messagebroker:message_broker_client",
         "@maven//:com_google_guava_guava",
@@ -71,21 +71,23 @@ junit5_test(
 )
 
 java_library(
-    name = "mail_interface",
-    srcs = ["MailInterface.java"],
+    name = "mail_client",
+    srcs = ["MailClient.java"],
 )
 
 java_library(
-    name = "mail_client",
-    srcs = ["MailClient.java"],
+    name = "mail_service",
+    srcs = ["MailService.java"],
+)
+
+java_library(
+    name = "templated_mail_client",
+    srcs = ["TemplatedMailClient.java"],
     deps = [
-        ":environment",
-        ":mail_interface",
-        "//server/mailer/templates:mail_vc_body_renderer_factory",
-        "//server/mailer/templates:mail_vc_head_renderer_factory",
-        "//server/mailer/templates:uncompleted_authn_body_renderer_factory",
-        "//server/mailer/templates:uncompleted_authn_head_renderer_factory",
-        "@maven//:net_sargue_mailgun",
+        ":mail_client",
+        ":mail_service",
+        "@maven//:org_commonmark_commonmark",
+        "@maven//:org_jtwig_jtwig_core",
     ],
 )
 
@@ -99,14 +101,13 @@ java_library(
         ":consumer_settings",
         ":environment",
         ":mail_client",
-        ":mail_interface",
-        "//server/mailer/templates:mail_vc_body_renderer_factory",
-        "//server/mailer/templates:mail_vc_head_renderer_factory",
-        "//server/mailer/templates:uncompleted_authn_body_renderer_factory",
-        "//server/mailer/templates:uncompleted_authn_head_renderer_factory",
+        ":mail_service",
+        ":templated_mail_client",
         "@maven//:com_google_dagger_dagger",
         "@maven//:com_google_guava_guava",
         "@maven//:javax_inject_javax_inject",
+        "@maven//:net_sargue_mailgun",
+        "@maven//:org_jtwig_jtwig_core",
         "@maven//:redis_clients_jedis",
     ],
 )
@@ -132,10 +133,10 @@ java_binary(
     srcs = ["Mailer.java"],
     main_class = "keyring.server.mailer.Mailer",
     resources = [
-        "//server/mailer/java/templates:mail_vc.body.twig",
-        "//server/mailer/java/templates:mail_vc.head.twig",
-        "//server/mailer/java/templates:uncompleted_authn.body.twig",
-        "//server/mailer/java/templates:uncompleted_authn.head.twig",
+        "//server/mailer/java/templates:mail_vc_body.md.twig",
+        "//server/mailer/java/templates:mail_vc_head.text.twig",
+        "//server/mailer/java/templates:uncompleted_authn_body.md.twig",
+        "//server/mailer/java/templates:uncompleted_authn_head.text.twig",
     ],
     visibility = ["//:root"],
     runtime_deps = [

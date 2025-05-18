@@ -77,7 +77,8 @@ final class InitiatedSessionExpirationTest {
         .thenReturn(Timestamp.from(Instant.ofEpochSecond(2)));
     when(mockChronometry.pastTimestamp(Session.SESSION_ABSOLUTE_DURATION_H, ChronoUnit.HOURS))
         .thenReturn(Timestamp.from(Instant.now()));
-    User user = new User().setUsername(newRandomUuid()).setMail("mail@example.com");
+    String username = newRandomUuid();
+    User user = new User().setUsername(username).setMail("mail@example.com");
     persistEntity(user);
     Session session =
         new Session()
@@ -90,7 +91,8 @@ final class InitiatedSessionExpirationTest {
 
     entityManager.refresh(session);
     assertEquals(SessionStage.SESSION_DISABLED, session.getStage());
-    verify(mockMessageBrokerClient).publishUncompletedAuthn("mail@example.com", "127.0.0.1");
+    verify(mockMessageBrokerClient)
+        .publishUncompletedAuthn("mail@example.com", username, "127.0.0.1");
   }
 
   private String newRandomUuid() {

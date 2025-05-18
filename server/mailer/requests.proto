@@ -7,11 +7,13 @@ option java_package = "keyring.server.mailer.requests";
 
 message MailVc {
     string mail = 1;
+    string username = 3;
     string code = 2;
 }
 
 message UncompletedAuthn {
     string mail = 1;
+    string username = 3;
     string ip_address = 2;
 }
 

@@ -34,18 +34,21 @@ public class MessageBrokerClient {
     }
   }
 
-  public void publishMailVc(String mail, String code) {
+  public void publishMailVc(String mail, String username, String code) {
     publishMailerRequest(
         MailerRequest.newBuilder()
-            .setMailVc(MailVc.newBuilder().setMail(mail).setCode(code))
+            .setMailVc(MailVc.newBuilder().setMail(mail).setUsername(username).setCode(code))
             .build());
   }
 
-  public void publishUncompletedAuthn(String mail, String ipAddress) {
+  public void publishUncompletedAuthn(String mail, String username, String ipAddress) {
     publishMailerRequest(
         MailerRequest.newBuilder()
             .setUncompletedAuthn(
-                UncompletedAuthn.newBuilder().setMail(mail).setIpAddress(ipAddress))
+                UncompletedAuthn.newBuilder()
+                    .setMail(mail)
+                    .setUsername(username)
+                    .setIpAddress(ipAddress))
             .build());
   }
 }

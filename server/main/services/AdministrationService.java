@@ -149,7 +149,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     MailToken mailToken =
         accountOperationsInterface.createMailToken(
             userId, agentAccessor.getIpAddress(), mail, code);
-    messageBrokerClient.publishMailVc(mail, code);
+    messageBrokerClient.publishMailVc(mail, user.getUsername(), code);
     return Either.right(builder.setTokenId(mailToken.getIdentifier()).build());
   }
 

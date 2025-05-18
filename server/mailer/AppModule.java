@@ -3,7 +3,6 @@ package keyring.server.mailer;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 import java.net.URI;
@@ -11,11 +10,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import javax.inject.Named;
 import javax.inject.Singleton;
-import keyring.server.mailer.templates.MailVcBodyRendererFactory;
-import keyring.server.mailer.templates.MailVcHeadRendererFactory;
-import keyring.server.mailer.templates.UncompletedAuthnBodyRendererFactory;
-import keyring.server.mailer.templates.UncompletedAuthnHeadRendererFactory;
+import net.sargue.mailgun.Configuration;
+import net.sargue.mailgun.Mail;
+import org.jtwig.JtwigTemplate;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisSentinelPool;
@@ -51,35 +50,65 @@ class AppModule {
             TimeUnit.MILLISECONDS));
   }
 
-  private static class LocalMailInterface implements MailInterface {
-    private static final Logger logger = Logger.getLogger(LocalMailInterface.class.getName());
+  private static class LocalMailService implements MailService {
+    private static final Logger logger = Logger.getLogger(LocalMailService.class.getName());
 
     @Override
-    public void sendMailVc(String to, String code) {
-      logger.info(String.format("sendMailVc(%s, %s)", to, code));
+    public void send(String to, String head, String body) {
+      logger.info(String.format("send(%s, %s, %s)", to, head, body));
+    }
+  }
+
+  private static class MailgunService implements MailService {
+    private String fromName;
+    private String fromAddress;
+    private Configuration configuration;
+
+    MailgunService(String fromName, String fromAddress, Configuration configuration) {
+      this.fromName = fromName;
+      this.fromAddress = fromAddress;
+      this.configuration = configuration;
     }
 
     @Override
-    public void sendUncompletedAuthn(String to, String ipAddress) {
-      logger.info(String.format("sendUncompletedAuthn(%s, %s)", to, ipAddress));
+    public void send(String to, String head, String body) {
+      Mail.using(configuration)
+          .from(fromName, fromAddress)
+          .to(to)
+          .subject(head)
+          .html(body)
+          .build()
+          .send();
     }
   }
 
   @Provides
-  static MailInterface provideMailInterface(
-      Environment environment,
-      Lazy<MailVcHeadRendererFactory> mailVcHeadRendererFactory,
-      Lazy<MailVcBodyRendererFactory> mailVcBodyRendererFactory,
-      Lazy<UncompletedAuthnHeadRendererFactory> uncompletedAuthnHeadRendererFactory,
-      Lazy<UncompletedAuthnBodyRendererFactory> uncompletedAuthnBodyRendererFactory) {
+  static MailService provideMailService(Environment environment) {
     if (environment.isProduction()) {
-      return new MailClient(
-          environment,
-          mailVcHeadRendererFactory.get(),
-          mailVcBodyRendererFactory.get(),
-          uncompletedAuthnHeadRendererFactory.get(),
-          uncompletedAuthnBodyRendererFactory.get());
+      return new MailgunService(
+          environment.getEmailFromName(),
+          environment.getEmailFromAddress(),
+          new Configuration()
+              .apiUrl(environment.getMailgunApiUrl())
+              .domain(environment.getMailgunDomain())
+              .apiKey(environment.getMailgunApiKey()));
     }
-    return new LocalMailInterface();
+    return new LocalMailService();
+  }
+
+  @Provides
+  static MailClient provideMailClient(
+      Environment environment,
+      MailService mailService,
+      @Named("mail_vc_head") JtwigTemplate mailVcHeadTemplate,
+      @Named("mail_vc_body") JtwigTemplate mailVcBodyTemplate,
+      @Named("uncompleted_authn_head") JtwigTemplate uncompletedAuthnHeadTemplate,
+      @Named("uncompleted_authn_body") JtwigTemplate uncompletedAuthnBodyTemplate) {
+    return new TemplatedMailClient(
+        mailService,
+        mailVcHeadTemplate,
+        mailVcBodyTemplate,
+        uncompletedAuthnHeadTemplate,
+        uncompletedAuthnBodyTemplate);
   }
 }
