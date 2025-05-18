@@ -14,7 +14,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import keyring.server.main.Arithmetic;
 import keyring.server.main.Chronometry;
@@ -26,25 +25,27 @@ import keyring.server.main.proto.service.KeyAttrs;
 import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
 import org.aspectj.lang.Aspects;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 class KeyOperationsClientTest {
-  private static final EntityManagerFactory entityManagerFactory =
-      Persistence.createEntityManagerFactory("testing");
+  @Container
+  private static final PostgreSQLContainer<?> postgresContainer =
+      new PostgreSQLContainer<>(DockerImageName.parse("postgres"));
+
   private static Random random = new Random();
   private AccountOperationsClient accountOperationsClient;
   private KeyOperationsClient keyOperationsClient;
   private Instant now = Instant.EPOCH;
 
-  @BeforeAll
-  static void beforeAll() throws ClassNotFoundException {
-    Aspects.aspectOf(StorageManagerAspect.class).initialize(entityManagerFactory);
-  }
-
   @BeforeEach
   void beforeEach() {
+    Aspects.aspectOf(StorageManagerAspect.class)
+        .initialize(Persistence.createEntityManagerFactory("testing"));
     Limiters limiters =
         new Limiters(
             /* approxMaxKeysPerUser */ 8,

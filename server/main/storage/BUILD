@@ -69,7 +69,6 @@ woven_junit5_test(
     test_package = "keyring.server.main.storage",
     runtime_deps = [
         "@maven//:org_postgresql_postgresql",
-        "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
         ":account_operations_client",
@@ -96,6 +95,9 @@ woven_junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
+        "@maven//:org_testcontainers_junit_jupiter",
+        "@maven//:org_testcontainers_postgresql",
+        "@maven//:org_testcontainers_testcontainers",
     ],
 )
 
@@ -137,7 +139,6 @@ woven_junit5_test(
     test_package = "keyring.server.main.storage",
     runtime_deps = [
         "@maven//:org_postgresql_postgresql",
-        "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
         ":limiters",
@@ -156,6 +157,9 @@ woven_junit5_test(
         "@maven//:io_vavr_vavr",
         "@maven//:javax_persistence_javax_persistence_api",
         "@maven//:org_aspectj_aspectjrt",
+        "@maven//:org_testcontainers_junit_jupiter",
+        "@maven//:org_testcontainers_postgresql",
+        "@maven//:org_testcontainers_testcontainers",
     ],
 )
 

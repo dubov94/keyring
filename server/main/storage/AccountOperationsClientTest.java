@@ -36,27 +36,31 @@ import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 @ExtendWith(MockitoExtension.class)
+@Testcontainers
 class AccountOperationsClientTest {
+  @Container
+  private static final PostgreSQLContainer<?> postgresContainer =
+      new PostgreSQLContainer<>(DockerImageName.parse("postgres"));
+
   private static final String IP_ADDRESS = "127.0.0.1";
 
   private Supplier<Instant> nowSupplier = Instant::now;
   private AccountOperationsClient accountOperationsClient;
   private KeyOperationsClient keyOperationsClient;
 
-  @BeforeAll
-  static void beforeAll() {
-    Aspects.aspectOf(StorageManagerAspect.class)
-        .initialize(Persistence.createEntityManagerFactory("testing"));
-  }
-
   @BeforeEach
   void beforeEach() {
+    Aspects.aspectOf(StorageManagerAspect.class)
+        .initialize(Persistence.createEntityManagerFactory("testing"));
     Limiters limiters =
         new Limiters(
             Key.APPROX_MAX_KEYS_PER_USER,
@@ -75,10 +79,9 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void createUser_getsUniqueUsername_postsUserAndMailToken() {
-    String username = newRandomUuid();
     Tuple2<User, MailToken> tuple =
         accountOperationsClient.createUser(
-            username, "salt", "hash", IP_ADDRESS, "mail@example.com", "0");
+            "username", "salt", "hash", IP_ADDRESS, "mail@example.com", "0");
 
     MailToken mailToken = tuple._2;
     assertEquals(MailTokenState.MAIL_TOKEN_PENDING, mailToken.getState());
@@ -86,7 +89,7 @@ class AccountOperationsClientTest {
     assertEquals("mail@example.com", mailToken.getMail());
     User user = tuple._1;
     assertEquals(UserState.USER_PENDING, user.getState());
-    assertEquals(username, user.getUsername());
+    assertEquals("username", user.getUsername());
     assertEquals("salt", user.getSalt());
     assertEquals("hash", user.getHash());
     assertNull(user.getMail());
@@ -95,13 +98,12 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void createUser_getsExistingUsername_throwsException() {
-    String username = newRandomUuid();
-    accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "0");
+    accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "", "0");
 
     StorageException exception =
         assertThrows(
             StorageException.class,
-            () -> accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "X"));
+            () -> accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "", "X"));
 
     assertTrue(
         Throwables.getRootCause(exception)
@@ -112,9 +114,8 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void getMailToken_foreignToken_returnsEmpty() {
-    String username = newRandomUuid();
     Tuple2<User, MailToken> user =
-        accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "A");
+        accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "", "A");
     long wrongUserId = user._1.getIdentifier() + 1;
     long tokenId = user._2.getIdentifier();
 
@@ -124,9 +125,8 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void getMailToken_unavailableToken_returnsEmpty() {
-    String username = newRandomUuid();
     Tuple2<User, MailToken> user =
-        accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "A");
+        accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "", "A");
     nowSupplier = () -> Instant.MAX;
     long userId = user._1.getIdentifier();
     long tokenId = user._2.getIdentifier();
@@ -160,9 +160,8 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void releaseMailToken_updatesTokenSetsMailActivatesUser() {
-    String username = newRandomUuid();
     Tuple2<User, MailToken> tuple =
-        accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "mail@domain.com", "0");
+        accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "mail@domain.com", "0");
     long userId = tuple._1.getIdentifier();
     long mailTokenId = tuple._2.getIdentifier();
 
@@ -178,9 +177,8 @@ class AccountOperationsClientTest {
   @Test
   @WithEntityManager
   void releaseMailToken_acceptedToken_throwsException() {
-    String username = newRandomUuid();
     Tuple2<User, MailToken> tuple =
-        accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "mail@example.com", "0");
+        accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "mail@example.com", "0");
     long userId = tuple._1.getIdentifier();
     long mailTokenId = tuple._2.getIdentifier();
     accountOperationsClient.releaseMailToken(userId, mailTokenId);
@@ -346,12 +344,11 @@ class AccountOperationsClientTest {
   @WithEntityManager
   void changeUsername_getsExistingUsername_throwsException() {
     long userId = createActiveUser()._1;
-    String username = newRandomUuid();
-    accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "");
+    accountOperationsClient.createUser("random", "", "", IP_ADDRESS, "", "");
 
     StorageException exception =
         assertThrows(
-            StorageException.class, () -> accountOperationsClient.changeUsername(userId, username));
+            StorageException.class, () -> accountOperationsClient.changeUsername(userId, "random"));
 
     assertTrue(
         Throwables.getRootCause(exception)
@@ -364,12 +361,12 @@ class AccountOperationsClientTest {
   void changeUsername_getsUniqueUsername_updatesUsername() {
     long userId = createActiveUser()._1;
 
-    accountOperationsClient.changeUsername(userId, "username");
+    accountOperationsClient.changeUsername(userId, "random");
 
     Optional<User> maybeUser = accountOperationsClient.getUserById(userId);
     assertTrue(maybeUser.isPresent());
     User user = maybeUser.get();
-    assertEquals("username", user.getUsername());
+    assertEquals("random", user.getUsername());
   }
 
   @Test
@@ -517,17 +514,16 @@ class AccountOperationsClientTest {
     assertEquals(1, mailToken.getAttemptCount());
   }
 
-  private String newRandomUuid() {
-    return UUID.randomUUID().toString();
-  }
-
   private Tuple2<Long, Long> createActiveUser() {
-    String username = newRandomUuid();
     Tuple2<User, MailToken> user =
-        accountOperationsClient.createUser(username, "", "", IP_ADDRESS, "", "");
+        accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "", "");
     long userId = user._1.getIdentifier();
     accountOperationsClient.releaseMailToken(userId, user._2.getIdentifier());
     return Tuple.of(userId, user._1.getVersion());
+  }
+
+  private String newRandomUuid() {
+    return UUID.randomUUID().toString();
   }
 
   private long createActiveSession(long userId, long userVersion) {

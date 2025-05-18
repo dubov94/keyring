@@ -22,7 +22,7 @@ import redis.clients.jedis.JedisPoolConfig;
 @Testcontainers
 class MessageConsumerTest {
   @Container
-  public GenericContainer redisContainer =
+  private GenericContainer redisContainer =
       new GenericContainer(DockerImageName.parse("redis")).withExposedPorts(6379);
 
   private static final String MAIL = "mail@example.com";

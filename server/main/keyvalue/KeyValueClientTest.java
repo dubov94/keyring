@@ -28,7 +28,7 @@ import redis.clients.jedis.JedisPoolConfig;
 @Testcontainers
 class KeyValueClientTest {
   @Container
-  public GenericContainer redisContainer =
+  private GenericContainer redisContainer =
       new GenericContainer(DockerImageName.parse("redis")).withExposedPorts(6379);
 
   private static final String IP_ADDRESS = "127.0.0.1";

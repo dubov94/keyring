@@ -7,47 +7,50 @@ import static org.mockito.Mockito.when;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.UUID;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import keyring.server.main.Chronometry;
+import keyring.server.main.aspects.Annotations.ContextualEntityManager;
+import keyring.server.main.aspects.Annotations.WithEntityManager;
+import keyring.server.main.aspects.Annotations.WithEntityTransaction;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.entities.User;
 import keyring.server.main.entities.columns.UserState;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 @ExtendWith(MockitoExtension.class)
+@Testcontainers
 final class DeletedUserEvictionTest {
-  private static final EntityManagerFactory entityManagerFactory =
-      Persistence.createEntityManagerFactory("testing");
-  private EntityManager entityManager;
+  @Container
+  private static final PostgreSQLContainer<?> postgresContainer =
+      new PostgreSQLContainer<>(DockerImageName.parse("postgres"));
+
+  @ContextualEntityManager private EntityManager entityManager;
   private DeletedUserEviction deletedUserEviction;
 
   @Mock private Chronometry mockChronometry;
 
-  @BeforeAll
-  static void beforeAll() {
-    Aspects.aspectOf(StorageManagerAspect.class).initialize(entityManagerFactory);
-  }
-
   @BeforeEach
   void beforeEach() {
-    entityManager = entityManagerFactory.createEntityManager();
+    Aspects.aspectOf(StorageManagerAspect.class)
+        .initialize(Persistence.createEntityManagerFactory("testing"));
     deletedUserEviction = new DeletedUserEviction(mockChronometry);
   }
 
   @Test
+  @WithEntityManager
   void oldActiveUser_keeps() {
-    User user = new User().setState(UserState.USER_ACTIVE).setUsername(newRandomUuid());
+    User user = new User().setState(UserState.USER_ACTIVE).setUsername("username");
     persistEntity(user);
     when(mockChronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))
         .thenReturn(Timestamp.from(Instant.now()));
@@ -58,8 +61,9 @@ final class DeletedUserEvictionTest {
   }
 
   @Test
+  @WithEntityManager
   void newDeletedUser_keeps() {
-    User user = new User().setState(UserState.USER_DELETED).setUsername(newRandomUuid());
+    User user = new User().setState(UserState.USER_DELETED).setUsername("username");
     persistEntity(user);
     when(mockChronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))
         .thenReturn(Timestamp.from(Instant.EPOCH));
@@ -70,8 +74,9 @@ final class DeletedUserEvictionTest {
   }
 
   @Test
+  @WithEntityManager
   void oldDeletedUser_removes() {
-    User user = new User().setState(UserState.USER_DELETED).setUsername(newRandomUuid());
+    User user = new User().setState(UserState.USER_DELETED).setUsername("username");
     persistEntity(user);
     when(mockChronometry.pastTimestamp(User.DELETED_USER_STORAGE_EVICTION_D, ChronoUnit.DAYS))
         .thenReturn(Timestamp.from(Instant.now()));
@@ -81,17 +86,12 @@ final class DeletedUserEvictionTest {
     assertFalse(isEntityInStorage(user));
   }
 
-  private String newRandomUuid() {
-    return UUID.randomUUID().toString();
-  }
-
+  @WithEntityTransaction
   private void persistEntity(Object entity) {
-    EntityTransaction entityTransaction = entityManager.getTransaction();
-    entityTransaction.begin();
     entityManager.persist(entity);
-    entityTransaction.commit();
   }
 
+  @WithEntityTransaction
   private boolean isEntityInStorage(Object entity) {
     try {
       entityManager.refresh(entity);

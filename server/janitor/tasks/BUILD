@@ -25,11 +25,11 @@ woven_junit5_test(
     test_package = "keyring.server.janitor.tasks",
     runtime_deps = [
         "@maven//:org_postgresql_postgresql",
-        "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
         ":deleted_user_eviction",
         "//server/main:chronometry",
+        "//server/main/aspects:annotations",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:columns_java_proto",
         "//server/main/entities:user",
@@ -38,6 +38,9 @@ woven_junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
+        "@maven//:org_testcontainers_junit_jupiter",
+        "@maven//:org_testcontainers_postgresql",
+        "@maven//:org_testcontainers_testcontainers",
     ],
 )
 
@@ -64,11 +67,11 @@ woven_junit5_test(
     test_package = "keyring.server.janitor.tasks",
     runtime_deps = [
         "@maven//:org_postgresql_postgresql",
-        "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
         ":initiated_session_expiration",
         "//server/main:chronometry",
+        "//server/main/aspects:annotations",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:columns_java_proto",
         "//server/main/entities:session",
@@ -78,6 +81,9 @@ woven_junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
+        "@maven//:org_testcontainers_junit_jupiter",
+        "@maven//:org_testcontainers_postgresql",
+        "@maven//:org_testcontainers_testcontainers",
     ],
 )
 
@@ -103,11 +109,11 @@ woven_junit5_test(
     test_package = "keyring.server.janitor.tasks",
     runtime_deps = [
         "@maven//:org_postgresql_postgresql",
-        "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
         ":activated_session_expiration",
         "//server/main:chronometry",
+        "//server/main/aspects:annotations",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:columns_java_proto",
         "//server/main/entities:session",
@@ -116,6 +122,9 @@ woven_junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
+        "@maven//:org_testcontainers_junit_jupiter",
+        "@maven//:org_testcontainers_postgresql",
+        "@maven//:org_testcontainers_testcontainers",
     ],
 )
 
@@ -153,11 +162,11 @@ woven_junit5_test(
     test_package = "keyring.server.janitor.tasks",
     runtime_deps = [
         "@maven//:org_postgresql_postgresql",
-        "@maven//:org_testcontainers_postgresql",
     ],
     deps = [
         ":pending_user_expiration",
         "//server/main:chronometry",
+        "//server/main/aspects:annotations",
         "//server/main/aspects:storage_manager_aspect",
         "//server/main/entities:columns_java_proto",
         "//server/main/entities:key",
@@ -168,6 +177,9 @@ woven_junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
+        "@maven//:org_testcontainers_junit_jupiter",
+        "@maven//:org_testcontainers_postgresql",
+        "@maven//:org_testcontainers_testcontainers",
     ],
 )
 
