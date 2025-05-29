@@ -98,8 +98,7 @@
             <form-text-field v-for="(label, index) in content.tags" :key="index" solo
               :value="label" label="Label" :hide-details="true" prepend-icon="drag_indicator"
               :append-icon="content.tags.length > 1 ? 'cancel' : undefined"
-              :append-event="true" @click:append="delLabel(index)"
-              :prepend-event="true" @click:prepend="dndLabel"
+              @append-click="delLabel(index)" @prepend-click="dndLabel"
               class="mt-2" @input="setLabel(index, $event)" ref="labels">
             </form-text-field>
           </draggable>
