@@ -12,9 +12,9 @@ deschedulerPolicy:
       - name: LowNodeUtilization
         args:
           thresholds:
-            memory: 44
+            memory: 20
           targetThresholds:
-            memory: 48
+            memory: 70
       plugins:
         balance:
           enabled:
