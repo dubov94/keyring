@@ -17,6 +17,9 @@ spec:
       containers:
       - name: server
         image: dubov94/keyring-server:c35e0de992df529be4c0e6202f7763805d315702
+        resources:
+          limits:
+            memory: 192Mi
         ports:
         - containerPort: 5001
         env:

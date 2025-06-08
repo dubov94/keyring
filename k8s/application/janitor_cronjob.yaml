@@ -17,6 +17,9 @@ spec:
           containers:
           - name: janitor
             image: dubov94/keyring-janitor:c35e0de992df529be4c0e6202f7763805d315702
+            resources:
+              limits:
+                memory: 192Mi
             env:
             - name: POSTGRES_PASSWORD
               valueFrom:

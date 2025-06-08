@@ -9,3 +9,6 @@ persistence:
 pgpool:
   existingSecret: postgres-postgresql-ha-pgpool
   replicaCount: 2
+  resources:
+    limits:
+      memory: 192Mi
