@@ -11,4 +11,4 @@ pgpool:
   replicaCount: 2
   resources:
     limits:
-      memory: 192Mi
+      memory: 224Mi
