@@ -16,7 +16,7 @@ spec:
         spec:
           containers:
           - name: janitor
-            image: dubov94/keyring-janitor:c35e0de992df529be4c0e6202f7763805d315702
+            image: dubov94/keyring-janitor:a1b6cb79ae5e2c28d87896675f86c3850847155a
             resources:
               limits:
                 memory: 192Mi

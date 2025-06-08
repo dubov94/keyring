@@ -17,7 +17,7 @@ spec:
         spec:
           containers:
           - name: archiver
-            image: dubov94/keyring-archiver:c35e0de992df529be4c0e6202f7763805d315702
+            image: dubov94/keyring-archiver:a1b6cb79ae5e2c28d87896675f86c3850847155a
             env:
             - name: PGPASSWORD
               valueFrom:
