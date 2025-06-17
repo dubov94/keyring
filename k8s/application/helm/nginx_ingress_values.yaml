@@ -4,6 +4,7 @@ controller:
     use-proxy-protocol: "true"
     use-forwarded-headers: "true"
     compute-full-forwarded-for: "true"
+    strict-validate-path-type: "false"
   service:
     annotations:
       service.beta.kubernetes.io/do-loadbalancer-enable-proxy-protocol: "true"
