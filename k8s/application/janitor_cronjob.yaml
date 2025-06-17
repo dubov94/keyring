@@ -19,7 +19,7 @@ spec:
             image: dubov94/keyring-janitor:a1b6cb79ae5e2c28d87896675f86c3850847155a
             resources:
               limits:
-                memory: 192Mi
+                memory: 256Mi
             env:
             - name: POSTGRES_PASSWORD
               valueFrom:
