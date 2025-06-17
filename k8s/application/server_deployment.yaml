@@ -23,11 +23,6 @@ spec:
         ports:
         - containerPort: 5001
         env:
-        - name: MAILGUN_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: email-service-credentials
-              key: mailgun-api-key
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
