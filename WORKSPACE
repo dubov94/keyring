@@ -348,7 +348,7 @@ container_pull(
 
 container_pull(
     name = "io_docker_index_library_postgres",
-    digest = "sha256:2e7c735993bf456ee1977c40dd82e66875e25f7ee9dfe1e5118fb24887104d85",
+    digest = "sha256:80beb03b0bffc31ebbbc6c50de5a0c53a12baaeb116083dbb1d3b74e8f49e531",
     registry = "index.docker.io",
     repository = "library/postgres",
     tag = "16",
