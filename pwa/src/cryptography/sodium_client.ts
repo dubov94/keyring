@@ -80,24 +80,7 @@ export class SodiumClient {
     return this.encryptMessage(encryptionKey, await this.swi.fromString(message))
   }
 
-  private async decryptPreBeta (encryptionKey: string, pack: string): Promise<Uint8Array> {
-    const nonceBase64Length = await this.swi.nonceBase64Length()
-    const [nonce, cipher] = await Promise.all([
-      pack.slice(0, nonceBase64Length),
-      pack.slice(nonceBase64Length)
-    ].map(this.swi.fromBase64))
-    return this.swi.decryptMessage(
-      await this.swi.fromBase64(encryptionKey),
-      nonce,
-      cipher
-    )
-  }
-
   private async decryptMessage (encryptionKey: string, pack: string): Promise<Uint8Array> {
-    if (!pack.includes(':')) {
-      // We can get rid of `decryptPreBeta` once everyone migrates.
-      return this.decryptPreBeta(encryptionKey, pack)
-    }
     const [type, payload] = pack.split(':', 2)
     if (type !== LETTER_BETA) {
       throw new Error(`Unsupported encryption: ${type}`)
