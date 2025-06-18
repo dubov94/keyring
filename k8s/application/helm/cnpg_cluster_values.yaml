@@ -1,0 +1,9 @@
+cluster:
+  instances: 3
+  storage:
+    size: 2Gi
+  initdb:
+    database: keyring
+    owner: postgres
+version:
+  postgresql: "16"

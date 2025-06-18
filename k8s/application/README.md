@@ -12,11 +12,10 @@ Secrets in italic are populated automatically by Helm charts.
 | archiver-links | bucket-name |
 | captcha-credentials | turnstile-secret-key |
 | *cluster-tls* | |
+| *cnpg-cluster-app* | |
 | email-service-credentials | mailgun-api-key |
 | geoipupdate-credentials | account-id |
 | geoipupdate-credentials | license-key |
-| *postgres-postgresql-ha-pgpool* | |
-| *postgres-postgresql-ha-postgresql* | |
 | *redis* | |
 
 ### Deploy `helmfile.yaml`
@@ -39,29 +38,35 @@ Choose the latest object name in the GCS bucket, such as `2022-09-01T00:00:00Z`.
 KEYRING_OBJECT_NAME=2022-09-01T00:00:00Z envsubst < ./k8s/application/jobs/restorer_job.yaml | kubectl create -f -
 ```
 
+### Archive the database
+
+```sh
+kubectl create job --from=cronjob/archiver-cronjob archiver-cronjob-$(date +%s)
+```
+
 ## Connections
 
 ### PostgreSQL
 
-Get the name of the pgPool pod (`PGPOOL_POD_NAME`).
+Get the name of a primary pod (`CNPG_CLUSTER_POD_NAME`).
 
 ```sh
-kubectl get pods --selector=app.kubernetes.io/component=pgpool
+kubectl get pods --selector=cnpg.io/cluster=cnpg-cluster,cnpg.io/instanceRole=primary
 ```
 
 Connect to the pod by its name.
 
 ```sh
-kubectl exec --stdin --tty "$PGPOOL_POD_NAME" -- /bin/bash
+kubectl exec --container=postgres --stdin --tty "$CNPG_CLUSTER_POD_NAME" -- /bin/bash
 ```
 
-Run `psql` on pgPool.
+Launch the CLI.
 
 ```sh
-PGPASSWORD="$PGPOOL_POSTGRES_PASSWORD" psql --host localhost --user postgres
+psql
 ```
 
-We are in a Postgres client now. Connect to the database.
+Connect to the database.
 
 ```
 \c keyring
@@ -75,7 +80,7 @@ select count(*) from users;
 
 ### Redis
 
-Get the name of the Redis pod (`REDIS_POD_NAME`).
+Get the name of a Redis pod (`REDIS_POD_NAME`).
 
 ```sh
 kubectl get pods --selector=app.kubernetes.io/instance=redis
@@ -103,7 +108,7 @@ sentinel master default
 
 #### Node
 
-Connect to the node container.
+Connect to a node container.
 
 ```sh
 kubectl exec --container=redis --stdin --tty "$REDIS_POD_NAME" -- /bin/bash

@@ -16,16 +16,26 @@ spec:
         spec:
           containers:
           - name: janitor
-            image: dubov94/keyring-janitor:a1b6cb79ae5e2c28d87896675f86c3850847155a
+            image: dubov94/keyring-janitor:ba7378f176ad73573b8550579bdcd45deedba718
             resources:
               limits:
                 memory: 256Mi
             env:
+            - name: POSTGRES_JDBC_URI
+              valueFrom:
+                secretKeyRef:
+                  name: cnpg-cluster-app
+                  key: jdbc-uri
+            - name: POSTGRES_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: cnpg-cluster-app
+                  key: username
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: postgres-postgresql-ha-postgresql
-                  key: postgresql-password
+                  name: cnpg-cluster-app
+                  key: password
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:

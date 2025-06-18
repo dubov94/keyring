@@ -17,13 +17,10 @@ spec:
         spec:
           containers:
           - name: archiver
-            image: dubov94/keyring-archiver:a1b6cb79ae5e2c28d87896675f86c3850847155a
+            image: dubov94/keyring-archiver:6f4c708e40893e0912549d698875de59ce9bec35
             env:
-            - name: PGPASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-postgresql-ha-postgresql
-                  key: postgresql-password
+            - name: PG_DBNAME_PATH
+              value: /etc/keyring/cnpg-app/uri
             - name: CLOUD_CREDS_PATH
               value: /etc/keyring/archiver-credentials/service-account-key
             - name: BUCKET_NAME
@@ -35,8 +32,14 @@ spec:
             - name: archiver-credentials-volume
               mountPath: /etc/keyring/archiver-credentials
               readOnly: true
+            - name: cnpg-app-volume
+              mountPath: /etc/keyring/cnpg-app
+              readOnly: true
           volumes:
           - name: archiver-credentials-volume
             secret:
               secretName: archiver-credentials
+          - name: cnpg-app-volume
+            secret:
+              secretName: cnpg-cluster-app
           restartPolicy: OnFailure

@@ -5,6 +5,8 @@ repositories:
     url: https://charts.jetstack.io
   - name: bitnami
     url: https://charts.bitnami.com/bitnami
+  - name: cnpg
+    url: https://cloudnative-pg.github.io/charts
   - name: metrics-server
     url: https://kubernetes-sigs.github.io/metrics-server
 releases:
@@ -21,11 +23,12 @@ releases:
     version: ^17.1.8
     values:
     - redis_values.yaml
-  - name: postgres
-    chart: bitnami/postgresql-ha
-    version: ^9.4.11
+  - name: cnpg-operator
+    chart: cnpg/cloudnative-pg
+  - name: cnpg-cluster
+    chart: cnpg/cluster
     values:
-    - postgres_values.yaml
+    - cnpg_cluster_values.yaml
   - name: metrics-server
     namespace: kube-system
     chart: metrics-server/metrics-server
