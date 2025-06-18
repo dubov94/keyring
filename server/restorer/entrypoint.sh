@@ -1,6 +1,5 @@
 #!/bin/sh
 
-./main --logtostderr \
-    --host=postgres-postgresql-ha-pgpool --database-name=keyring \
+./main --logtostderr --pg-dbname-path="$PG_DBNAME_PATH" \
     --json-creds-path="$CLOUD_CREDS_PATH" --bucket-name="$BUCKET_NAME" \
     --object-name="$OBJECT_NAME"

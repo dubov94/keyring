@@ -14,29 +14,28 @@ import (
 )
 
 var (
-	host = flag.String("host", "localhost", "PostgreSQL host address.")
-	databaseName = flag.String("database-name", "", "Name of the database to archive.")
+	dbNamePath    = flag.String("pg-dbname-path", "", "Path to the file with `dbName`.")
 	jsonCredsPath = flag.String("json-creds-path", "", "Path to the file with credentials.")
-	bucketName = flag.String("bucket-name", "", "Name of the bucket with archives.")
-	objectName = flag.String("object-name", "", "Name of the archive object.")
+	bucketName    = flag.String("bucket-name", "", "Name of the bucket with archives.")
+	objectName    = flag.String("object-name", "", "Name of the archive object.")
 )
 
 func restoreArchive(ctx context.Context, reader io.Reader) error {
-	// Expects `PGPASSWORD` to be set, see
-	// https://www.postgresql.org/docs/current/libpq-envars.html.
+	dbName, err := os.ReadFile(*dbNamePath)
+	if err != nil {
+		return fmt.Errorf("unable to read `dbName`: %w", err)
+	}
 	cmd := exec.CommandContext(
 		ctx,
 		"pg_restore",
-		fmt.Sprintf("--host=%s", *host),
-		"--username=postgres",
-		fmt.Sprintf("--dbname=%s", *databaseName),
+		fmt.Sprintf("--dbname=%s", dbName),
 		"--exit-on-error",
 	)
 	cmd.Stdin = reader
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("unable to restore database '%s': %w", *databaseName, err)
+	if err = cmd.Run(); err != nil {
+		return fmt.Errorf("unable to restore the database: %w", err)
 	}
 	return nil
 }
