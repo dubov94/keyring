@@ -49,7 +49,7 @@ func writeArchive(ctx context.Context) (fileName string, err error) {
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		return "", fmt.Errorf("unable to dump database '%s': %w", *databaseName, err)
+		return "", fmt.Errorf("unable to dump database: %w", err)
 	}
 
 	return fileName, nil
