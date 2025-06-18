@@ -25,7 +25,12 @@ class AppModule {
     if (environment.isProduction()) {
       return Persistence.createEntityManagerFactory(
           "production",
-          ImmutableMap.of("javax.persistence.jdbc.password", environment.getPostgresPassword()));
+          ImmutableMap.of(
+              "javax.persistence.jdbc.url", environment.getPostgresJdbcUri(),
+              "javax.persistence.jdbc.user", environment.getPostgresUsername(),
+              "javax.persistence.jdbc.password", environment.getPostgresPassword()
+          )
+      );
     }
     return Persistence.createEntityManagerFactory(
         "development", ImmutableMap.of("hibernate.hbm2ddl.auto", "none"));

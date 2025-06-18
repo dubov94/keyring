@@ -15,10 +15,9 @@ import (
 )
 
 var (
-	host = flag.String("host", "localhost", "PostgreSQL host address.")
-	databaseName = flag.String("database-name", "", "Name of the database to archive.")
+	dbNamePath    = flag.String("pg-dbname-path", "", "Path to the file with `dbName`.")
 	jsonCredsPath = flag.String("json-creds-path", "", "Path to the file with credentials.")
-	bucketName = flag.String("bucket-name", "", "Name of the bucket with archives.")
+	bucketName    = flag.String("bucket-name", "", "Name of the bucket with archives.")
 )
 
 func writeArchive(ctx context.Context) (fileName string, err error) {
@@ -35,15 +34,16 @@ func writeArchive(ctx context.Context) (fileName string, err error) {
 		}
 	}()
 
-	// Expects `PGPASSWORD` to be set, see
-	// https://www.postgresql.org/docs/current/libpq-envars.html.
+	dbName, err := os.ReadFile(*dbNamePath)
+	if err != nil {
+		return "", fmt.Errorf("unable to read `dbName`: %w", err)
+	}
+
 	cmd := exec.CommandContext(
 		ctx,
 		"pg_dump",
-		fmt.Sprintf("--host=%s", *host),
-		"--username=postgres",
 		"--format=custom",
-		*databaseName,
+		string(dbName),
 	)
 	cmd.Stdout = file
 	cmd.Stderr = os.Stderr

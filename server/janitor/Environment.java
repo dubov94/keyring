@@ -17,6 +17,14 @@ public class Environment {
     return "production".equals(type);
   }
 
+  public String getPostgresJdbcUri() {
+    return getVariable("POSTGRES_JDBC_URI");
+  }
+
+  public String getPostgresUsername() {
+    return getVariable("POSTGRES_USERNAME");
+  }
+
   public String getPostgresPassword() {
     return getVariable("POSTGRES_PASSWORD");
   }

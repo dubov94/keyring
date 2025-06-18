@@ -47,8 +47,8 @@ container_image(
         "-c",
         " ".join([
             "docker-entrypoint.sh",
-            "--url=jdbc:postgresql://postgres-postgresql-ha-pgpool/keyring",
-            "--username=postgres",
+            "--url=${POSTGRES_JDBC_URI}",
+            "--username=${POSTGRES_USERNAME}",
             "--password=${POSTGRES_PASSWORD}",
             "--classpath=/liquibase/changelog",
             "--changelog-file=changelog.postgresql.sql",
