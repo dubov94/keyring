@@ -793,6 +793,9 @@
                 "dependencies": [
                     "org.slf4j:slf4j-api:1.7.32"
                 ],
+                "exclusions": [
+                    "xml-apis:xml-apis"
+                ],
                 "url": "https://repo1.maven.org/maven2/com/zaxxer/HikariCP/3.2.0/HikariCP-3.2.0.jar",
                 "mirror_urls": [
                     "https://repo1.maven.org/maven2/com/zaxxer/HikariCP/3.2.0/HikariCP-3.2.0.jar"
