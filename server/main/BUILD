@@ -144,6 +144,7 @@ woven_java_binary(
     runtime_deps = [
         ":app_component",
         ":launcher",
+        "@maven//:com_zaxxer_HikariCP",
         "@maven//:io_grpc_grpc_netty_shaded",
         "@maven//:io_grpc_grpc_protobuf",
         "@maven//:io_grpc_grpc_stub",

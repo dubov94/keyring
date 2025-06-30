@@ -116,6 +116,7 @@ maven_install(
         "com.google.http-client:google-http-client-gson:1.42.3",
         "com.vladmihalcea:hibernate-types-52:2.17.1",
         "com.warrenstrange:googleauth:1.4.0",
+        "com.zaxxer:HikariCP:3.2.0",
         "commons-io:commons-io:2.11.0",
         "commons-validator:commons-validator:1.7",
         "io.grpc:grpc-netty-shaded:1.59.1",
