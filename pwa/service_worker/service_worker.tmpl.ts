@@ -195,8 +195,7 @@ scope.addEventListener('activate', (event) => {
 const getFromPrecache = async (cacheKey: string): Promise<Response> => {
   const precacheName = workbox.core.cacheNames.precache;
   const precache = await scope.caches.open(precacheName);
-  // `ignoreSearch` accommodates `assetsVersion`.
-  const response = await precache.match(cacheKey, { ignoreSearch: true });
+  const response = await precache.match(cacheKey);
   if (response === undefined) {
     throw new Error(`${precacheName} does not contain ${cacheKey}`);
   }
@@ -251,7 +250,10 @@ scope.addEventListener('fetch', (event) => {
     event.respondWith(loadEntryPoint(event.resultingClientId));
     return;
   }
-  const cacheKey = precacheController.getCacheKeyForURL(event.request.url);
+  const url = new URL(event.request.url);
+  // Accommodates `assetsVersion`.
+  url.searchParams.delete('v');
+  const cacheKey = precacheController.getCacheKeyForURL(url.toString());
   if (cacheKey) {
     console.info(`Getting '${cacheKey}' from precache`)
     event.respondWith(getFromPrecache(cacheKey));
