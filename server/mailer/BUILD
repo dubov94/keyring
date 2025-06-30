@@ -86,8 +86,9 @@ java_library(
     deps = [
         ":mail_client",
         ":mail_service",
+        "@maven//:com_google_guava_guava",
+        "@maven//:io_pebbletemplates_pebble",
         "@maven//:org_commonmark_commonmark",
-        "@maven//:org_jtwig_jtwig_core",
     ],
 )
 
@@ -105,9 +106,9 @@ java_library(
         ":templated_mail_client",
         "@maven//:com_google_dagger_dagger",
         "@maven//:com_google_guava_guava",
+        "@maven//:io_pebbletemplates_pebble",
         "@maven//:javax_inject_javax_inject",
         "@maven//:net_sargue_mailgun",
-        "@maven//:org_jtwig_jtwig_core",
         "@maven//:redis_clients_jedis",
     ],
 )
@@ -133,12 +134,12 @@ java_binary(
     srcs = ["Mailer.java"],
     main_class = "keyring.server.mailer.Mailer",
     resources = [
-        "//server/mailer/java/templates:deactivation_notice_body.md.twig",
-        "//server/mailer/java/templates:deactivation_notice_head.text.twig",
-        "//server/mailer/java/templates:mail_vc_body.md.twig",
-        "//server/mailer/java/templates:mail_vc_head.text.twig",
-        "//server/mailer/java/templates:uncompleted_authn_body.md.twig",
-        "//server/mailer/java/templates:uncompleted_authn_head.text.twig",
+        "//server/mailer/java/templates:deactivation_notice_body.md.pebble",
+        "//server/mailer/java/templates:deactivation_notice_head.text.pebble",
+        "//server/mailer/java/templates:mail_vc_body.md.pebble",
+        "//server/mailer/java/templates:mail_vc_head.text.pebble",
+        "//server/mailer/java/templates:uncompleted_authn_body.md.pebble",
+        "//server/mailer/java/templates:uncompleted_authn_head.text.pebble",
     ],
     visibility = ["//:root"],
     runtime_deps = [

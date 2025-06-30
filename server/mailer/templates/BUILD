@@ -7,7 +7,7 @@ java_library(
     visibility = ["//server:internal"],
     deps = [
         "@maven//:com_google_dagger_dagger",
+        "@maven//:io_pebbletemplates_pebble",
         "@maven//:javax_inject_javax_inject",
-        "@maven//:org_jtwig_jtwig_core",
     ],
 )

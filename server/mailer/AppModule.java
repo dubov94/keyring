@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import dagger.Module;
 import dagger.Provides;
+import io.pebbletemplates.pebble.template.PebbleTemplate;
 import java.net.URI;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -14,7 +15,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import net.sargue.mailgun.Configuration;
 import net.sargue.mailgun.Mail;
-import org.jtwig.JtwigTemplate;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisSentinelPool;
@@ -100,12 +100,12 @@ class AppModule {
   static MailClient provideMailClient(
       Environment environment,
       MailService mailService,
-      @Named("mail_vc_head") JtwigTemplate mailVcHeadTemplate,
-      @Named("mail_vc_body") JtwigTemplate mailVcBodyTemplate,
-      @Named("uncompleted_authn_head") JtwigTemplate uncompletedAuthnHeadTemplate,
-      @Named("uncompleted_authn_body") JtwigTemplate uncompletedAuthnBodyTemplate,
-      @Named("deactivation_notice_head") JtwigTemplate deactivationNoticeHeadTemplate,
-      @Named("deactivation_notice_body") JtwigTemplate deactivationNoticeBodyTemplate) {
+      @Named("mail_vc_head") PebbleTemplate mailVcHeadTemplate,
+      @Named("mail_vc_body") PebbleTemplate mailVcBodyTemplate,
+      @Named("uncompleted_authn_head") PebbleTemplate uncompletedAuthnHeadTemplate,
+      @Named("uncompleted_authn_body") PebbleTemplate uncompletedAuthnBodyTemplate,
+      @Named("deactivation_notice_head") PebbleTemplate deactivationNoticeHeadTemplate,
+      @Named("deactivation_notice_body") PebbleTemplate deactivationNoticeBodyTemplate) {
     return new TemplatedMailClient(
         mailService,
         mailVcHeadTemplate,

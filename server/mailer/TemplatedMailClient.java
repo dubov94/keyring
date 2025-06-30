@@ -1,28 +1,31 @@
 package keyring.server.mailer;
 
+import com.google.common.collect.ImmutableMap;
+import io.pebbletemplates.pebble.template.PebbleTemplate;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Map;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
-import org.jtwig.JtwigModel;
-import org.jtwig.JtwigTemplate;
 
-class TemplatedMailClient implements MailClient  {
+class TemplatedMailClient implements MailClient {
   private MailService mailService;
-  private JtwigTemplate mailVcHeadTemplate;
-  private JtwigTemplate mailVcBodyTemplate;
-  private JtwigTemplate uncompletedAuthnHeadTemplate;
-  private JtwigTemplate uncompletedAuthnBodyTemplate;
-  private JtwigTemplate deactivationNoticeHeadTemplate;
-  private JtwigTemplate deactivationNoticeBodyTemplate;
+  private PebbleTemplate mailVcHeadTemplate;
+  private PebbleTemplate mailVcBodyTemplate;
+  private PebbleTemplate uncompletedAuthnHeadTemplate;
+  private PebbleTemplate uncompletedAuthnBodyTemplate;
+  private PebbleTemplate deactivationNoticeHeadTemplate;
+  private PebbleTemplate deactivationNoticeBodyTemplate;
 
   TemplatedMailClient(
       MailService mailService,
-      JtwigTemplate mailVcHeadTemplate,
-      JtwigTemplate mailVcBodyTemplate,
-      JtwigTemplate uncompletedAuthnHeadTemplate,
-      JtwigTemplate uncompletedAuthnBodyTemplate,
-      JtwigTemplate deactivationNoticeHeadTemplate,
-      JtwigTemplate deactivationNoticeBodyTemplate) {
+      PebbleTemplate mailVcHeadTemplate,
+      PebbleTemplate mailVcBodyTemplate,
+      PebbleTemplate uncompletedAuthnHeadTemplate,
+      PebbleTemplate uncompletedAuthnBodyTemplate,
+      PebbleTemplate deactivationNoticeHeadTemplate,
+      PebbleTemplate deactivationNoticeBodyTemplate) {
     this.mailService = mailService;
     this.mailVcHeadTemplate = mailVcHeadTemplate;
     this.mailVcBodyTemplate = mailVcBodyTemplate;
@@ -39,33 +42,53 @@ class TemplatedMailClient implements MailClient  {
     return renderer.render(document);
   }
 
+  private String renderTemplate(PebbleTemplate template, Map<String, Object> context) {
+    StringWriter writer = new StringWriter();
+    try {
+      template.evaluate(writer, context);
+    } catch (IOException exception) {
+      throw new RuntimeException(exception);
+    }
+    return writer.toString();
+  }
+
   @Override
   public void sendMailVc(String to, String username, String code) {
-    String head = mailVcHeadTemplate.render(JtwigModel.newModel().with("code", code));
+    String head = renderTemplate(mailVcHeadTemplate, ImmutableMap.of("code", code));
     String body =
         convertMarkdownToHtml(
-            mailVcBodyTemplate.render(
-                JtwigModel.newModel().with("username", username).with("code", code)));
+            renderTemplate(
+                mailVcBodyTemplate, ImmutableMap.of("username", username, "code", code)));
+
     this.mailService.send(to, head, body);
   }
 
   @Override
   public void sendUncompletedAuthn(String to, String username, String ipAddress) {
-    String head = uncompletedAuthnHeadTemplate.render(JtwigModel.newModel());
+    String head = renderTemplate(uncompletedAuthnHeadTemplate, ImmutableMap.of());
     String body =
         convertMarkdownToHtml(
-            uncompletedAuthnBodyTemplate.render(
-                JtwigModel.newModel().with("username", username).with("ipAddress", ipAddress)));
+            renderTemplate(
+                uncompletedAuthnBodyTemplate,
+                ImmutableMap.of("username", username, "ipAddress", ipAddress)));
     this.mailService.send(to, head, body);
   }
 
   @Override
-  public void sendDeactivationNotice(String to, String username, int inactivityPeriodYears, int daysLeft) {
-    String head = deactivationNoticeHeadTemplate.render(JtwigModel.newModel());
+  public void sendDeactivationNotice(
+      String to, String username, int inactivityPeriodYears, int daysLeft) {
+    String head = renderTemplate(deactivationNoticeHeadTemplate, ImmutableMap.of());
     String body =
         convertMarkdownToHtml(
-            deactivationNoticeBodyTemplate.render(
-                JtwigModel.newModel().with("username", username).with("inactivityPeriodYears", inactivityPeriodYears).with("daysLeft", daysLeft)));
+            renderTemplate(
+                deactivationNoticeBodyTemplate,
+                ImmutableMap.of(
+                    "username",
+                    username,
+                    "inactivityPeriodYears",
+                    inactivityPeriodYears,
+                    "daysLeft",
+                    daysLeft)));
     this.mailService.send(to, head, body);
   }
 }
