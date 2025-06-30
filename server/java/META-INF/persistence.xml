@@ -19,9 +19,7 @@
             <!-- `javax.persistence.jdbc.url` is appended in `EntityManagerFactory` providers. -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.connection.provider_class"
-                      value="org.hibernate.connection.C3P0ConnectionProvider"/>
-            <property name="hibernate.c3p0.idle_test_period" value="60"/>
-            <property name="hibernate.c3p0.timeout" value="300"/>
+                      value="org.hibernate.hikaricp.HikariCPConnectionProvider"/>
             <property name="hibernate.hbm2ddl.auto" value="validate"/>
         </properties>
     </persistence-unit>

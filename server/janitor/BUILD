@@ -84,7 +84,7 @@ woven_java_binary(
         ":app_component",
         ":main",
         "@maven//:com_google_guava_guava",
-        "@maven//:org_hibernate_hibernate_c3p0",
+        "@maven//:org_hibernate_hibernate_hikaricp",
         "@maven//:org_postgresql_postgresql",
         "@maven//:org_slf4j_slf4j_simple",
     ],
