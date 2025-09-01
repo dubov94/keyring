@@ -31,11 +31,11 @@ const actionsObservableEpic: Epic<RootAction, RootAction, RootState> = (actionsO
 )
 
 // Store initialization.
-const terminatingReducer: typeof reducer = (state, action) => {
+const lifecycleReducer: typeof reducer = (state, action) => {
   // https://web.dev/articles/bfcache#update_stale_or_sensitive_data_after_bfcache_restore
   return reducer(isActionOf(terminate, action) ? undefined : state, action)
 }
-const terminatingMiddleware: Middleware<Record<string, never>, RootState, Dispatch<RootAction>> = () => {
+const lifecycleMiddleware: Middleware<Record<string, never>, RootState, Dispatch<RootAction>> = (store) => {
   let isTerminated = false
   return (next: Dispatch<AnyAction>) => (action: AnyAction) => {
     if (isTerminated) {
@@ -45,6 +45,8 @@ const terminatingMiddleware: Middleware<Record<string, never>, RootState, Dispat
       return action
     }
     const result = next(action)
+    // Mimics https://redux.js.org/api/store#subscribelistener.
+    state$.next(store.getState())
     if (isActionOf(logOut, action)) {
       isTerminated = true
       next(terminate())
@@ -54,9 +56,9 @@ const terminatingMiddleware: Middleware<Record<string, never>, RootState, Dispat
 }
 const epicMiddleware = createEpicMiddleware<RootAction, RootAction, RootState>()
 export const store = configureStore({
-  reducer: terminatingReducer,
+  reducer: lifecycleReducer,
   middleware: (getDefaultMiddleware) => [
-    terminatingMiddleware,
+    lifecycleMiddleware,
     ...getDefaultMiddleware(),
     epicMiddleware
   ],
@@ -75,9 +77,6 @@ epicMiddleware.run(combineEpics(
 
 // Stream of states for use in components.
 export const state$ = new BehaviorSubject<RootState>(store.getState())
-store.subscribe(() => {
-  state$.next(store.getState())
-})
 
 // `sessionStorage` rehydration.
 action$.pipe(
@@ -90,7 +89,7 @@ action$.pipe(
   }))
 })
 
-// `sessionStorage` persistance.
+// `sessionStorage` persistence.
 action$.pipe(
   filter(isActionOf(injected)),
   switchMap(() => state$.pipe(
@@ -99,8 +98,7 @@ action$.pipe(
       logoutTrigger: state.session.logoutTrigger
     })),
     distinctUntilChanged(isEqual)
-  )),
-  takeUntil(action$.pipe(filter(isActionOf(logOut))))
+  ))
 ).subscribe(({ username, logoutTrigger }) => {
   const accessor = getSessionStorageAccessor()
   accessor.set('username', username)
@@ -121,7 +119,7 @@ action$.pipe(
   }))
 })
 
-// `localStorage` persistance.
+// `localStorage` persistence.
 action$.pipe(
   filter(isActionOf(injected)),
   switchMap(() => state$.pipe(
@@ -133,8 +131,7 @@ action$.pipe(
       encryptedOtpToken: state.depot.encryptedOtpToken
     })),
     distinctUntilChanged(isEqual)
-  )),
-  takeUntil(action$.pipe(filter(isActionOf(logOut))))
+  ))
 ).subscribe(({ username, salt, hash, vault, encryptedOtpToken }) => {
   const accessor = getLocalStorageAccessor()
   accessor.set('depot.username', username)
