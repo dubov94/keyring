@@ -244,6 +244,12 @@ go_repository(
 )
 
 go_repository(
+    name = "org_golang_google_grpc",
+    importpath  = "google.golang.org/grpc",
+    tag = "v1.75.0",
+)
+
+go_repository(
     name = "org_golang_x_sys",
     importpath = "golang.org/x/sys",
     tag = "v0.32.0",
