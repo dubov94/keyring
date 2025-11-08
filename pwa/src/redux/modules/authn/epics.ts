@@ -273,50 +273,50 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
   withLatestFrom(state$),
   switchMap(([action, state]) => {
     if (isActionOf(logInViaDepot, action)) {
-      if (action.payload.username === state.depot.username) {
-        return concat(
-          of(authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES))),
-          from(getSodiumClient().computeAuthDigestAndEncryptionKey(state.depot.salt!, action.payload.password)).pipe(
-            switchMap(({ authDigest, encryptionKey }) => {
-              if (authDigest === state.depot.hash) {
-                return concat(
-                  of(authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.DECRYPTING_DATA))),
-                  forkJoin([
-                    getSodiumClient().decryptString(encryptionKey, state.depot.vault!),
-                    iif<null, string>(
-                      () => state.depot.encryptedOtpToken === null,
-                      Promise.resolve((null)),
-                      defer(() => getSodiumClient().decryptString(encryptionKey, state.depot.encryptedOtpToken))
-                    )
-                  ]).pipe(
-                    switchMap(([vault, otpToken]) => of(authnViaDepotSignal(success({
-                      username: action.payload.username,
-                      password: action.payload.password,
-                      userKeys: (<DeepPartial<Key>[]>JSON.parse(vault)).map((keyPartial): Key => ({
-                        identifier: keyPartial.identifier!,
-                        value: keyPartial.value!,
-                        tags: keyPartial.tags!,
-                        attrs: {
-                          isShadow: keyPartial.attrs?.isShadow || false,
-                          parent: keyPartial.attrs?.parent || NIL_KEY_ID,
-                          isPinned: keyPartial.attrs?.isPinned || false
-                        },
-                        creationTimeInMillis: keyPartial.creationTimeInMillis || 0
-                      })),
-                      depotKey: encryptionKey,
-                      otpToken: otpToken
-                    }))))
-                  )
-                )
-              } else {
-                return of(authnViaDepotSignal(failure(AuthnViaDepotFlowError.INVALID_CREDENTIALS)))
-              }
-            })
-          )
-        )
-      } else {
+      const { credentials } = state.depot
+      if (credentials === null || credentials.username !== action.payload.username) {
         return of(authnViaDepotSignal(failure(AuthnViaDepotFlowError.INVALID_CREDENTIALS)))
       }
+      return concat(
+        of(authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES))),
+        from(getSodiumClient().computeAuthDigestAndEncryptionKey(credentials.salt, action.payload.password)).pipe(
+          switchMap(({ authDigest, encryptionKey }) => {
+            if (authDigest === credentials.hash) {
+              return concat(
+                of(authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.DECRYPTING_DATA))),
+                forkJoin([
+                  getSodiumClient().decryptString(encryptionKey, state.depot.vault!),
+                  iif<null, string>(
+                    () => state.depot.encryptedOtpToken === null,
+                    Promise.resolve((null)),
+                    defer(() => getSodiumClient().decryptString(encryptionKey, state.depot.encryptedOtpToken))
+                  )
+                ]).pipe(
+                  switchMap(([vault, otpToken]) => of(authnViaDepotSignal(success({
+                    username: action.payload.username,
+                    password: action.payload.password,
+                    userKeys: (<DeepPartial<Key>[]>JSON.parse(vault)).map((keyPartial): Key => ({
+                      identifier: keyPartial.identifier!,
+                      value: keyPartial.value!,
+                      tags: keyPartial.tags!,
+                      attrs: {
+                        isShadow: keyPartial.attrs?.isShadow || false,
+                        parent: keyPartial.attrs?.parent || NIL_KEY_ID,
+                        isPinned: keyPartial.attrs?.isPinned || false
+                      },
+                      creationTimeInMillis: keyPartial.creationTimeInMillis || 0
+                    })),
+                    depotKey: encryptionKey,
+                    otpToken: otpToken
+                  }))))
+                )
+              )
+            } else {
+              return of(authnViaDepotSignal(failure(AuthnViaDepotFlowError.INVALID_CREDENTIALS)))
+            }
+          })
+        )
+      )
     } else if (isActionOf(authnViaDepotReset, action)) {
       return of(authnViaDepotSignal(cancel()))
     }

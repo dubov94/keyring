@@ -10,6 +10,7 @@ import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { injected, terminate } from './actions'
 import * as authnEpics from './modules/authn/epics'
 import { rehydration as depotRehydration } from './modules/depot/actions'
+import { snapshot as depotSnapshot } from './modules/depot/selectors'
 import * as depotEpics from './modules/depot/epics'
 import { rehydration as sessionRehydration } from './modules/session/actions'
 import * as sessionEpics from './modules/session/epics'
@@ -123,22 +124,16 @@ action$.pipe(
 action$.pipe(
   filter(isActionOf(injected)),
   switchMap(() => state$.pipe(
-    map((state) => ({
-      username: state.depot.username,
-      salt: state.depot.salt,
-      hash: state.depot.hash,
-      vault: state.depot.vault,
-      encryptedOtpToken: state.depot.encryptedOtpToken
-    })),
+    map(depotSnapshot),
     distinctUntilChanged(isEqual)
   ))
-).subscribe(({ username, salt, hash, vault, encryptedOtpToken }) => {
+).subscribe((snapshot) => {
   const accessor = getLocalStorageAccessor()
-  accessor.set('depot.username', username)
-  accessor.set('depot.salt', salt)
-  accessor.set('depot.hash', hash)
-  accessor.set('depot.vault', vault)
-  accessor.set('depot.encrypted_otp_token', encryptedOtpToken)
+  accessor.set('depot.username', snapshot.username)
+  accessor.set('depot.salt', snapshot.salt)
+  accessor.set('depot.hash', snapshot.hash)
+  accessor.set('depot.vault', snapshot.vault)
+  accessor.set('depot.encrypted_otp_token', snapshot.encryptedOtpToken)
 })
 
 // Session maintenance.

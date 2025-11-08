@@ -67,21 +67,30 @@ export const generateDepotKeysEpic: Epic<RootAction, RootAction, RootState> = (a
 export const masterKeyUpdateEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionSuccess(masterKeyChangeSignal)),
   withLatestFrom(state$),
-  switchMap(([action, state]) => state.depot.username === null ? EMPTY : of(generateDepotKeys({
-    username: state.depot.username,
-    password: action.payload.data.newMasterKey
-  })))
+  switchMap(([action, state]) => {
+    const { credentials } = state.depot
+    if (credentials === null) {
+      return EMPTY
+    }
+    return of(generateDepotKeys({
+      username: credentials.username,
+      password: action.payload.data.newMasterKey
+    }))
+  })
 )
 
 export const localRehashEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionSuccess(authnViaDepotSignal)),
   withLatestFrom(state$),
   switchMap(([action, state]) => {
-    const { salt } = state.depot
-    if (salt !== null && !getSodiumClient().isParametrizationUpToDate(salt)) {
-      const { username, password } = action.payload.data
-      return of(generateDepotKeys({ username, password }))
+    const { credentials } = state.depot
+    if (credentials === null) {
+      return EMPTY
     }
-    return EMPTY
+    if (getSodiumClient().isParametrizationUpToDate(credentials.salt)) {
+      return EMPTY
+    }
+    const { username, password } = action.payload.data
+    return of(generateDepotKeys({ username, password }))
   })
 )

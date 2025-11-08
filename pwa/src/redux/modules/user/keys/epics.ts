@@ -683,7 +683,7 @@ export const exportEpic: Epic<RootAction, RootAction, RootState> = (action$, sta
 
         const { depot } = state
         if (depot.depotKey !== null) {
-          salt = depot.salt!
+          salt = depot.credentials!.salt
           targetKey = depot.depotKey
         }
 

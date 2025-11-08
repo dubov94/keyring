@@ -22,9 +22,12 @@ describe('rehydration', () => {
       encryptedOtpToken: 'encryptedOtpToken'
     }))
 
-    expect(state.username).to.equal('username')
-    expect(state.salt).to.equal('salt')
-    expect(state.hash).to.equal('hash')
+    expect(state.persisted).to.be.true
+    expect(state.credentials).to.deep.equal({
+      username: 'username',
+      salt: 'salt',
+      hash: 'hash'
+    })
     expect(state.vault).to.equal('vault')
     expect(state.encryptedOtpToken).to.equal('encryptedOtpToken')
   })
@@ -68,9 +71,12 @@ describe('remoteAuthnComplete', () => {
 describe('usernameChangeSignal', () => {
   it('changes the username when it matches', () => {
     const state = reducer({
-      username: 'usernameA',
-      salt: null,
-      hash: null,
+      persisted: true,
+      credentials: {
+        username: 'usernameA',
+        salt: null,
+        hash: null,
+      },
       vault: null,
       depotKey: null,
       encryptedOtpToken: null
@@ -79,7 +85,7 @@ describe('usernameChangeSignal', () => {
       update: 'usernameB'
     })))
 
-    expect(state.username).to.equal('usernameB')
+    expect(state.credentials?.username).to.equal('usernameB')
   })
 
   it('does not change the username when it does not match', () => {
@@ -88,30 +94,32 @@ describe('usernameChangeSignal', () => {
       update: 'usernameB'
     })))
 
-    expect(state.username).to.equal(null)
+    expect(state.credentials?.username).to.equal(null)
   })
 })
 
 describe('clearDepot', () => {
   it('clears persisted data', () => {
     const state = reducer({
-      username: 'username',
-      salt: 'salt',
-      hash: 'hash',
+      persisted: true,
+      credentials: {
+        username: 'username',
+        salt: 'salt',
+        hash: 'hash',
+      },
       vault: 'vault',
       depotKey: 'depotKey',
       encryptedOtpToken: 'encryptedOtpToken'
     }, clearDepot())
 
-    expect(state.username).to.be.null
-    expect(state.salt).to.be.null
-    expect(state.hash).to.be.null
+    expect(state.persisted).to.be.false
+    expect(state.credentials).to.be.null
     expect(state.vault).to.be.null
     expect(state.encryptedOtpToken).to.be.null
   })
 })
 
-describe('toInitialState', () => {
+describe('toEmptyState', () => {
   ;[
     registrationSignal(success(createRegistrationFlowResult({}))),
     accountDeletionSignal(success({})),
@@ -120,17 +128,19 @@ describe('toInitialState', () => {
   ].forEach((trigger) => {
     it(`clears persisted data on ${trigger.type}`, () => {
       const state = reducer({
-        username: 'username',
-        salt: 'salt',
-        hash: 'hash',
+        persisted: true,
+        credentials: {
+          username: 'username',
+          salt: 'salt',
+          hash: 'hash',
+        },
         vault: 'vault',
         depotKey: 'depotKey',
         encryptedOtpToken: 'encryptedOtpToken'
       }, trigger)
 
-      expect(state.username).to.be.null
-      expect(state.salt).to.be.null
-      expect(state.hash).to.be.null
+      expect(state.persisted).to.be.false
+      expect(state.credentials).to.be.null
       expect(state.vault).to.be.null
       expect(state.encryptedOtpToken).to.be.null
     })

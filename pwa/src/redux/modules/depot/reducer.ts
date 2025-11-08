@@ -7,22 +7,28 @@ import { accountDeletionSignal, localOtpTokenFailure, remoteCredentialsMismatchL
 import { RootAction } from '@/redux/root_action'
 import { clearDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydration } from './actions'
 
+type Credentials = {
+  username: string;
+  salt: string;
+  hash: string;
+}
+
 type State = {
-  username: string | null;
-  salt: string | null;
-  hash: string | null;
-  vault: string | null;
+  persisted: boolean;
+  credentials: Credentials | null;
+  // For data encryption.
   depotKey: string | null;
+  // For passing the 2FA check.
   encryptedOtpToken: string | null;
+  vault: string | null;
 }
 
 const emptyState = (): State => ({
-  username: null,
-  salt: null,
-  hash: null,
-  vault: null,
+  persisted: false,
+  credentials: null,
   depotKey: null,
-  encryptedOtpToken: null
+  encryptedOtpToken: null,
+  vault: null
 })
 
 const toEmptyState = (state: State) => {
@@ -33,9 +39,9 @@ export default createReducer<State>(
   emptyState(),
   (builder) => builder
     .addMatcher(isActionOf(rehydration), (state, action) => {
-      state.username = action.payload.username
-      state.salt = action.payload.salt
-      state.hash = action.payload.hash
+      const { username, salt, hash } = action.payload
+      state.persisted = username !== null
+      state.credentials = { username, salt, hash }
       state.vault = action.payload.vault
       state.encryptedOtpToken = action.payload.encryptedOtpToken
     })
@@ -54,14 +60,17 @@ export default createReducer<State>(
       }
     })
     .addMatcher(isActionSuccess(usernameChangeSignal), (state, action) => {
-      if (state.username === action.payload.data.before) {
-        state.username = action.payload.data.update
+      if (state.credentials === null) {
+        return
+      }
+      if (state.credentials.username === action.payload.data.before) {
+        state.credentials.username = action.payload.data.update
       }
     })
     .addMatcher(isActionOf(depotActivationData), (state, action) => {
-      state.username = action.payload.username
-      state.salt = action.payload.salt
-      state.hash = action.payload.hash
+      state.persisted = true
+      const { username, salt, hash } = action.payload
+      state.credentials = { username, salt, hash }
       state.depotKey = action.payload.depotKey
     })
     .addMatcher(isActionOf(clearDepot), toEmptyState)
