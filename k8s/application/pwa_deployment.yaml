@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
       - name: pwa
-        image: dubov94/keyring-pwa:859d8fb212be094647ba40a543587d2e9a192bb7
+        image: dubov94/keyring-pwa:52dfa95fc7adc3373ed229443cb7d2e7a01d66f9
         ports:
         - containerPort: 8080
