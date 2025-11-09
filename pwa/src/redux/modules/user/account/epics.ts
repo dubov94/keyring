@@ -81,8 +81,7 @@ export const logOutEpic: Epic<RootAction, RootAction, RootState> = (action$) => 
   concatMap(() => {
     // https://rxjs.dev/api/index/const/asapScheduler
     asapScheduler.schedule(() => {
-      // To suppress https://web.dev/articles/bfcache. Further redirections
-      // happen in `redirectAfterLogoutEpic` afterwards.
+      // Further redirections happen in `redirectAfterLogoutEpic`.
       location.reload()
     })
     return EMPTY

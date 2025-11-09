@@ -33,7 +33,7 @@ const actionsObservableEpic: Epic<RootAction, RootAction, RootState> = (actionsO
 
 // Store initialization.
 const lifecycleReducer: typeof reducer = (state, action) => {
-  // https://web.dev/articles/bfcache#update_stale_or_sensitive_data_after_bfcache_restore
+  // https://web.dev/articles/bfcache#update-data-after-restore
   return reducer(isActionOf(terminate, action) ? undefined : state, action)
 }
 const lifecycleMiddleware: Middleware<Record<string, never>, RootState, Dispatch<RootAction>> = (store) => {

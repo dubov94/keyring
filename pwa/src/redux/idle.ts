@@ -32,10 +32,10 @@ export const createIdleDetector = (
     startWith(start, start),
     pairwise(),
     switchMap(([previous, current]) => {
-      // Avoid `setTimeout` due to https://stackoverflow.com/q/6346849.
+      // Avoid `setTimeout` due to https://stackoverflow.com/q/6346849 and BFC.
       return interval(emitEveryMillis).pipe(
         map(() => Date.now() - current),
-        // In case the browser went to sleep (and so did `interval`).
+        // In case the page was suspended (and so was `interval`).
         startWith(current - previous)
       )
     })
