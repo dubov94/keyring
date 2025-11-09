@@ -122,7 +122,7 @@ export default Vue.extend({
       takeUntil(this.$data.$destruction)
     ).subscribe(() => {
       this.dispatch(showToast({
-        message: 'Changed the password remotely? Toggle \'Remember me\' twice.'
+        message: 'Changed the password remotely? Click \'Forget\' to re-enter.'
       }))
     })
   },

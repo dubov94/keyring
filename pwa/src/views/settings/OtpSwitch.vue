@@ -67,8 +67,7 @@
       <div v-else>
         <p>
           <external-link href="https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html">Two-factor authentication</external-link> additionally protects your account
-          by requesting a time-based smartphone-generated token for each authentication attempt
-          unless 'Remember me' is switched on, making the device trusted.
+          by requesting a time-based smartphone-generated token for each authentication attempt.
         </p>
         <div class="mx-4">
           <v-btn block color="primary" @click="generate" :loading="otpParamsGenerationInProgress">
