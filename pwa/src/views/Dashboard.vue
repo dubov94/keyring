@@ -36,7 +36,21 @@
           </v-col>
         </v-row>
         <v-row>
-          <div class="flex-1">
+          <div class="flex-1 d-flex flex-wrap justify-center">
+            <v-chip v-if="canAccessApi && !isOtpEnabled" large outlined tag="div" class="ma-2">
+              <v-icon left :color="tfaBoxColor">pin</v-icon>
+              <div class="d-flex align-center">
+                <div>
+                  <div>Second factor</div>
+                  <div class="text-body-2 text--secondary">
+                    One-time codes {{  isOtpEnabled ? 'enabled' : 'disabled' }}
+                  </div>
+                </div>
+              </div>
+              <v-btn :color="tfaBoxColor" icon class="ml-4" @click="manageOtp">
+                <v-icon>arrow_forward</v-icon>
+              </v-btn>
+            </v-chip>
             <v-chip large outlined tag="div" class="ma-2">
               <v-icon left :color="depotBoxColor">offline_pin</v-icon>
               <div class="d-flex align-center">
@@ -66,20 +80,6 @@
                   </div>
                 </div>
               </div>
-            </v-chip>
-            <v-chip v-if="canAccessApi" large outlined tag="div" class="ma-2">
-              <v-icon left :color="tfaBoxColor">pin</v-icon>
-              <div class="d-flex align-center">
-                <div>
-                  <div>Second factor</div>
-                  <div class="text-body-2 text--secondary">
-                    One-time codes {{  isOtpEnabled ? 'enabled' : 'disabled' }}
-                  </div>
-                </div>
-              </div>
-              <v-btn :color="tfaBoxColor" icon class="ml-4" @click="manageOtp">
-                <v-icon>arrow_forward</v-icon>
-              </v-btn>
             </v-chip>
           </div>
         </v-row>
