@@ -29,7 +29,6 @@ import { Key, Password } from '@/redux/domain'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success } from '@/redux/flow_signal'
 import { remoteAuthnComplete } from '@/redux/modules/authn/actions'
-import { isDepotActive } from '@/redux/modules/depot/selectors'
 import { rehydration as sessionRehydration } from '@/redux/modules/session/actions'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
@@ -399,13 +398,12 @@ export const otpParamsAcceptanceEpic: Epic<RootAction, RootAction, RootState> = 
   withLatestFrom(state$),
   switchMap(([action, state]) => {
     if (isActionOf(acceptOtpParams, action)) {
-      const yieldTrustedToken = isDepotActive(state)
       return concat(
         of(otpParamsAcceptanceSignal(indicator(OtpParamsAcceptanceFlowIndicator.MAKING_REQUEST))),
         from(getAdministrationApi().administrationAcceptOtpParams({
           otpParamsId: action.payload.otpParamsId,
           otp: action.payload.otp,
-          yieldTrustedToken
+          yieldTrustedToken: true
         }, {
           headers: {
             [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey
@@ -413,9 +411,7 @@ export const otpParamsAcceptanceEpic: Epic<RootAction, RootAction, RootState> = 
         })).pipe(switchMap((response: ServiceAcceptOtpParamsResponse) => {
           switch (response.error) {
             case ServiceAcceptOtpParamsResponseError.NONE:
-              return of(otpParamsAcceptanceSignal(success(
-                yieldTrustedToken ? option.of(response.trustedToken!) : option.none
-              )))
+              return of(otpParamsAcceptanceSignal(success(option.of(response.trustedToken!))))
             default:
               return of(otpParamsAcceptanceSignal(failure(response.error!)))
           }

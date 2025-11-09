@@ -23,4 +23,6 @@ export interface DepotActivationData {
   depotKey: string;
 }
 export const depotActivationData = createAction('depot/activationData')<DeepReadonly<DepotActivationData>>()
+
+export const toggleDepot = createAction('depot/toggleDepot')<boolean>()
 export const clearDepot = createAction('depot/clear')()

@@ -29,7 +29,7 @@
     </v-text-field>
     <user-menu v-model="showMenu"></user-menu>
     <v-main>
-      <v-container fluid class="pt-8">
+      <v-container fluid class="pt-4">
         <v-row v-if="anyFeaturePrompts">
           <v-col :cols="12">
             <v-alert :value="releasePrompt" @input="ackReleasePrompt"
@@ -40,6 +40,29 @@
               <external-link href="https://github.com/dubov94/keyring/issues">feature requests</external-link>
               and spread the word!
             </v-alert>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col :cols="12">
+            <v-chip large outlined tag="div">
+              <v-icon left :color="depotBoxColor">offline_pin</v-icon>
+              <div class="d-flex align-center">
+                <div>
+                  <div>Trusted device</div>
+                  <div class="text-body-2 text--secondary">
+                    <template v-if="isOtpEnabled">
+                      Offline access & seamless
+                      <external-link href="https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html">2FA</external-link>
+                    </template>
+                    <template v-else>
+                      Offline access
+                    </template>
+                  </div>
+                </div>
+                <v-switch hide-details class="mt-0 pt-0 ml-4" :color="depotBoxColor"
+                  :input-value="isDepotActive" @change="toggleDepot"></v-switch>
+              </div>
+            </v-chip>
           </v-col>
         </v-row>
         <v-row v-if="newCliques.length + cliques.length === 0">
@@ -80,8 +103,10 @@ import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
 import { getUidService } from '@/cryptography/uid_service'
 import { Key } from '@/redux/domain'
 import { backgroundAuthnError } from '@/redux/modules/authn/selectors'
+import { toggleDepot } from '@/redux/modules/depot/actions'
+import { isDepotActive } from '@/redux/modules/depot/selectors'
 import { ackFeaturePrompt } from '@/redux/modules/user/account/actions'
-import { canAccessApi, featurePrompts } from '@/redux/modules/user/account/selectors'
+import { canAccessApi, featurePrompts, isOtpEnabled } from '@/redux/modules/user/account/selectors'
 import { userKeysUpdate } from '@/redux/modules/user/keys/actions'
 import { Clique, cliques, getCliqueRepr } from '@/redux/modules/user/keys/selectors'
 
@@ -113,6 +138,15 @@ export default (Vue as VueConstructor<Vue>).extend({
     }
   },
   computed: {
+    isDepotActive (): boolean {
+      return isDepotActive(this.$data.$state)
+    },
+    isOtpEnabled (): boolean {
+      return isOtpEnabled(this.$data.$state)
+    },
+    depotBoxColor (): string {
+      return this.isDepotActive ? 'success' : 'grey lighten-1'
+    },
     backgroundAuthnError (): boolean {
       return backgroundAuthnError(this.$data.$state)
     },
@@ -165,6 +199,9 @@ export default (Vue as VueConstructor<Vue>).extend({
     },
     ackReleasePrompt () {
       this.dispatch(ackFeaturePrompt(ServiceFeatureType.RELEASE))
+    },
+    toggleDepot (value: boolean) {
+      this.dispatch(toggleDepot(value))
     },
     addKey () {
       this.newCliques.unshift(getUidService().v4())

@@ -9,9 +9,9 @@
                 <v-window-item>
                   <credentials :username="username" @username="setUsername"
                     :password="password" @password="setPassword"
-                    :persist="persist" @persist="setPersist"
+                    :username-matches-depot="usernameMatchesDepot" @forget="forget"
                     @submit="submitCredentials" :authn-via-api="authnViaApi"
-                    :authn-via-depot="authnViaDepot" :username-matches-depot="usernameMatchesDepot">
+                    :authn-via-depot="authnViaDepot">
                   </credentials>
                   <div class="text-center">
                     <router-link to="/register">Register</router-link>
@@ -80,24 +80,20 @@ export default Vue.extend({
     return {
       username: '',
       password: '',
-      persist: false,
       otp: ''
     }
   },
   created () {
     const usernameFromDepot = depotUsername(this.$data.$state)
     this.username = sessionUsername(this.$data.$state) || usernameFromDepot || ''
-    this.persist = usernameFromDepot !== null
     this.actions().pipe(
       filter(isActionOf(remoteAuthnComplete)),
       takeUntil(this.$data.$destruction)
     ).subscribe((action) => {
-      if (this.persist) {
-        this.dispatch(generateDepotKeys({
-          username: action.payload.username,
-          password: action.payload.password
-        }))
-      }
+      this.dispatch(generateDepotKeys({
+        username: action.payload.username,
+        password: action.payload.password
+      }))
       this.$router.push('/dashboard')
     })
     this.actions().pipe(
@@ -171,15 +167,9 @@ export default Vue.extend({
     setPassword (value: string) {
       this.password = value
     },
-    setPersist (value: boolean) {
-      if (value) {
-        this.persist = true
-        this.dispatch(showToast({ message: 'Okay, we will store your data encrypted on this device.' }))
-      } else {
-        this.dispatch(clearDepot())
-        this.dispatch(showToast({ message: 'Alright, we wiped out all saved data on this device.' }))
-        this.persist = false
-      }
+    forget () {
+      this.dispatch(clearDepot())
+      this.dispatch(showToast({ message: 'All data has been wiped out' }))
     },
     submitCredentials () {
       if (this.usernameMatchesDepot) {
@@ -211,7 +201,7 @@ export default Vue.extend({
             },
             authnKey: otpContext.authnKey,
             otp: this.otp,
-            yieldTrustedToken: this.persist
+            yieldTrustedToken: true
           }))
         )),
         option.getOrElse<ReturnType<typeof provideOtp> | ReturnType<typeof showToast>>(() => showToast({

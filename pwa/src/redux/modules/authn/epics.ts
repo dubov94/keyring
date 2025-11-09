@@ -31,7 +31,6 @@ import {
   isActionSuccess,
   isSignalError
 } from '@/redux/flow_signal'
-import { isDepotActive } from '@/redux/modules/depot/selectors'
 import { defaultMailVerification, localOtpTokenFailure, remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
 import { NIL_KEY_ID } from '@/redux/modules/user/keys/actions'
 import { fromKeyProto } from '@/redux/modules/user/keys/converters'
@@ -354,7 +353,7 @@ export const backgroundOtpProvisionEpic: Epic<RootAction, RootAction, RootState>
               },
               authnKey: otpContext.authnKey,
               otp: otpToken,
-              yieldTrustedToken: isDepotActive(state)
+              yieldTrustedToken: true
             }, backgroundOtpProvisionSignal))
           )),
           option.getOrElse<Observable<RootAction>>(() => of(localOtpTokenFailure()))

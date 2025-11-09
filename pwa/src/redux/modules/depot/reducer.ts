@@ -5,7 +5,7 @@ import { isActionSuccess } from '@/redux/flow_signal'
 import { authnViaDepotSignal, registrationSignal, remoteAuthnComplete } from '@/redux/modules/authn/actions'
 import { accountDeletionSignal, localOtpTokenFailure, remoteCredentialsMismatchLocal, usernameChangeSignal } from '@/redux/modules/user/account/actions'
 import { RootAction } from '@/redux/root_action'
-import { clearDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydration } from './actions'
+import { clearDepot, depotActivationData, newEncryptedOtpToken, newVault, rehydration, toggleDepot } from './actions'
 
 type Credentials = {
   username: string;
@@ -68,10 +68,12 @@ export default createReducer<State>(
       }
     })
     .addMatcher(isActionOf(depotActivationData), (state, action) => {
-      state.persisted = true
       const { username, salt, hash } = action.payload
       state.credentials = { username, salt, hash }
       state.depotKey = action.payload.depotKey
+    })
+    .addMatcher(isActionOf(toggleDepot), (state, action) => {
+      state.persisted = action.payload
     })
     .addMatcher(isActionOf(clearDepot), toEmptyState)
     // As a reducer (and not an epic) to ensure we clear the storage before

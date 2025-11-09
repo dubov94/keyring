@@ -13,19 +13,6 @@
           @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
           :autofocus="!usernameIsEmpty"
           :append-icon="revealIcon" @append-click="toggleReveal"></form-text-field>
-        <v-switch class="mt-2" hide-details color="primary"
-          :input-value="persist" @change="setPersist">
-          <template v-slot:label>
-            <div class="ml-1">
-              <div>Remember me</div>
-              <div class="mt-1 text-body-2 text--secondary font-italic">
-                Enables offline access and, if applicable,
-                <external-link href="https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html">2FA</external-link>
-                seamless completion.
-              </div>
-            </div>
-          </template>
-        </v-switch>
       </v-form>
     </div>
     <div class="py-2 px-6">
@@ -36,6 +23,9 @@
           </v-progress-circular>
           <span class="ml-4">{{ indicatorMessage }}</span>
         </template>
+      </v-btn>
+      <v-btn v-if="usernameMatchesDepot" block class="mt-2" @click="forget">
+        Forget
       </v-btn>
     </div>
   </div>
@@ -78,7 +68,6 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   props: [
     'username',
     'password',
-    'persist',
     'authnViaApi',
     'authnViaDepot',
     'usernameMatchesDepot'
@@ -164,8 +153,8 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     toggleReveal () {
       this.reveal = !this.reveal
     },
-    setPersist (value: boolean) {
-      this.$emit('persist', value)
+    forget () {
+      this.$emit('forget')
     },
     submit () {
       if (!this.hasIndicatorMessage) {
