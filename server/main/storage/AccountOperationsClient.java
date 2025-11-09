@@ -44,7 +44,7 @@ import keyring.server.main.proto.service.Password;
 
 public class AccountOperationsClient implements AccountOperationsInterface {
   private static final ImmutableMap<FeatureType, Consumer<FeaturePrompts>> FEATURE_PROMPT_ACKERS =
-      ImmutableMap.of(FeatureType.RELEASE, featurePrompts -> featurePrompts.setRelease(false));
+      ImmutableMap.of();
 
   private Chronometry chronometry;
   private Limiters limiters;

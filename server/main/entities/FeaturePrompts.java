@@ -25,19 +25,8 @@ public class FeaturePrompts {
 
   @Version private long version;
 
-  @Column private boolean release;
-
   public FeaturePrompts setUser(User user) {
     this.user = user;
-    return this;
-  }
-
-  public boolean getRelease() {
-    return release;
-  }
-
-  public FeaturePrompts setRelease(boolean release) {
-    this.release = release;
     return this;
   }
 }

@@ -261,3 +261,8 @@ ALTER TABLE "public"."keys" ADD COLUMN "is_pinned" BOOLEAN DEFAULT FALSE;
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'users' and column_name = 'inactivity_reminders_iso'
 ALTER TABLE "public"."users" ADD COLUMN "inactivity_reminders_iso" TEXT [];
+
+-- changeset liquibase:38
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:1 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'feature_prompts' and column_name = 'release'
+ALTER TABLE "public"."feature_prompts" DROP COLUMN "release";

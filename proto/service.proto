@@ -47,10 +47,9 @@ message LogInRequest {
 }
 
 enum FeatureType {
-    reserved 1, 2;
+    reserved 1, 2, 3;
 
     UNKNOWN = 0;
-    RELEASE = 3;
 }
 
 message FeaturePrompt {

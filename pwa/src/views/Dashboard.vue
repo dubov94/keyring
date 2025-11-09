@@ -32,14 +32,7 @@
       <v-container fluid class="pt-4">
         <v-row v-if="anyFeaturePrompts">
           <v-col :cols="12">
-            <v-alert :value="releasePrompt" @input="ackReleasePrompt"
-              type="info" outlined dismissible border="left" class="mb-0">
-              🎉 Parolica has reached its release milestone &mdash; check out
-              <external-link href="https://github.com/dubov94/keyring#readme">the documentation</external-link>,
-              feel free to file
-              <external-link href="https://github.com/dubov94/keyring/issues">feature requests</external-link>
-              and spread the word!
-            </v-alert>
+            <!-- `<v-alert>`s are added here. -->
           </v-col>
         </v-row>
         <v-row>
@@ -121,7 +114,6 @@ import { concatMap, filter, takeUntil, mapTo } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
 import { isActionOf } from 'typesafe-actions'
 import Vue, { VueConstructor } from 'vue'
-import { ServiceFeatureType } from '@/api/definitions'
 import Page from '@/components/Page.vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
@@ -130,7 +122,6 @@ import { Key } from '@/redux/domain'
 import { backgroundAuthnError } from '@/redux/modules/authn/selectors'
 import { toggleDepot } from '@/redux/modules/depot/actions'
 import { isDepotActive } from '@/redux/modules/depot/selectors'
-import { ackFeaturePrompt } from '@/redux/modules/user/account/actions'
 import { canAccessApi, featurePrompts, isOtpEnabled } from '@/redux/modules/user/account/selectors'
 import { userKeysUpdate } from '@/redux/modules/user/keys/actions'
 import { Clique, cliques, getCliqueRepr } from '@/redux/modules/user/keys/selectors'
@@ -199,10 +190,6 @@ export default (Vue as VueConstructor<Vue>).extend({
     anyFeaturePrompts (): boolean {
       return this.featurePrompts.length > 0
     },
-    releasePrompt (): boolean {
-      return this.featurePrompts.findIndex(
-        (fp) => fp.featureType === ServiceFeatureType.RELEASE) === 0
-    },
     toolbarIsExtended (): boolean {
       return this.$vuetify.breakpoint.xsOnly
     },
@@ -224,9 +211,6 @@ export default (Vue as VueConstructor<Vue>).extend({
   methods: {
     menuSwitch (value: boolean) {
       this.showMenu = value
-    },
-    ackReleasePrompt () {
-      this.dispatch(ackFeaturePrompt(ServiceFeatureType.RELEASE))
     },
     toggleDepot (value: boolean) {
       this.dispatch(toggleDepot(value))
