@@ -9,10 +9,10 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@fontsource/material-icons": "^5.2.6",
-    "@fontsource/material-icons-outlined": "^5.2.6",
-    "@fontsource/roboto": "^5.2.6",
-    "@fontsource/roboto-mono": "^5.2.6",
+    "@fontsource/material-icons": "^4.5.4",
+    "@fontsource/material-icons-outlined": "^4.5.4",
+    "@fontsource/roboto": "^4.5.4",
+    "@fontsource/roboto-mono": "^4.5.4",
     "@reduxjs/toolkit": "^1.5.0",
     "axios": "^1.6.2",
     "backoff-rxjs": "^6.5.7",
