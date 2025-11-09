@@ -43,8 +43,8 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col :cols="12">
-            <v-chip large outlined tag="div">
+          <div class="flex-1">
+            <v-chip large outlined tag="div" class="ma-2">
               <v-icon left :color="depotBoxColor">offline_pin</v-icon>
               <div class="d-flex align-center">
                 <div>
@@ -63,7 +63,32 @@
                   :input-value="isDepotActive" @change="toggleDepot"></v-switch>
               </div>
             </v-chip>
-          </v-col>
+            <v-chip large outlined disabled tag="div" class="ma-2">
+              <v-icon left>fingerprint</v-icon>
+              <div class="d-flex align-center">
+                <div>
+                  <div>Biometrics</div>
+                  <div class="text-body-2 text--secondary">
+                    Coming soon!
+                  </div>
+                </div>
+              </div>
+            </v-chip>
+            <v-chip v-if="canAccessApi" large outlined tag="div" class="ma-2">
+              <v-icon left :color="tfaBoxColor">pin</v-icon>
+              <div class="d-flex align-center">
+                <div>
+                  <div>Second factor</div>
+                  <div class="text-body-2 text--secondary">
+                    One-time codes {{  isOtpEnabled ? 'enabled' : 'disabled' }}
+                  </div>
+                </div>
+              </div>
+              <v-btn :color="tfaBoxColor" icon class="ml-4" @click="manageOtp">
+                <v-icon>arrow_forward</v-icon>
+              </v-btn>
+            </v-chip>
+          </div>
         </v-row>
         <v-row v-if="newCliques.length + cliques.length === 0">
           <v-col :cols="12" class="text-center">
@@ -141,11 +166,14 @@ export default (Vue as VueConstructor<Vue>).extend({
     isDepotActive (): boolean {
       return isDepotActive(this.$data.$state)
     },
+    depotBoxColor (): string {
+      return this.isDepotActive ? 'success' : 'grey lighten-1'
+    },
     isOtpEnabled (): boolean {
       return isOtpEnabled(this.$data.$state)
     },
-    depotBoxColor (): string {
-      return this.isDepotActive ? 'success' : 'grey lighten-1'
+    tfaBoxColor (): string {
+      return this.isOtpEnabled ? 'success' : 'warning'
     },
     backgroundAuthnError (): boolean {
       return backgroundAuthnError(this.$data.$state)
@@ -202,6 +230,9 @@ export default (Vue as VueConstructor<Vue>).extend({
     },
     toggleDepot (value: boolean) {
       this.dispatch(toggleDepot(value))
+    },
+    manageOtp () {
+      this.$router.push('/settings')
     },
     addKey () {
       this.newCliques.unshift(getUidService().v4())
