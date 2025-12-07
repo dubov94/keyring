@@ -9,8 +9,6 @@ Infrastructurally the service uses (managed) Kubernetes on DigitalOcean and Goog
 * `application/`
   * `Ingress`
     * `pwa` (frontend)
-    * `redirection`
-      * ...from the original domain
     * `grpc_gateway`
       * `/api/` forwarder
   * backends (includes Postgres and Redis)

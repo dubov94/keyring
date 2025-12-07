@@ -12,7 +12,6 @@ spec:
   tls:
   - hosts:
     - "parolica.com"
-    - "pwd.floreina.me"
     secretName: cluster-tls
   rules:
   - host: "parolica.com"
@@ -30,15 +29,5 @@ spec:
         backend:
           service:
             name: pwa-service
-            port:
-              number: 8080
-  - host: "pwd.floreina.me"
-    http:
-      paths:
-      - pathType: Prefix
-        path: "/(.*)"
-        backend:
-          service:
-            name: redirection-service
             port:
               number: 8080
