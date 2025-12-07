@@ -17,14 +17,14 @@ spec:
   - host: "parolica.com"
     http:
       paths:
-      - pathType: Prefix
+      - pathType: ImplementationSpecific
         path: "/api/(.*)"
         backend:
           service:
             name: grpc-gateway-service
             port:
               number: 5002
-      - pathType: Prefix
+      - pathType: ImplementationSpecific
         path: "/(.*)"
         backend:
           service:
