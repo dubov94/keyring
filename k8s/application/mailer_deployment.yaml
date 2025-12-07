@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: mailer
-        image: dubov94/keyring-mailer:5db62e6a9f24d5ce705621e4f52095e9425099d8
+        image: dubov94/keyring-mailer:2968570500024fe6cb38ef5f27460621c8266034
         env:
         - name: MAILGUN_API_KEY
           valueFrom:
