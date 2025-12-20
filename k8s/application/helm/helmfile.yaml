@@ -20,7 +20,7 @@ releases:
     - cert_manager_values.yaml
   - name: redis
     chart: bitnami/redis
-    version: ^17.1.8
+    version: ^23.2.12
     values:
     - redis_values.yaml
   - name: cnpg-operator
