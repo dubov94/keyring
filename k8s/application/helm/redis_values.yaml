@@ -2,11 +2,17 @@ architecture: replication
 auth:
   enabled: true
   existingSecret: redis
+master:
+  resources: &container_resources
+    requests:
+      cpu: 50m
 replica:
   replicaCount: 3
   persistence:
     enabled: true
     size: 1Gi
+  resources: *container_resources
 sentinel:
   enabled: true
   masterSet: default
+  resources: *container_resources
