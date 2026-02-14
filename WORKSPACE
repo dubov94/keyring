@@ -249,6 +249,12 @@ go_repository(
 )
 
 go_repository(
+    name = "org_golang_x_net",
+    importpath = "golang.org/x/net",
+    tag = "v0.50.0"
+)
+
+go_repository(
     name = "org_golang_x_sys",
     importpath = "golang.org/x/sys",
     tag = "v0.32.0",
