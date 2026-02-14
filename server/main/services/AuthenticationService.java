@@ -147,7 +147,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     keyValueClient.createSession(sessionToken, userId, ipAddress, sessionId);
     messageBrokerClient.publishMailVc(mail, username, code);
     return Either.right(
-        builder.setSessionKey(sessionToken).setMailTokenId(entities._2.getIdentifier()).build());
+        builder.setSessionKey(sessionToken).setMailTokenUid(String.valueOf(entities._2.getUuid())).build());
   }
 
   @Override
@@ -192,7 +192,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       mailVerificationBuilder.setRequired(true);
       Optional<MailToken> mailToken = accountOperationsInterface.latestMailToken(userId);
       if (mailToken.isPresent()) {
-        mailVerificationBuilder.setTokenId(mailToken.get().getIdentifier());
+        mailVerificationBuilder.setTokenUid(String.valueOf(mailToken.get().getUuid()));
       }
       userDataBuilder.setMailVerification(mailVerificationBuilder);
     } else {

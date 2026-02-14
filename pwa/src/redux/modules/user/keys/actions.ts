@@ -54,7 +54,7 @@ export const CLIQUE_ORDER_ITERATEES: ((clique: DeepReadonly<Clique>) => any)[] =
 export const newCliqueOrder = createAction('user/keys/newCliqueOrder')<DeepReadonly<string[]>>()
 export const cliqueAddition = createAction('user/keys/cliqueAddition')<string>()
 
-export const NIL_KEY_ID = '0'
+export const NIL_KEY_ID = ''
 export const electShadow = createAction('user/keys/electShadow')<string, DeepReadonly<OperationMetadata>>()
 export interface ShadowElectionSuccess {
   origin: string;

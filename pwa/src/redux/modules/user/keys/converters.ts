@@ -4,10 +4,10 @@ import { Key } from '@/redux/domain'
 
 export const fromKeyProto = (encryptionKey: string) => {
   return async (item: ServiceKeyProto): Promise<Key> => ({
-    identifier: item.identifier!,
+    identifier: item.uid!,
     attrs: {
       isShadow: item.attrs!.isShadow!,
-      parent: item.attrs!.parent!,
+      parent: item.attrs!.parentUid!,
       isPinned: item.attrs!.isPinned!
     },
     ...(await getSodiumClient().decryptPassword(encryptionKey, {

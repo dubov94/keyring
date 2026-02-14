@@ -182,7 +182,7 @@ describe('logInViaApiEpic', () => {
         },
         mail: 'mail@example.com',
         userKeys: [createKeyProto({
-          identifier: 'identifier',
+          uid: 'identifier',
           password: {
             value: '$value',
             tags: ['$tag']
@@ -342,7 +342,7 @@ describe('provideOtpEpic', () => {
         },
         mail: 'mail@example.com',
         userKeys: [createKeyProto({
-          identifier: 'identifier',
+          uid: 'identifier',
           password: {
             value: '$value',
             tags: ['$tag']

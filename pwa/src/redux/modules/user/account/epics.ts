@@ -108,7 +108,7 @@ export const releaseMailTokenEpic: Epic<RootAction, RootAction, RootState> = (ac
       return concat(
         of(mailTokenReleaseSignal(indicator(MailTokenReleaseFlowIndicator.WORKING))),
         from(getAdministrationApi().administrationReleaseMailToken({
-          tokenId: action.payload.tokenId,
+          tokenUid: action.payload.tokenId,
           code: action.payload.code
         }, {
           headers: {
@@ -156,7 +156,7 @@ export const acquireMailTokenEpic: Epic<RootAction, RootAction, RootState> = (ac
                 case ServiceAcquireMailTokenResponseError.NONE:
                   return of(mailTokenAcquisitionSignal(success({
                     mail: action.payload.mail,
-                    tokenId: response.tokenId!
+                    tokenId: response.tokenUid!
                   })))
                 default:
                   return of(mailTokenAcquisitionSignal(failure(response.error!)))
@@ -187,10 +187,10 @@ const masterKeyChange = <T extends TypeConstant>(
       switchMap(({ authDigest }) => from(getSodiumClient().generateNewParametrization()).pipe(
         switchMap((newParametrization) => from(getSodiumClient().computeAuthDigestAndEncryptionKey(newParametrization, renewal)).pipe(
           switchMap((newDerivatives) => forkJoin(userKeys.map(async ({ identifier, value, tags }) => ({
-            identifier,
+            uid: identifier,
             password: await getSodiumClient().encryptPassword(newDerivatives.encryptionKey, { value, tags })
           }))).pipe(
-            defaultIfEmpty(<{ identifier: string; password: Password }[]>[]),
+            defaultIfEmpty(<{ uid: string; password: Password }[]>[]),
             switchMap((keys) => concat(
               of(signalCreator(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST))),
               from(getAdministrationApi().administrationChangeMasterKey({
@@ -373,7 +373,7 @@ export const otpParamsGenerationEpic: Epic<RootAction, RootAction, RootState> = 
           }
         })).pipe(switchMap((response: ServiceGenerateOtpParamsResponse) => from(getQrcEncoder().encode(response.keyUri!)).pipe(
           switchMap((qrcDataUrl) => of(otpParamsGenerationSignal(success({
-            otpParamsId: response.otpParamsId!,
+            otpParamsId: response.otpParamsUid!,
             sharedSecret: response.sharedSecret!,
             scratchCodes: response.scratchCodes!,
             keyUri: response.keyUri!,
@@ -400,7 +400,7 @@ export const otpParamsAcceptanceEpic: Epic<RootAction, RootAction, RootState> = 
       return concat(
         of(otpParamsAcceptanceSignal(indicator(OtpParamsAcceptanceFlowIndicator.MAKING_REQUEST))),
         from(getAdministrationApi().administrationAcceptOtpParams({
-          otpParamsId: action.payload.otpParamsId,
+          otpParamsUid: action.payload.otpParamsId,
           otp: action.payload.otp,
           yieldTrustedToken: true
         }, {

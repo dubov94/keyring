@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import keyring.server.main.Chronometry;
@@ -150,7 +151,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         accountOperationsInterface.createMailToken(
             userId, agentAccessor.getIpAddress(), mail, code);
     messageBrokerClient.publishMailVc(mail, user.getUsername(), code);
-    return Either.right(builder.setTokenId(mailToken.getIdentifier()).build());
+    return Either.right(builder.setTokenUid(String.valueOf(mailToken.getUuid())).build());
   }
 
   @Override
@@ -173,7 +174,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsInterface.nudgeMailToken(
             userId,
-            request.getTokenId(),
+            UUID.fromString(request.getTokenUid()),
             (lastAttempt, attemptCount) ->
                 chronometry.nextAttempt(
                     lastAttempt, attemptCount, /* baseDelayS */ 1, /* graceCount */ 3));
@@ -191,7 +192,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     if (!Objects.equals(mailToken.getCode(), request.getCode())) {
       return builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE).build();
     }
-    accountOperationsInterface.releaseMailToken(userId, mailToken.getIdentifier());
+    accountOperationsInterface.releaseMailToken(userId, mailToken.getUuid());
     return builder.setMail(mailToken.getMail()).build();
   }
 
@@ -232,7 +233,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         keyOperationsInterface.createKey(
             sessionAccessor.getSessionEntityId(), request.getPassword(), request.getAttrs());
     CreateKeyResponse.Builder builder = CreateKeyResponse.newBuilder();
-    builder.setIdentifier(key.getIdentifier());
+    builder.setUid(String.valueOf(key.getUuid()));
     key.getCreationTimestamp()
         .ifPresent(
             (timestamp) -> {
@@ -267,7 +268,8 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @WithEntityManager
   @ValidateUser
   public void deleteKey(DeleteKeyRequest request, StreamObserver<DeleteKeyResponse> response) {
-    keyOperationsInterface.deleteKey(sessionAccessor.getSessionEntityId(), request.getIdentifier());
+    keyOperationsInterface.deleteKey(
+        sessionAccessor.getSessionEntityId(), UUID.fromString(request.getUid()));
     response.onNext(DeleteKeyResponse.getDefaultInstance());
     response.onCompleted();
   }
@@ -279,11 +281,12 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       ElectShadowRequest request, StreamObserver<ElectShadowResponse> response) {
     Tuple2<Key, List<Key>> election =
         keyOperationsInterface.electShadow(
-            sessionAccessor.getSessionEntityId(), request.getIdentifier());
+            sessionAccessor.getSessionEntityId(), UUID.fromString(request.getUid()));
     response.onNext(
         ElectShadowResponse.newBuilder()
-            .setParent(election._1.getIdentifier())
-            .addAllDeletedShadows(election._2.stream().map(Key::getIdentifier).collect(toList()))
+            .setParentUid(String.valueOf(election._1.getUuid()))
+            .addAllDeletedShadowUids(
+                election._2.stream().map(Key::getUuid).map(String::valueOf).collect(toList()))
             .build());
     response.onCompleted();
   }
@@ -293,7 +296,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   @ValidateUser
   public void togglePin(TogglePinRequest request, StreamObserver<TogglePinResponse> response) {
     keyOperationsInterface.togglePin(
-        sessionAccessor.getSessionEntityId(), request.getIdentifier(), request.getIsPinned());
+        sessionAccessor.getSessionEntityId(), UUID.fromString(request.getUid()), request.getIsPinned());
     response.onNext(TogglePinResponse.getDefaultInstance());
     response.onCompleted();
   }
@@ -506,7 +509,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
             user.getIdentifier(), sharedSecret, scratchCodes);
     return Either.right(
         GenerateOtpParamsResponse.newBuilder()
-            .setOtpParamsId(String.valueOf(otpParams.getId()))
+            .setOtpParamsUid(String.valueOf(otpParams.getUuid()))
             .setSharedSecret(sharedSecret)
             .setKeyUri(
                 GoogleAuthenticatorQRGenerator.getOtpAuthTotpURL(
@@ -533,7 +536,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
       AcceptOtpParamsRequest request) {
     long userId = sessionAccessor.getUserId();
     Optional<OtpParams> maybeOtpParams =
-        accountOperationsInterface.getOtpParams(userId, Long.valueOf(request.getOtpParamsId()));
+        accountOperationsInterface.getOtpParams(userId, UUID.fromString(request.getOtpParamsUid()));
     if (!maybeOtpParams.isPresent()) {
       return Either.left(new StatusException(Status.NOT_FOUND));
     }
@@ -544,7 +547,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
         || !googleAuthenticator.authorize(otpParams.getOtpSharedSecret(), maybeTotp.get())) {
       return Either.right(builder.setError(AcceptOtpParamsResponse.Error.INVALID_CODE).build());
     }
-    accountOperationsInterface.acceptOtpParams(userId, otpParams.getId());
+    accountOperationsInterface.acceptOtpParams(userId, otpParams.getUuid());
     if (request.getYieldTrustedToken()) {
       String otpToken = cryptography.generateTts();
       accountOperationsInterface.createTrustedToken(userId, otpToken);
@@ -587,7 +590,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
     } else {
       Optional<OtpToken> maybeOtpToken =
           accountOperationsInterface.getOtpToken(
-              userId, request.getOtp(), /* mustBeInitial = */ true);
+              userId, request.getOtp(), /* mustBeInitial= */ true);
       if (!maybeOtpToken.isPresent()) {
         return Either.right(builder.setError(ResetOtpResponse.Error.INVALID_CODE).build());
       }

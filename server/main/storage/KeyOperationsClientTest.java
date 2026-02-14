@@ -27,16 +27,8 @@ import keyring.server.main.proto.service.Password;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 class KeyOperationsClientTest {
-  @Container
-  private static final PostgreSQLContainer<?> postgresContainer =
-      new PostgreSQLContainer<>(DockerImageName.parse("postgres"));
-
   private static Random random = new Random();
   private AccountOperationsClient accountOperationsClient;
   private KeyOperationsClient keyOperationsClient;
@@ -94,10 +86,8 @@ class KeyOperationsClientTest {
   void createKey_withParent() {
     long sessionId = createActiveSession(createUniqueUser());
     Password parent = Password.newBuilder().setValue("parent").build();
-    long parentId =
-        keyOperationsClient
-            .createKey(sessionId, parent, KeyAttrs.getDefaultInstance())
-            .getIdentifier();
+    UUID parentUuid =
+        keyOperationsClient.createKey(sessionId, parent, KeyAttrs.getDefaultInstance()).getUuid();
     Password child = Password.newBuilder().setValue("child").build();
 
     long childId =
@@ -105,7 +95,10 @@ class KeyOperationsClientTest {
             .createKey(
                 sessionId,
                 child,
-                KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
+                KeyAttrs.newBuilder()
+                    .setIsShadow(true)
+                    .setParentUid(String.valueOf(parentUuid))
+                    .build())
             .getIdentifier();
 
     List<Key> keys = keyOperationsClient.readKeys(sessionId);
@@ -115,7 +108,7 @@ class KeyOperationsClientTest {
     assertTrue(maybeChildKey.isPresent());
     Key childKey = maybeChildKey.get();
     assertTrue(childKey.getIsShadow());
-    assertEquals(parentId, childKey.getParent().getIdentifier());
+    assertEquals(parentUuid, childKey.getParent().getUuid());
   }
 
   @Test
@@ -130,7 +123,7 @@ class KeyOperationsClientTest {
                 keyOperationsClient.createKey(
                     sessionId,
                     Password.getDefaultInstance(),
-                    KeyAttrs.newBuilder().setParent(1).build()));
+                    KeyAttrs.newBuilder().setParentUid(String.valueOf(UUID.randomUUID())).build()));
 
     assertEquals(
         "java.lang.IllegalArgumentException: Shadows must have a non-nil parent",
@@ -142,10 +135,10 @@ class KeyOperationsClientTest {
   void createKey_foreignParent_throws() {
     long sessionA = createActiveSession(createUniqueUser());
     long sessionB = createActiveSession(createUniqueUser());
-    long foreignParentId =
+    UUID foreignParentUuid =
         keyOperationsClient
             .createKey(sessionB, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
-            .getIdentifier();
+            .getUuid();
 
     StorageException exception =
         assertThrows(
@@ -154,11 +147,14 @@ class KeyOperationsClientTest {
                 keyOperationsClient.createKey(
                     sessionA,
                     Password.getDefaultInstance(),
-                    KeyAttrs.newBuilder().setIsShadow(true).setParent(foreignParentId).build()));
+                    KeyAttrs.newBuilder()
+                        .setIsShadow(true)
+                        .setParentUid(String.valueOf(foreignParentUuid))
+                        .build()));
     assertEquals(
         String.format(
-            "java.lang.IllegalArgumentException: Parent %d does not belong to the user",
-            foreignParentId),
+            "java.lang.IllegalArgumentException: Parent %s does not belong to the user",
+            foreignParentUuid),
         exception.getMessage());
   }
 
@@ -167,10 +163,10 @@ class KeyOperationsClientTest {
   void createKey_shadowForShadow_throws() {
     long sessionId = createActiveSession(createUniqueUser());
     Password parent = Password.newBuilder().setValue("parent").build();
-    long parentId =
+    UUID parentUuid =
         keyOperationsClient
             .createKey(sessionId, parent, KeyAttrs.newBuilder().setIsShadow(true).build())
-            .getIdentifier();
+            .getUuid();
 
     StorageException exception =
         assertThrows(
@@ -179,13 +175,16 @@ class KeyOperationsClientTest {
                 keyOperationsClient.createKey(
                     sessionId,
                     Password.getDefaultInstance(),
-                    KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build()));
+                    KeyAttrs.newBuilder()
+                        .setIsShadow(true)
+                        .setParentUid(String.valueOf(parentUuid))
+                        .build()));
 
     assertEquals(
         String.format(
             "java.lang.IllegalArgumentException:"
-                + " Cannot create a shadow for %d as it's also a shadow",
-            parentId),
+                + " Cannot create a shadow for %s as it's also a shadow",
+            parentUuid),
         exception.getMessage());
   }
 
@@ -212,21 +211,22 @@ class KeyOperationsClientTest {
   @WithEntityManager
   void updateKey() {
     long sessionId = createActiveSession(createUniqueUser());
-    long keyId =
+    UUID keyUuid =
         keyOperationsClient
             .createKey(
                 sessionId,
                 Password.newBuilder().setValue("x").addAllTags(ImmutableList.of("a", "b")).build(),
                 KeyAttrs.getDefaultInstance())
-            .getIdentifier();
+            .getUuid();
     Password password =
         Password.newBuilder().setValue("y").addAllTags(ImmutableList.of("c", "d")).build();
 
     keyOperationsClient.updateKey(
-        sessionId, KeyPatch.newBuilder().setIdentifier(keyId).setPassword(password).build());
+        sessionId,
+        KeyPatch.newBuilder().setUid(String.valueOf(keyUuid)).setPassword(password).build());
 
     List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
-    Optional<Key> maybeKey = getKeyFromList(allKeys, keyId);
+    Optional<Key> maybeKey = getKeyFromList(allKeys, keyUuid);
     assertTrue(maybeKey.isPresent());
     assertEquals(password, maybeKey.get().toPassword());
   }
@@ -235,13 +235,13 @@ class KeyOperationsClientTest {
   @WithEntityManager
   void deleteKey() {
     long sessionId = createActiveSession(createUniqueUser());
-    long keyId =
+    UUID keyUuid =
         keyOperationsClient
             .createKey(sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
-            .getIdentifier();
+            .getUuid();
     assertEquals(1, keyOperationsClient.readKeys(sessionId).size());
 
-    keyOperationsClient.deleteKey(sessionId, keyId);
+    keyOperationsClient.deleteKey(sessionId, keyUuid);
 
     assertTrue(keyOperationsClient.readKeys(sessionId).isEmpty());
   }
@@ -252,101 +252,110 @@ class KeyOperationsClientTest {
     long sessionId = createActiveSession(createUniqueUser());
     Password password =
         Password.newBuilder().setValue("foo").addAllTags(ImmutableList.of("bar")).build();
-    long shadowId =
+    UUID shadowUuid =
         keyOperationsClient
             .createKey(sessionId, password, KeyAttrs.newBuilder().setIsShadow(true).build())
-            .getIdentifier();
+            .getUuid();
 
-    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(sessionId, shadowId);
+    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(sessionId, shadowUuid);
 
     List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
-    Optional<Key> maybeParent = getKeyFromList(allKeys, election._1.getIdentifier());
+    Optional<Key> maybeParent = getKeyFromList(allKeys, election._1.getUuid());
     assertTrue(maybeParent.isPresent());
     assertEquals(password, maybeParent.get().toPassword());
-    assertFalse(getKeyFromList(allKeys, shadowId).isPresent());
+    assertFalse(getKeyFromList(allKeys, shadowUuid).isPresent());
     assertEquals(1, election._2.size());
-    assertEquals(shadowId, election._2.get(0).getIdentifier());
+    assertEquals(shadowUuid, election._2.get(0).getUuid());
   }
 
   @Test
   @WithEntityManager
   void electShadow_updateParent() {
     long sessionId = createActiveSession(createUniqueUser());
-    long parentId =
+    UUID parentUuid =
         keyOperationsClient
             .createKey(sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
-            .getIdentifier();
+            .getUuid();
     Password update =
         Password.newBuilder().setValue("foo").addAllTags(ImmutableList.of("bar")).build();
-    long shadowId =
+    UUID shadowUuid =
         keyOperationsClient
             .createKey(
                 sessionId,
                 update,
-                KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
-            .getIdentifier();
+                KeyAttrs.newBuilder()
+                    .setIsShadow(true)
+                    .setParentUid(String.valueOf(parentUuid))
+                    .build())
+            .getUuid();
 
-    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(sessionId, shadowId);
+    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(sessionId, shadowUuid);
 
     List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
-    Optional<Key> maybeParent = getKeyFromList(allKeys, parentId);
+    Optional<Key> maybeParent = getKeyFromList(allKeys, parentUuid);
     assertTrue(maybeParent.isPresent());
     assertEquals(update, maybeParent.get().toPassword());
-    assertFalse(getKeyFromList(allKeys, shadowId).isPresent());
+    assertFalse(getKeyFromList(allKeys, shadowUuid).isPresent());
     assertEquals(1, election._2.size());
-    assertEquals(shadowId, election._2.get(0).getIdentifier());
+    assertEquals(shadowUuid, election._2.get(0).getUuid());
   }
 
   @Test
   @WithEntityManager
   void electShadow_nonShadow_deletesDependants() {
     long sessionId = createActiveSession(createUniqueUser());
-    long parentId =
+    UUID parentUuid =
         keyOperationsClient
             .createKey(sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
-            .getIdentifier();
-    long fstShadowId =
+            .getUuid();
+    UUID fstShadowUuid =
         keyOperationsClient
             .createKey(
                 sessionId,
                 Password.getDefaultInstance(),
-                KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
-            .getIdentifier();
-    long sndShadowId =
+                KeyAttrs.newBuilder()
+                    .setIsShadow(true)
+                    .setParentUid(String.valueOf(parentUuid))
+                    .build())
+            .getUuid();
+    UUID sndShadowUuid =
         keyOperationsClient
             .createKey(
                 sessionId,
                 Password.getDefaultInstance(),
-                KeyAttrs.newBuilder().setIsShadow(true).setParent(parentId).build())
-            .getIdentifier();
+                KeyAttrs.newBuilder()
+                    .setIsShadow(true)
+                    .setParentUid(String.valueOf(parentUuid))
+                    .build())
+            .getUuid();
 
-    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(sessionId, parentId);
+    Tuple2<Key, List<Key>> election = keyOperationsClient.electShadow(sessionId, parentUuid);
 
     assertEquals(2, election._2.size());
     List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
-    assertFalse(getKeyFromList(allKeys, fstShadowId).isPresent());
-    assertFalse(getKeyFromList(allKeys, sndShadowId).isPresent());
+    assertFalse(getKeyFromList(allKeys, fstShadowUuid).isPresent());
+    assertFalse(getKeyFromList(allKeys, sndShadowUuid).isPresent());
   }
 
   @Test
   @WithEntityManager
   void togglePin() {
     long sessionId = createActiveSession(createUniqueUser());
-    long keyId =
+    UUID keyUuid =
         keyOperationsClient
             .createKey(sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
-            .getIdentifier();
+            .getUuid();
 
-    keyOperationsClient.togglePin(sessionId, keyId, /* isPinned */ true);
+    keyOperationsClient.togglePin(sessionId, keyUuid, /* isPinned */ true);
 
     List<Key> allKeys = keyOperationsClient.readKeys(sessionId);
-    Optional<Key> maybeKey = getKeyFromList(allKeys, keyId);
+    Optional<Key> maybeKey = getKeyFromList(allKeys, keyUuid);
     assertTrue(maybeKey.isPresent());
     assertTrue(maybeKey.get().getIsPinned());
   }
 
-  private Optional<Key> getKeyFromList(List<Key> allKeys, long keyId) {
-    return allKeys.stream().filter(key -> Objects.equals(key.getIdentifier(), keyId)).findAny();
+  private Optional<Key> getKeyFromList(List<Key> allKeys, UUID keyUuid) {
+    return allKeys.stream().filter(key -> Objects.equals(key.getUuid(), keyUuid)).findAny();
   }
 
   private String newRandomUuid() {

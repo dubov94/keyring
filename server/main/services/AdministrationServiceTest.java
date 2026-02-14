@@ -17,6 +17,7 @@ import io.grpc.stub.StreamObserver;
 import io.vavr.Tuple;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -136,12 +137,16 @@ class AdministrationServiceTest {
 
   @Test
   void releaseMailToken_tokenDoesNotExist_repliesWithError() {
+    UUID mailTokenUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.nudgeMailToken(
-            eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
+            eq(user.getIdentifier()), eq(mailTokenUuid), any(BiFunction.class)))
         .thenReturn(Tuple.of(MtNudgeStatus.NOT_FOUND, Optional.empty()));
 
     administrationService.releaseMailToken(
-        ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("0").build(),
+        ReleaseMailTokenRequest.newBuilder()
+            .setTokenUid(String.valueOf(mailTokenUuid))
+            .setCode("0")
+            .build(),
         mockStreamObserver);
 
     verify(mockStreamObserver)
@@ -153,12 +158,16 @@ class AdministrationServiceTest {
 
   @Test
   void releaseMailToken_tooEarly_repliesWithError() {
+    UUID mailTokenUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.nudgeMailToken(
-            eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
+            eq(user.getIdentifier()), eq(mailTokenUuid), any(BiFunction.class)))
         .thenReturn(Tuple.of(MtNudgeStatus.NOT_AVAILABLE_YET, Optional.empty()));
 
     administrationService.releaseMailToken(
-        ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),
+        ReleaseMailTokenRequest.newBuilder()
+            .setTokenUid(String.valueOf(mailTokenUuid))
+            .setCode("A")
+            .build(),
         mockStreamObserver);
 
     verify(mockStreamObserver)
@@ -170,14 +179,19 @@ class AdministrationServiceTest {
 
   @Test
   void releaseMailToken_codeDoesNotMatch_repliesWithError() {
+    UUID mailTokenUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.nudgeMailToken(
-            eq(user.getIdentifier()), eq(1L), any(BiFunction.class)))
+            eq(user.getIdentifier()), eq(mailTokenUuid), any(BiFunction.class)))
         .thenReturn(
             Tuple.of(
-                MtNudgeStatus.OK, Optional.of(new MailToken().setIdentifier(1L).setCode("X"))));
+                MtNudgeStatus.OK,
+                Optional.of(new MailToken().setUuid(mailTokenUuid).setCode("X"))));
 
     administrationService.releaseMailToken(
-        ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),
+        ReleaseMailTokenRequest.newBuilder()
+            .setTokenUid(String.valueOf(mailTokenUuid))
+            .setCode("A")
+            .build(),
         mockStreamObserver);
 
     verify(mockStreamObserver)
@@ -190,18 +204,26 @@ class AdministrationServiceTest {
   @Test
   void releaseMailToken_tokenExistsAndCodeMatches_repliesWithMail() {
     long userId = user.getIdentifier();
-    when(mockAccountOperationsInterface.nudgeMailToken(eq(userId), eq(1L), any(BiFunction.class)))
+    UUID mailTokenUuid = UUID.randomUUID();
+    when(mockAccountOperationsInterface.nudgeMailToken(
+            eq(userId), eq(mailTokenUuid), any(BiFunction.class)))
         .thenReturn(
             Tuple.of(
                 MtNudgeStatus.OK,
                 Optional.of(
-                    new MailToken().setIdentifier(1L).setCode("A").setMail("mail@example.com"))));
+                    new MailToken()
+                        .setUuid(mailTokenUuid)
+                        .setCode("A")
+                        .setMail("mail@example.com"))));
 
     administrationService.releaseMailToken(
-        ReleaseMailTokenRequest.newBuilder().setTokenId(1L).setCode("A").build(),
+        ReleaseMailTokenRequest.newBuilder()
+            .setTokenUid(String.valueOf(mailTokenUuid))
+            .setCode("A")
+            .build(),
         mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).releaseMailToken(userId, 1L);
+    verify(mockAccountOperationsInterface).releaseMailToken(userId, mailTokenUuid);
     verify(mockStreamObserver)
         .onNext(ReleaseMailTokenResponse.newBuilder().setMail("mail@example.com").build());
     verify(mockStreamObserver).onCompleted();
@@ -236,7 +258,8 @@ class AdministrationServiceTest {
   @Test
   void changeMasterKey_digestsMatch_repliesWithDefault() {
     long userId = user.getIdentifier();
-    KeyPatch keyPatch = KeyPatch.newBuilder().setIdentifier(0L).build();
+    UUID keyUuid = UUID.randomUUID();
+    KeyPatch keyPatch = KeyPatch.newBuilder().setUid(String.valueOf(keyUuid)).build();
     when(mockCryptography.validateA2p("prefix")).thenReturn(true);
     when(mockCryptography.validateDigest("suffix")).thenReturn(true);
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
@@ -302,15 +325,20 @@ class AdministrationServiceTest {
     when(mockCryptography.doesDigestMatchHash("digest", "hash")).thenReturn(true);
     when(mockCryptography.generateUacs()).thenReturn("17");
     when(mockAgentAccessor.getIpAddress()).thenReturn("127.0.0.1");
+    UUID mailTokenUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.createMailToken(7L, "127.0.0.1", "user@mail.com", "17"))
-        .thenReturn(new MailToken().setIdentifier(1L));
+        .thenReturn(new MailToken().setUuid(mailTokenUuid));
 
     administrationService.acquireMailToken(
         AcquireMailTokenRequest.newBuilder().setDigest("digest").setMail("user@mail.com").build(),
         mockStreamObserver);
 
     verify(mockMessageBrokerClient).publishMailVc("user@mail.com", "username", "17");
-    verify(mockStreamObserver).onNext(AcquireMailTokenResponse.newBuilder().setTokenId(1L).build());
+    verify(mockStreamObserver)
+        .onNext(
+            AcquireMailTokenResponse.newBuilder()
+                .setTokenUid(String.valueOf(mailTokenUuid))
+                .build());
     verify(mockStreamObserver).onCompleted();
   }
 
@@ -440,8 +468,9 @@ class AdministrationServiceTest {
     when(mockCryptography.generateTts())
         .thenAnswer((invocation) -> String.valueOf(ttsCounter.incrementAndGet()));
     ImmutableList<String> scratchCodes = ImmutableList.of("1", "2", "3", "4", "5");
+    UUID otpParamsUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.createOtpParams(7L, "secret", scratchCodes))
-        .thenReturn(new OtpParams().setId(1L));
+        .thenReturn(new OtpParams().setUuid(otpParamsUuid));
 
     administrationService.generateOtpParams(
         GenerateOtpParamsRequest.getDefaultInstance(), mockStreamObserver);
@@ -449,7 +478,7 @@ class AdministrationServiceTest {
     verify(mockStreamObserver)
         .onNext(
             GenerateOtpParamsResponse.newBuilder()
-                .setOtpParamsId("1")
+                .setOtpParamsUid(String.valueOf(otpParamsUuid))
                 .setSharedSecret("secret")
                 .setKeyUri(
                     "otpauth://totp/parolica.com:username?secret=secret&issuer=parolica.com&algorithm=SHA1&digits=6&period=30")
@@ -460,21 +489,23 @@ class AdministrationServiceTest {
 
   @Test
   void acceptOtpParams_codeMatches_completesSuccessfully() {
-    when(mockAccountOperationsInterface.getOtpParams(7L, 1L))
-        .thenReturn(Optional.of(new OtpParams().setId(1L).setOtpSharedSecret("secret")));
+    UUID otpParamsUuid = UUID.randomUUID();
+    when(mockAccountOperationsInterface.getOtpParams(7L, otpParamsUuid))
+        .thenReturn(
+            Optional.of(new OtpParams().setUuid(otpParamsUuid).setOtpSharedSecret("secret")));
     when(mockCryptography.convertTotp("42")).thenReturn(Optional.of(42));
     when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
     when(mockCryptography.generateTts()).thenReturn("token");
 
     administrationService.acceptOtpParams(
         AcceptOtpParamsRequest.newBuilder()
-            .setOtpParamsId("1")
+            .setOtpParamsUid(String.valueOf(otpParamsUuid))
             .setOtp("42")
             .setYieldTrustedToken(true)
             .build(),
         mockStreamObserver);
 
-    verify(mockAccountOperationsInterface).acceptOtpParams(user.getIdentifier(), 1L);
+    verify(mockAccountOperationsInterface).acceptOtpParams(user.getIdentifier(), otpParamsUuid);
     verify(mockAccountOperationsInterface).createTrustedToken(7L, "token");
     verify(mockStreamObserver)
         .onNext(AcceptOtpParamsResponse.newBuilder().setTrustedToken("token").build());

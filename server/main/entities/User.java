@@ -10,23 +10,29 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.Table;
 import javax.persistence.Version;
 import keyring.server.main.entities.columns.UserState;
 import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 
 @Entity
-@Table(name = "users")
+@Table(
+    name = "users",
+    indexes = {@Index(columnList = "uuid", unique = true)})
 @TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class User {
   public static final long PENDING_USER_EXPIRATION_M = 15;
@@ -35,6 +41,11 @@ public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
+
+  @Column(columnDefinition = "uuid")
+  @ColumnDefault("gen_random_uuid()")
+  @Generated(GenerationTime.INSERT)
+  private UUID uuid;
 
   @CreationTimestamp private Timestamp timestamp;
 
@@ -74,6 +85,7 @@ public class User {
     return identifier;
   }
 
+  // For testing.
   public User setIdentifier(long identifier) {
     this.identifier = identifier;
     return this;

@@ -153,7 +153,11 @@ export const creationEpic: Epic<RootAction, RootAction, RootState> = (action$, s
           const { attrs } = action.payload
           return from(getAdministrationApi().administrationCreateKey({
             password,
-            attrs
+            attrs: {
+              isShadow: attrs.isShadow,
+              parentUid: attrs.parent,
+              isPinned: attrs.isPinned
+            }
           }, {
             headers: {
               [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey!
@@ -161,7 +165,7 @@ export const creationEpic: Epic<RootAction, RootAction, RootState> = (action$, s
           })).pipe(
             switchMap((response: ServiceCreateKeyResponse) => {
               return of(creationSignal(success({
-                identifier: response.identifier!,
+                identifier: response.uid!,
                 attrs,
                 ...extractPassword(action.payload),
                 creationTimeInMillis: Number(response.creationTimeInMillis!)
@@ -192,7 +196,7 @@ export const updationEpic: Epic<RootAction, RootAction, RootState> = (action$, s
         const target = userKeys[index]
         return from(getAdministrationApi().administrationUpdateKey({
           key: {
-            identifier: action.payload.identifier,
+            uid: action.payload.identifier,
             password
           }
         }, {
@@ -222,7 +226,7 @@ export const deletionEpic: Epic<RootAction, RootAction, RootState> = (action$, s
   mergeMap(([action, state]) => concat(
     of(deletionSignal(indicator(OperationIndicator.WORKING), action.meta)),
     from(getAdministrationApi().administrationDeleteKey({
-      identifier: action.payload.identifier
+      uid: action.payload.identifier
     }, {
       headers: {
         [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey!
@@ -255,7 +259,7 @@ export const shadowElectionEpic: Epic<RootAction, RootAction, RootState> = (acti
   mergeMap(([action, state]) => concat(
     of(shadowElectionSignal(indicator(OperationIndicator.WORKING), action.meta)),
     from(getAdministrationApi().administrationElectShadow({
-      identifier: action.payload
+      uid: action.payload
     }, {
       headers: {
         [SESSION_TOKEN_HEADER_NAME]: state.user.account.sessionKey!
@@ -271,7 +275,7 @@ export const shadowElectionEpic: Epic<RootAction, RootAction, RootState> = (acti
         return of(shadowElectionSignal(success({
           origin: identifier,
           result: {
-            identifier: response.parent!,
+            identifier: response.parentUid!,
             attrs: {
               isShadow: false,
               parent: NIL_KEY_ID,
@@ -280,7 +284,7 @@ export const shadowElectionEpic: Epic<RootAction, RootAction, RootState> = (acti
             ...extractPassword(userKeys[index]),
             creationTimeInMillis: userKeys[index].creationTimeInMillis
           },
-          obsolete: response.deletedShadows!
+          obsolete: response.deletedShadowUids!
         }), action.meta))
       })
     )
@@ -295,7 +299,7 @@ export const keyPinTogglingEpic: Epic<RootAction, RootAction, RootState> = (acti
   mergeMap(([action, state]) => concat(
     of(keyPinTogglingSignal(indicator(OperationIndicator.WORKING), action.meta)),
     from(getAdministrationApi().administrationTogglePin({
-      identifier: action.payload.identifier,
+      uid: action.payload.identifier,
       isPinned: action.payload.isPinned
     }, {
       headers: {

@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.Entity;
@@ -20,11 +21,17 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 
 @Entity
 @Table(
     name = "mail_tokens",
-    indexes = {@Index(columnList = "user_identifier"), @Index(columnList = "ip_address")})
+    indexes = {
+      @Index(columnList = "user_identifier"),
+      @Index(columnList = "ip_address"),
+      @Index(columnList = "uuid", unique = true)
+    })
 public class MailToken {
   public static final long MAIL_TOKEN_EXPIRATION_M = 10;
   public static final long MAIL_TOKEN_STORAGE_EVICTION_H = 1;
@@ -34,6 +41,11 @@ public class MailToken {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
+
+  @Column(columnDefinition = "uuid")
+  @ColumnDefault("gen_random_uuid()")
+  @Generated(GenerationTime.INSERT)
+  private UUID uuid;
 
   @CreationTimestamp private Timestamp timestamp;
 
@@ -67,11 +79,15 @@ public class MailToken {
     return identifier;
   }
 
-  public MailToken setIdentifier(long identifier) {
-    this.identifier = identifier;
-    return this;
+  public UUID getUuid() {
+    return uuid;
   }
 
+  // For testing.
+  public MailToken setUuid(UUID uuid) {
+    this.uuid = uuid;
+    return this;
+  }
   public Instant getTimestamp() {
     return timestamp.toInstant();
   }

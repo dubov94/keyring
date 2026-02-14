@@ -266,3 +266,55 @@ ALTER TABLE "public"."users" ADD COLUMN "inactivity_reminders_iso" TEXT [];
 -- preconditions onFail:MARK_RAN
 -- precondition-sql-check expectedResult:1 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'feature_prompts' and column_name = 'release'
 ALTER TABLE "public"."feature_prompts" DROP COLUMN "release";
+
+-- changeset liquibase:39
+-- comment Standardizes condition naming.
+ALTER TABLE "public"."otp_tokens" RENAME CONSTRAINT "fk1u2jwse5b3wdxuvhk37jwtaxp" TO "otp_tokens_users_fkey";
+ALTER TABLE "public"."mail_tokens" RENAME CONSTRAINT "fk4bho6q1wvhvj71c4mlboqc2we" TO "mail_tokens_users_fkey";
+ALTER TABLE "public"."otp_params" RENAME CONSTRAINT "fk4n8xrfcqrlgwfbmkxqw28e6u0" TO "otp_params_users_fkey";
+ALTER TABLE "public"."keys" RENAME CONSTRAINT "fk9bpkeay3gjqgj6qsh1usbmkwe" TO "keys_users_fkey";
+ALTER TABLE "public"."sessions" RENAME CONSTRAINT "fkm4okt87wyku2rji43sd4yrkym" TO "sessions_users_fkey";
+ALTER TABLE "public"."keys" RENAME CONSTRAINT "fko76l9bbtm9ne8jkl824tx8oub" TO "keys_parent_fkey";
+ALTER TABLE "public"."feature_prompts" RENAME CONSTRAINT "fkstt2d96538kdhgl2qhiouhep3" TO "feature_prompts_users_fkey";
+ALTER TABLE "public"."otp_tokens" RENAME CONSTRAINT "ukepg9lkm4ggrlj2daic3l3i2vw" TO "otp_tokens_user_value_key";
+ALTER TABLE "public"."users" RENAME CONSTRAINT "uk_r43af9ap4edm43mmtq01oddj6" TO "users_username_key";
+ALTER INDEX "public"."idx8uiomr1kpiydl6yyifyqlstw2" RENAME TO "keys_user_identifier_index";
+ALTER INDEX "public"."idx81lj69y60lms7f7gvmn186acw" RENAME TO "keys_parent_identifier_index";
+ALTER INDEX "public"."idx3t5hq5fvd7r5qqmqfggo8uu2m" RENAME TO "mail_tokens_user_identifier_index";
+ALTER INDEX "public"."idxb9h4of0nvxfsur7tcsdyngm2y" RENAME TO "otp_params_user_identifier_index";
+ALTER INDEX "public"."idxpuwlxukecumjygkgefdeob3ol" RENAME TO "otp_tokens_user_identifier_index";
+ALTER INDEX "public"."idxndl4t14kpseeq8gi0x3h4034k" RENAME TO "sessions_user_identifier_index";
+ALTER INDEX "public"."idxl5uyiwnyq34h45vftpj88ganp" RENAME TO "mail_tokens_ip_address_index";
+
+-- changeset liquibase:40
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'users' and column_name = 'uuid'
+ALTER TABLE "public"."users" ADD COLUMN "uuid" UUID DEFAULT gen_random_uuid() NOT NULL;
+
+-- changeset liquibase:41
+CREATE UNIQUE INDEX IF NOT EXISTS "users_uuid_index" ON "public"."users" ("uuid");
+
+-- changeset liquibase:42
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'keys' and column_name = 'uuid'
+ALTER TABLE "public"."keys" ADD COLUMN "uuid" UUID DEFAULT gen_random_uuid() NOT NULL;
+
+-- changeset liquibase:43
+CREATE UNIQUE INDEX IF NOT EXISTS "keys_uuid_index" ON "public"."keys" ("uuid");
+
+-- changeset liquibase:44
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'mail_tokens' and column_name = 'uuid'
+ALTER TABLE "public"."mail_tokens" ADD COLUMN "uuid" UUID DEFAULT gen_random_uuid() NOT NULL;
+
+-- changeset liquibase:45
+CREATE UNIQUE INDEX IF NOT EXISTS "mail_tokens_uuid_index" ON "public"."mail_tokens" ("uuid");
+
+-- changeset liquibase:46
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'otp_params' and column_name = 'uuid'
+ALTER TABLE "public"."otp_params" ADD COLUMN "uuid" UUID DEFAULT gen_random_uuid() NOT NULL;
+
+-- changeset liquibase:47
+CREATE UNIQUE INDEX IF NOT EXISTS "otp_params_uuid_index" ON "public"."otp_params" ("uuid");
+

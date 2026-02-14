@@ -4,6 +4,7 @@ import io.vavr.Tuple2;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import keyring.server.main.entities.FeaturePrompts;
 import keyring.server.main.entities.MailToken;
@@ -21,11 +22,11 @@ public interface AccountOperationsInterface {
 
   MailToken createMailToken(long userId, String ipAddress, String mail, String code);
 
-  Optional<MailToken> getMailToken(long userId, long tokenId);
+  Optional<MailToken> getMailToken(long userId, UUID tokenUid);
 
   Optional<MailToken> latestMailToken(long userIdentifier);
 
-  void releaseMailToken(long userId, long tokenId);
+  void releaseMailToken(long userId, UUID tokenUid);
 
   Optional<User> getUserByName(String username);
 
@@ -50,9 +51,9 @@ public interface AccountOperationsInterface {
 
   OtpParams createOtpParams(long userId, String sharedSecret, List<String> scratchCodes);
 
-  Optional<OtpParams> getOtpParams(long userId, long otpParamsId);
+  Optional<OtpParams> getOtpParams(long userId, UUID otpParamsUid);
 
-  void acceptOtpParams(long userId, long otpParamsId);
+  void acceptOtpParams(long userId, UUID otpParamsUid);
 
   void createTrustedToken(long userId, String otpToken);
 
@@ -77,5 +78,5 @@ public interface AccountOperationsInterface {
   }
 
   Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeMailToken(
-      long userId, long tokenId, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant);
+      long userId, UUID tokenUid, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant);
 }

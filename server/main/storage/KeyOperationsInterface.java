@@ -2,6 +2,7 @@ package keyring.server.main.storage;
 
 import io.vavr.Tuple2;
 import java.util.List;
+import java.util.UUID;
 import keyring.server.main.entities.Key;
 import keyring.server.main.proto.service.KeyAttrs;
 import keyring.server.main.proto.service.KeyPatch;
@@ -16,9 +17,9 @@ public interface KeyOperationsInterface {
 
   void updateKey(long sessionId, KeyPatch proto);
 
-  void deleteKey(long sessionId, long keyId);
+  void deleteKey(long sessionId, UUID keyUid);
 
-  Tuple2<Key, List<Key>> electShadow(long sessionId, long shadowId);
+  Tuple2<Key, List<Key>> electShadow(long sessionId, UUID shadowUid);
 
-  void togglePin(long sessionId, long keyId, boolean isPinned);
+  void togglePin(long sessionId, UUID keyUid, boolean isPinned);
 }

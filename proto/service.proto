@@ -17,6 +17,8 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
+    reserved 3;
+
     enum Error {
         NONE = 0;
         NAME_TAKEN = 1;
@@ -24,7 +26,7 @@ message RegisterResponse {
 
     Error error = 1;
     string session_key = 2;
-    int64 mail_token_id = 3;
+    string mail_token_uid = 4;
 }
 
 message GetSaltRequest {
@@ -57,8 +59,10 @@ message FeaturePrompt {
 }
 
 message MailVerification {
+    reserved 2;
+
     bool required = 1;
-    int64 token_id = 2;
+    string token_uid = 3;
 }
 
 message UserData {
@@ -142,18 +146,22 @@ message AcquireMailTokenRequest {
 }
 
 message AcquireMailTokenResponse {
+    reserved 2;
+
     enum Error {
         NONE = 0;
         INVALID_DIGEST = 1;
     }
 
     Error error = 1;
-    int64 token_id = 2;
+    string token_uid = 3;
 }
 
 message ReleaseMailTokenRequest {
+    reserved 2;
+
     string code = 1;
-    int64 token_id = 2;
+    string token_uid = 3;
 }
 
 message ReleaseMailTokenResponse {
@@ -180,20 +188,26 @@ message Password {
 }
 
 message KeyAttrs {
+    reserved 2;
+
     bool is_shadow = 1;
-    int64 parent = 2;
+    string parent_uid = 4;
     bool is_pinned = 3;
 }
 
 message KeyProto {
-    int64 identifier = 1;
+    reserved 1;
+
+    string uid = 5;
     Password password = 2;
     KeyAttrs attrs = 3;
     int64 creation_time_in_millis = 4;
 }
 
 message KeyPatch {
-    int64 identifier = 1;
+    reserved 1;
+
+    string uid = 3;
     Password password = 2;
 }
 
@@ -211,7 +225,9 @@ message CreateKeyRequest {
 }
 
 message CreateKeyResponse {
-    int64 identifier = 1;
+    reserved 1;
+
+    string uid = 3;
     int64 creation_time_in_millis = 2;
 }
 
@@ -230,23 +246,31 @@ message UpdateKeyResponse {
 }
 
 message DeleteKeyRequest {
-    int64 identifier = 1;
+    reserved 1;
+
+    string uid = 2;
 }
 
 message DeleteKeyResponse {
 }
 
 message ElectShadowRequest {
-    int64 identifier = 1;
+    reserved 1;
+
+    string uid = 2;
 }
 
 message ElectShadowResponse {
-    int64 parent = 1;
-    repeated int64 deleted_shadows = 2;
+    reserved 1;
+
+    string parent_uid = 3;
+    repeated string deleted_shadow_uids = 2;
 }
 
 message TogglePinRequest {
-    int64 identifier = 1;
+    reserved 1;
+
+    string uid = 3;
     bool is_pinned = 2;
 }
 
@@ -332,14 +356,18 @@ message GetRecentSessionsResponse {
 message GenerateOtpParamsRequest {}
 
 message GenerateOtpParamsResponse {
-    string otp_params_id = 4;
+    reserved 4;
+
+    string otp_params_uid = 5;
     string shared_secret = 1;
     repeated string scratch_codes = 2;
     string key_uri = 3;
 }
 
 message AcceptOtpParamsRequest {
-    string otp_params_id = 1;
+    reserved 1;
+
+    string otp_params_uid = 4;
     string otp = 2;
     bool yield_trusted_token = 3;
 }

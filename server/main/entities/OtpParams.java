@@ -4,6 +4,7 @@ import com.vladmihalcea.hibernate.type.array.StringArrayType;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,16 +13,19 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 
 @Entity
 @Table(
     name = "otp_params",
-    indexes = {@Index(columnList = "user_identifier")})
+    indexes = {@Index(columnList = "user_identifier"), @Index(columnList = "uuid", unique = true)})
 @TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class OtpParams {
   public static final long OTP_PARAMS_STORAGE_EVICTION_M = 10;
@@ -30,6 +34,11 @@ public class OtpParams {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long id;
+
+  @Column(columnDefinition = "uuid")
+  @ColumnDefault("gen_random_uuid()")
+  @Generated(GenerationTime.INSERT)
+  private UUID uuid;
 
   @CreationTimestamp
   @Column(name = "creation_timestamp")
@@ -51,8 +60,13 @@ public class OtpParams {
     return id;
   }
 
-  public OtpParams setId(long id) {
-    this.id = id;
+  public UUID getUuid() {
+    return uuid;
+  }
+
+  // For testing.
+  public OtpParams setUuid(UUID uuid) {
+    this.uuid = uuid;
     return this;
   }
 

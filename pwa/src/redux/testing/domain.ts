@@ -9,14 +9,14 @@ import { defaultMailVerification } from '../modules/user/account/actions'
 import { DepotActivationData } from '../modules/depot/actions'
 
 export const createKeyProto = (partial: DeepPartial<ServiceKeyProto>): ServiceKeyProto => merge({
-  identifier: '',
+  uid: '',
   password: {
     value: '',
     tags: []
   },
   attrs: {
     isShadow: false,
-    parent: NIL_KEY_ID,
+    parentUid: NIL_KEY_ID,
     isPinned: false
   },
   creationTimeInMillis: ''

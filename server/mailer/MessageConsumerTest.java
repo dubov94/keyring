@@ -11,20 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 @ExtendWith(MockitoExtension.class)
-@Testcontainers
 class MessageConsumerTest {
-  @Container
-  private GenericContainer redisContainer =
-      new GenericContainer(DockerImageName.parse("redis")).withExposedPorts(6379);
-
   private static final String MAIL = "mail@example.com";
   private static final String USERNAME = "username";
   private static final String CODE = "0";
@@ -44,10 +35,7 @@ class MessageConsumerTest {
     messageBrokerClient = new MessageBrokerClient(jedisPool);
     messageConsumer =
         new MessageConsumer(
-            mockEnvironment,
-            jedisPool,
-            MoreExecutors.newDirectExecutorService(),
-            mockMailClient);
+            mockEnvironment, jedisPool, MoreExecutors.newDirectExecutorService(), mockMailClient);
   }
 
   @Test

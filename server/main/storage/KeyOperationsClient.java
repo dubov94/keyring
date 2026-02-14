@@ -6,7 +6,11 @@ import io.vavr.Tuple2;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import keyring.server.main.aspects.Annotations.ActivatedSession;
 import keyring.server.main.aspects.Annotations.ContextualEntityManager;
 import keyring.server.main.aspects.Annotations.LockEntity;
@@ -37,10 +41,15 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     return maybeSession.get();
   }
 
-  private Key mustGetKey(long keyId) {
-    Optional<Key> maybeKey = Optional.ofNullable(entityManager.find(Key.class, keyId));
+  private Key mustGetKey(UUID keyUuid) {
+    CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<Key> criteriaQuery = criteriaBuilder.createQuery(Key.class);
+    Root<Key> root = criteriaQuery.from(Key.class);
+    criteriaQuery.select(root).where(criteriaBuilder.equal(root.get(Key_.uuid), keyUuid));
+    Optional<Key> maybeKey =
+        entityManager.createQuery(criteriaQuery).getResultList().stream().findFirst();
     if (!maybeKey.isPresent()) {
-      throw new IllegalArgumentException(String.format("`Key` %d does not exist", keyId));
+      throw new IllegalArgumentException(String.format("`Key` %s does not exist", keyUuid));
     }
     return maybeKey.get();
   }
@@ -75,20 +84,16 @@ public class KeyOperationsClient implements KeyOperationsInterface {
     if (attrs.getIsShadow()) {
       newKey.setIsShadow(true);
     }
-    long attrsParent = attrs.getParent();
-    if (attrsParent != 0) {
-      Key parent = entityManager.find(Key.class, attrsParent);
-      if (parent == null) {
-        throw new IllegalArgumentException(
-            String.format("Referenced parent %d does not exist", attrsParent));
-      }
+    String attrsParentUid = attrs.getParentUid();
+    if (!attrsParentUid.isEmpty()) {
+      Key parent = mustGetKey(UUID.fromString(attrsParentUid));
       if (!Objects.equals(parent.getUser().getIdentifier(), user.getIdentifier())) {
         throw new IllegalArgumentException(
-            String.format("Parent %d does not belong to the user", attrsParent));
+            String.format("Parent %s does not belong to the user", attrsParentUid));
       }
       if (parent.getIsShadow()) {
         throw new IllegalArgumentException(
-            String.format("Cannot create a shadow for %d as it's also a shadow", attrsParent));
+            String.format("Cannot create a shadow for %s as it's also a shadow", attrsParentUid));
       }
       newKey.setParent(parent);
     }
@@ -99,7 +104,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   @Override
   @WithEntityTransaction
   public Key createKey(long sessionId, Password content, KeyAttrs attrs) {
-    if (!attrs.getIsShadow() && attrs.getParent() != 0) {
+    if (!attrs.getIsShadow() && !attrs.getParentUid().isEmpty()) {
       throw new IllegalArgumentException(String.format("Shadows must have a non-nil parent"));
     }
     Session session = mustGetSession(sessionId);
@@ -131,7 +136,7 @@ public class KeyOperationsClient implements KeyOperationsInterface {
   @WithEntityTransaction
   public void updateKey(long sessionId, KeyPatch patch) {
     Session session = mustGetSession(sessionId);
-    Key key = mustGetKey(patch.getIdentifier());
+    Key key = mustGetKey(UUID.fromString(patch.getUid()));
     long requesterId = session.getUser().getIdentifier();
     if (!Objects.equals(key.getUser().getIdentifier(), requesterId)) {
       throw new IllegalArgumentException(
@@ -148,9 +153,9 @@ public class KeyOperationsClient implements KeyOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public void deleteKey(long sessionId, long keyId) {
+  public void deleteKey(long sessionId, UUID keyUuid) {
     Session session = mustGetSession(sessionId);
-    Key key = mustGetKey(keyId);
+    Key key = mustGetKey(keyUuid);
     long requesterId = session.getUser().getIdentifier();
     if (!Objects.equals(key.getUser().getIdentifier(), requesterId)) {
       throw new IllegalArgumentException(
@@ -188,9 +193,9 @@ public class KeyOperationsClient implements KeyOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public Tuple2<Key, List<Key>> electShadow(long sessionId, long shadowId) {
+  public Tuple2<Key, List<Key>> electShadow(long sessionId, UUID shadowUid) {
     Session session = mustGetSession(sessionId);
-    Key target = mustGetKey(shadowId);
+    Key target = mustGetKey(shadowUid);
     long requesterId = session.getUser().getIdentifier();
     if (!Objects.equals(target.getUser().getIdentifier(), requesterId)) {
       throw new IllegalArgumentException(
@@ -209,9 +214,9 @@ public class KeyOperationsClient implements KeyOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public void togglePin(long sessionId, long keyId, boolean isPinned) {
+  public void togglePin(long sessionId, UUID keyUid, boolean isPinned) {
     Session session = mustGetSession(sessionId);
-    Key key = mustGetKey(keyId);
+    Key key = mustGetKey(keyUid);
     long requesterId = session.getUser().getIdentifier();
     if (!Objects.equals(key.getUser().getIdentifier(), requesterId)) {
       throw new IllegalArgumentException(

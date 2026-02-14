@@ -116,7 +116,7 @@ describe('importEpic', () => {
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceImportKeysResponse>{
       keys: [createKeyProto({
-        identifier: 'identifier',
+        uid: 'identifier',
         password: {
           value: '$value',
           tags: ['$tag']
@@ -308,7 +308,7 @@ describe('deletionEpic', () => {
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationDeleteKey(
-      deepEqual({ identifier: 'identifier' }),
+      deepEqual({ uid: 'identifier' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceDeleteKeyResponse>{})
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
@@ -334,7 +334,7 @@ describe('keyPinTogglingEpic', () => {
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationTogglePin({
-      identifier: 'identifier',
+      uid: 'identifier',
       isPinned: true
     })).thenResolve(<ServiceTogglePinResponse>{})
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
@@ -450,7 +450,7 @@ describe('shadowElectionEpic', () => {
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationElectShadow(
-      deepEqual({ identifier: 'shadow' }),
+      deepEqual({ uid: 'shadow' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceElectShadowResponse>{
       parent: 'parent',

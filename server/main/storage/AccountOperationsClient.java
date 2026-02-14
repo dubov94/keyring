@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import javax.persistence.EntityManager;
@@ -99,9 +100,9 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public Optional<MailToken> getMailToken(long userId, long tokenId) {
+  public Optional<MailToken> getMailToken(long userId, UUID tokenUid) {
     return Queries.findManyToOne(entityManager, MailToken.class, MailToken_.user, userId).stream()
-        .filter(mailToken -> Objects.equals(mailToken.getIdentifier(), tokenId))
+        .filter(mailToken -> Objects.equals(mailToken.getUuid(), tokenUid))
         .filter(mailToken -> mailToken.isAvailable(chronometry))
         .findFirst();
   }
@@ -121,8 +122,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     if (!Objects.equals(mailTokenState, MailTokenState.MAIL_TOKEN_PENDING)) {
       throw new IllegalArgumentException(
           String.format(
-              "MailToken %d cannot be released, its state is %s",
-              mailToken.getIdentifier(), mailTokenState));
+              "MailToken %s cannot be released, its state is %s",
+              mailToken.getUuid(), mailTokenState));
     }
     mailToken.setState(MailTokenState.MAIL_TOKEN_ACCEPTED);
     entityManager.persist(mailToken);
@@ -147,17 +148,16 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public void releaseMailToken(long userId, long tokenId) {
-    Optional<MailToken> maybeMailToken =
-        Optional.ofNullable(entityManager.find(MailToken.class, tokenId));
+  public void releaseMailToken(long userId, UUID tokenUid) {
+    Optional<MailToken> maybeMailToken = getMailToken(userId, tokenUid);
     if (!maybeMailToken.isPresent()) {
-      throw new IllegalArgumentException(String.format("`MailToken` %d does not exist", tokenId));
+      throw new IllegalArgumentException(String.format("`MailToken` %s does not exist", tokenUid));
     }
     MailToken mailToken = maybeMailToken.get();
     User user = mailToken.getUser();
     if (!Objects.equals(user.getIdentifier(), userId)) {
       throw new IllegalArgumentException(
-          String.format("`MailToken` %d does not belong to user %d", tokenId, userId));
+          String.format("`MailToken` %s does not belong to user %d", tokenUid, userId));
     }
     _releaseMailToken(user, mailToken);
   }
@@ -197,13 +197,14 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     entityManager.persist(user);
     // Concurrent `Key` creation is blocked by `Session` invalidation above.
     List<Key> keys = Queries.findManyToOne(entityManager, Key.class, Key_.user, userId);
-    Map<Long, Password> keyIdToPatch =
-        patches.stream().collect(toMap(KeyPatch::getIdentifier, KeyPatch::getPassword));
+    Map<UUID, Password> keyUuidToPatch =
+        patches.stream()
+            .collect(toMap(patch -> UUID.fromString(patch.getUid()), KeyPatch::getPassword));
     for (Key key : keys) {
-      long keyId = key.getIdentifier();
-      Optional<Password> maybePatch = Optional.ofNullable(keyIdToPatch.get(keyId));
+      UUID keyUuid = key.getUuid();
+      Optional<Password> maybePatch = Optional.ofNullable(keyUuidToPatch.get(keyUuid));
       if (!maybePatch.isPresent()) {
-        throw new IllegalArgumentException(String.format("Missing `KeyPatch` for key %d", keyId));
+        throw new IllegalArgumentException(String.format("Missing `KeyPatch` for key %s", keyUuid));
       }
       Password patch = maybePatch.get();
       key.mergeFromPassword(patch);
@@ -393,9 +394,9 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public Optional<OtpParams> getOtpParams(long userId, long otpParamsId) {
+  public Optional<OtpParams> getOtpParams(long userId, UUID otpParamsUid) {
     return Queries.findManyToOne(entityManager, OtpParams.class, OtpParams_.user, userId).stream()
-        .filter(otpParams -> Objects.equals(otpParams.getId(), otpParamsId))
+        .filter(otpParams -> Objects.equals(otpParams.getUuid(), otpParamsUid))
         .findFirst();
   }
 
@@ -416,17 +417,16 @@ public class AccountOperationsClient implements AccountOperationsInterface {
 
   @Override
   @WithEntityTransaction
-  public void acceptOtpParams(long userId, long otpParamsId) {
-    Optional<OtpParams> maybeOtpParams =
-        Optional.ofNullable(entityManager.find(OtpParams.class, otpParamsId));
+  public void acceptOtpParams(long userId, UUID otpParamsUid) {
+    Optional<OtpParams> maybeOtpParams = getOtpParams(userId, otpParamsUid);
     if (!maybeOtpParams.isPresent()) {
-      throw new IllegalArgumentException(String.format("`OtpParams` %d do not exist", otpParamsId));
+      throw new IllegalArgumentException(String.format("`OtpParams` %s do not exist", otpParamsUid));
     }
     OtpParams otpParams = maybeOtpParams.get();
     User user = otpParams.getUser();
     if (!Objects.equals(user.getIdentifier(), userId)) {
       throw new IllegalArgumentException(
-          String.format("`OtpParams` %d do not belong to user %d", otpParamsId, userId));
+          String.format("`OtpParams` %s do not belong to user %d", otpParamsUid, userId));
     }
     _acceptOtpParams(user, otpParams);
   }
@@ -589,8 +589,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   @Override
   @WithEntityTransaction
   public Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeMailToken(
-      long userId, long tokenId, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant) {
-    Optional<MailToken> maybeMailToken = getMailToken(userId, tokenId);
+      long userId, UUID tokenUid, BiFunction<Instant, Integer, Instant> nextAvailabilityInstant) {
+    Optional<MailToken> maybeMailToken = getMailToken(userId, tokenUid);
     if (!maybeMailToken.isPresent()) {
       return Tuple.of(MtNudgeStatus.NOT_FOUND, Optional.empty());
     }

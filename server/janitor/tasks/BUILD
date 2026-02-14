@@ -39,9 +39,7 @@ woven_junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
-        "@maven//:org_testcontainers_junit_jupiter",
         "@maven//:org_testcontainers_postgresql",
-        "@maven//:org_testcontainers_testcontainers",
     ],
 )
 
@@ -82,9 +80,7 @@ woven_junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
-        "@maven//:org_testcontainers_junit_jupiter",
         "@maven//:org_testcontainers_postgresql",
-        "@maven//:org_testcontainers_testcontainers",
     ],
 )
 
@@ -123,9 +119,7 @@ woven_junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
-        "@maven//:org_testcontainers_junit_jupiter",
         "@maven//:org_testcontainers_postgresql",
-        "@maven//:org_testcontainers_testcontainers",
     ],
 )
 
@@ -177,9 +171,7 @@ woven_junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
-        "@maven//:org_testcontainers_junit_jupiter",
         "@maven//:org_testcontainers_postgresql",
-        "@maven//:org_testcontainers_testcontainers",
     ],
 )
 
@@ -258,8 +250,6 @@ woven_junit5_test(
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_aspectj_aspectjrt",
         "@maven//:org_mockito_mockito_core",
-        "@maven//:org_testcontainers_junit_jupiter",
         "@maven//:org_testcontainers_postgresql",
-        "@maven//:org_testcontainers_testcontainers",
     ],
 )

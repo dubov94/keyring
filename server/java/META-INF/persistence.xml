@@ -58,7 +58,7 @@
         <class>keyring.server.main.entities.UserStateConverter</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.testcontainers.jdbc.ContainerDatabaseDriver"/>
-            <property name="javax.persistence.jdbc.url" value="jdbc:tc:postgresql:///keyring"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:tc:postgresql:16:///keyring"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.hbm2ddl.auto" value="create"/>
             <property name="hibernate.show_sql" value="true"/>

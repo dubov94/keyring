@@ -92,7 +92,7 @@ export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action
                           parametrization,
                           encryptionKey,
                           sessionKey: response.sessionKey!,
-                          mailTokenId: response.mailTokenId!
+                          mailTokenId: response.mailTokenUid!
                         })))
                       default:
                         return of(registrationSignal(failure(response.error!)))
@@ -127,7 +127,7 @@ const decodeUserData = (encryptionKey: string, userData: ServiceUserData): Obser
         featurePrompts: userData.featurePrompts!,
         mailVerification: mv ? {
           required: mv.required!,
-          tokenId: mv.tokenId!
+          tokenId: mv.tokenUid!
         } : defaultMailVerification(),
         mail: userData.mail || null,
         userKeys
@@ -267,6 +267,17 @@ export const provideOtpEpic: Epic<RootAction, RootAction, RootState> = (action$)
 
 export const displayAuthnOtpProvisionExceptionsEpic = createDisplayExceptionsEpic(authnOtpProvisionSignal)
 
+const normalizeParentId = (id?: string): string => {
+  if (!id) {
+    return NIL_KEY_ID
+  }
+  // Leftover from the migration to UUIDs.
+  if (id === '0') {
+    return NIL_KEY_ID
+  }
+  return id
+}
+
 export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf([logInViaDepot, authnViaDepotReset])),
   withLatestFrom(state$),
@@ -300,7 +311,7 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
                       tags: keyPartial.tags!,
                       attrs: {
                         isShadow: keyPartial.attrs?.isShadow || false,
-                        parent: keyPartial.attrs?.parent || NIL_KEY_ID,
+                        parent: normalizeParentId(keyPartial.attrs?.parent),
                         isPinned: keyPartial.attrs?.isPinned || false
                       },
                       creationTimeInMillis: keyPartial.creationTimeInMillis || 0

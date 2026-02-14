@@ -13,6 +13,7 @@ import io.paveldubov.turnstile.TurnstileResponse;
 import io.paveldubov.turnstile.TurnstileValidator;
 import io.vavr.Tuple;
 import java.util.Optional;
+import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import keyring.server.main.Cryptography;
@@ -139,9 +140,10 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
     when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockCryptography.generateUacs()).thenReturn("0");
+    UUID mailTokenUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.createUser(
             "username", "salt", "hash", IP_ADDRESS, "mail@example.com", "0"))
-        .thenReturn(Tuple.of(new User().setIdentifier(1L), new MailToken().setIdentifier(2L)));
+        .thenReturn(Tuple.of(new User().setIdentifier(1L), new MailToken().setUuid(mailTokenUuid)));
     String sessionToken = "token";
     when(mockCryptography.generateTts()).thenReturn(sessionToken);
     when(mockAccountOperationsInterface.createSession(1L, 0L, IP_ADDRESS, USER_AGENT, VERSION))
@@ -170,7 +172,10 @@ class AuthenticationServiceTest {
     verify(mockMessageBrokerClient).publishMailVc("mail@example.com", "username", "0");
     verify(mockStreamObserver)
         .onNext(
-            RegisterResponse.newBuilder().setSessionKey(sessionToken).setMailTokenId(2L).build());
+            RegisterResponse.newBuilder()
+                .setSessionKey(sessionToken)
+                .setMailTokenUid(String.valueOf(mailTokenUuid))
+                .build());
     verify(mockStreamObserver).onCompleted();
   }
 
@@ -274,8 +279,9 @@ class AuthenticationServiceTest {
     when(mockKeyValueClient.createSession(sessionToken, 1L, IP_ADDRESS, 3L))
         .thenReturn(KvSession.getDefaultInstance());
     when(mockAccountOperationsInterface.getFeaturePrompts(1L)).thenReturn(new FeaturePrompts());
+    UUID mailTokenUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.latestMailToken(1L))
-        .thenReturn(Optional.of(new MailToken().setIdentifier(2L)));
+        .thenReturn(Optional.of(new MailToken().setUuid(mailTokenUuid)));
 
     authenticationService.logIn(
         LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),
@@ -292,7 +298,9 @@ class AuthenticationServiceTest {
                     UserData.newBuilder()
                         .setSessionKey(sessionToken)
                         .setMailVerification(
-                            MailVerification.newBuilder().setRequired(true).setTokenId(2L)))
+                            MailVerification.newBuilder()
+                                .setRequired(true)
+                                .setTokenUid(String.valueOf(mailTokenUuid))))
                 .build());
     verify(mockStreamObserver).onCompleted();
   }
@@ -360,8 +368,9 @@ class AuthenticationServiceTest {
     when(mockKeyValueClient.createSession("token", 1L, IP_ADDRESS, 3L))
         .thenReturn(KvSession.getDefaultInstance());
     when(mockAccountOperationsInterface.getFeaturePrompts(1L)).thenReturn(new FeaturePrompts());
+    UUID mailTokenUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.latestMailToken(1L))
-        .thenReturn(Optional.of(new MailToken().setIdentifier(2L)));
+        .thenReturn(Optional.of(new MailToken().setUuid(mailTokenUuid)));
 
     authenticationService.provideOtp(
         ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
@@ -379,7 +388,9 @@ class AuthenticationServiceTest {
                     UserData.newBuilder()
                         .setSessionKey("token")
                         .setMailVerification(
-                            MailVerification.newBuilder().setRequired(true).setTokenId(2L)))
+                            MailVerification.newBuilder()
+                                .setRequired(true)
+                                .setTokenUid(String.valueOf(mailTokenUuid))))
                 .build());
     verify(mockStreamObserver).onCompleted();
   }
@@ -421,8 +432,9 @@ class AuthenticationServiceTest {
     when(mockKeyValueClient.createSession("token", 1L, IP_ADDRESS, 3L))
         .thenReturn(KvSession.getDefaultInstance());
     when(mockAccountOperationsInterface.getFeaturePrompts(1L)).thenReturn(new FeaturePrompts());
+    UUID mailTokenUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.latestMailToken(1L))
-        .thenReturn(Optional.of(new MailToken().setIdentifier(97L)));
+        .thenReturn(Optional.of(new MailToken().setUuid(mailTokenUuid)));
 
     authenticationService.provideOtp(
         ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
@@ -441,7 +453,9 @@ class AuthenticationServiceTest {
                     UserData.newBuilder()
                         .setSessionKey("token")
                         .setMailVerification(
-                            MailVerification.newBuilder().setRequired(true).setTokenId(97L)))
+                            MailVerification.newBuilder()
+                                .setRequired(true)
+                                .setTokenUid(String.valueOf(mailTokenUuid))))
                 .build());
     verify(mockStreamObserver).onCompleted();
   }

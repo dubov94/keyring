@@ -24,16 +24,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.utility.DockerImageName;
 
 @ExtendWith(MockitoExtension.class)
 final class StaleAccountExpirationTest {
-  @Container
-  private static final PostgreSQLContainer<?> postgresContainer =
-      new PostgreSQLContainer<>(DockerImageName.parse("postgres"));
-
   @ContextualEntityManager private EntityManager entityManager;
 
   private StaleAccountExpiration staleAccountExpiration;

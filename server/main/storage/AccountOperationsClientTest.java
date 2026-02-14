@@ -39,18 +39,9 @@ import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
 
 @ExtendWith(MockitoExtension.class)
-@Testcontainers
 class AccountOperationsClientTest {
-  @Container
-  private static final PostgreSQLContainer<?> postgresContainer =
-      new PostgreSQLContainer<>(DockerImageName.parse("postgres"));
-
   private static final String IP_ADDRESS = "127.0.0.1";
 
   private Supplier<Instant> nowSupplier = Instant::now;
@@ -117,9 +108,9 @@ class AccountOperationsClientTest {
     Tuple2<User, MailToken> user =
         accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "", "A");
     long wrongUserId = user._1.getIdentifier() + 1;
-    long tokenId = user._2.getIdentifier();
+    UUID tokenUuid = user._2.getUuid();
 
-    assertFalse(accountOperationsClient.getMailToken(wrongUserId, tokenId).isPresent());
+    assertFalse(accountOperationsClient.getMailToken(wrongUserId, tokenUuid).isPresent());
   }
 
   @Test
@@ -129,9 +120,9 @@ class AccountOperationsClientTest {
         accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "", "A");
     nowSupplier = () -> Instant.MAX;
     long userId = user._1.getIdentifier();
-    long tokenId = user._2.getIdentifier();
+    UUID tokenUuid = user._2.getUuid();
 
-    assertFalse(accountOperationsClient.getMailToken(userId, tokenId).isPresent());
+    assertFalse(accountOperationsClient.getMailToken(userId, tokenUuid).isPresent());
   }
 
   @Test
@@ -163,11 +154,11 @@ class AccountOperationsClientTest {
     Tuple2<User, MailToken> tuple =
         accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "mail@domain.com", "0");
     long userId = tuple._1.getIdentifier();
-    long mailTokenId = tuple._2.getIdentifier();
+    UUID mailTokenUuid = tuple._2.getUuid();
 
-    accountOperationsClient.releaseMailToken(userId, mailTokenId);
+    accountOperationsClient.releaseMailToken(userId, mailTokenUuid);
 
-    MailToken mailToken = accountOperationsClient.getMailToken(userId, mailTokenId).get();
+    MailToken mailToken = accountOperationsClient.getMailToken(userId, mailTokenUuid).get();
     assertEquals(MailTokenState.MAIL_TOKEN_ACCEPTED, mailToken.getState());
     User user = accountOperationsClient.getUserById(userId).get();
     assertEquals("mail@domain.com", user.getMail());
@@ -180,20 +171,20 @@ class AccountOperationsClientTest {
     Tuple2<User, MailToken> tuple =
         accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "mail@example.com", "0");
     long userId = tuple._1.getIdentifier();
-    long mailTokenId = tuple._2.getIdentifier();
-    accountOperationsClient.releaseMailToken(userId, mailTokenId);
+    UUID mailTokenUuid = tuple._2.getUuid();
+    accountOperationsClient.releaseMailToken(userId, mailTokenUuid);
 
     StorageException exception =
         assertThrows(
             StorageException.class,
-            () -> accountOperationsClient.releaseMailToken(userId, mailTokenId));
+            () -> accountOperationsClient.releaseMailToken(userId, mailTokenUuid));
 
     assertEquals(
         String.format(
             "java.lang.IllegalArgumentException:"
-                + " MailToken %d cannot be released,"
+                + " MailToken %s cannot be released,"
                 + " its state is MAIL_TOKEN_ACCEPTED",
-            mailTokenId),
+            mailTokenUuid),
         exception.getMessage());
   }
 
@@ -215,13 +206,13 @@ class AccountOperationsClientTest {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
     long sessionId = createActiveSession(userId, userRefs._2);
-    long keyId =
+    UUID keyUuid =
         keyOperationsClient
             .createKey(
                 sessionId,
                 Password.newBuilder().setValue("").addTags("").build(),
                 KeyAttrs.getDefaultInstance())
-            .getIdentifier();
+            .getUuid();
 
     Password password = Password.newBuilder().setValue("value").addTags("tag").build();
     List<Session> disabledSessions =
@@ -230,7 +221,10 @@ class AccountOperationsClientTest {
             "salt",
             "hash",
             ImmutableList.of(
-                KeyPatch.newBuilder().setIdentifier(keyId).setPassword(password).build()));
+                KeyPatch.newBuilder()
+                    .setUid(String.valueOf(keyUuid))
+                    .setPassword(password)
+                    .build()));
 
     assertEquals(1, disabledSessions.size());
     Session deletedSession = disabledSessions.get(0);
@@ -253,10 +247,10 @@ class AccountOperationsClientTest {
     Tuple2<Long, Long> userRefs = createActiveUser();
     long userId = userRefs._1;
     long sessionId = createActiveSession(userId, userRefs._2);
-    long keyId =
+    UUID keyUuid =
         keyOperationsClient
             .createKey(sessionId, Password.getDefaultInstance(), KeyAttrs.getDefaultInstance())
-            .getIdentifier();
+            .getUuid();
 
     StorageException exception =
         assertThrows(
@@ -264,7 +258,7 @@ class AccountOperationsClientTest {
             () -> accountOperationsClient.changeMasterKey(userId, "", "", ImmutableList.of()));
 
     assertEquals(
-        String.format("java.lang.IllegalArgumentException: Missing `KeyPatch` for key %d", keyId),
+        String.format("java.lang.IllegalArgumentException: Missing `KeyPatch` for key %s", keyUuid),
         exception.getMessage());
   }
 
@@ -327,12 +321,11 @@ class AccountOperationsClientTest {
   void createMailToken_putsMailToken() {
     long userId = createActiveUser()._1;
 
-    long mailTokenId =
-        accountOperationsClient
-            .createMailToken(userId, IP_ADDRESS, "user@mail.com", "0")
-            .getIdentifier();
+    UUID mailTokenUuid =
+        accountOperationsClient.createMailToken(userId, IP_ADDRESS, "user@mail.com", "0").getUuid();
 
-    Optional<MailToken> maybeMailToken = accountOperationsClient.getMailToken(userId, mailTokenId);
+    Optional<MailToken> maybeMailToken =
+        accountOperationsClient.getMailToken(userId, mailTokenUuid);
     assertTrue(maybeMailToken.isPresent());
     MailToken mailToken = maybeMailToken.get();
     assertEquals(MailTokenState.MAIL_TOKEN_PENDING, mailToken.getState());
@@ -387,12 +380,13 @@ class AccountOperationsClientTest {
   void createOtpParams_putsOtpParams() {
     long userId = createActiveUser()._1;
 
-    long otpParamsId =
+    UUID otpParamsUuid =
         accountOperationsClient
             .createOtpParams(userId, "secret", ImmutableList.of("a", "b"))
-            .getId();
+            .getUuid();
 
-    Optional<OtpParams> maybeOtpParams = accountOperationsClient.getOtpParams(userId, otpParamsId);
+    Optional<OtpParams> maybeOtpParams =
+        accountOperationsClient.getOtpParams(userId, otpParamsUuid);
     assertTrue(maybeOtpParams.isPresent());
     OtpParams otpParams = maybeOtpParams.get();
     assertEquals(otpParams.getOtpSharedSecret(), "secret");
@@ -406,9 +400,10 @@ class AccountOperationsClientTest {
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of("a", "b"));
 
-    accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
+    accountOperationsClient.acceptOtpParams(userId, otpParams.getUuid());
 
-    assertEquals(Optional.empty(), accountOperationsClient.getOtpParams(userId, otpParams.getId()));
+    assertEquals(
+        Optional.empty(), accountOperationsClient.getOtpParams(userId, otpParams.getUuid()));
     User user = accountOperationsClient.getUserById(userId).get();
     assertEquals("secret", user.getOtpSharedSecret());
     assertEquals(5, user.getOtpSpareAttempts());
@@ -422,7 +417,7 @@ class AccountOperationsClientTest {
     long userId = createActiveUser()._1;
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of());
-    accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
+    accountOperationsClient.acceptOtpParams(userId, otpParams.getUuid());
 
     accountOperationsClient.createTrustedToken(userId, "value");
 
@@ -435,7 +430,7 @@ class AccountOperationsClientTest {
     long userId = createActiveUser()._1;
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of());
-    accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
+    accountOperationsClient.acceptOtpParams(userId, otpParams.getUuid());
     accountOperationsClient.createTrustedToken(userId, "value");
     long tokenId = accountOperationsClient.getOtpToken(userId, "value", false).get().getId();
 
@@ -450,7 +445,7 @@ class AccountOperationsClientTest {
     long userId = createActiveUser()._1;
     OtpParams otpParams =
         accountOperationsClient.createOtpParams(userId, "secret", ImmutableList.of("token"));
-    accountOperationsClient.acceptOtpParams(userId, otpParams.getId());
+    accountOperationsClient.acceptOtpParams(userId, otpParams.getUuid());
 
     accountOperationsClient.resetOtp(userId);
 
@@ -467,7 +462,9 @@ class AccountOperationsClientTest {
 
     Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsClient.nudgeMailToken(
-            userId, 8L, (lastAttempt, attemptCount) -> lastAttempt.plusSeconds(attemptCount));
+            userId,
+            UUID.randomUUID(),
+            (lastAttempt, attemptCount) -> lastAttempt.plusSeconds(attemptCount));
 
     assertEquals(MtNudgeStatus.NOT_FOUND, nudgeResult._1);
   }
@@ -476,17 +473,17 @@ class AccountOperationsClientTest {
   @WithEntityManager
   void nudgeMailToken_notAvailable_returnsFalse() {
     long userId = createActiveUser()._1;
-    long mailTokenId =
+    UUID mailTokenUuid =
         accountOperationsClient
             .createMailToken(userId, IP_ADDRESS, "mail@domain.com", "A")
-            .getIdentifier();
+            .getUuid();
     Instant epochPlusTwo = Instant.ofEpochSecond(2);
     Instant epochPlusFour = Instant.ofEpochSecond(4);
     nowSupplier = () -> epochPlusTwo;
 
     Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsClient.nudgeMailToken(
-            userId, mailTokenId, (lastAttempt, attemptCount) -> epochPlusFour);
+            userId, mailTokenUuid, (lastAttempt, attemptCount) -> epochPlusFour);
 
     assertEquals(MtNudgeStatus.NOT_AVAILABLE_YET, nudgeResult._1);
   }
@@ -495,21 +492,21 @@ class AccountOperationsClientTest {
   @WithEntityManager
   void nudgeMailToken_available_updatesTrail() {
     long userId = createActiveUser()._1;
-    long mailTokenId =
+    UUID mailTokenUuid =
         accountOperationsClient
             .createMailToken(userId, IP_ADDRESS, "mail@domain.com", "A")
-            .getIdentifier();
+            .getUuid();
     Instant epochPlusOne = Instant.ofEpochSecond(1);
     Instant epochPlusTwo = Instant.ofEpochSecond(2);
     nowSupplier = () -> epochPlusTwo;
 
     Tuple2<MtNudgeStatus, Optional<MailToken>> nudgeResult =
         accountOperationsClient.nudgeMailToken(
-            userId, mailTokenId, (lastAttempt, attemptCount) -> epochPlusOne);
+            userId, mailTokenUuid, (lastAttempt, attemptCount) -> epochPlusOne);
 
     assertEquals(MtNudgeStatus.OK, nudgeResult._1);
     assertTrue(nudgeResult._2.isPresent());
-    MailToken mailToken = accountOperationsClient.getMailToken(userId, mailTokenId).get();
+    MailToken mailToken = accountOperationsClient.getMailToken(userId, mailTokenUuid).get();
     assertEquals(epochPlusTwo, mailToken.getLastAttempt());
     assertEquals(1, mailToken.getAttemptCount());
   }
@@ -518,7 +515,7 @@ class AccountOperationsClientTest {
     Tuple2<User, MailToken> user =
         accountOperationsClient.createUser("username", "", "", IP_ADDRESS, "", "");
     long userId = user._1.getIdentifier();
-    accountOperationsClient.releaseMailToken(userId, user._2.getIdentifier());
+    accountOperationsClient.releaseMailToken(userId, user._2.getUuid());
     return Tuple.of(userId, user._1.getVersion());
   }
 

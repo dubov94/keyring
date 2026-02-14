@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -23,6 +24,8 @@ import keyring.server.main.proto.service.Password;
 import org.apache.commons.io.FileUtils;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Generated;
+import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.Type;
@@ -31,7 +34,11 @@ import org.hibernate.annotations.TypeDef;
 @Entity
 @Table(
     name = "keys",
-    indexes = {@Index(columnList = "user_identifier"), @Index(columnList = "parent_identifier")})
+    indexes = {
+      @Index(columnList = "user_identifier"),
+      @Index(columnList = "parent_identifier"),
+      @Index(columnList = "uuid", unique = true)
+    })
 @TypeDef(name = "string-array", typeClass = StringArrayType.class)
 public class Key {
   public static final long APPROX_MAX_KEYS_PER_USER = 2048;
@@ -39,6 +46,11 @@ public class Key {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private long identifier;
+
+  @Column(columnDefinition = "uuid")
+  @ColumnDefault("gen_random_uuid()")
+  @Generated(GenerationTime.INSERT)
+  private UUID uuid;
 
   @Column(name = "creation_timestamp")
   @CreationTimestamp
@@ -70,6 +82,10 @@ public class Key {
 
   public long getIdentifier() {
     return identifier;
+  }
+
+  public UUID getUuid() {
+    return uuid;
   }
 
   public Optional<Timestamp> getCreationTimestamp() {
@@ -147,7 +163,7 @@ public class Key {
 
   public KeyProto toKeyProto() {
     KeyProto.Builder builder = KeyProto.newBuilder();
-    builder.setIdentifier(getIdentifier());
+    builder.setUid(String.valueOf(getUuid()));
     getCreationTimestamp()
         .ifPresent(
             (timestamp) -> {
@@ -157,7 +173,8 @@ public class Key {
     builder.setAttrs(
         KeyAttrs.newBuilder()
             .setIsShadow(getIsShadow())
-            .setParent(Optional.ofNullable(getParent()).map(Key::getIdentifier).orElse(0L))
+            .setParentUid(
+                Optional.ofNullable(getParent()).map(Key::getUuid).map(String::valueOf).orElse(""))
             .setIsPinned(getIsPinned()));
     return builder.build();
   }
