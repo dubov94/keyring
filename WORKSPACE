@@ -311,7 +311,6 @@ rules_pkg_dependencies()
 http_archive(
     name = "io_bazel_rules_docker",
     sha256 = "f6dcb97e992f13bc9effd794e9bb300f06b0dadc88061f81ae68d8d5994be964",
-    strip_prefix = "rules_docker-0.26.0",
     urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.26.0/rules_docker-v0.26.0.tar.gz"],
 )
 
