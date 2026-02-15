@@ -149,9 +149,9 @@ maven_install(
     ] + [
         "name.falgout.jeffrey.testing.junit5:mockito-extension:1.0.0",
         "org.mockito:mockito-core:2.15.0",
-        "org.testcontainers:junit-jupiter:1.20.6",
-        "org.testcontainers:postgresql:1.20.6",
-        "org.testcontainers:testcontainers:1.20.6",
+        "org.testcontainers:junit-jupiter:1.21.4",
+        "org.testcontainers:postgresql:1.21.4",
+        "org.testcontainers:testcontainers:1.21.4",
     ],
     generate_compat_repositories = True,
     override_targets = IO_GRPC_GRPC_JAVA_OVERRIDE_TARGETS,
