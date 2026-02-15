@@ -3,4 +3,4 @@
 # https://git-scm.com/docs/git-describe#_description
 echo STABLE_GIT_REVISION $(git describe --always)
 # Earliest acceptable version.
-echo STABLE_MRGN_REVISION 'v0.0.0-1199-g2ace396'
+echo STABLE_MRGN_REVISION 'v0.0.0-1288-g9c1d9aa'
