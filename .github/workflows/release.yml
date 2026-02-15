@@ -13,7 +13,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
-      - run: bazelisk run --stamp //grpc_gateway
+      - run: bazelisk run //grpc_gateway
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -29,7 +29,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
-      - run: bazelisk run --stamp //ip_geolocation
+      - run: bazelisk run //ip_geolocation
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -46,7 +46,7 @@ jobs:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//pwa/...)')
-      - run: bazelisk run --stamp //pwa
+      - run: bazelisk run //pwa
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -67,7 +67,7 @@ jobs:
           java-version: 11
       - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//server/main/...)')
-      - run: bazelisk run --stamp //server
+      - run: bazelisk run //server
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -88,7 +88,7 @@ jobs:
           java-version: 11
       - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//server/mailer/...)')
-      - run: bazelisk run --stamp //server:mailer
+      - run: bazelisk run //server:mailer
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -109,7 +109,7 @@ jobs:
           java-version: 11
       - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//server/janitor/...)')
-      - run: bazelisk run --stamp //server:janitor
+      - run: bazelisk run //server:janitor
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -125,7 +125,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
-      - run: bazelisk run --stamp //server:liquibase
+      - run: bazelisk run //server:liquibase
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -141,7 +141,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
-      - run: bazelisk run --stamp //server/archiver
+      - run: bazelisk run //server/archiver
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -157,7 +157,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
-      - run: bazelisk run --stamp //server/restorer
+      - run: bazelisk run //server/restorer
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
