@@ -18,6 +18,7 @@ export enum RegistrationFlowIndicator {
   MAKING_REQUEST = 'MAKING_REQUEST',
 }
 export interface RegistrationFlowResult {
+  userId: string;
   username: string;
   parametrization: string;
   encryptionKey: string;
@@ -52,6 +53,7 @@ export interface OtpContext {
   attemptsLeft: number;
 }
 export interface UserData {
+  userId: string;
   sessionKey: string;
   featurePrompts: ServiceFeaturePrompt[];
   mailVerification: MailVerification;

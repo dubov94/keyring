@@ -77,6 +77,7 @@ describe('authnOtpProvision', () => {
     },
     trustedToken: option.none,
     userData: {
+      userId: 'userId',
       sessionKey: 'sessionKey',
       featurePrompts: [],
       mailVerification: defaultMailVerification(),

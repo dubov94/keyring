@@ -125,6 +125,7 @@ describe('registrationEpic', () => {
       captchaToken: 'captchaToken'
     }))).thenResolve(<ServiceRegisterResponse>{
       error: ServiceRegisterResponseError.NONE,
+      userUid: 'userId',
       sessionKey: 'sessionKey',
       mailTokenId: 'mailTokenId'
     })
@@ -174,6 +175,7 @@ describe('logInViaApiEpic', () => {
     }))).thenResolve(<ServiceLogInResponse>{
       error: ServiceLogInResponseError.NONE,
       userData: {
+        userUid: 'userId',
         sessionKey: 'sessionKey',
         featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
         mailVerification: {
@@ -228,6 +230,7 @@ describe('logInViaApiEpic', () => {
         parametrization: 'parametrization',
         encryptionKey: 'encryptionKey',
         content: either.right({
+          userId: 'userId',
           sessionKey: 'sessionKey',
           featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
           mailVerification: defaultMailVerification(),
@@ -258,6 +261,7 @@ describe('logInViaApiEpic', () => {
     }))).thenResolve(<ServiceLogInResponse>{
       error: ServiceLogInResponseError.NONE,
       userData: {
+        userUid: 'userId',
         sessionKey: 'sessionKey',
         featurePrompts: [],
         mailVerification: {
@@ -299,6 +303,7 @@ describe('logInViaApiEpic', () => {
         parametrization: 'parametrization',
         encryptionKey: 'encryptionKey',
         content: either.right({
+          userId: 'userId',
           sessionKey: 'sessionKey',
           featurePrompts: [],
           mailVerification: defaultMailVerification(),
@@ -334,6 +339,7 @@ describe('provideOtpEpic', () => {
     }))).thenResolve(<ServiceProvideOtpResponse>{
       error: ServiceProvideOtpResponseError.NONE,
       userData: {
+        userUid: 'userId',
         sessionKey: 'sessionKey',
         featurePrompts: [],
         mailVerification: {
@@ -382,6 +388,7 @@ describe('provideOtpEpic', () => {
         credentialParams,
         trustedToken: option.none,
         userData: {
+          userId: 'userId',
           sessionKey: 'sessionKey',
           featurePrompts: [],
           mailVerification: defaultMailVerification(),
@@ -547,6 +554,7 @@ describe('backgroundOtpProvisionEpic', () => {
       error: ServiceProvideOtpResponseError.NONE,
       trustedToken: 'newOtpToken',
       userData: {
+        userUid: 'userId',
         sessionKey: 'sessionKey',
         featurePrompts: [],
         mailVerification: {
@@ -579,6 +587,7 @@ describe('backgroundOtpProvisionEpic', () => {
         credentialParams,
         trustedToken: option.of('newOtpToken'),
         userData: {
+          userId: 'userId',
           sessionKey: 'sessionKey',
           featurePrompts: [],
           mailVerification: defaultMailVerification(),
@@ -614,6 +623,7 @@ describe('remoteAuthnCompleteOnCredentialsEpic', () => {
     encryptionKey: 'encryptionKey'
   }
   const userData = {
+    userId: 'userId',
     sessionKey: 'sessionKey',
     featurePrompts: <ServiceFeaturePrompt[]>[],
     mailVerification: defaultMailVerification(),

@@ -91,6 +91,16 @@ public class User {
     return this;
   }
 
+  public UUID getUuid() {
+    return uuid;
+  }
+
+  // For testing.
+  public User setUuid(UUID uuid) {
+    this.uuid = uuid;
+    return this;
+  }
+
   public long getVersion() {
     return version;
   }

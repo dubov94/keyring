@@ -140,10 +140,14 @@ class AuthenticationServiceTest {
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
     when(mockCryptography.computeHash("digest")).thenReturn("hash");
     when(mockCryptography.generateUacs()).thenReturn("0");
+    UUID userUuid = UUID.randomUUID();
     UUID mailTokenUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.createUser(
             "username", "salt", "hash", IP_ADDRESS, "mail@example.com", "0"))
-        .thenReturn(Tuple.of(new User().setIdentifier(1L), new MailToken().setUuid(mailTokenUuid)));
+        .thenReturn(
+            Tuple.of(
+                new User().setIdentifier(1L).setUuid(userUuid),
+                new MailToken().setUuid(mailTokenUuid)));
     String sessionToken = "token";
     when(mockCryptography.generateTts()).thenReturn(sessionToken);
     when(mockAccountOperationsInterface.createSession(1L, 0L, IP_ADDRESS, USER_AGENT, VERSION))
@@ -173,6 +177,7 @@ class AuthenticationServiceTest {
     verify(mockStreamObserver)
         .onNext(
             RegisterResponse.newBuilder()
+                .setUserUid(String.valueOf(userUuid))
                 .setSessionKey(sessionToken)
                 .setMailTokenUid(String.valueOf(mailTokenUuid))
                 .build());
@@ -262,11 +267,13 @@ class AuthenticationServiceTest {
 
   @Test
   void logIn_validPair_repliesWithUserData() {
+    UUID userUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(
                 new User()
                     .setIdentifier(1L)
+                    .setUuid(userUuid)
                     .setUsername("username")
                     .setSalt("salt")
                     .setHash("hash")));
@@ -296,6 +303,7 @@ class AuthenticationServiceTest {
             LogInResponse.newBuilder()
                 .setUserData(
                     UserData.newBuilder()
+                        .setUserUid(String.valueOf(userUuid))
                         .setSessionKey(sessionToken)
                         .setMailVerification(
                             MailVerification.newBuilder()
@@ -355,10 +363,15 @@ class AuthenticationServiceTest {
   void provideOtp_otpAuthorized_repliesWithUserData() {
     when(mockKeyValueClient.getKvAuthn("authn", IP_ADDRESS))
         .thenReturn(Optional.of(KvAuthn.newBuilder().setUserId(1L).setSessionEntityId(3L).build()));
+    UUID userUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.getUserById(1L))
         .thenReturn(
             Optional.of(
-                new User().setIdentifier(1L).setOtpSharedSecret("secret").setOtpSpareAttempts(3)));
+                new User()
+                    .setIdentifier(1L)
+                    .setUuid(userUuid)
+                    .setOtpSharedSecret("secret")
+                    .setOtpSpareAttempts(3)));
     when(mockCryptography.convertTotp("otp")).thenReturn(Optional.of(42));
     when(mockAccountOperationsInterface.acquireOtpSpareAttempt(1L)).thenReturn(Optional.of(2));
     when(mockGoogleAuthenticator.authorize("secret", 42)).thenReturn(true);
@@ -386,6 +399,7 @@ class AuthenticationServiceTest {
             ProvideOtpResponse.newBuilder()
                 .setUserData(
                     UserData.newBuilder()
+                        .setUserUid(String.valueOf(userUuid))
                         .setSessionKey("token")
                         .setMailVerification(
                             MailVerification.newBuilder()
@@ -421,8 +435,9 @@ class AuthenticationServiceTest {
   void provideOtp_tokenPresent_deletesAndReplies() {
     when(mockKeyValueClient.getKvAuthn("authn", IP_ADDRESS))
         .thenReturn(Optional.of(KvAuthn.newBuilder().setUserId(1L).setSessionEntityId(3L).build()));
+    UUID userUuid = UUID.randomUUID();
     when(mockAccountOperationsInterface.getUserById(1L))
-        .thenReturn(Optional.of(new User().setIdentifier(1L)));
+        .thenReturn(Optional.of(new User().setIdentifier(1L).setUuid(userUuid)));
     when(mockCryptography.convertTotp("otp")).thenReturn(Optional.empty());
     when(mockAccountOperationsInterface.getOtpToken(1L, "otp", false))
         .thenReturn(Optional.of(new OtpToken().setId(42L)));
@@ -451,6 +466,7 @@ class AuthenticationServiceTest {
             ProvideOtpResponse.newBuilder()
                 .setUserData(
                     UserData.newBuilder()
+                        .setUserUid(String.valueOf(userUuid))
                         .setSessionKey("token")
                         .setMailVerification(
                             MailVerification.newBuilder()

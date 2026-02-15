@@ -57,6 +57,7 @@ export default createReducer<{
   isAuthenticated: boolean;
   parametrization: string | null;
   encryptionKey: string | null;
+  userId: string | null;
   sessionKey: string | null;
   featurePrompts: ServiceFeaturePrompt[];
   mailVerification: MailVerification;
@@ -76,6 +77,7 @@ export default createReducer<{
     isAuthenticated: false,
     parametrization: null,
     encryptionKey: null,
+    userId: null,
     sessionKey: null,
     featurePrompts: [],
     mailVerification: {
@@ -100,6 +102,7 @@ export default createReducer<{
       state.isAuthenticated = true
       state.parametrization = flowSuccess.parametrization
       state.encryptionKey = flowSuccess.encryptionKey
+      state.userId = flowSuccess.userId
       state.sessionKey = flowSuccess.sessionKey
       state.mailVerification = { required: true, tokenId: flowSuccess.mailTokenId }
     })
@@ -107,6 +110,7 @@ export default createReducer<{
       state.isAuthenticated = true
       state.parametrization = action.payload.parametrization
       state.encryptionKey = action.payload.encryptionKey
+      state.userId = action.payload.userId
       state.sessionKey = action.payload.sessionKey
       state.featurePrompts = castDraft(action.payload.featurePrompts)
       state.mailVerification = action.payload.mailVerification

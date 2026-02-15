@@ -147,7 +147,11 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     keyValueClient.createSession(sessionToken, userId, ipAddress, sessionId);
     messageBrokerClient.publishMailVc(mail, username, code);
     return Either.right(
-        builder.setSessionKey(sessionToken).setMailTokenUid(String.valueOf(entities._2.getUuid())).build());
+        builder
+            .setUserUid(String.valueOf(user.getUuid()))
+            .setSessionKey(sessionToken)
+            .setMailTokenUid(String.valueOf(entities._2.getUuid()))
+            .build());
   }
 
   @Override
@@ -180,6 +184,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private UserData newUserData(long sessionEntityId, String sessionToken, User user) {
     long userId = user.getIdentifier();
     UserData.Builder userDataBuilder = UserData.newBuilder();
+    userDataBuilder.setUserUid(String.valueOf(user.getUuid()));
     userDataBuilder.setSessionKey(sessionToken);
     FeaturePrompts featurePrompts = accountOperationsInterface.getFeaturePrompts(userId);
     userDataBuilder.addAllFeaturePrompts(
@@ -284,7 +289,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     } else {
       Optional<OtpToken> maybeOtpToken =
           accountOperationsInterface.getOtpToken(
-              userId, request.getOtp(), /* mustBeInitial = */ false);
+              userId, request.getOtp(), /* mustBeInitial= */ false);
       if (!maybeOtpToken.isPresent()) {
         return Either.right(
             builder

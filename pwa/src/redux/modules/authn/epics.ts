@@ -88,6 +88,7 @@ export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action
                     switch (response.error) {
                       case ServiceRegisterResponseError.NONE:
                         return of(registrationSignal(success({
+                          userId: response.userUid!,
                           username: action.payload.username,
                           parametrization,
                           encryptionKey,
@@ -123,6 +124,7 @@ const decodeUserData = (encryptionKey: string, userData: ServiceUserData): Obser
     switchMap((userKeys) => {
       const mv = userData.mailVerification
       return of({
+        userId: userData.userUid!,
         sessionKey: userData.sessionKey!,
         featurePrompts: userData.featurePrompts!,
         mailVerification: mv ? {

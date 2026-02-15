@@ -37,6 +37,7 @@ export const createUserKey = (partial: DeepPartial<Key>): Key => merge({
 export const createRegistrationFlowResult = (
   partial: DeepPartial<RegistrationFlowResult>
 ): RegistrationFlowResult => merge({
+  userId: 'userId',
   username: 'username',
   parametrization: 'parametrization',
   encryptionKey: 'encryptionKey',
@@ -51,6 +52,7 @@ export const createRemoteAuthnCompleteResult = (
   password: 'password',
   parametrization: 'parametrization',
   encryptionKey: 'encryptionKey',
+  userId: 'userId',
   sessionKey: 'sessionKey',
   featurePrompts: [],
   mailVerification: defaultMailVerification(),
