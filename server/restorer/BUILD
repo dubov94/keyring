@@ -13,28 +13,13 @@ go_binary(
 )
 
 container_image(
-    name = "restorer_image",
+    name = "restorer",
     base = "@io_docker_index_library_postgres//image",
     directory = "/root",
+    entrypoint = ["./entrypoint.sh"],
     files = [
         "entrypoint.sh",
         ":main",
     ],
     workdir = "/root",
-)
-
-container_run_and_commit(
-    name = "restorer_ca",
-    image = ":restorer_image.tar",
-    commands = [" && ".join([
-        "apt update",
-        "apt install --assume-yes --no-install-recommends ca-certificates",
-    ])],
-    docker_run_flags = ["--entrypoint=''"],
-)
-
-container_image(
-    name = "restorer",
-    base = ":restorer_ca",
-    entrypoint = ["./entrypoint.sh"],
 )
