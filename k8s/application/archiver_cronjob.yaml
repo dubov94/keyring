@@ -17,7 +17,7 @@ spec:
         spec:
           containers:
           - name: archiver
-            image: dubov94/keyring-archiver:2968570500024fe6cb38ef5f27460621c8266034
+            image: dubov94/keyring-archiver:74435602b6d24b5e8feef53ebccfed6e9d8805c2
             env:
             - name: PG_DBNAME_PATH
               value: /etc/keyring/cnpg-app/uri

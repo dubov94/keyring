@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: dubov94/keyring-server:2968570500024fe6cb38ef5f27460621c8266034
+        image: dubov94/keyring-server:74435602b6d24b5e8feef53ebccfed6e9d8805c2
         resources:
           limits:
             memory: 320Mi
@@ -50,7 +50,7 @@ spec:
               key: turnstile-secret-key
       initContainers:
       - name: liquibase
-        image: dubov94/keyring-liquibase:2968570500024fe6cb38ef5f27460621c8266034
+        image: dubov94/keyring-liquibase:74435602b6d24b5e8feef53ebccfed6e9d8805c2
         imagePullPolicy: Always
         env:
         - name: POSTGRES_JDBC_URI
