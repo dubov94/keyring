@@ -13,7 +13,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
-      - run: bazelisk run //grpc_gateway
+      - run: bazelisk build //grpc_gateway:grpc_gateway.tar
+      - run: docker load -i $(ls bazel-out/*/bin/grpc_gateway/grpc_gateway.tar)
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -29,7 +30,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
-      - run: bazelisk run //ip_geolocation
+      - run: bazelisk build //ip_geolocation:ip_geolocation.tar
+      - run: docker load -i $(ls bazel-out/*/bin/ip_geolocation/ip_geolocation.tar)
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -46,7 +48,8 @@ jobs:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//pwa/...)')
-      - run: bazelisk run //pwa
+      - run: bazelisk build //pwa:pwa.tar
+      - run: docker load -i $(ls bazel-out/*/bin/pwa/pwa.tar)
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -67,7 +70,8 @@ jobs:
           java-version: 11
       - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//server/main/...)')
-      - run: bazelisk run //server
+      - run: bazelisk build //server:server.tar
+      - run: docker load -i $(ls bazel-out/*/bin/server/server.tar)
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -88,7 +92,8 @@ jobs:
           java-version: 11
       - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//server/mailer/...)')
-      - run: bazelisk run //server:mailer
+      - run: bazelisk build //server:mailer.tar
+      - run: docker load -i $(ls bazel-out/*/bin/server/mailer.tar)
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -109,7 +114,8 @@ jobs:
           java-version: 11
       - uses: bazel-contrib/setup-bazel@0.14.0
       - run: bazelisk test $(bazelisk query 'tests(//server/janitor/...)')
-      - run: bazelisk run //server:janitor
+      - run: bazelisk build //server:janitor.tar
+      - run: docker load -i $(ls bazel-out/*/bin/server/janitor.tar)
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -125,7 +131,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
-      - run: bazelisk run //server:liquibase
+      - run: bazelisk build //server:liquibase.tar
+      - run: docker load -i $(ls bazel-out/*/bin/server/liquibase.tar)
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -141,7 +148,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
-      - run: bazelisk run //server/archiver
+      - run: bazelisk build //server/archiver:archiver.tar
+      - run: docker load -i $(ls bazel-out/*/bin/server/archiver/archiver.tar)
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -157,7 +165,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: bazel-contrib/setup-bazel@0.14.0
-      - run: bazelisk run //server/restorer
+      - run: bazelisk build //server/restorer:restorer.tar
+      - run: docker load -i $(ls bazel-out/*/bin/server/restorer/restorer.tar)
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
