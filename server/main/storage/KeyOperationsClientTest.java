@@ -27,9 +27,7 @@ import keyring.server.main.proto.service.Password;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Testcontainers
 class KeyOperationsClientTest {
   private static Random random = new Random();
   private AccountOperationsClient accountOperationsClient;
