@@ -39,7 +39,6 @@ describe('registrationSignal', () => {
     expect(state.isAuthenticated).to.be.true
     expect(state.parametrization).to.equal('parametrization')
     expect(state.encryptionKey).to.equal('encryptionKey')
-    expect(state.userId).to.equal('userId')
     expect(state.sessionKey).to.equal('sessionKey')
     expect(state.mailVerification).to.deep.equal({
       required: true,
@@ -68,7 +67,6 @@ describe('remoteAuthnComplete', () => {
     expect(state.isAuthenticated).to.be.true
     expect(state.parametrization).to.equal('parametrization')
     expect(state.encryptionKey).to.equal('encryptionKey')
-    expect(state.userId).to.equal('userId')
     expect(state.sessionKey).to.equal('sessionKey')
     expect(state.featurePrompts).to.deep.equal([{ featureType: ServiceFeatureType.UNKNOWN }])
     expect(state.mailVerification).to.deep.equal(defaultMailVerification())
@@ -318,7 +316,6 @@ describe('featureAckSignal', () => {
       isAuthenticated: false,
       parametrization: null,
       encryptionKey: null,
-      userId: null,
       sessionKey: null,
       featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
       mailVerification: {

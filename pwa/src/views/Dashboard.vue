@@ -43,7 +43,7 @@
                 <div>
                   <div>Second factor</div>
                   <div class="text-body-2 text--secondary">
-                    One-time codes {{  isOtpEnabled ? 'enabled' : 'disabled' }}
+                    One-time codes {{ isOtpEnabled ? 'enabled' : 'disabled' }}
                   </div>
                 </div>
               </div>

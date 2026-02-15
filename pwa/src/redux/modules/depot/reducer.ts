@@ -13,9 +13,16 @@ type Credentials = {
   hash: string;
 }
 
+type WebAuthn = {
+  credentialId: string;
+  salt: string;
+}
+
 type State = {
   persisted: boolean;
+  userId: string | null;
   credentials: Credentials | null;
+  webAuthn: WebAuthn | null;
   // For data encryption.
   depotKey: string | null;
   // For passing the 2FA check.
@@ -25,7 +32,9 @@ type State = {
 
 const emptyState = (): State => ({
   persisted: false,
+  userId: null,
   credentials: null,
+  webAuthn: null,
   depotKey: null,
   encryptedOtpToken: null,
   vault: null
@@ -45,6 +54,11 @@ export default createReducer<State>(
       state.vault = action.payload.vault
       state.encryptedOtpToken = action.payload.encryptedOtpToken
     })
+    .addMatcher(isActionSuccess(registrationSignal), (state, action) => {
+      toEmptyState(state)
+      const flowSuccess = action.payload.data
+      state.userId = flowSuccess.userId
+    })
     .addMatcher(isActionSuccess(authnViaDepotSignal), (state, action) => {
       state.depotKey = action.payload.data.depotKey
     })
@@ -55,6 +69,7 @@ export default createReducer<State>(
       state.encryptedOtpToken = action.payload
     })
     .addMatcher(isActionOf(remoteAuthnComplete), (state, action) => {
+      state.userId = action.payload.userId
       if (!action.payload.isOtpEnabled) {
         state.encryptedOtpToken = null
       }
@@ -80,7 +95,6 @@ export default createReducer<State>(
     // synchronization may be cut off via `logOut`.
     .addMatcher(
       monoid.concatAll(predicate.getMonoidAny<RootAction>())([
-        isActionSuccess(registrationSignal),
         isActionSuccess(accountDeletionSignal),
         isActionOf(remoteCredentialsMismatchLocal),
         isActionOf(localOtpTokenFailure)

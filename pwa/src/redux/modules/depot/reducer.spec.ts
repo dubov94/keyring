@@ -12,6 +12,23 @@ import { clearDepot, newEncryptedOtpToken, newVault, rehydration } from './actio
 import reducer from './reducer'
 import { createAuthnViaDepotFlowResult, createRegistrationFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
 
+const createFilledState = (): ReturnType<typeof reducer> => ({
+  persisted: true,
+  userId: 'userId',
+  credentials: {
+    username: 'username',
+    salt: 'salt',
+    hash: 'hash',
+  },
+  webAuthn: {
+    credentialId: 'credentialId',
+    salt: 'salt'
+  },
+  vault: 'vault',
+  depotKey: 'depotKey',
+  encryptedOtpToken: 'encryptedOtpToken'
+})
+
 describe('rehydration', () => {
   it('restores values', () => {
     const state = reducer(undefined, rehydration({
@@ -30,6 +47,21 @@ describe('rehydration', () => {
     })
     expect(state.vault).to.equal('vault')
     expect(state.encryptedOtpToken).to.equal('encryptedOtpToken')
+  })
+})
+
+describe('registrationSignal', () => {
+  it('clears the state but saves the user ID', () => {
+    const state = reducer(createFilledState(), registrationSignal(success(createRegistrationFlowResult({
+      userId: 'foo'
+    }))))
+
+    expect(state.persisted).to.be.false
+    expect(state.userId).to.equal('foo')
+    expect(state.credentials).to.be.null
+    expect(state.webAuthn).to.be.null
+    expect(state.vault).to.be.null
+    expect(state.encryptedOtpToken).to.be.null
   })
 })
 
@@ -66,17 +98,25 @@ describe('remoteAuthnComplete', () => {
 
     expect(state.encryptedOtpToken).to.be.null
   })
+
+  it('sets the user ID', () => {
+    const state = reducer(undefined, remoteAuthnComplete(createRemoteAuthnCompleteResult({})))
+
+    expect(state.userId).to.equal('userId')
+  })
 })
 
 describe('usernameChangeSignal', () => {
   it('changes the username when it matches', () => {
     const state = reducer({
       persisted: true,
+      userId: 'userId',
       credentials: {
         username: 'usernameA',
         salt: null,
         hash: null,
       },
+      webAuthn: null,
       vault: null,
       depotKey: null,
       encryptedOtpToken: null
@@ -100,20 +140,12 @@ describe('usernameChangeSignal', () => {
 
 describe('clearDepot', () => {
   it('clears persisted data', () => {
-    const state = reducer({
-      persisted: true,
-      credentials: {
-        username: 'username',
-        salt: 'salt',
-        hash: 'hash',
-      },
-      vault: 'vault',
-      depotKey: 'depotKey',
-      encryptedOtpToken: 'encryptedOtpToken'
-    }, clearDepot())
+    const state = reducer(createFilledState(), clearDepot())
 
     expect(state.persisted).to.be.false
+    expect(state.userId).to.be.null
     expect(state.credentials).to.be.null
+    expect(state.webAuthn).to.be.null
     expect(state.vault).to.be.null
     expect(state.encryptedOtpToken).to.be.null
   })
@@ -121,26 +153,17 @@ describe('clearDepot', () => {
 
 describe('toEmptyState', () => {
   ;[
-    registrationSignal(success(createRegistrationFlowResult({}))),
     accountDeletionSignal(success({})),
     remoteCredentialsMismatchLocal(),
     localOtpTokenFailure()
   ].forEach((trigger) => {
     it(`clears persisted data on ${trigger.type}`, () => {
-      const state = reducer({
-        persisted: true,
-        credentials: {
-          username: 'username',
-          salt: 'salt',
-          hash: 'hash',
-        },
-        vault: 'vault',
-        depotKey: 'depotKey',
-        encryptedOtpToken: 'encryptedOtpToken'
-      }, trigger)
+      const state = reducer(createFilledState(), trigger)
 
       expect(state.persisted).to.be.false
+      expect(state.userId).to.be.null
       expect(state.credentials).to.be.null
+      expect(state.webAuthn).to.be.null
       expect(state.vault).to.be.null
       expect(state.encryptedOtpToken).to.be.null
     })
