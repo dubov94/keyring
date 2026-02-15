@@ -39,8 +39,10 @@ import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ExtendWith(MockitoExtension.class)
+@Testcontainers
 class AccountOperationsClientTest {
   private static final String IP_ADDRESS = "127.0.0.1";
 

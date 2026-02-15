@@ -28,6 +28,7 @@ import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+@Testcontainers
 class KeyOperationsClientTest {
   private static Random random = new Random();
   private AccountOperationsClient accountOperationsClient;
