@@ -220,7 +220,7 @@ state$.pipe(
 })
 
 action$.pipe(
-  filter(isActionOf(navigateTo)),
+  filter(isActionOf(navigateTo))
 ).subscribe((action) => {
   router.push(action.payload)
 })
