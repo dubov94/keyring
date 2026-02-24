@@ -11,10 +11,12 @@ const ENCRYPTION_KEY_SIZE_IN_BYTES = 32
 const LETTER_BETA = 'β'
 const PADDING_BLOCK_SIZE = 16
 
+// if_change
 export interface MasterKeyDerivatives {
   authDigest: string;
   encryptionKey: string;
 }
+// then_change(pwa/src/redux/storages/index.ts:storage_migration)
 
 @injectable()
 export class SodiumClient {

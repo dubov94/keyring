@@ -60,6 +60,7 @@ export const changeMasterKey = createAction('user/account/changeMasterKey')<Deep
 export interface MasterKeyChangeData {
   newMasterKey: string;
   newParametrization: string;
+  newAuthDigest: string;
   newEncryptionKey: string;
   newSessionKey: string;
 }

@@ -1,12 +1,26 @@
 import merge from 'lodash/merge'
 import { DeepPartial } from 'ts-essentials'
 import { ServiceKeyProto } from '@/api/definitions'
+import { MasterKeyDerivatives } from '@/cryptography/sodium_client'
 import { Key } from '@/redux/domain'
-import { RegistrationFlowResult, RemoteAuthnCompletionData, AuthnViaDepotFlowResult } from '@/redux/modules/authn/actions'
+import {
+  RegistrationFlowResult,
+  RemoteAuthnCompletionData,
+  AuthnViaDepotFlowResult,
+  AuthnInputKind,
+  Password as PasswordInput,
+  WebAuthn as WebAuthnInput
+} from '@/redux/modules/authn/actions'
+import {
+  Rehydration as DepotRehydration,
+  RehydrationWebAuthn as DepotRehydrationWebAuthn,
+  DepotActivationData,
+  WebAuthn,
+  WebAuthnResult
+} from '@/redux/modules/depot/actions'
+import { defaultMailVerification, MasterKeyChangeData } from '@/redux/modules/user/account/actions'
 import { NIL_KEY_ID } from '@/redux/modules/user/keys/actions'
 import { Clique } from '@/redux/modules/user/keys/selectors'
-import { defaultMailVerification } from '../modules/user/account/actions'
-import { DepotActivationData } from '../modules/depot/actions'
 
 export const createKeyProto = (partial: DeepPartial<ServiceKeyProto>): ServiceKeyProto => merge({
   uid: '',
@@ -39,18 +53,35 @@ export const createRegistrationFlowResult = (
 ): RegistrationFlowResult => merge({
   userId: 'userId',
   username: 'username',
+  password: 'password',
   parametrization: 'parametrization',
+  authDigest: 'authDigest',
   encryptionKey: 'encryptionKey',
   sessionKey: 'sessionKey',
   mailTokenId: 'mailTokenId'
 }, partial)
 
+export const createPasswordInput = (
+  password = 'password'
+): PasswordInput => ({
+  kind: AuthnInputKind.PASSWORD,
+  password
+})
+
+export const createWebAuthnInput = (
+  credentialId = 'credentialId'
+): WebAuthnInput => ({
+  kind: AuthnInputKind.WEB_AUTHN,
+  credentialId
+})
+
 export const createRemoteAuthnCompleteResult = (
   partial: DeepPartial<RemoteAuthnCompletionData>
 ): RemoteAuthnCompletionData => merge({
   username: 'username',
-  password: 'password',
+  authnInput: createPasswordInput(),
   parametrization: 'parametrization',
+  authDigest: 'authDigest',
   encryptionKey: 'encryptionKey',
   userId: 'userId',
   sessionKey: 'sessionKey',
@@ -82,8 +113,62 @@ export const createAuthnViaDepotFlowResult = (
   partial: DeepPartial<AuthnViaDepotFlowResult>
 ): AuthnViaDepotFlowResult => merge({
   username: 'username',
-  password: 'password',
+  authnInput: createPasswordInput(),
   userKeys: [],
   depotKey: 'depotKey',
   otpToken: null
-})
+}, partial)
+
+export const createDepotRehydration = (
+  partial: DeepPartial<DepotRehydration>
+): DepotRehydration => merge({
+  username: 'username',
+  userId: 'userId',
+  salt: 'salt',
+  hash: 'hash',
+  vault: 'vault',
+  encryptedOtpToken: 'encryptedOtpToken',
+  webAuthnCredentialId: null,
+  webAuthnSalt: null,
+  webAuthnEncryptedLocalDerivatives: null,
+  webAuthnEncryptedRemoteDerivatives: null
+}, partial)
+
+export const createDepotRehydrationWebAuthn = (
+  partial: DeepPartial<DepotRehydrationWebAuthn>
+): DepotRehydrationWebAuthn => merge({
+  webAuthnCredentialId: 'webAuthnCredentialId',
+  webAuthnSalt: 'webAuthnSalt',
+  webAuthnEncryptedLocalDerivatives: 'webAuthnEncryptedLocalDerivatives',
+  webAuthnEncryptedRemoteDerivatives: 'webAuthnEncryptedRemoteDerivatives'
+}, partial)
+
+export const createMasterKeyDerivatives = (
+  partial: DeepPartial<MasterKeyDerivatives>
+): MasterKeyDerivatives => merge({
+  authDigest: 'authDigest',
+  encryptionKey: 'encryptionKey'
+}, partial)
+
+export const createMasterKeyChangeData = (
+  partial: DeepPartial<MasterKeyChangeData>
+): MasterKeyChangeData => merge({
+  newMasterKey: 'newMasterKey',
+  newParametrization: 'newParametrization',
+  newAuthDigest: 'newAuthDigest',
+  newEncryptionKey: 'newEncryptionKey',
+  newSessionKey: 'newSessionKey'
+}, partial)
+
+export const createWebAuthnFlowResult = (
+  partial: DeepPartial<WebAuthn>
+): WebAuthn => merge({
+  credentialId: 'credentialId',
+  salt: 'salt'
+}, partial)
+
+export const createWebAuthnResult = (
+  partial: DeepPartial<WebAuthnResult>
+): WebAuthnResult => merge({
+  result: 'webAuthnResult'
+}, partial)

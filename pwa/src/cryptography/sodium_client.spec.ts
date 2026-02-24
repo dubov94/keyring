@@ -6,25 +6,29 @@ import { SodiumClient } from './sodium_client'
 import { recommendedArgon2Settings } from './argon2'
 import pad from 'lodash/pad'
 
+const toBase64 = (uint8Array: Uint8Array) => Buffer.from(uint8Array).toString('base64')
+const fromBase64 = (base64String: string) => new Uint8Array(Buffer.from(base64String, 'base64'))
 const toUtf8 = (uint8Array: Uint8Array) => new TextDecoder().decode(uint8Array)
 const fromUtf8 = (utf8String: string) => new TextEncoder().encode(utf8String)
 
 describe('SodiumClient', () => {
-  before(() => {
+  beforeEach(() => {
     container.register<SodiumWorkerInterface>(SODIUM_WORKER_INTERFACE_TOKEN, {
       useValue: <SodiumWorkerInterface>{
         toString: (uint8Array) => Promise.resolve(toUtf8(uint8Array)),
         fromString: (utf8String) => Promise.resolve(fromUtf8(utf8String)),
-        toBase64: (uint8Array) => Promise.resolve(toUtf8(uint8Array)),
-        fromBase64: (base64String) => Promise.resolve(fromUtf8(base64String)),
+        toBase64: (uint8Array) => Promise.resolve(toBase64(uint8Array)),
+        fromBase64: (base64String) => Promise.resolve(fromBase64(base64String)),
         pad: (buffer, blockSize) => {
-          const string = toUtf8(buffer)
-          return Promise.resolve(fromUtf8(pad(string, string.length + blockSize)))
+          return Promise.resolve(fromUtf8(JSON.stringify({
+            buffer: toUtf8(buffer),
+            blockSize
+          })))
         },
         unpad: (buffer, blockSize) => {
-          const string = toUtf8(buffer)
-          expect(string.slice(0, blockSize)).to.equal(' '.repeat(blockSize))
-          return Promise.resolve(fromUtf8(string.slice(blockSize)))
+          const payload = JSON.parse(toUtf8(buffer))
+          expect(payload.blockSize).to.equal(blockSize)
+          return Promise.resolve(fromUtf8(payload.buffer))
         },
         generateSalt: () => Promise.resolve(fromUtf8('_saltsaltsaltsaltsalt_')),
         computeHash: (iterations, memoryInBytes, salt, password, hashLength) => {
@@ -57,7 +61,7 @@ describe('SodiumClient', () => {
         },
         splitNonceCipher: (pack) => {
           const { nonce, cipher } = JSON.parse(toUtf8(pack))
-          return Promise.all([fromUtf8(nonce), fromUtf8(cipher)])
+          return Promise.resolve([fromUtf8(nonce), fromUtf8(cipher)])
         }
       }
     })
@@ -70,7 +74,10 @@ describe('SodiumClient', () => {
       await sodiumClient.computeAuthDigestAndEncryptionKey(
         await sodiumClient.generateNewParametrization(), 'pass')
 
-    const [salt, password] = JSON.parse(derivatives.authDigest + derivatives.encryptionKey)
+    const [salt, password] = JSON.parse(
+      toUtf8(fromBase64(derivatives.authDigest)) +
+      toUtf8(fromBase64(derivatives.encryptionKey))
+    )
     expect(salt).to.equal('_saltsaltsaltsaltsalt_')
     expect(password).to.equal('pass')
   })
@@ -78,10 +85,10 @@ describe('SodiumClient', () => {
   it('can encrypt and decrypt passwords', async () => {
     const sodiumClient = container.resolve(SodiumClient)
 
-    const password = await sodiumClient.decryptPassword('key',
-      await sodiumClient.encryptPassword('key', { value: 'value', tags: ['tag'] }))
+    const password = await sodiumClient.decryptPassword('base64Key',
+      await sodiumClient.encryptPassword('base64Key', { value: 'value', tags: ['tag'] }))
 
     expect(password.value).to.equal('value')
-    expect(password.tags).to.eql(['tag'])
+    expect(password.tags).to.deep.equal(['tag'])
   })
 })

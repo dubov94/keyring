@@ -16,6 +16,8 @@ module.exports = {
     }
   },
   chainWebpack: config => {
+    config.resolve.alias.set('canvas', 'lodash/noop')
+
     config.module
       .rule('workerize')
       .before('js')

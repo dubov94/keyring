@@ -1,15 +1,30 @@
 import { AnyAction, Dispatch, Middleware, configureStore } from '@reduxjs/toolkit'
 import { retryBackoff } from 'backoff-rxjs'
+import { option } from 'fp-ts'
 import isEqual from 'lodash/isEqual'
 import { combineEpics, createEpicMiddleware, Epic } from 'redux-observable'
-import { BehaviorSubject, defer, EMPTY, Subject, timer } from 'rxjs'
-import { concatMapTo, distinctUntilChanged, exhaustMap, filter, map, switchMap, takeUntil, tap } from 'rxjs/operators'
+import { BehaviorSubject, defer, EMPTY, Subject, timer, from } from 'rxjs'
+import {
+  concatMapTo,
+  distinctUntilChanged,
+  exhaustMap,
+  filter,
+  map,
+  switchMap,
+  takeUntil,
+  tap,
+  pairwise,
+  concatMap,
+  catchError
+} from 'rxjs/operators'
 import { isActionOf } from 'typesafe-actions'
 import { getAdministrationApi } from '@/api/api_di'
+import { getWebAuthn } from '@/cryptography/web_authn'
 import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
+import { router } from '@/router'
 import { injected, terminate } from './actions'
 import * as authnEpics from './modules/authn/epics'
-import { rehydration as depotRehydration } from './modules/depot/actions'
+import { rehydration as depotRehydration, WebAuthn } from './modules/depot/actions'
 import { snapshot as depotSnapshot } from './modules/depot/selectors'
 import * as depotEpics from './modules/depot/epics'
 import { rehydration as sessionRehydration } from './modules/session/actions'
@@ -20,9 +35,11 @@ import * as userAccountEpics from './modules/user/account/epics'
 import * as userKeysEpics from './modules/user/keys/epics'
 import * as userSecurityEpics from './modules/user/security/epics'
 import { createIdleDetector } from './idle'
+import { data } from './remote_data'
 import { RootAction } from './root_action'
 import { reducer, RootState } from './root_reducer'
 import { getLocalStorageAccessor, getSessionStorageAccessor } from './storages'
+import { navigateTo } from './modules/ui/toast/actions'
 
 // Stream of actions for use in components.
 export const action$ = new Subject<AnyAction>()
@@ -113,10 +130,15 @@ action$.pipe(
   const accessor = getLocalStorageAccessor()
   store.dispatch(depotRehydration({
     username: accessor.get<string>('depot.username'),
+    userId: accessor.get<string>('depot.user_id'),
     salt: accessor.get<string>('depot.salt'),
     hash: accessor.get<string>('depot.hash'),
     vault: accessor.get<string>('depot.vault'),
-    encryptedOtpToken: accessor.get<string>('depot.encrypted_otp_token')
+    encryptedOtpToken: accessor.get<string>('depot.encrypted_otp_token'),
+    webAuthnCredentialId: accessor.get<string>('depot.web_authn.credential_id'),
+    webAuthnSalt: accessor.get<string>('depot.web_authn.salt'),
+    webAuthnEncryptedLocalDerivatives: accessor.get<string>('depot.web_authn.encrypted_local_derivatives'),
+    webAuthnEncryptedRemoteDerivatives: accessor.get<string>('depot.web_authn.encrypted_remote_derivatives')
   }))
 })
 
@@ -130,10 +152,15 @@ action$.pipe(
 ).subscribe((snapshot) => {
   const accessor = getLocalStorageAccessor()
   accessor.set('depot.username', snapshot.username)
+  accessor.set('depot.user_id', snapshot.userId)
   accessor.set('depot.salt', snapshot.salt)
   accessor.set('depot.hash', snapshot.hash)
   accessor.set('depot.vault', snapshot.vault)
   accessor.set('depot.encrypted_otp_token', snapshot.encryptedOtpToken)
+  accessor.set('depot.web_authn.credential_id', snapshot.webAuthnCredentialId)
+  accessor.set('depot.web_authn.salt', snapshot.webAuthnSalt)
+  accessor.set('depot.web_authn.encrypted_local_derivatives', snapshot.webAuthnEncryptedLocalDerivatives)
+  accessor.set('depot.web_authn.encrypted_remote_derivatives', snapshot.webAuthnEncryptedRemoteDerivatives)
 })
 
 // Session maintenance.
@@ -168,3 +195,32 @@ state$.pipe(
     )
   })
 ).subscribe()
+
+state$.pipe(
+  map((state) => state.depot.webAuthnData),
+  map(data),
+  map(option.getOrElse<WebAuthn | null>(() => null)),
+  pairwise(),
+  concatMap(([previous, current]) => {
+    // Assuming `credentialId` cannot change without going through `null` first.
+    if (previous !== null && current === null) {
+      const { credentialId } = previous
+      return from(getWebAuthn().deleteCredential(credentialId)).pipe(
+        map(() => credentialId),
+        catchError((error) => {
+          console.warn(`Failed to delete credential ${credentialId}`, error)
+          return EMPTY
+        })
+      )
+    }
+    return EMPTY
+  })
+).subscribe((credentialId) => {
+  console.log(`Credential ${credentialId} is deleted`)
+})
+
+action$.pipe(
+  filter(isActionOf(navigateTo)),
+).subscribe((action) => {
+  router.push(action.payload)
+})

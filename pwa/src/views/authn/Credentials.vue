@@ -1,3 +1,17 @@
+<style scoped>
+  .action-group {
+    display: flex;
+  }
+
+  .action-group__submit {
+    flex: 1;
+  }
+
+  .action-group__edit {
+    min-width: auto;
+  }
+</style>
+
 <template>
   <div>
     <div class="pa-4">
@@ -7,7 +21,8 @@
           :dirty="$v.credentialsGroup.$dirty" :errors="usernameErrors"
           @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
           :autofocus="usernameIsEmpty" :disabled="usernameMatchesDepot"></form-text-field>
-        <form-text-field :type="passwordType" label="Password" prepend-icon="lock"
+        <form-text-field v-if="!biometricsMode || editRequested"
+          :type="passwordType" label="Password" prepend-icon="lock"
           :value="password" @input="setPassword"
           :dirty="$v.credentialsGroup.$dirty" :errors="passwordErrors"
           @touch="$v.credentialsGroup.$touch()" @reset="$v.credentialsGroup.$reset()"
@@ -16,14 +31,20 @@
       </v-form>
     </div>
     <div class="py-2 px-6">
-      <v-btn block color="primary" @click="submit" :loading="hasIndicatorMessage">
-        <span>Log in</span>
-        <template #loader>
-          <v-progress-circular indeterminate :size="23" :width="2">
-          </v-progress-circular>
-          <span class="ml-4">{{ indicatorMessage }}</span>
-        </template>
-      </v-btn>
+      <div class="action-group">
+        <v-btn class="action-group__submit" color="primary" @click="submit" :loading="hasIndicatorMessage">
+          <span>Log in</span>
+          <template #loader>
+            <v-progress-circular indeterminate :size="23" :width="2">
+            </v-progress-circular>
+            <span class="ml-4">{{ indicatorMessage }}</span>
+          </template>
+          <v-icon v-if="biometricsMode" right>fingerprint</v-icon>
+        </v-btn>
+        <v-btn v-if="biometricsMode" class="action-group__edit ml-2" color="primary" @click="requestEdit">
+          <v-icon>edit</v-icon>
+        </v-btn>
+      </div>
       <v-btn v-if="usernameMatchesDepot" block class="mt-2" @click="forget">
         Forget
       </v-btn>
@@ -58,6 +79,7 @@ const INDICATOR_TO_MESSAGE = new Map<AuthnViaApiFlowIndicator | AuthnViaDepotFlo
 interface Mixins {
   reveal: boolean;
   untouchedSinceDispatch: boolean;
+  biometricsAvailable: boolean;
   authnViaApi: DeepReadonly<AuthnViaApi>;
   authnViaDepot: DeepReadonly<AuthnViaDepot>;
   indicatorMessage: string | null;
@@ -68,6 +90,7 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   props: [
     'username',
     'password',
+    'biometricsAvailable',
     'authnViaApi',
     'authnViaDepot',
     'usernameMatchesDepot'
@@ -75,7 +98,8 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
   data () {
     return {
       reveal: false,
-      untouchedSinceDispatch: false
+      untouchedSinceDispatch: false,
+      editRequested: false
     }
   },
   validations: {
@@ -108,6 +132,9 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     credentialsGroup: ['username', 'password']
   },
   computed: {
+    biometricsMode (): boolean {
+      return this.biometricsAvailable && !this.editRequested
+    },
     usernameIsEmpty (): boolean {
       return this.username === ''
     },
@@ -142,6 +169,9 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
     }
   },
   methods: {
+    requestEdit () {
+      this.editRequested = true
+    },
     setUsername (value: string) {
       this.$emit('username', value)
       this.untouchedSinceDispatch = false
@@ -157,6 +187,10 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
       this.$emit('forget')
     },
     submit () {
+      if (this.biometricsMode) {
+        this.$emit('trigger-biometrics')
+        return
+      }
       if (!this.hasIndicatorMessage) {
         this.$v.$touch()
         if (!this.$v.$invalid) {

@@ -10,8 +10,9 @@
                   <credentials :username="username" @username="setUsername"
                     :password="password" @password="setPassword"
                     :username-matches-depot="usernameMatchesDepot" @forget="forget"
-                    @submit="submitCredentials" :authn-via-api="authnViaApi"
-                    :authn-via-depot="authnViaDepot">
+                    @submit="submitCredentials" @trigger-biometrics="triggerBiometrics"
+                    :authn-via-api="authnViaApi" :authn-via-depot="authnViaDepot"
+                    :biometrics-available="webAuthnCredentialId !== null">
                   </credentials>
                   <div class="text-center">
                     <router-link to="/register">Register</router-link>
@@ -51,7 +52,8 @@ import {
   AuthnViaApiFlowResult,
   OtpContext,
   provideOtp,
-  authnOtpProvisionReset
+  authnOtpProvisionReset,
+  AuthnInputKind
 } from '@/redux/modules/authn/actions'
 import {
   authnViaApi,
@@ -61,8 +63,8 @@ import {
   authnOtpProvision,
   AuthnOtpProvision
 } from '@/redux/modules/authn/selectors'
-import { generateDepotKeys, clearDepot } from '@/redux/modules/depot/actions'
-import { depotUsername } from '@/redux/modules/depot/selectors'
+import { clearDepot, webAuthnInterruption, webAuthnResult, webAuthnRequest } from '@/redux/modules/depot/actions'
+import { depotUsername, webAuthnData } from '@/redux/modules/depot/selectors'
 import { sessionUsername } from '@/redux/modules/session/selectors'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 import { data } from '@/redux/remote_data'
@@ -89,11 +91,7 @@ export default Vue.extend({
     this.actions().pipe(
       filter(isActionOf(remoteAuthnComplete)),
       takeUntil(this.$data.$destruction)
-    ).subscribe((action) => {
-      this.dispatch(generateDepotKeys({
-        username: action.payload.username,
-        password: action.payload.password
-      }))
+    ).subscribe(() => {
       this.$router.push('/dashboard')
     })
     this.actions().pipe(
@@ -102,7 +100,7 @@ export default Vue.extend({
     ).subscribe((action) => {
       this.dispatch(initiateBackgroundAuthn({
         username: action.payload.data.username,
-        password: action.payload.data.password
+        authnInput: action.payload.data.authnInput
       }))
       this.$router.push('/dashboard')
     })
@@ -123,6 +121,26 @@ export default Vue.extend({
     ).subscribe(() => {
       this.dispatch(showToast({
         message: 'Changed the password remotely? Click \'Forget\' to re-enter.'
+      }))
+    })
+    this.actions().pipe(
+      filter(isActionOf(webAuthnResult)),
+      takeUntil(this.$data.$destruction)
+    ).subscribe(() => {
+      if (!this.usernameMatchesDepot) {
+        console.log('`username` does not match `depotUsername`')
+        return
+      }
+      if (this.webAuthnCredentialId === null) {
+        console.log('`webAuthnCredentialId` is not available')
+        return
+      }
+      this.dispatch(logInViaDepot({
+        username: this.username,
+        authnInput: {
+          kind: AuthnInputKind.WEB_AUTHN,
+          credentialId: this.webAuthnCredentialId
+        }
       }))
     })
   },
@@ -155,6 +173,14 @@ export default Vue.extend({
     },
     authnOtpProvision (): DeepReadonly<AuthnOtpProvision> {
       return authnOtpProvision(this.$data.$state)
+    },
+    webAuthnCredentialId (): string | null {
+      return fn.pipe(
+        webAuthnData(this.$data.$state),
+        data,
+        option.map((data) => data === null ? null : data.credentialId),
+        option.getOrElse(() => null)
+      )
     }
   },
   methods: {
@@ -168,21 +194,28 @@ export default Vue.extend({
       this.password = value
     },
     forget () {
+      this.dispatch(webAuthnInterruption())
       this.dispatch(clearDepot())
       this.dispatch(showToast({ message: 'All data has been wiped out' }))
     },
+    triggerBiometrics () {
+      this.dispatch(webAuthnRequest({ credentialId: this.webAuthnCredentialId }))
+    },
     submitCredentials () {
-      if (this.usernameMatchesDepot) {
-        this.dispatch(logInViaDepot({
-          username: this.username,
-          password: this.password
-        }))
-      } else {
+      if (!this.usernameMatchesDepot) {
         this.dispatch(logInViaApi({
           username: this.username,
           password: this.password
         }))
+        return
       }
+      this.dispatch(logInViaDepot({
+        username: this.username,
+        authnInput: {
+          kind: AuthnInputKind.PASSWORD,
+          password: this.password
+        }
+      }))
     },
     setOtp (value: string) {
       this.otp = value
@@ -195,8 +228,9 @@ export default Vue.extend({
           option.map((otpContext: DeepReadonly<OtpContext>) => provideOtp({
             credentialParams: {
               username: apiData.username,
-              password: apiData.password,
+              authnInput: apiData.authnInput,
               parametrization: apiData.parametrization,
+              authDigest: apiData.authDigest,
               encryptionKey: apiData.encryptionKey
             },
             authnKey: otpContext.authnKey,
@@ -212,6 +246,7 @@ export default Vue.extend({
     }
   },
   beforeDestroy () {
+    this.dispatch(webAuthnInterruption())
     this.dispatch(authnViaApiReset())
     this.dispatch(authnViaDepotReset())
     this.dispatch(authnOtpProvisionReset())

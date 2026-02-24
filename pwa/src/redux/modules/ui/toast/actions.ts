@@ -10,3 +10,4 @@ export const toastReadyToBeShown = createAction('ui/toast/readyToBeShown')<DeepR
   timeout: number;
 }>>()
 export const hideToast = createAction('ui/toast/hide')()
+export const navigateTo = createAction('ui/navigateTo')<string>()

@@ -167,7 +167,8 @@ vue_cli_service_test(
     args = [
         "--node_options=--require=./$(rootpath :change_directory_js)",
         "test:unit",
-        "pwa/src/**/*.spec.{js,ts}",
+        "src/redux/testing/init.ts",
+        "src/**/*.spec.{js,ts}",
     ],
     data = [":change_directory_js"] + [
         ":specs",

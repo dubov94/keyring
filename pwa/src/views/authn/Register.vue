@@ -115,7 +115,7 @@ import { register, RegistrationFlowIndicator, registrationReset, registrationSig
 import { registration, Registration } from '@/redux/modules/authn/selectors'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 import { isActionSuccess } from '@/redux/flow_signal'
-import { TurnstileApi, getTurnstileApi } from '@/turnstile_di'
+import { getTurnstileApi } from '@/turnstile_di'
 
 const usernameTakenIndicator = remoteDataErrorIndicator(ServiceRegisterResponseError.NAMETAKEN)
 
@@ -243,7 +243,11 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         captchaToken: this.turnstileToken
       }))
     },
-    mountTurnstile (turnstileApi: TurnstileApi) {
+    mountTurnstile (): boolean {
+      const turnstileApi = getTurnstileApi()
+      if (turnstileApi === null) {
+        return false
+      }
       this.turnstileWidgetId = turnstileApi.render(
         this.$refs.captcha as HTMLElement,
         {
@@ -260,14 +264,18 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
           size: 'normal'
         }
       )!
+      return true
     }
   },
   mounted () {
-    timer(0, 1000).pipe(
+    if (this.mountTurnstile()) {
+      return
+    }
+    timer(1000).pipe(
       takeUntil(this.$data.$destruction),
-      rxMap(() => getTurnstileApi()),
-      takeWhile((turnstileApi) => turnstileApi === null, true)
-    ).subscribe(this.mountTurnstile)
+      rxMap(() => this.mountTurnstile()),
+      takeWhile((done) => !done)
+    ).subscribe()
   },
   beforeDestroy () {
     // Ideally we should call `unmountTurnstile` here,

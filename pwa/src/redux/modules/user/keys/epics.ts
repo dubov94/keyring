@@ -627,7 +627,7 @@ const cliquePinTogglingStream = (
       )),
       action$.pipe(
         filterOperation(keyPinTogglingSignal, uid),
-        takeWhile((signal) => !isSignalFinale(signal.payload), true)
+        takeWhile((signal) => !isSignalFinale(signal.payload))
       )
     ))
   )

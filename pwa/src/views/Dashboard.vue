@@ -70,15 +70,26 @@
                   :input-value="isDepotActive" @change="toggleDepot"></v-switch>
               </div>
             </v-chip>
-            <v-chip large outlined disabled tag="div" class="ma-2">
-              <v-icon left>fingerprint</v-icon>
+            <v-chip large outlined :disabled="!webAuthnEnabled" tag="div" class="ma-2">
+              <v-icon left :color="webAuthnBoxColor">fingerprint</v-icon>
               <div class="d-flex align-center">
                 <div>
                   <div>Biometrics</div>
                   <div class="text-body-2 text--secondary">
-                    Coming soon!
+                    <template v-if="!isDepotActive">
+                      Requires trusted device
+                    </template>
+                    <template v-else-if="!webAuthnToggle && !canAccessApi">
+                      Requires connectivity
+                    </template>
+                    <template v-else>
+                      Faster authentication
+                    </template>
                   </div>
                 </div>
+                <v-switch hide-details class="mt-0 pt-0 ml-4" :color="webAuthnBoxColor"
+                  :disabled="!webAuthnEnabled" :loading="webAuthnLoading"
+                  :input-value="webAuthnToggle" @change="toggleWebAuthn"></v-switch>
               </div>
             </v-chip>
           </div>
@@ -119,9 +130,10 @@ import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
 import { getUidService } from '@/cryptography/uid_service'
 import { Key } from '@/redux/domain'
+import { hasIndicator, data } from '@/redux/remote_data'
 import { backgroundAuthnError } from '@/redux/modules/authn/selectors'
-import { toggleDepot } from '@/redux/modules/depot/actions'
-import { isDepotActive } from '@/redux/modules/depot/selectors'
+import { toggleDepot, toggleWebAuthn, webAuthnInterruption, WebAuthn } from '@/redux/modules/depot/actions'
+import { isDepotActive, webAuthnData, WebAuthnData } from '@/redux/modules/depot/selectors'
 import { canAccessApi, featurePrompts, isOtpEnabled } from '@/redux/modules/user/account/selectors'
 import { userKeysUpdate } from '@/redux/modules/user/keys/actions'
 import { Clique, cliques, getCliqueRepr } from '@/redux/modules/user/keys/selectors'
@@ -165,6 +177,28 @@ export default (Vue as VueConstructor<Vue>).extend({
     },
     tfaBoxColor (): string {
       return this.isOtpEnabled ? 'success' : 'warning'
+    },
+    webAuthnData (): WebAuthnData {
+      return webAuthnData(this.$data.$state)
+    },
+    webAuthnValue (): boolean {
+      return fn.pipe(
+        data(this.webAuthnData),
+        option.map((value: DeepReadonly<WebAuthn | null>) => value !== null),
+        option.getOrElse<boolean>(() => false)
+      )
+    },
+    webAuthnEnabled (): boolean {
+      return this.isDepotActive && (this.webAuthnToggle || this.canAccessApi)
+    },
+    webAuthnBoxColor (): string {
+      return this.webAuthnValue ? 'success' : 'grey lighten-1'
+    },
+    webAuthnToggle (): boolean {
+      return hasIndicator(this.webAuthnData) || this.webAuthnValue
+    },
+    webAuthnLoading (): boolean {
+      return hasIndicator(this.webAuthnData)
     },
     backgroundAuthnError (): boolean {
       return backgroundAuthnError(this.$data.$state)
@@ -213,10 +247,16 @@ export default (Vue as VueConstructor<Vue>).extend({
       this.showMenu = value
     },
     toggleDepot (value: boolean) {
+      if (!value) {
+        this.dispatch(toggleWebAuthn(false))
+      }
       this.dispatch(toggleDepot(value))
     },
     manageOtp () {
       this.$router.push('/settings')
+    },
+    toggleWebAuthn (value: boolean) {
+      this.dispatch(toggleWebAuthn(value))
     },
     addKey () {
       this.newCliques.unshift(getUidService().v4())
@@ -275,6 +315,9 @@ export default (Vue as VueConstructor<Vue>).extend({
     if (this.matchedCliques.length > 0) {
       ;(this.$refs.search as HTMLInputElement).focus()
     }
+  },
+  beforeDestroy () {
+    this.dispatch(webAuthnInterruption())
   }
 })
 </script>

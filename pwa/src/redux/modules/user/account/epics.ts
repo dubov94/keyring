@@ -28,11 +28,12 @@ import { SESSION_TOKEN_HEADER_NAME } from '@/headers'
 import { Key, Password } from '@/redux/domain'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { cancel, exception, failure, indicator, isActionSuccess, errorToMessage, success } from '@/redux/flow_signal'
-import { remoteAuthnComplete } from '@/redux/modules/authn/actions'
+import { AuthnInputKind, remoteAuthnComplete } from '@/redux/modules/authn/actions'
+import { toggleWebAuthn } from '@/redux/modules/depot/actions'
 import { rehydration as sessionRehydration } from '@/redux/modules/session/actions'
+import { navigateTo, showToast } from '@/redux/modules/ui/toast/actions'
 import { RootAction } from '@/redux/root_action'
 import { RootState } from '@/redux/root_reducer'
-import { router } from '@/router'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,
@@ -94,7 +95,7 @@ export const redirectAfterLogoutEpic: Epic<RootAction, RootAction, RootState> = 
     if (action.payload.logoutTrigger !== null) {
       const homeTarget = '/'
       console.log(`Redirecting to ${homeTarget}`)
-      router.push(homeTarget)
+      return of(navigateTo(homeTarget))
     }
     return EMPTY
   })
@@ -210,6 +211,7 @@ const masterKeyChange = <T extends TypeConstant>(
                     return of(signalCreator(success({
                       newMasterKey: renewal,
                       newParametrization,
+                      newAuthDigest: newDerivatives.authDigest,
                       newEncryptionKey: newDerivatives.encryptionKey,
                       newSessionKey: response.sessionKey!
                     })))
@@ -343,8 +345,12 @@ export const logOutOnBackgroundAuthnFailureEpic: Epic<RootAction, RootAction, Ro
 export const remoteRehashEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
   filter(isActionOf(remoteAuthnComplete)),
   switchMap((action) => {
-    const { parametrization, password } = action.payload
-    if (!getSodiumClient().isParametrizationUpToDate(parametrization)) {
+    const { parametrization, authnInput } = action.payload
+    if (getSodiumClient().isParametrizationUpToDate(parametrization)) {
+      return EMPTY
+    }
+    if (authnInput.kind === AuthnInputKind.PASSWORD) {
+      const { password } = authnInput
       return masterKeyChange(
         { current: password, renewal: password },
         // Use `remoteAuthnComplete` data to avoid race conditions with `emplace`.
@@ -356,7 +362,11 @@ export const remoteRehashEpic: Epic<RootAction, RootAction, RootState> = (action
         remoteRehashSignal
       )
     }
-    return EMPTY
+    if (authnInput.kind === AuthnInputKind.WEB_AUTHN) {
+      return of(toggleWebAuthn(false))
+    }
+    const { kind } = authnInput
+    return of(showToast({ message: `Unsupported \`AuthnInputKind\`: ${kind}` }))
   })
 )
 

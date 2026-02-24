@@ -17,19 +17,32 @@ import {
   ServiceProvideOtpResponse,
   ServiceProvideOtpResponseError,
   ServiceFeatureType,
-  ServiceFeaturePrompt
+  ServiceFeaturePrompt,
+  ServiceUserData
 } from '@/api/definitions'
 import { SodiumClient } from '@/cryptography/sodium_client'
 import { Key } from '@/redux/domain'
 import { cancel, exception, failure, FlowSignal, indicator, StandardError, success } from '@/redux/flow_signal'
-import { rehydration as depotRehydration } from '@/redux/modules/depot/actions'
+import { rehydration as depotRehydration, webAuthnResult } from '@/redux/modules/depot/actions'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 import { defaultMailVerification, remoteCredentialsMismatchLocal } from '@/redux/modules/user/account/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createAuthnViaDepotFlowResult, createKeyProto, createRegistrationFlowResult, createUserKey } from '@/redux/testing/domain'
 import {
+  createAuthnViaDepotFlowResult,
+  createDepotRehydration,
+  createDepotRehydrationWebAuthn,
+  createKeyProto,
+  createMasterKeyDerivatives,
+  createPasswordInput,
+  createRegistrationFlowResult,
+  createUserKey,
+  createWebAuthnInput,
+  createWebAuthnResult
+} from '@/redux/testing/domain'
+import {
+  AuthnInputKind,
   AuthnOtpProvisionFlowIndicator,
   authnOtpProvisionReset,
   authnOtpProvisionSignal,
@@ -43,6 +56,7 @@ import {
   authnViaDepotSignal,
   backgroundOtpProvisionSignal,
   backgroundRemoteAuthnSignal,
+  initiateBackgroundAuthn,
   logInViaApi,
   logInViaDepot,
   provideOtp,
@@ -63,7 +77,8 @@ import {
   remoteAuthnCompleteOnCredentialsEpic,
   provideOtpEpic,
   displayAuthnOtpProvisionExceptionsEpic,
-  backgroundOtpProvisionEpic
+  backgroundOtpProvisionEpic,
+  backgroundRemoteAuthnEpic
 } from './epics'
 
 const testEpicCancellation = <T extends TypeConstant, I, S, E>(
@@ -103,6 +118,24 @@ const testEpicException = <T extends TypeConstant, I, S, E>(
     ])
   }
 
+const createFilledUserDataProto = (): ServiceUserData => ({
+  userUid: 'userId',
+  sessionKey: 'sessionKey',
+  featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
+  mailVerification: {
+    required: false,
+    tokenUid: ''
+  },
+  mail: 'mail@example.com',
+  userKeys: [createKeyProto({
+    uid: 'identifier',
+    password: {
+      value: '$value',
+      tags: ['$tag']
+    }
+  })]
+})
+
 describe('registrationEpic', () => {
   it('emits registration sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
@@ -127,7 +160,7 @@ describe('registrationEpic', () => {
       error: ServiceRegisterResponseError.NONE,
       userUid: 'userId',
       sessionKey: 'sessionKey',
-      mailTokenId: 'mailTokenId'
+      mailTokenUid: 'mailTokenId'
     })
     container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
       useValue: instance(mockAuthenticationApi)
@@ -163,9 +196,9 @@ describe('logInViaApiEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
-    when(mockAuthenticationApi.authenticationFetchSalt({
+    when(mockAuthenticationApi.authenticationFetchSalt(deepEqual({
       username: 'username'
-    })).thenResolve(<ServiceGetSaltResponse>{
+    }))).thenResolve(<ServiceGetSaltResponse>{
       error: ServiceGetSaltResponseError.NONE,
       salt: 'parametrization'
     })
@@ -174,23 +207,7 @@ describe('logInViaApiEpic', () => {
       digest: 'authDigest'
     }))).thenResolve(<ServiceLogInResponse>{
       error: ServiceLogInResponseError.NONE,
-      userData: {
-        userUid: 'userId',
-        sessionKey: 'sessionKey',
-        featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
-        mailVerification: {
-          required: false,
-          tokenId: ''
-        },
-        mail: 'mail@example.com',
-        userKeys: [createKeyProto({
-          uid: 'identifier',
-          password: {
-            value: '$value',
-            tags: ['$tag']
-          }
-        })]
-      }
+      userData: createFilledUserDataProto()
     })
     container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
       useValue: instance(mockAuthenticationApi)
@@ -226,8 +243,9 @@ describe('logInViaApiEpic', () => {
       authnViaApiSignal(indicator(AuthnViaApiFlowIndicator.DECRYPTING_DATA)),
       authnViaApiSignal(success({
         username: 'username',
-        password: 'password',
+        authnInput: createPasswordInput('password'),
         parametrization: 'parametrization',
+        authDigest: 'authDigest',
         encryptionKey: 'encryptionKey',
         content: either.right({
           userId: 'userId',
@@ -249,9 +267,9 @@ describe('logInViaApiEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
-    when(mockAuthenticationApi.authenticationFetchSalt({
+    when(mockAuthenticationApi.authenticationFetchSalt(deepEqual({
       username: 'username'
-    })).thenResolve(<ServiceGetSaltResponse>{
+    }))).thenResolve(<ServiceGetSaltResponse>{
       error: ServiceGetSaltResponseError.NONE,
       salt: 'parametrization'
     })
@@ -260,17 +278,7 @@ describe('logInViaApiEpic', () => {
       digest: 'authDigest'
     }))).thenResolve(<ServiceLogInResponse>{
       error: ServiceLogInResponseError.NONE,
-      userData: {
-        userUid: 'userId',
-        sessionKey: 'sessionKey',
-        featurePrompts: [],
-        mailVerification: {
-          required: false,
-          tokenId: ''
-        },
-        mail: 'mail@example.com',
-        userKeys: []
-      }
+      userData: createFilledUserDataProto()
     })
     container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
       useValue: instance(mockAuthenticationApi)
@@ -279,6 +287,13 @@ describe('logInViaApiEpic', () => {
     when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
       authDigest: 'authDigest',
       encryptionKey: 'encryptionKey'
+    })
+    when(mockSodiumClient.decryptPassword('encryptionKey', deepEqual({
+      value: '$value',
+      tags: ['$tag']
+    }))).thenResolve({
+      value: 'value',
+      tags: ['tag']
     })
     container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)
@@ -299,16 +314,21 @@ describe('logInViaApiEpic', () => {
       authnViaApiSignal(indicator(AuthnViaApiFlowIndicator.DECRYPTING_DATA)),
       authnViaApiSignal(success({
         username: 'username',
-        password: 'password',
+        authnInput: createPasswordInput('password'),
         parametrization: 'parametrization',
+        authDigest: 'authDigest',
         encryptionKey: 'encryptionKey',
         content: either.right({
           userId: 'userId',
           sessionKey: 'sessionKey',
-          featurePrompts: [],
+          featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
           mailVerification: defaultMailVerification(),
           mail: 'mail@example.com',
-          userKeys: []
+          userKeys: [createUserKey({
+            identifier: 'identifier',
+            value: 'value',
+            tags: ['tag']
+          })]
         })
       }))
     ])
@@ -327,8 +347,9 @@ describe('provideOtpEpic', () => {
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const credentialParams: AuthnViaApiParams = {
       username: 'username',
-      password: 'password',
+      authnInput: createPasswordInput(),
       parametrization: 'parametrization',
+      authDigest: 'authDigest',
       encryptionKey: 'encryptionKey'
     }
     const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
@@ -338,23 +359,7 @@ describe('provideOtpEpic', () => {
       yieldTrustedToken: false
     }))).thenResolve(<ServiceProvideOtpResponse>{
       error: ServiceProvideOtpResponseError.NONE,
-      userData: {
-        userUid: 'userId',
-        sessionKey: 'sessionKey',
-        featurePrompts: [],
-        mailVerification: {
-          required: false,
-          tokenId: ''
-        },
-        mail: 'mail@example.com',
-        userKeys: [createKeyProto({
-          uid: 'identifier',
-          password: {
-            value: '$value',
-            tags: ['$tag']
-          }
-        })]
-      }
+      userData: createFilledUserDataProto()
     })
     container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
       useValue: instance(mockAuthenticationApi)
@@ -390,7 +395,7 @@ describe('provideOtpEpic', () => {
         userData: {
           userId: 'userId',
           sessionKey: 'sessionKey',
-          featurePrompts: [],
+          featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
           mailVerification: defaultMailVerification(),
           mail: 'mail@example.com',
           userKeys: [createUserKey({
@@ -411,19 +416,13 @@ describe('displayAuthnOtpProvisionExceptionsEpic', () => {
 })
 
 describe('logInViaDepotEpic', () => {
-  it('emits authentication sequence', async () => {
+  it(`emits authentication sequence on ${AuthnInputKind.PASSWORD}`, async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(depotRehydration({
-      username: 'username',
-      salt: 'parametrization',
-      hash: 'authDigest',
-      vault: 'vault',
-      encryptedOtpToken: 'encryptedOtpToken'
-    }))
+    store.dispatch(depotRehydration(createDepotRehydration({})))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
-    when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
-      authDigest: 'authDigest',
+    when(mockSodiumClient.computeAuthDigestAndEncryptionKey('salt', 'password')).thenResolve({
+      authDigest: 'hash',
       encryptionKey: 'depotKey'
     })
     const userKeys: Key[] = [createUserKey({
@@ -436,11 +435,12 @@ describe('logInViaDepotEpic', () => {
     container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)
     })
+    const authnInput = createPasswordInput()
 
     const epicTracker = new EpicTracker(logInViaDepotEpic(action$, state$, {}))
     actionSubject.next(logInViaDepot({
       username: 'username',
-      password: 'password'
+      authnInput
     }))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
@@ -450,8 +450,53 @@ describe('logInViaDepotEpic', () => {
       authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.DECRYPTING_DATA)),
       authnViaDepotSignal(success({
         username: 'username',
-        password: 'password',
-        userKeys: userKeys,
+        authnInput,
+        userKeys,
+        depotKey: 'depotKey',
+        otpToken: 'otpToken'
+      }))
+    ])
+  })
+
+  it(`emits authentication sequence on ${AuthnInputKind.WEB_AUTHN}`, async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(depotRehydration(createDepotRehydration(createDepotRehydrationWebAuthn({}))))
+    store.dispatch(webAuthnResult(createWebAuthnResult({})))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockSodiumClient = mock(SodiumClient)
+    when(mockSodiumClient.decryptString('webAuthnResult', 'webAuthnEncryptedLocalDerivatives')).thenResolve(
+      JSON.stringify(createMasterKeyDerivatives({
+        authDigest: 'hash',
+        encryptionKey: 'depotKey'
+      }))
+    )
+    const userKeys: Key[] = [createUserKey({
+      identifier: 'identifier',
+      value: 'value',
+      tags: ['tag']
+    })]
+    when(mockSodiumClient.decryptString('depotKey', 'vault')).thenResolve(JSON.stringify(userKeys))
+    when(mockSodiumClient.decryptString('depotKey', 'encryptedOtpToken')).thenResolve('otpToken')
+    container.register(SodiumClient, {
+      useValue: instance(mockSodiumClient)
+    })
+    const authnInput = createWebAuthnInput()
+
+    const epicTracker = new EpicTracker(logInViaDepotEpic(action$, state$, {}))
+    actionSubject.next(logInViaDepot({
+      username: 'username',
+      authnInput
+    }))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
+      authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.DECRYPTING_DATA)),
+      authnViaDepotSignal(success({
+        username: 'username',
+        authnInput,
+        userKeys,
         depotKey: 'depotKey',
         otpToken: 'otpToken'
       }))
@@ -460,19 +505,13 @@ describe('logInViaDepotEpic', () => {
 
   it('emits failure when usernames do not match', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(depotRehydration({
-      username: 'username',
-      salt: 'parametrization',
-      hash: 'authDigest',
-      vault: 'vault',
-      encryptedOtpToken: null
-    }))
+    store.dispatch(depotRehydration(createDepotRehydration({})))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
     const epicTracker = new EpicTracker(logInViaDepotEpic(action$, state$, {}))
     actionSubject.next(logInViaDepot({
       username: 'random',
-      password: 'password'
+      authnInput: createPasswordInput()
     }))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
@@ -484,16 +523,10 @@ describe('logInViaDepotEpic', () => {
 
   it('emits failure when digests do not match', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(depotRehydration({
-      username: 'username',
-      salt: 'parametrization',
-      hash: 'authDigest',
-      vault: 'vault',
-      encryptedOtpToken: null
-    }))
+    store.dispatch(depotRehydration(createDepotRehydration({})))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockSodiumClient = mock(SodiumClient)
-    when(mockSodiumClient.computeAuthDigestAndEncryptionKey('parametrization', 'password')).thenResolve({
+    when(mockSodiumClient.computeAuthDigestAndEncryptionKey('salt', 'password')).thenResolve({
       authDigest: 'random',
       encryptionKey: 'depotKey'
     })
@@ -504,7 +537,7 @@ describe('logInViaDepotEpic', () => {
     const epicTracker = new EpicTracker(logInViaDepotEpic(action$, state$, {}))
     actionSubject.next(logInViaDepot({
       username: 'username',
-      password: 'password'
+      authnInput: createPasswordInput()
     }))
     actionSubject.complete()
     await epicTracker.waitForCompletion()
@@ -522,26 +555,106 @@ describe('displayAuthnViaDepotExceptionsEpic', () => {
   it('emits toast data', testEpicException(displayAuthnViaDepotExceptionsEpic, authnViaDepotSignal))
 })
 
+describe('backgroundRemoteAuthnEpic', () => {
+  it(`emits authentication sequence on ${AuthnInputKind.WEB_AUTHN}`, async () => {
+    const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(depotRehydration(createDepotRehydration(createDepotRehydrationWebAuthn({}))))
+    store.dispatch(webAuthnResult(createWebAuthnResult({})))
+    const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    const mockAuthenticationApi: AuthenticationApi = mock(AuthenticationApi)
+    when(mockAuthenticationApi.authenticationFetchSalt(deepEqual({
+      username: 'username'
+    }))).thenResolve(<ServiceGetSaltResponse>{
+      error: ServiceGetSaltResponseError.NONE,
+      salt: 'parametrization'
+    })
+    when(mockAuthenticationApi.authenticationLogIn(deepEqual({
+      username: 'username',
+      digest: 'webAuthnAuthDigest'
+    }))).thenResolve(<ServiceLogInResponse>{
+      error: ServiceLogInResponseError.NONE,
+      userData: createFilledUserDataProto()
+    })
+    container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
+      useValue: instance(mockAuthenticationApi)
+    })
+    const mockSodiumClient = mock(SodiumClient)
+    when(mockSodiumClient.decryptString('webAuthnResult', 'webAuthnEncryptedRemoteDerivatives')).thenResolve(
+      JSON.stringify(createMasterKeyDerivatives({
+        authDigest: 'webAuthnAuthDigest',
+        encryptionKey: 'webAuthnEncryptionKey'
+      }))
+    )
+    when(mockSodiumClient.decryptPassword('webAuthnEncryptionKey', deepEqual({
+      value: '$value',
+      tags: ['$tag']
+    }))).thenResolve({
+      value: 'value',
+      tags: ['tag']
+    })
+    container.register(SodiumClient, {
+      useValue: instance(mockSodiumClient)
+    })
+    const authnInput = createWebAuthnInput('webAuthnCredentialId')
+
+    const epicTracker = new EpicTracker(backgroundRemoteAuthnEpic(action$, state$, {}))
+    actionSubject.next(initiateBackgroundAuthn({
+      username: 'username',
+      authnInput
+    }))
+    actionSubject.complete()
+    await epicTracker.waitForCompletion()
+
+    expect(await drainEpicActions(epicTracker)).to.deep.equal([
+      backgroundRemoteAuthnSignal(indicator(AuthnViaApiFlowIndicator.RETRIEVING_PARAMETRIZATION)),
+      backgroundRemoteAuthnSignal(indicator(AuthnViaApiFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES)),
+      backgroundRemoteAuthnSignal(indicator(AuthnViaApiFlowIndicator.MAKING_REQUEST)),
+      backgroundRemoteAuthnSignal(indicator(AuthnViaApiFlowIndicator.DECRYPTING_DATA)),
+      backgroundRemoteAuthnSignal(success({
+        username: 'username',
+        authnInput,
+        parametrization: 'parametrization',
+        authDigest: 'webAuthnAuthDigest',
+        encryptionKey: 'webAuthnEncryptionKey',
+        content: either.right({
+          userId: 'userId',
+          sessionKey: 'sessionKey',
+          featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
+          mailVerification: defaultMailVerification(),
+          mail: 'mail@example.com',
+          userKeys: [createUserKey({
+            identifier: 'identifier',
+            value: 'value',
+            tags: ['tag']
+          })]
+        })
+      }))
+    ])
+  })
+})
+
 describe('backgroundOtpProvisionEpic', () => {
   it('emits provision sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
-    store.dispatch(depotRehydration({
-      username: 'username',
-      salt: 'salt',
-      hash: 'hash',
-      vault: 'vault',
-      encryptedOtpToken: 'encryptedOtpToken'
-    }))
+    store.dispatch(depotRehydration(createDepotRehydration({})))
     store.dispatch(authnViaDepotSignal(success(createAuthnViaDepotFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const credentialParams: AuthnViaApiParams = {
       username: 'username',
-      password: 'password',
+      authnInput: createPasswordInput(),
       parametrization: 'parametrization',
+      authDigest: 'authDigest',
       encryptionKey: 'encryptionKey'
     }
     const mockSodiumClient = mock(SodiumClient)
     when(mockSodiumClient.decryptString('depotKey', 'encryptedOtpToken')).thenResolve('otpToken')
+    when(mockSodiumClient.decryptPassword('encryptionKey', deepEqual({
+      value: '$value',
+      tags: ['$tag']
+    }))).thenResolve({
+      value: 'value',
+      tags: ['tag']
+    })
     container.register(SodiumClient, {
       useValue: instance(mockSodiumClient)
     })
@@ -553,17 +666,7 @@ describe('backgroundOtpProvisionEpic', () => {
     }))).thenResolve(<ServiceProvideOtpResponse>{
       error: ServiceProvideOtpResponseError.NONE,
       trustedToken: 'newOtpToken',
-      userData: {
-        userUid: 'userId',
-        sessionKey: 'sessionKey',
-        featurePrompts: [],
-        mailVerification: {
-          required: false,
-          tokenId: ''
-        },
-        mail: 'mail@example.com',
-        userKeys: []
-      }
+      userData: createFilledUserDataProto()
     })
     container.register<AuthenticationApi>(AUTHENTICATION_API_TOKEN, {
       useValue: instance(mockAuthenticationApi)
@@ -589,10 +692,14 @@ describe('backgroundOtpProvisionEpic', () => {
         userData: {
           userId: 'userId',
           sessionKey: 'sessionKey',
-          featurePrompts: [],
+          featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],
           mailVerification: defaultMailVerification(),
           mail: 'mail@example.com',
-          userKeys: []
+          userKeys: [createUserKey({
+            identifier: 'identifier',
+            value: 'value',
+            tags: ['tag']
+          })]
         }
       }))
     ])
@@ -618,8 +725,9 @@ describe('remoteCredentialsMismatchLocalEpic', () => {
 describe('remoteAuthnCompleteOnCredentialsEpic', () => {
   const params = {
     username: 'username',
-    password: 'password',
+    authnInput: createPasswordInput(),
     parametrization: 'parametrization',
+    authDigest: 'authDigest',
     encryptionKey: 'encryptionKey'
   }
   const userData = {

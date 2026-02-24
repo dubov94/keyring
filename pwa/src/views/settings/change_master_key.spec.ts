@@ -4,15 +4,27 @@ import { mount, Wrapper } from '@vue/test-utils'
 import { expect } from 'chai'
 import { function as fn } from 'fp-ts'
 import { EMPTY, Subject } from 'rxjs'
-import { ActionQueue, drainActionQueue, getValue, setUpExpansionPanelProviders, setUpLocalVue, setUpStateMixin, setUpTranslationMixin, setUpVuetify } from '@/components/testing'
+import {
+  ActionQueue,
+  drainActionQueue,
+  getValue,
+  setUpExpansionPanelProviders,
+  setUpLocalVue,
+  setUpStateMixin,
+  setUpTranslationMixin,
+  setUpVuetify
+} from '@/components/testing'
+import { STRENGTH_TEST_SERVICE_TOKEN, StrengthTestService } from '@/cryptography/strength_test_service'
 import { success } from '@/redux/flow_signal'
 import { registrationSignal } from '@/redux/modules/authn/actions'
 import { showToast } from '@/redux/modules/ui/toast/actions'
 import { changeMasterKey, masterKeyChangeReset, masterKeyChangeSignal } from '@/redux/modules/user/account/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
-import { createRegistrationFlowResult } from '@/redux/testing/domain'
+import { createMasterKeyChangeData, createRegistrationFlowResult } from '@/redux/testing/domain'
+import { PositiveFakeStrengthTestService } from '@/redux/testing/services'
 import ChangeMasterKey from './ChangeMasterKey.vue'
+import { container } from 'tsyringe'
 
 describe('ChangeMasterKey', () => {
   let store: Store<RootState, RootAction>
@@ -21,6 +33,9 @@ describe('ChangeMasterKey', () => {
   let $actions: Subject<RootAction>
 
   beforeEach(async () => {
+    container.register<StrengthTestService>(STRENGTH_TEST_SERVICE_TOKEN, {
+      useValue: new PositiveFakeStrengthTestService()
+    })
     const localVue = setUpLocalVue()
     store = createStore(reducer)
     store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
@@ -79,12 +94,9 @@ describe('ChangeMasterKey', () => {
     await getNewPasswordInput().setValue('xyz')
     await getRepeatNewPasswordInput().setValue('xyz')
     await getSubmitButton().trigger('click')
-    $actions.next(masterKeyChangeSignal(success({
-      newMasterKey: 'xyz',
-      newParametrization: 'newParametrization',
-      newEncryptionKey: 'newEncryptionKey',
-      newSessionKey: 'newSessionKey'
-    })))
+    $actions.next(masterKeyChangeSignal(success(createMasterKeyChangeData({
+      newMasterKey: 'xyz'
+    }))))
     await wrapper.vm.$nextTick()
 
     expect(getValue(getCurrentPasswordInput())).to.be.empty

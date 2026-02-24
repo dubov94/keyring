@@ -9,10 +9,19 @@ import VueRouter from 'vue-router'
 import LogIn from './LogIn.vue'
 import { function as fn } from 'fp-ts'
 import { expect } from 'chai'
-import { authnViaApiReset, authnViaDepotReset, authnViaDepotSignal, initiateBackgroundAuthn, logInViaApi, logInViaDepot, remoteAuthnComplete } from '@/redux/modules/authn/actions'
-import { generateDepotKeys, rehydration as depotRehydration } from '@/redux/modules/depot/actions'
+import {
+  authnOtpProvisionReset,
+  authnViaApiReset,
+  authnViaDepotReset,
+  authnViaDepotSignal,
+  initiateBackgroundAuthn,
+  logInViaApi,
+  logInViaDepot,
+  remoteAuthnComplete
+} from '@/redux/modules/authn/actions'
+import { rehydration as depotRehydration, webAuthnInterruption, webAuthnResult } from '@/redux/modules/depot/actions'
 import { success } from '@/redux/flow_signal'
-import { createAuthnViaDepotFlowResult, createRemoteAuthnCompleteResult } from '@/redux/testing/domain'
+import { createAuthnViaDepotFlowResult, createDepotRehydration, createDepotRehydrationWebAuthn, createPasswordInput, createRemoteAuthnCompleteResult, createWebAuthnInput, createWebAuthnResult } from '@/redux/testing/domain'
 
 describe('LogIn', () => {
   let store: Store<RootState, RootAction>
@@ -50,13 +59,14 @@ describe('LogIn', () => {
 
   const getUsernameInput = () => wrapper.find('[aria-label="Username"]')
   const getPasswordInput = () => wrapper.find('[aria-label="Password"]')
-  const getPersistanceSwitch = () => wrapper.find('[role="switch"]')
-  const getRegisterButton = () => wrapper.find('button')
+  const getLogInButton = () => wrapper.find('button.primary')
 
   it('dispatches remote authentication action', async () => {
     await getUsernameInput().setValue('username')
     await getPasswordInput().setValue('password')
-    await getRegisterButton().trigger('click')
+    const logInButton = getLogInButton()
+    expect(logInButton.text()).to.contain('Log in')
+    await logInButton.trigger('click')
 
     expect(await drainActionQueue(actionQueue)).to.deep.equal([
       logInViaApi({
@@ -66,24 +76,40 @@ describe('LogIn', () => {
     ])
   })
 
-  it('dispatches depot authentication action', async () => {
-    store.dispatch(depotRehydration({
-      username: 'username',
-      salt: 'salt',
-      hash: 'hash',
-      vault: 'vault',
-      encryptedOtpToken: null
-    }))
+  it('initiates depot authn on matching username', async () => {
+    store.dispatch(depotRehydration(createDepotRehydration({})))
     await wrapper.vm.$nextTick()
     await getUsernameInput().setValue('username')
     await getPasswordInput().setValue('password')
-    await getRegisterButton().trigger('click')
+    await getLogInButton().trigger('click')
 
     expect(await drainActionQueue(actionQueue)).to.deep.equal([
       logInViaDepot({
         username: 'username',
-        password: 'password'
+        authnInput: createPasswordInput('password')
       })
+    ])
+  })
+
+  it('initiates depot authn on WebAuthn result', async () => {
+    store.dispatch(depotRehydration(createDepotRehydration(createDepotRehydrationWebAuthn({}))))
+    getUsernameInput().setValue('username')
+    $actions.next(webAuthnResult(createWebAuthnResult({})))
+    await wrapper.vm.$nextTick()
+
+    expect(await drainActionQueue(actionQueue)).to.deep.equal([
+      logInViaDepot({
+        username: 'username',
+        authnInput: createWebAuthnInput('webAuthnCredentialId')
+      })
+    ])
+  })
+
+  it('dispatches WebAuthn read reset', async () => {
+    wrapper.destroy()
+
+    expect(await drainActionQueue(actionQueue)).to.include.deep.members([
+      webAuthnInterruption()
     ])
   })
 
@@ -95,6 +121,14 @@ describe('LogIn', () => {
     ])
   })
 
+  it('dispatches remote otp provision reset', async () => {
+    wrapper.destroy()
+
+    expect(await drainActionQueue(actionQueue)).to.include.deep.members([
+      authnOtpProvisionReset()
+    ])
+  })
+
   it('dispatches depot authentication reset', async () => {
     wrapper.destroy()
 
@@ -103,17 +137,10 @@ describe('LogIn', () => {
     ])
   })
 
-  it('redirects and initiates depot authn on remote authn completion', async () => {
-    await getPersistanceSwitch().trigger('click')
+  it('redirects on remote authn completion', async () => {
     $actions.next(remoteAuthnComplete(createRemoteAuthnCompleteResult({})))
     await wrapper.vm.$nextTick()
 
-    expect(await drainActionQueue(actionQueue)).to.include.deep.members([
-      generateDepotKeys({
-        username: 'username',
-        password: 'password'
-      })
-    ])
     expect(router.currentRoute.path).to.equal('/dashboard')
   })
 
@@ -124,7 +151,7 @@ describe('LogIn', () => {
     expect(await drainActionQueue(actionQueue)).to.deep.equal([
       initiateBackgroundAuthn({
         username: 'username',
-        password: 'password'
+        authnInput: createPasswordInput()
       })
     ])
     expect(router.currentRoute.path).to.equal('/dashboard')

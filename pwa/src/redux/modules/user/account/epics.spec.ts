@@ -35,7 +35,7 @@ import { emplace } from '@/redux/modules/user/keys/actions'
 import { RootAction } from '@/redux/root_action'
 import { reducer, RootState } from '@/redux/root_reducer'
 import { drainEpicActions, EpicTracker, setUpEpicChannels } from '@/redux/testing'
-import { createDepotActivationData, createRegistrationFlowResult, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
+import { createDepotActivationData, createMasterKeyChangeData, createRegistrationFlowResult, createRemoteAuthnCompleteResult, createUserKey } from '@/redux/testing/domain'
 import {
   AccountDeletionFlowIndicator,
   accountDeletionReset,
@@ -97,6 +97,8 @@ import {
   logOutOnBackgroundAuthnFailureEpic,
   ackFeaturePromptEpic
 } from './epics'
+import { UID_SERVICE_TOKEN, UidService } from '@/cryptography/uid_service'
+import { SequentialFakeUidService } from '@/redux/testing/services'
 
 describe('releaseMailTokenEpic', () => {
   it('emits release sequence', async () => {
@@ -105,7 +107,7 @@ describe('releaseMailTokenEpic', () => {
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationReleaseMailToken(
-      deepEqual({ tokenId: 'mailTokenId', code: 'code' }),
+      deepEqual({ tokenUid: 'mailTokenId', code: 'code' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceReleaseMailTokenResponse>{
       error: ServiceReleaseMailTokenResponseError.NONE,
@@ -176,7 +178,7 @@ describe('acquireMailTokenEpic', () => {
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceAcquireMailTokenResponse>{
       error: ServiceAcquireMailTokenResponseError.NONE,
-      tokenId: 'mailTokenId'
+      tokenUid: 'mailTokenId'
     })
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
       useValue: instance(mockAdministrationApi)
@@ -413,6 +415,12 @@ describe('logOutOnBackgroundAuthnFailureEpic', () => {
 })
 
 describe('changeMasterKeyEpic', () => {
+  beforeEach(() => {
+    container.register<UidService>(UID_SERVICE_TOKEN, {
+      useValue: new SequentialFakeUidService()
+    })
+  })
+
   it('emits change sequence', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
@@ -450,7 +458,7 @@ describe('changeMasterKeyEpic', () => {
           salt: 'newParametrization',
           digest: 'newAuthDigest',
           keys: [{
-            identifier: 'identifier',
+            uid: 'identifier',
             password: {
               value: '$value',
               tags: ['$tag']
@@ -478,12 +486,9 @@ describe('changeMasterKeyEpic', () => {
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING)),
       masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST)),
-      masterKeyChangeSignal(success({
-        newMasterKey: 'passwordB',
-        newParametrization: 'newParametrization',
-        newEncryptionKey: 'newEncryptionKey',
-        newSessionKey: 'newSessionKey'
-      }))
+      masterKeyChangeSignal(success(createMasterKeyChangeData({
+        newMasterKey: 'passwordB'
+      })))
     ])
   })
 
@@ -534,12 +539,9 @@ describe('changeMasterKeyEpic', () => {
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING)),
       masterKeyChangeSignal(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST)),
-      masterKeyChangeSignal(success({
-        newMasterKey: 'passwordB',
-        newParametrization: 'newParametrization',
-        newEncryptionKey: 'newEncryptionKey',
-        newSessionKey: 'newSessionKey'
-      }))
+      masterKeyChangeSignal(success(createMasterKeyChangeData({
+        newMasterKey: 'passwordB'
+      })))
     ])
   })
 
@@ -620,12 +622,9 @@ describe('remoteRehashEpic', () => {
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
       remoteRehashSignal(indicator(MasterKeyChangeFlowIndicator.REENCRYPTING)),
       remoteRehashSignal(indicator(MasterKeyChangeFlowIndicator.MAKING_REQUEST)),
-      remoteRehashSignal(success({
-        newMasterKey: 'password',
-        newParametrization: 'newParametrization',
-        newEncryptionKey: 'newEncryptionKey',
-        newSessionKey: 'newSessionKey'
-      }))
+      remoteRehashSignal(success(createMasterKeyChangeData({
+        newMasterKey: 'password'
+      })))
     ])
   })
 })
@@ -639,7 +638,7 @@ describe('otpParamsGenerationEpic', () => {
     when(mockAdministrationApi.administrationGenerateOtpParams(deepEqual({}), deepEqual({
       headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' }
     }))).thenResolve(<ServiceGenerateOtpParamsResponse>{
-      otpParamsId: 'id',
+      otpParamsUid: 'id',
       sharedSecret: 'secret',
       scratchCodes: ['a', 'b', 'c'],
       keyUri: 'uri'
@@ -679,7 +678,7 @@ describe('otpParamsAcceptanceEpic', () => {
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
     when(mockAdministrationApi.administrationAcceptOtpParams(deepEqual({
-      otpParamsId: 'id',
+      otpParamsUid: 'id',
       otp: 'otp',
       yieldTrustedToken: true
     }), deepEqual({

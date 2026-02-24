@@ -15,7 +15,7 @@ import { hasData, data } from '@/redux/remote_data'
 import { reduce } from '@/redux/testing'
 import { either, option } from 'fp-ts'
 import { defaultMailVerification } from '../user/account/actions'
-import { createAuthnViaDepotFlowResult, createRegistrationFlowResult } from '@/redux/testing/domain'
+import { createAuthnViaDepotFlowResult, createPasswordInput, createRegistrationFlowResult } from '@/redux/testing/domain'
 
 describe('registration', () => {
   const signalAction = registrationSignal(success(createRegistrationFlowResult({})))
@@ -40,8 +40,9 @@ describe('registration', () => {
 describe('authnViaApi', () => {
   const flowResult = {
     username: 'username',
-    password: 'password',
+    authnInput: createPasswordInput(),
     parametrization: 'parametrization',
+    authDigest: 'authDigest',
     encryptionKey: 'encryptionKey',
     content: either.left({
       authnKey: 'token',
@@ -71,8 +72,9 @@ describe('authnOtpProvision', () => {
   const signalAction = authnOtpProvisionSignal(success({
     credentialParams: {
       username: 'username',
-      password: 'password',
+      authnInput: createPasswordInput(),
       parametrization: 'parametrization',
+      authDigest: 'authDigest',
       encryptionKey: 'encryptionKey'
     },
     trustedToken: option.none,

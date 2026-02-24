@@ -197,7 +197,7 @@ describe('creationEpic', () => {
       deepEqual({
         attrs: {
           isShadow: true,
-          parent: 'parent',
+          parentUid: 'parent',
           isPinned: true
         },
         password: {
@@ -207,7 +207,7 @@ describe('creationEpic', () => {
       }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceCreateKeyResponse>{
-      identifier: 'identifier',
+      uid: 'identifier',
       creationTimeInMillis: '1'
     })
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
@@ -234,7 +234,11 @@ describe('creationEpic', () => {
       ),
       creationSignal(success(createUserKey({
         identifier: 'identifier',
-        attrs: { isShadow: true, parent: 'parent' },
+        attrs: {
+          isShadow: true,
+          parent: 'parent',
+          isPinned: true
+        },
         value: 'value',
         tags: ['tag'],
         creationTimeInMillis: 1
@@ -267,7 +271,7 @@ describe('updationEpic', () => {
     when(mockAdministrationApi.administrationUpdateKey(
       deepEqual({
         key: {
-          identifier: 'identifier',
+          uid: 'identifier',
           password: {
             value: '$value',
             tags: ['$tag']
@@ -333,10 +337,14 @@ describe('keyPinTogglingEpic', () => {
     store.dispatch(registrationSignal(success(createRegistrationFlowResult({}))))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
     const mockAdministrationApi: AdministrationApi = mock(AdministrationApi)
-    when(mockAdministrationApi.administrationTogglePin({
+    when(mockAdministrationApi.administrationTogglePin(deepEqual({
       uid: 'identifier',
       isPinned: true
-    })).thenResolve(<ServiceTogglePinResponse>{})
+    }), deepEqual({
+      headers: {
+        [SESSION_TOKEN_HEADER_NAME]: 'sessionKey'
+      }
+    }))).thenResolve(<ServiceTogglePinResponse>{})
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
       useValue: instance(mockAdministrationApi)
     })
@@ -368,10 +376,8 @@ describe('inheritKeysFromAuthnDataEpic', () => {
   })]
 
   ;[
-    remoteAuthnComplete(createRemoteAuthnCompleteResult({
-      userKeys
-    })),
-    authnViaDepotSignal(success(createAuthnViaDepotFlowResult({})))
+    remoteAuthnComplete(createRemoteAuthnCompleteResult({ userKeys })),
+    authnViaDepotSignal(success(createAuthnViaDepotFlowResult({ userKeys })))
   ].forEach((trigger) => {
     it(`emits \`emplace\` on ${trigger.type}`, async () => {
       const store: Store<RootState, RootAction> = createStore(reducer)
@@ -390,6 +396,12 @@ describe('inheritKeysFromAuthnDataEpic', () => {
 })
 
 describe('userKeysUpdateEpic', () => {
+  beforeEach(() => {
+    container.register<UidService>(UID_SERVICE_TOKEN, {
+      useValue: new SequentialFakeUidService()
+    })
+  })
+
   ;[
     emplace([createUserKey({
       identifier: '1',
@@ -453,8 +465,8 @@ describe('shadowElectionEpic', () => {
       deepEqual({ uid: 'shadow' }),
       deepEqual({ headers: { [SESSION_TOKEN_HEADER_NAME]: 'sessionKey' } })
     )).thenResolve(<ServiceElectShadowResponse>{
-      parent: 'parent',
-      deletedShadows: ['shadow']
+      parentUid: 'parent',
+      deletedShadowUids: ['shadow']
     })
     container.register<AdministrationApi>(ADMINISTRATION_API_TOKEN, {
       useValue: instance(mockAdministrationApi)
@@ -511,44 +523,54 @@ describe('cliqueOrderOnPinEpic', () => {
     createUserKey({ identifier: '1', attrs: { isPinned: true }, tags: ['c'] }),
     createUserKey({ identifier: '2', attrs: { isPinned: true }, tags: ['d'] }),
     createUserKey({ identifier: '3', attrs: { isPinned: false }, tags: ['a'] }),
-    createUserKey({ identifier: '4', attrs: { isPinned: false }, tags: ['b'] }),
+    createUserKey({ identifier: '4', attrs: { isPinned: false }, tags: ['b'] })
   ]
+
+  beforeEach(() => {
+    container.register<UidService>(UID_SERVICE_TOKEN, {
+      useValue: new SequentialFakeUidService()
+    })
+  })
 
   it('sifts up', async () => {
     const store = createStore(reducer)
     store.dispatch(emplace(userKeys))
-    store.dispatch(newCliqueOrder(['1', '2', '3', '4']))
+    store.dispatch(newCliqueOrder(['uid-1', 'uid-2', 'uid-3', 'uid-4']))
+    const pinSignal = keyPinTogglingSignal(
+      success({ identifier: '4', isPinned: true }),
+      { uid: 'random', clique: 'clique' }
+    )
+    store.dispatch(pinSignal)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
     const epicTracker = new EpicTracker(cliqueOrderOnPinEpic(action$, state$, {}))
-    actionSubject.next(keyPinTogglingSignal(
-      success({ identifier: '4', isPinned: true }),
-      { uid: 'random', clique: 'clique' })
-    )
+    actionSubject.next(pinSignal)
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      newCliqueOrder(['4', '1', '2', '3'])
+      newCliqueOrder(['uid-4', 'uid-1', 'uid-2', 'uid-3'])
     ])
   })
 
   it('sifts down', async () => {
     const store = createStore(reducer)
     store.dispatch(emplace(userKeys))
-    store.dispatch(newCliqueOrder(['1', '2', '3', '4']))
+    store.dispatch(newCliqueOrder(['uid-1', 'uid-2', 'uid-3', 'uid-4']))
+    const pinSignal = keyPinTogglingSignal(
+      success({ identifier: '1', isPinned: false }),
+      { uid: 'random', clique: 'clique' }
+    )
+    store.dispatch(pinSignal)
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
     const epicTracker = new EpicTracker(cliqueOrderOnPinEpic(action$, state$, {}))
-    actionSubject.next(keyPinTogglingSignal(
-      success({ identifier: '1', isPinned: false }),
-      { uid: 'random', clique: 'clique' })
-    )
+    actionSubject.next(pinSignal)
     actionSubject.complete()
     await epicTracker.waitForCompletion()
 
     expect(await drainEpicActions(epicTracker)).to.deep.equal([
-      newCliqueOrder(['2', '3', '4', '1'])
+      newCliqueOrder(['uid-2', 'uid-3', 'uid-4', 'uid-1'])
     ])
   })
 })
@@ -756,6 +778,10 @@ describe('cliqueDigestionEpic', () => {
 
   it('pins a clique', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
+    store.dispatch(creationSignal(
+      success(createUserKey({ identifier: 'key' })),
+      { uid: 'create-1', clique: 'clique' }
+    ))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
 
     const epicTracker = new EpicTracker(cliqueDigestionEpic(action$, state$, {}))
@@ -880,6 +906,7 @@ describe('exportEpic', () => {
   })
 
   it('throws if no `targetKey` is available', async () => {
+    configureSodiumClient(() => {})
     const emission = await testEpic([], export_({ password: 'password' }))
 
     expect(emission).to.deep.equal([

@@ -36,6 +36,7 @@ import { SODIUM_WORKER_INTERFACE_TOKEN, SodiumWorkerInterface } from '@/cryptogr
 import SodiumWorker from './cryptography/sodium.worker.ts'
 import { StrengthTestService, STRENGTH_TEST_SERVICE_TOKEN, ZxcvbnService } from '@/cryptography/strength_test_service'
 import { UidService, UID_SERVICE_TOKEN } from '@/cryptography/uid_service'
+import { WEB_AUTHN_TOKEN, WebAuthnService, NavigatorCredentialsService } from '@/cryptography/web_authn'
 import { Flags, FLAGS_TOKEN, readFlagsFromPage } from '@/flags'
 import { getVueI18n } from '@/i18n'
 import { store, state$, action$ } from '@/redux'
@@ -51,8 +52,9 @@ import { router } from '@/router'
 import { TURNSTILE_API_TOKEN } from '@/turnstile_di'
 import { VUE_CONSTRUCTOR_TOKEN } from '@/vue_di'
 
+const flags = readFlagsFromPage()
 container.register<Flags>(FLAGS_TOKEN, {
-  useValue: readFlagsFromPage()
+  useValue: flags
 })
 
 container.register<JsonAccessor>(SESSION_STORAGE_ACCESSOR_TOKEN, {
@@ -96,6 +98,10 @@ container.register<UidService>(UID_SERVICE_TOKEN, {
 
 container.register<OptionalTurnstileApi>(TURNSTILE_API_TOKEN, {
   useFactory: () => (globalThis as any).turnstile || null
+})
+
+container.register<WebAuthnService>(WEB_AUTHN_TOKEN, {
+  useValue: new NavigatorCredentialsService(flags.mode === 'development' ? window.location.hostname : 'parolica.com')
 })
 
 Vue.config.productionTip = false

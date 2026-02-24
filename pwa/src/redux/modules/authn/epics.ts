@@ -16,7 +16,7 @@ import {
   ServiceProvideOtpResponseError,
   ServiceUserData
 } from '@/api/definitions'
-import { getSodiumClient } from '@/cryptography/sodium_client'
+import { getSodiumClient, MasterKeyDerivatives } from '@/cryptography/sodium_client'
 import { Key } from '@/redux/domain'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import {
@@ -62,7 +62,9 @@ import {
   AuthnOtpProvisionFlowIndicator,
   UserData,
   backgroundOtpProvisionSignal,
-  backgroundAuthnError
+  backgroundAuthnError,
+  AuthnInputKind,
+  AuthnInput
 } from './actions'
 
 export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
@@ -90,7 +92,9 @@ export const registrationEpic: Epic<RootAction, RootAction, RootState> = (action
                         return of(registrationSignal(success({
                           userId: response.userUid!,
                           username: action.payload.username,
+                          password: action.payload.password,
                           parametrization,
+                          authDigest,
                           encryptionKey,
                           sessionKey: response.sessionKey!,
                           mailTokenId: response.mailTokenUid!
@@ -138,6 +142,57 @@ const decodeUserData = (encryptionKey: string, userData: ServiceUserData): Obser
   )
 }
 
+const logInRpc = <T extends TypeConstant>(
+  signalCreator: (payload: DeepReadonly<AuthnViaApiSignal>) => PayloadAction<T, DeepReadonly<AuthnViaApiSignal>> & RootAction,
+  { username, authnInput, parametrization, authDigest, encryptionKey }: {
+    username: string;
+    authnInput: AuthnInput;
+    parametrization: string;
+    authDigest: string;
+    encryptionKey: string
+  }
+): Observable<RootAction> => concat(
+    of(signalCreator(indicator(AuthnViaApiFlowIndicator.MAKING_REQUEST))),
+    from(getAuthenticationApi().authenticationLogIn({
+      username: username,
+      digest: authDigest
+    })).pipe(
+      switchMap((logInResponse: ServiceLogInResponse) => {
+        switch (logInResponse.error) {
+          case ServiceLogInResponseError.NONE: {
+            const params: AuthnViaApiParams = {
+              username,
+              authnInput,
+              parametrization,
+              authDigest,
+              encryptionKey
+            }
+            if (logInResponse.userData === null) {
+              return of(signalCreator(success({
+                ...params,
+                content: either.left({
+                  authnKey: logInResponse.otpContext!.authnKey!,
+                  attemptsLeft: logInResponse.otpContext!.attemptsLeft!
+                })
+              })))
+            }
+            return concat(
+              of(signalCreator(indicator(AuthnViaApiFlowIndicator.DECRYPTING_DATA))),
+              decodeUserData(encryptionKey, logInResponse.userData!).pipe(
+                switchMap((userData) => of(signalCreator(success({
+                  ...params,
+                  content: either.right(userData)
+                }))))
+              )
+            )
+          }
+          default:
+            return of(signalCreator(failure(logInResponse.error!)))
+        }
+      })
+    )
+  )
+
 const apiAuthn = <T extends TypeConstant>(
   signalCreator: (payload: DeepReadonly<AuthnViaApiSignal>) => PayloadAction<T, DeepReadonly<AuthnViaApiSignal>> & RootAction,
   { username, password }: { username: string; password: string }
@@ -151,46 +206,13 @@ const apiAuthn = <T extends TypeConstant>(
             return concat(
               of(signalCreator(indicator(AuthnViaApiFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES))),
               from(getSodiumClient().computeAuthDigestAndEncryptionKey(getSaltResponse.salt!, password)).pipe(
-                switchMap(({ authDigest, encryptionKey }) => concat(
-                  of(signalCreator(indicator(AuthnViaApiFlowIndicator.MAKING_REQUEST))),
-                  from(getAuthenticationApi().authenticationLogIn({
-                    username: username,
-                    digest: authDigest
-                  })).pipe(
-                    switchMap((logInResponse: ServiceLogInResponse) => {
-                      switch (logInResponse.error) {
-                        case ServiceLogInResponseError.NONE: {
-                          const params: AuthnViaApiParams = {
-                            username,
-                            password,
-                            parametrization: getSaltResponse.salt!,
-                            encryptionKey
-                          }
-                          if (logInResponse.userData === null) {
-                            return of(signalCreator(success({
-                              ...params,
-                              content: either.left({
-                                authnKey: logInResponse.otpContext!.authnKey!,
-                                attemptsLeft: logInResponse.otpContext!.attemptsLeft!
-                              })
-                            })))
-                          }
-                          return concat(
-                            of(signalCreator(indicator(AuthnViaApiFlowIndicator.DECRYPTING_DATA))),
-                            decodeUserData(encryptionKey, logInResponse.userData!).pipe(
-                              switchMap((userData) => of(signalCreator(success({
-                                ...params,
-                                content: either.right(userData)
-                              }))))
-                            )
-                          )
-                        }
-                        default:
-                          return of(signalCreator(failure(logInResponse.error!)))
-                      }
-                    })
-                  )
-                ))
+                switchMap(({ authDigest, encryptionKey }) => logInRpc(signalCreator, {
+                  username,
+                  authnInput: { kind: AuthnInputKind.PASSWORD, password },
+                  parametrization: getSaltResponse.salt!,
+                  authDigest,
+                  encryptionKey
+                }))
               )
             )
           default:
@@ -289,45 +311,70 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
       if (credentials === null || credentials.username !== action.payload.username) {
         return of(authnViaDepotSignal(failure(AuthnViaDepotFlowError.INVALID_CREDENTIALS)))
       }
+      const masterKeyDerivativesObservable: Observable<MasterKeyDerivatives> = defer(async () => {
+        const { authnInput } = action.payload
+        if (authnInput.kind === AuthnInputKind.PASSWORD) {
+          return await getSodiumClient().computeAuthDigestAndEncryptionKey(
+            credentials.salt,
+            authnInput.password
+          )
+        }
+        if (authnInput.kind === AuthnInputKind.WEB_AUTHN) {
+          const { webAuthnResult, webAuthnEncryptedLocalDerivatives } = state.depot
+          if (webAuthnResult === null) {
+            throw new Error('`webAuthnResult` is not available')
+          }
+          if (webAuthnEncryptedLocalDerivatives === null) {
+            throw new Error('`webAuthnEncryptedLocalDerivatives` is not available')
+          }
+          return <MasterKeyDerivatives>JSON.parse(await getSodiumClient().decryptString(
+            webAuthnResult,
+            webAuthnEncryptedLocalDerivatives
+          ))
+        }
+        const { kind } = authnInput
+        throw new Error(`Unsupported \`AuthnInputKind\`: ${kind}`)
+      })
       return concat(
         of(authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES))),
-        from(getSodiumClient().computeAuthDigestAndEncryptionKey(credentials.salt, action.payload.password)).pipe(
+        masterKeyDerivativesObservable.pipe(
           switchMap(({ authDigest, encryptionKey }) => {
-            if (authDigest === credentials.hash) {
-              return concat(
-                of(authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.DECRYPTING_DATA))),
-                forkJoin([
-                  getSodiumClient().decryptString(encryptionKey, state.depot.vault!),
-                  iif<null, string>(
-                    () => state.depot.encryptedOtpToken === null,
-                    Promise.resolve((null)),
-                    defer(() => getSodiumClient().decryptString(encryptionKey, state.depot.encryptedOtpToken))
-                  )
-                ]).pipe(
-                  switchMap(([vault, otpToken]) => of(authnViaDepotSignal(success({
-                    username: action.payload.username,
-                    password: action.payload.password,
-                    userKeys: (<DeepPartial<Key>[]>JSON.parse(vault)).map((keyPartial): Key => ({
-                      identifier: keyPartial.identifier!,
-                      value: keyPartial.value!,
-                      tags: keyPartial.tags!,
-                      attrs: {
-                        isShadow: keyPartial.attrs?.isShadow || false,
-                        parent: normalizeParentId(keyPartial.attrs?.parent),
-                        isPinned: keyPartial.attrs?.isPinned || false
-                      },
-                      creationTimeInMillis: keyPartial.creationTimeInMillis || 0
-                    })),
-                    depotKey: encryptionKey,
-                    otpToken: otpToken
-                  }))))
-                )
-              )
-            } else {
+            if (authDigest !== credentials.hash) {
               return of(authnViaDepotSignal(failure(AuthnViaDepotFlowError.INVALID_CREDENTIALS)))
             }
+            return concat(
+              of(authnViaDepotSignal(indicator(AuthnViaDepotFlowIndicator.DECRYPTING_DATA))),
+              forkJoin([
+                getSodiumClient().decryptString(encryptionKey, state.depot.vault!),
+                iif<null, string>(
+                  () => state.depot.encryptedOtpToken === null,
+                  Promise.resolve((null)),
+                  defer(() => getSodiumClient().decryptString(encryptionKey, state.depot.encryptedOtpToken))
+                )
+              ]).pipe(
+                switchMap(([vault, otpToken]) => of(authnViaDepotSignal(success({
+                  username: action.payload.username,
+                  authnInput: action.payload.authnInput,
+                  userKeys: (<DeepPartial<Key>[]>JSON.parse(vault)).map((keyPartial): Key => ({
+                    identifier: keyPartial.identifier!,
+                    value: keyPartial.value!,
+                    tags: keyPartial.tags!,
+                    attrs: {
+                      isShadow: keyPartial.attrs?.isShadow || false,
+                      parent: normalizeParentId(keyPartial.attrs?.parent),
+                      isPinned: keyPartial.attrs?.isPinned || false
+                    },
+                    creationTimeInMillis: keyPartial.creationTimeInMillis || 0
+                  })),
+                  depotKey: encryptionKey,
+                  otpToken: otpToken
+                }))))
+              )
+            )
           })
         )
+      ).pipe(
+        catchError((error) => of(authnViaDepotSignal(exception(errorToMessage(error)))))
       )
     } else if (isActionOf(authnViaDepotReset, action)) {
       return of(authnViaDepotSignal(cancel()))
@@ -338,9 +385,57 @@ export const logInViaDepotEpic: Epic<RootAction, RootAction, RootState> = (actio
 
 export const displayAuthnViaDepotExceptionsEpic = createDisplayExceptionsEpic(authnViaDepotSignal)
 
-export const backgroundRemoteAuthnEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
+export const backgroundRemoteAuthnEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
   filter(isActionOf(initiateBackgroundAuthn)),
-  switchMap((action) => apiAuthn(backgroundRemoteAuthnSignal, action.payload))
+  withLatestFrom(state$),
+  switchMap(([action, state]) => {
+    const { username, authnInput } = action.payload
+    if (authnInput.kind === AuthnInputKind.PASSWORD) {
+      return apiAuthn(backgroundRemoteAuthnSignal, {
+        username,
+        password: authnInput.password
+      })
+    }
+    if (authnInput.kind === AuthnInputKind.WEB_AUTHN) {
+      const { depot } = state
+      const { webAuthnResult, webAuthnEncryptedRemoteDerivatives } = depot
+      if (webAuthnResult === null) {
+        return of(backgroundRemoteAuthnSignal(exception('`webAuthnResult` is not available')))
+      }
+      if (depot.webAuthnEncryptedRemoteDerivatives === null) {
+        return of(backgroundRemoteAuthnSignal(failure(ServiceLogInResponseError.INVALIDCREDENTIALS)))
+      }
+      return concat(
+        of(backgroundRemoteAuthnSignal(indicator(AuthnViaApiFlowIndicator.RETRIEVING_PARAMETRIZATION))),
+        from(getAuthenticationApi().authenticationFetchSalt({ username })).pipe(
+          switchMap((getSaltResponse: ServiceGetSaltResponse) => {
+            switch (getSaltResponse.error) {
+              case ServiceGetSaltResponseError.NONE:
+                return concat(
+                  of(backgroundRemoteAuthnSignal(indicator(AuthnViaApiFlowIndicator.COMPUTING_MASTER_KEY_DERIVATIVES))),
+                  from(getSodiumClient().decryptString(webAuthnResult, webAuthnEncryptedRemoteDerivatives)).pipe(
+                    map((decrypted) => JSON.parse(decrypted) as MasterKeyDerivatives),
+                    switchMap(({ authDigest, encryptionKey }) => logInRpc(backgroundRemoteAuthnSignal, {
+                      username,
+                      authnInput,
+                      parametrization: getSaltResponse.salt!,
+                      authDigest,
+                      encryptionKey
+                    }))
+                  )
+                )
+              default:
+                return of(backgroundRemoteAuthnSignal(failure(getSaltResponse.error!)))
+            }
+          })
+        )
+      ).pipe(
+        catchError((error) => of(backgroundRemoteAuthnSignal(exception(errorToMessage(error)))))
+      )
+    }
+    const { kind } = authnInput
+    throw new Error(`Unsupported \`AuthnInputKind\`: ${kind}`)
+  })
 )
 
 export const backgroundOtpProvisionEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
@@ -360,8 +455,9 @@ export const backgroundOtpProvisionEpic: Epic<RootAction, RootAction, RootState>
             switchMap((otpToken) => otpProvision({
               credentialParams: {
                 username: data.username,
-                password: data.password,
+                authnInput: data.authnInput,
                 parametrization: data.parametrization,
+                authDigest: data.authDigest,
                 encryptionKey: data.encryptionKey
               },
               authnKey: otpContext.authnKey,
@@ -411,8 +507,9 @@ export const remoteAuthnCompleteOnCredentialsEpic: Epic<RootAction, RootAction, 
       option.getRight(data.content),
       option.map((content) => of(remoteAuthnComplete({
         username: data.username,
-        password: data.password,
+        authnInput: data.authnInput,
         parametrization: data.parametrization,
+        authDigest: data.authDigest,
         encryptionKey: data.encryptionKey,
         ...content,
         isOtpEnabled: false,

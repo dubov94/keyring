@@ -20,7 +20,9 @@ export enum RegistrationFlowIndicator {
 export interface RegistrationFlowResult {
   userId: string;
   username: string;
+  password: string;
   parametrization: string;
+  authDigest: string;
   encryptionKey: string;
   sessionKey: string;
   mailTokenId: string;
@@ -44,8 +46,9 @@ export enum AuthnViaApiFlowIndicator {
 }
 export interface AuthnViaApiParams {
   username: string;
-  password: string;
+  authnInput: AuthnInput;
   parametrization: string;
+  authDigest: string;
   encryptionKey: string;
 }
 export interface OtpContext {
@@ -101,16 +104,33 @@ export enum AuthnViaDepotFlowIndicator {
 export enum AuthnViaDepotFlowError {
   INVALID_CREDENTIALS = 'INVALID_CREDENTIALS',
 }
+
+export enum AuthnInputKind {
+  PASSWORD = 'PASSWORD',
+  WEB_AUTHN = 'WEB_AUTHN'
+}
+export interface Password {
+  kind: AuthnInputKind.PASSWORD;
+  password: string;
+}
+
+export interface WebAuthn {
+  kind: AuthnInputKind.WEB_AUTHN;
+  credentialId: string;
+}
+
+export type AuthnInput = Password | WebAuthn
+
 export interface AuthnViaDepotFlowResult {
   username: string;
-  password: string;
+  authnInput: AuthnInput;
   userKeys: Key[];
   depotKey: string;
   otpToken: string | null;
 }
 export const logInViaDepot = createAction('authn/logInViaDepot')<DeepReadonly<{
   username: string;
-  password: string;
+  authnInput: AuthnInput;
 }>>()
 export const authnViaDepotSignal = createAction('authn/viaDepot/signal')<DeepReadonly<
   FlowSignal<AuthnViaDepotFlowIndicator, AuthnViaDepotFlowResult, StandardError<AuthnViaDepotFlowError>>
@@ -119,7 +139,7 @@ export const authnViaDepotReset = createAction('authn/viaDepot/reset')()
 
 export const initiateBackgroundAuthn = createAction('authn/initiateBackgroundAuthn')<DeepReadonly<{
   username: string;
-  password: string;
+  authnInput: AuthnInput;
 }>>()
 export const backgroundRemoteAuthnSignal = createAction('authn/backgroundRemoteAuthnSignal')<DeepReadonly<AuthnViaApiSignal>>()
 export const backgroundOtpProvisionSignal = createAction('authn/backgroundOtpProvisionSignal')<DeepReadonly<AuthnOtpProvisionSignal>>()

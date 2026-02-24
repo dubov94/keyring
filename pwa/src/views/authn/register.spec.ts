@@ -68,7 +68,7 @@ describe('Register', () => {
   const getEmailInput = () => wrapper.find('[aria-label="E-mail"')
   const getRegisterButton = () => wrapper.find('button')
 
-  it('dispathes registration action', async () => {
+  it('dispatches registration action', async () => {
     await getUsernameInput().setValue('username')
     await getPasswordInput().setValue('password')
     await getRepeatPasswordInput().setValue('password')

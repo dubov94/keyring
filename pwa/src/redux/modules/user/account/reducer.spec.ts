@@ -15,7 +15,6 @@ import {
   mailTokenAcquisitionSignal,
   mailTokenReleaseReset,
   mailTokenReleaseSignal,
-  MasterKeyChangeData,
   masterKeyChangeReset,
   masterKeyChangeSignal,
   otpParamsAcceptanceReset,
@@ -28,7 +27,7 @@ import {
   usernameChangeSignal
 } from './actions'
 import reducer from './reducer'
-import { createAuthnViaDepotFlowResult, createRegistrationFlowResult } from '@/redux/testing/domain'
+import { createAuthnViaDepotFlowResult, createMasterKeyChangeData, createPasswordInput, createRegistrationFlowResult } from '@/redux/testing/domain'
 
 describe('registrationSignal', () => {
   it('sets the account state', () => {
@@ -51,8 +50,9 @@ describe('remoteAuthnComplete', () => {
   it('sets the account state', () => {
     const state = reducer(undefined, remoteAuthnComplete({
       username: 'username',
-      password: 'password',
+      authnInput: createPasswordInput(),
       parametrization: 'parametrization',
+      authDigest: 'authDigest',
       encryptionKey: 'encryptionKey',
       userId: 'userId',
       sessionKey: 'sessionKey',
@@ -66,6 +66,7 @@ describe('remoteAuthnComplete', () => {
 
     expect(state.isAuthenticated).to.be.true
     expect(state.parametrization).to.equal('parametrization')
+    expect(state.authDigest).to.equal('authDigest')
     expect(state.encryptionKey).to.equal('encryptionKey')
     expect(state.sessionKey).to.equal('sessionKey')
     expect(state.featurePrompts).to.deep.equal([{ featureType: ServiceFeatureType.UNKNOWN }])
@@ -144,29 +145,23 @@ describe('mailTokenAcquisition', () => {
 })
 
 describe('masterKeyUpdate', () => {
-  const masterKeyChangeData: MasterKeyChangeData = {
-    newMasterKey: 'masterKey',
-    newParametrization: 'newParametrization',
-    newEncryptionKey: 'newEncryptionKey',
-    newSessionKey: 'newSessionKey'
-  }
-
   describe('masterKeyChangeSignal', () => {
     it('updates the result', () => {
-      const state = reducer(undefined, masterKeyChangeSignal(success(masterKeyChangeData)))
+      const state = reducer(undefined, masterKeyChangeSignal(success(createMasterKeyChangeData({}))))
 
       expect(hasData(state.masterKeyChange)).to.be.true
     })
   })
 
   ;[
-    masterKeyChangeSignal(success(masterKeyChangeData)),
-    remoteRehashSignal(success(masterKeyChangeData))
+    masterKeyChangeSignal(success(createMasterKeyChangeData({}))),
+    remoteRehashSignal(success(createMasterKeyChangeData({})))
   ].forEach((trigger) => {
     it(`sets credentials on ${trigger.type}`, () => {
       const state = reducer(undefined, trigger)
 
       expect(state.parametrization).to.equal('newParametrization')
+      expect(state.authDigest).to.equal('newAuthDigest')
       expect(state.encryptionKey).to.equal('newEncryptionKey')
       expect(state.sessionKey).to.equal('newSessionKey')
     })
@@ -175,7 +170,7 @@ describe('masterKeyUpdate', () => {
   describe('masterKeyChangeReset', () => {
     it('clears the result', () => {
       const state = reduce(reducer, undefined, [
-        masterKeyChangeSignal(success(masterKeyChangeData)),
+        masterKeyChangeSignal(success(createMasterKeyChangeData({}))),
         masterKeyChangeReset()
       ])
 
@@ -315,6 +310,7 @@ describe('featureAckSignal', () => {
     const state = reducer({
       isAuthenticated: false,
       parametrization: null,
+      authDigest: null,
       encryptionKey: null,
       sessionKey: null,
       featurePrompts: [{ featureType: ServiceFeatureType.UNKNOWN }],

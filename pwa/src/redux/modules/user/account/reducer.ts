@@ -56,6 +56,7 @@ import {
 export default createReducer<{
   isAuthenticated: boolean;
   parametrization: string | null;
+  authDigest: string | null;
   encryptionKey: string | null;
   sessionKey: string | null;
   featurePrompts: ServiceFeaturePrompt[];
@@ -75,6 +76,7 @@ export default createReducer<{
   {
     isAuthenticated: false,
     parametrization: null,
+    authDigest: null,
     encryptionKey: null,
     sessionKey: null,
     featurePrompts: [],
@@ -99,6 +101,7 @@ export default createReducer<{
       const flowSuccess = action.payload.data
       state.isAuthenticated = true
       state.parametrization = flowSuccess.parametrization
+      state.authDigest = flowSuccess.authDigest
       state.encryptionKey = flowSuccess.encryptionKey
       state.sessionKey = flowSuccess.sessionKey
       state.mailVerification = { required: true, tokenId: flowSuccess.mailTokenId }
@@ -106,6 +109,7 @@ export default createReducer<{
     .addMatcher(isActionOf(remoteAuthnComplete), (state, action) => {
       state.isAuthenticated = true
       state.parametrization = action.payload.parametrization
+      state.authDigest = action.payload.authDigest
       state.encryptionKey = action.payload.encryptionKey
       state.sessionKey = action.payload.sessionKey
       state.featurePrompts = castDraft(action.payload.featurePrompts)
@@ -152,6 +156,7 @@ export default createReducer<{
     })
     .addMatcher(isActionSuccess2([masterKeyChangeSignal, remoteRehashSignal]), (state, action) => {
       state.parametrization = action.payload.data.newParametrization
+      state.authDigest = action.payload.data.newAuthDigest
       state.encryptionKey = action.payload.data.newEncryptionKey
       state.sessionKey = action.payload.data.newSessionKey
     })
