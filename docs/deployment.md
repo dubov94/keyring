@@ -41,8 +41,7 @@ All of them are installed manually at the moment, and Alertmanager hasn't been e
 
 ### Security
 
-* [debricked.com](https://debricked.com/) for third-party dependencies.
-* [snyk.io](https://snyk.io/) for scanning Docker images.
+[aikido.dev](https://aikido.dev/)
 
 ## Referrals
 
