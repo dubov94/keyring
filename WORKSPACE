@@ -336,10 +336,10 @@ container_pull(
 
 container_pull(
     name = "io_docker_index_library_nginx",
-    digest = "sha256:3c4c1f42a89e343c7b050c5e5d6f670a0e0b82e70e0e7d023f10092a04bbb5a7",
+    digest = "sha256:1f8a873cacc42b3ccfdb4702f92397da1bb33cd903b954225ef51339bbf2f6a4",
     registry = "index.docker.io",
     repository = "library/nginx",
-    tag = "1.25",
+    tag = "1.28.2",
 )
 
 container_pull(
