@@ -360,10 +360,10 @@ container_pull(
 
 container_pull(
     name = "io_docker_index_liquibase_liquibase",
-    digest = "sha256:ec573f153cc1531d73e5ca69f73b55512235d75bd07093d1ff82e7beb42ec7f9",
+    digest = "sha256:31254654961c29fda9497f745eeef1ed2ba93d34e7a6a272d327d070cd7b38b7",
     registry = "index.docker.io",
     repository = "liquibase/liquibase",
-    tag = "4.25",
+    tag = "4.33",
 )
 
 container_pull(
