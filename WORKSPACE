@@ -367,11 +367,11 @@ container_pull(
 )
 
 container_pull(
-    name = "io_docker_index_maxmindinc_geoipupdate",
-    digest = "sha256:f097fe1addd9737074914f3d4193f26a05c1bd584fc205f46cea65de1452ef1e",
-    registry = "index.docker.io",
-    repository = "maxmindinc/geoipupdate",
-    tag = "v6",
+    name = "io_ghcr_maxmindinc_geoipupdate",
+    digest = "sha256:7e774ec603b888a08f411f0a3fc3e760104d8fcdf890298072025721f627de6d",
+    registry = "ghcr.io",
+    repository = "maxmind/geoipupdate",
+    tag = "v6.1",
 )
 
 # multirun_dependencies.external_multirun_dependencies

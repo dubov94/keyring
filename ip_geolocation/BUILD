@@ -16,7 +16,7 @@ go_binary(
 
 container_image(
     name = "ip_geolocation",
-    base = "@io_docker_index_maxmindinc_geoipupdate//image",
+    base = "@io_ghcr_maxmindinc_geoipupdate//image",
     entrypoint = ["./entrypoint.sh"],
     directory = "/root",
     env = {
