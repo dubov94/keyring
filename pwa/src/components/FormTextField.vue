@@ -8,8 +8,12 @@
   </v-text-field>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import Vue from 'vue'
+
+type NameToListener = { [key: string]: (event: Event) => void }
+
+export default Vue.extend({
   props: [
     'appendIcon',
     'autofocus',
@@ -44,16 +48,16 @@ export default {
         this.$emit('reset')
       }
     },
-    input (event) {
+    input (event: string) {
       this.reset()
       this.$emit('input', event)
     },
     focus () {
-      this.$refs.input.focus()
+      ;(this.$refs.input as HTMLInputElement).focus()
     }
   },
   computed: {
-    errorMessages () {
+    errorMessages (): string[] {
       if (this.dirty) {
         return Object.entries(this.errors || {})
           .filter(([, value]) => value)
@@ -62,28 +66,28 @@ export default {
         return []
       }
     },
-    error () {
+    error (): boolean {
       return this.dirtyInternal && (
         this.invalid || this.errorMessages.length > 0)
     },
-    extraListeners () {
-      const nameToListener = {}
+    extraListeners (): NameToListener {
+      const nameToListener: NameToListener = {}
       if (this.$listeners['append-click']) {
-        nameToListener['click:append'] = (event) => this.$emit('append-click', event)
+        nameToListener['click:append'] = (event) => { this.$emit('append-click', event) }
       }
       if (this.$listeners['prepend-click']) {
-        nameToListener['click:prepend'] = (event) => this.$emit('prepend-click', event)
+        nameToListener['click:prepend'] = (event) => { this.$emit('prepend-click', event) }
       }
       return nameToListener
     }
   },
   watch: {
-    dirty (value) {
+    dirty (value: boolean) {
       if (value !== this.dirtyInternal) {
         this.dirtyInternal = value
         this.ignoreEvents = !value
       }
     }
   }
-}
+})
 </script>

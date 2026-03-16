@@ -40,14 +40,14 @@
     "ua-parser-js": "^0.7.21",
     "url": "^0.11.0",
     "uuid": "^8.3.2",
-    "vue": "2.6.11",
+    "vue": "2.7.16",
     "vue-class-component": "^7.2.3",
     "vue-i18n": "^8.17.4",
     "vue-property-decorator": "^8.4.1",
     "vue-router": "~3.1.6",
     "vuedraggable": "^2.24.3",
     "vuelidate": "~0.7.7",
-    "vuetify": "^2.5.3",
+    "vuetify": "2.7.2",
     "zxcvbn": "^4.4.2"
   },
   "devDependencies": {
@@ -92,7 +92,7 @@
     "typescript": "~4.3.5",
     "vue-cli-plugin-vuetify": "~2.4.1",
     "vue-svg-loader": "^0.16.0",
-    "vue-template-compiler": "2.6.11",
+    "vue-template-compiler": "2.7.16",
     "vuetify-loader": "~1.7.3",
     "workbox-core": "4.3.1",
     "workbox-precaching": "4.3.1",
@@ -100,7 +100,7 @@
     "workerize-loader": "^1.2.0"
   },
   "resolutions": {
-    "vue": "2.6.11"
+    "vue": "2.7.16"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
