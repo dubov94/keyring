@@ -344,7 +344,7 @@ container_pull(
 
 container_pull(
     name = "io_docker_index_library_eclipse_temurin",
-    digest = "sha256:efe41c483824a976f171445d8b294006c3724b438a15c92ec58c3183c4f34cc5",
+    digest = "sha256:a431a0f22e3583318f6bc25e3b00d14d5c48f5505e656ebb3b538dc19bf766b0",
     registry = "index.docker.io",
     repository = "library/eclipse-temurin",
     tag = "11-jre",
