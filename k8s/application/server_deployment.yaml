@@ -14,9 +14,6 @@ spec:
       labels:
         app.kubernetes.io/name: server
     spec:
-      securityContext:
-        runAsNonRoot: true
-        allowPrivilegeEscalation: false
       containers:
       - name: server
         image: dubov94/keyring-server:2e947c12daa9c395ff48316511314802d34f6ea6

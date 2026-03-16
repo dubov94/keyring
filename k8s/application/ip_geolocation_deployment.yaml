@@ -13,9 +13,6 @@ spec:
       labels:
         app.kubernetes.io/name: ip-geolocation
     spec:
-      securityContext:
-        runAsNonRoot: true
-        allowPrivilegeEscalation: false
       containers:
       - name: ip-geolocation
         image: dubov94/keyring-ip-geolocation:2e947c12daa9c395ff48316511314802d34f6ea6
