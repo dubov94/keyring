@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/golang/glog"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -23,7 +22,7 @@ var (
 
 func annotator(ctx context.Context, req *http.Request) metadata.MD {
 	return metadata.Pairs(
-		"x-ip-address", strings.Split(req.Header.Get("x-forwarded-for"), ", ")[0],
+		"x-ip-address", req.Header.Get("x-real-ip"),
 		"x-user-agent", req.Header.Get("user-agent"),
 	)
 }
