@@ -43,8 +43,8 @@
           <div class="text-center mt-12">
             <template v-if="!isAuthenticated">
               <div class="authentication-panel">
-                <v-btn large outlined color="white" to="/log-in">Log in</v-btn>
-                <v-btn large outlined color="white" to="/register">Register</v-btn>
+                <v-btn large outlined color="white" @click="logIn">Log in</v-btn>
+                <v-btn large outlined color="white" @click="register">Register</v-btn>
               </div>
             </template>
             <template v-if="isAuthenticated">
@@ -59,11 +59,15 @@
 </template>
 
 <script lang="ts">
-import Vue, { VueConstructor } from 'vue'
+import { function as fn, option } from 'fp-ts'
 import trianglify from 'trianglify'
+import Vue, { VueConstructor } from 'vue'
 import Page from '@/components/Page.vue'
 import { getFlags } from '@/flags'
+import { webAuthnRequest } from '@/redux/modules/depot/actions'
+import { webAuthnData } from '@/redux/modules/depot/selectors'
 import { isAuthenticated } from '@/redux/modules/user/account/selectors'
+import { data } from '@/redux/remote_data'
 
 interface Mixins {
   resizeObserver: any;
@@ -102,6 +106,14 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         'text-h4': this.$vuetify.breakpoint.mdOnly,
         'text-h5': this.$vuetify.breakpoint.smAndDown
       }
+    },
+    webAuthnCredentialId (): string | null {
+      return fn.pipe(
+        webAuthnData(this.$data.$state),
+        data,
+        option.map((data) => data === null ? null : data.credentialId),
+        option.getOrElse(() => null)
+      )
     }
   },
   methods: {
@@ -114,6 +126,16 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
         seed: 'keyring'
       })
       pattern.toCanvas(this.$refs.backgroundCanvas as HTMLElement)
+    },
+    logIn () {
+      this.$router.push('/log-in')
+      const credentialId = this.webAuthnCredentialId
+      if (credentialId !== null) {
+        this.dispatch(webAuthnRequest({ credentialId }))
+      }
+    },
+    register () {
+      this.$router.push('/register')
     }
   },
   created () {

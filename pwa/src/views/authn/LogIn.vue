@@ -199,7 +199,11 @@ export default Vue.extend({
       this.dispatch(showToast({ message: 'All data has been wiped out' }))
     },
     triggerBiometrics () {
-      this.dispatch(webAuthnRequest({ credentialId: this.webAuthnCredentialId }))
+      const credentialId = this.webAuthnCredentialId
+      if (credentialId === null) {
+        return
+      }
+      this.dispatch(webAuthnRequest({ credentialId }))
     },
     submitCredentials () {
       if (!this.usernameMatchesDepot) {
