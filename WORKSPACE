@@ -328,10 +328,10 @@ load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 
 container_pull(
     name = "io_docker_index_library_debian",
-    digest = "sha256:3f6b5fb138047d4410b43183b34581b7064b2c30a6f81324b58a287715fbd7ed",
+    digest = "sha256:b5fd0730c71f88a75e9d95dc6d812e8c34db679b3f009903d917be8f0300ba13",
     registry = "index.docker.io",
     repository = "library/debian",
-    tag = "12.2",
+    tag = "12.13",
 )
 
 container_pull(
