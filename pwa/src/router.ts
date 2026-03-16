@@ -3,7 +3,7 @@ import Landing from '@/views/Landing.vue'
 import LogIn from '@/views/authn/LogIn.vue'
 import MailVerification from '@/views/authn/MailVerification.vue'
 import Register from '@/views/authn/Register.vue'
-import Portation from '@/views/portation/Index.vue'
+import Transfer from '@/views/transfer/Index.vue'
 import Security from '@/views/security/Index.vue'
 import RecentSessions from '@/views/security/RecentSessions.vue'
 import ThreatAnalysis from '@/views/security/ThreatAnalysis.vue'
@@ -90,8 +90,8 @@ export const router = new VueRouter({
       component: Settings,
       beforeEnter: authenticatedGuard
     }, {
-      path: '/portation',
-      component: Portation,
+      path: '/transfer',
+      component: Transfer,
       beforeEnter: authenticatedGuard
     },
     {

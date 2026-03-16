@@ -58,6 +58,10 @@ graph LR;
 
 Once local (depot-based) authentication succeeds, the remote authentication procedure is attempted automatically in the background to pick up latest updates and enable editing. If 2FA is enabled, a 128-bit temporary token is provided to `/provide-otp`. This token is initially obtained by specifying `yield_trusted_token` in `ProvideOtpRequest`; it's then encrypted with the local `encryption_key` and stored in the depot. All subsequent background requests to `/provide-otp` renew the token by specifying `yield_trusted_token` again.
 
+### Biometrics
+
+PRF key from a WebAuthn credential with a random `challenge` is used to encrypt `MasterKeyDerivatives` (`authn_digest` and `encryption_key`), both local and remote. Those derivatives are stored in the depot, alongside the WebAuthn `credentialId` and `salt`.
+
 ## Changing the master key
 
 * Generates new Argon2 parameters (both remotely and locally).

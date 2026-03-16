@@ -7,7 +7,7 @@
   <b><a href="https://parolica.com/">parolica.com</a></b>
 </p>
 <p align="center">
-  <i>It's all about flexibility</i>
+  <i>Built for everyone. Even the 'qwerty' folk</i>
 </p>
 <p align="center">
   <a href="https://github.com/dubov94/keyring/actions/workflows/release.yml">
@@ -22,8 +22,6 @@
 
 Parolica *(pronounced [[pɐˈrolʲɪtsə]](https://en.wikipedia.org/wiki/International_Phonetic_Alphabet))* is a minimalistic cloud-based [password manager](https://en.wikipedia.org/wiki/Password_manager).
 
-Even my friends who use 'password' as their password recommend it! 🤭
-
 - [🔐 **Zero-knowledge**](https://en.wikipedia.org/wiki/Zero-knowledge_service)
   - The vault is stored encrypted in the cloud, and can only be decrypted with the master password.
   - No one can access the data without it. Even the service maintainers.
@@ -34,8 +32,8 @@ Even my friends who use 'password' as their password recommend it! 🤭
   - Store an encrypted local copy of the vault on the device, available without internet connection.
 - 🔍 **Security scanning**
   - Analyse the vault for weak, reused and leaked passwords.
-
-Other handy features include [two-factor authentication](https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html), [autosave](https://en.wikipedia.org/wiki/Autosave) (so that you never lose a password even if you forget to explicitly save one while actively switching between windows) and [.csv](https://en.wikipedia.org/wiki/Comma-separated_values) imports / exports.
+- 📤 **Data transfer**
+  - Import and export in [.csv](https://en.wikipedia.org/wiki/Comma-separated_values).
 
 ## Screencast
 
