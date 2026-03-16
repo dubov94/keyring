@@ -15,7 +15,9 @@ spec:
     spec:
       containers:
       - name: ip-geolocation
-        image: dubov94/keyring-ip-geolocation:2e947c12daa9c395ff48316511314802d34f6ea6
+        image: dubov94/keyring-ip-geolocation:****6ea6
+        securityContext:
+          allowPrivilegeEscalation: false
         ports:
         - containerPort: 5003
         env:
