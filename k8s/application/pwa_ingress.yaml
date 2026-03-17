@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: cluster-ingress
+  name: pwa-ingress
   # https://kubernetes.github.io/ingress-nginx/user-guide/tls/#server-side-https-enforcement-through-redirect
   # https://kubernetes.github.io/ingress-nginx/user-guide/tls/#http-strict-transport-security
   annotations:
@@ -17,13 +17,6 @@ spec:
   - host: "parolica.com"
     http:
       paths:
-      - pathType: ImplementationSpecific
-        path: "/api/(.*)"
-        backend:
-          service:
-            name: grpc-gateway-service
-            port:
-              number: 5002
       - pathType: ImplementationSpecific
         path: "/(.*)"
         backend:
