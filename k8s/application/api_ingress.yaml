@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/limit-rps: "8"
+spec:
+  tls:
+  - hosts:
+    - "parolica.com"
+    secretName: cluster-tls
+  rules:
+  - host: "parolica.com"
+    http:
+      paths:
+      - pathType: ImplementationSpecific
+        path: "/api/(.*)"
+        backend:
+          service:
+            name: grpc-gateway-service
+            port:
+              number: 5002
