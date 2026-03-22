@@ -8,7 +8,7 @@
             "junit:junit:4.12": "junit:junit:4.13.2",
             "io.perfmark:perfmark-api:0.23.0": "io.perfmark:perfmark-api:0.27.0",
             "io.opencensus:opencensus-api:0.24.0": "io.opencensus:opencensus-api:0.31.1",
-            "com.google.code.gson:gson:2.8.6": "com.google.code.gson:gson:2.11.0",
+            "com.google.code.gson:gson:2.8.6": "com.google.code.gson:gson:2.13.2",
             "javax.xml.bind:jaxb-api:2.3.0": "javax.xml.bind:jaxb-api:2.3.1",
             "org.opentest4j:opentest4j:1.1.1": "org.opentest4j:opentest4j:1.2.0",
             "org.junit.platform:junit-platform-engine:1.5.0": "org.junit.platform:junit-platform-engine:1.6.2",
@@ -16,7 +16,7 @@
             "com.google.api.grpc:proto-google-common-protos:2.0.1": "com.google.api.grpc:proto-google-common-protos:2.59.2",
             "com.google.guava:guava:32.1.3-jre": "com.google.guava:guava:33.4.8-android",
             "org.junit.platform:junit-platform-commons:1.5.0": "org.junit.platform:junit-platform-commons:1.6.2",
-            "com.google.errorprone:error_prone_annotations:2.4.0": "com.google.errorprone:error_prone_annotations:2.36.0"
+            "com.google.errorprone:error_prone_annotations:2.4.0": "com.google.errorprone:error_prone_annotations:2.41.0"
         },
         "dependencies": [
             {
@@ -159,10 +159,10 @@
                 "coord": "com.google.api.grpc:proto-google-common-protos:2.59.2",
                 "file": "v1/https/repo1.maven.org/maven2/com/google/api/grpc/proto-google-common-protos/2.59.2/proto-google-common-protos-2.59.2.jar",
                 "directDependencies": [
-                    "com.google.protobuf:protobuf-java:3.25.8"
+                    "com.google.protobuf:protobuf-java:4.33.0"
                 ],
                 "dependencies": [
-                    "com.google.protobuf:protobuf-java:3.25.8"
+                    "com.google.protobuf:protobuf-java:4.33.0"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/google/api/grpc/proto-google-common-protos/2.59.2/proto-google-common-protos-2.59.2.jar",
                 "mirror_urls": [
@@ -202,8 +202,8 @@
                     "com.fasterxml.jackson.core:jackson-core:2.19.4",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.grpc:grpc-context:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "commons-codec:commons-codec:1.21.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.http-client:google-http-client:1.42.3",
@@ -254,19 +254,40 @@
                 "sha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7"
             },
             {
-                "coord": "com.google.code.gson:gson:2.11.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/code/gson/gson/2.11.0/gson-2.11.0.jar",
+                "coord": "com.google.code.gson:gson:2.13.2",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.jar",
                 "directDependencies": [
-                    "com.google.errorprone:error_prone_annotations:2.36.0"
+                    "com.google.errorprone:error_prone_annotations:2.41.0"
                 ],
                 "dependencies": [
-                    "com.google.errorprone:error_prone_annotations:2.36.0"
+                    "com.google.errorprone:error_prone_annotations:2.41.0"
                 ],
-                "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.11.0/gson-2.11.0.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.11.0/gson-2.11.0.jar"
+                    "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.jar"
                 ],
-                "sha256": "57928d6e5a6edeb2abd3770a8f95ba44dce45f3b23b7a9dc2b309c581552a78b"
+                "sha256": "dd0ce1b55a3ed2080cb70f9c655850cda86c206862310009dcb5e5c95265a5e0"
+            },
+            {
+                "coord": "com.google.crypto.tink:tink:1.20.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/crypto/tink/tink/1.20.0/tink-1.20.0.jar",
+                "directDependencies": [
+                    "com.google.code.findbugs:jsr305:3.0.2",
+                    "com.google.code.gson:gson:2.13.2",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
+                    "com.google.protobuf:protobuf-java:4.33.0"
+                ],
+                "dependencies": [
+                    "com.google.protobuf:protobuf-java:4.33.0",
+                    "com.google.code.gson:gson:2.13.2",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
+                    "com.google.code.findbugs:jsr305:3.0.2"
+                ],
+                "url": "https://repo1.maven.org/maven2/com/google/crypto/tink/tink/1.20.0/tink-1.20.0.jar",
+                "mirror_urls": [
+                    "https://repo1.maven.org/maven2/com/google/crypto/tink/tink/1.20.0/tink-1.20.0.jar"
+                ],
+                "sha256": "a8147cea556a34291be1fbc96975dd3006228b653bdfffb8a82c959419ab151f"
             },
             {
                 "coord": "com.google.dagger:dagger-compiler:2.46.1",
@@ -301,7 +322,7 @@
                     "com.google.errorprone:javac-shaded:9-dev-r4023-3",
                     "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10",
                     "com.google.dagger:dagger:2.46.1",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "org.jetbrains:annotations:17.0.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.squareup:kotlinpoet:1.11.0",
@@ -334,7 +355,7 @@
                     "org.jspecify:jspecify:1.0.0",
                     "com.google.guava:failureaccess:1.0.3",
                     "com.google.dagger:dagger:2.46.1",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android",
                     "javax.inject:javax.inject:1",
                     "com.google.j2objc:j2objc-annotations:3.0.0",
@@ -369,7 +390,7 @@
                     "org.jetbrains.kotlin:kotlin-stdlib:1.8.0",
                     "com.squareup:javapoet:1.13.0",
                     "com.google.dagger:dagger:2.46.1",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "org.jetbrains:annotations:17.0.0",
                     "com.google.guava:guava:33.4.8-android",
                     "org.jetbrains.kotlin:kotlin-stdlib-common:1.8.0",
@@ -416,15 +437,15 @@
                 "sha256": "431aa88afe78425c5baae19619acae44c4454cc505be3e437e6e353c23a585ed"
             },
             {
-                "coord": "com.google.errorprone:error_prone_annotations:2.36.0",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.36.0/error_prone_annotations-2.36.0.jar",
+                "coord": "com.google.errorprone:error_prone_annotations:2.41.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.36.0/error_prone_annotations-2.36.0.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.36.0/error_prone_annotations-2.36.0.jar"
+                    "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.jar"
                 ],
-                "sha256": "77440e270b0bc9a249903c5a076c36a722c4886ca4f42675f2903a1c53ed61a5"
+                "sha256": "a56e782b5b50811ac204073a355a21d915a2107fce13ec711331ad036f660fcc"
             },
             {
                 "coord": "com.google.errorprone:javac-shaded:9-dev-r4023-3",
@@ -449,7 +470,7 @@
                     "org.jspecify:jspecify:1.0.0",
                     "com.google.guava:failureaccess:1.0.3",
                     "com.google.errorprone:javac-shaded:9-dev-r4023-3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.j2objc:j2objc-annotations:3.0.0"
                 ],
@@ -477,14 +498,14 @@
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
                     "org.jspecify:jspecify:1.0.0",
                     "com.google.guava:failureaccess:1.0.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.j2objc:j2objc-annotations:3.0.0"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
                     "org.jspecify:jspecify:1.0.0",
                     "com.google.guava:failureaccess:1.0.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.j2objc:j2objc-annotations:3.0.0"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/google/guava/guava/33.4.8-android/guava-33.4.8-android.jar",
@@ -508,21 +529,21 @@
                 "coord": "com.google.http-client:google-http-client-gson:1.42.3",
                 "file": "v1/https/repo1.maven.org/maven2/com/google/http-client/google-http-client-gson/1.42.3/google-http-client-gson-1.42.3.jar",
                 "directDependencies": [
-                    "com.google.code.gson:gson:2.11.0",
+                    "com.google.code.gson:gson:2.13.2",
                     "com.google.http-client:google-http-client:1.42.3"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.code.gson:gson:2.11.0",
                     "org.jspecify:jspecify:1.0.0",
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
                     "com.google.guava:failureaccess:1.0.3",
                     "io.opencensus:opencensus-api:0.31.1",
+                    "com.google.code.gson:gson:2.13.2",
                     "io.grpc:grpc-context:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "commons-codec:commons-codec:1.21.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.http-client:google-http-client:1.42.3",
@@ -553,8 +574,8 @@
                     "com.fasterxml.jackson.core:jackson-core:2.19.4",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.grpc:grpc-context:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "commons-codec:commons-codec:1.21.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.http-client:google-http-client:1.42.3",
@@ -574,8 +595,8 @@
                 "directDependencies": [
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.opencensus:opencensus-api:0.31.1",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android",
                     "org.apache.httpcomponents:httpclient:4.5.13",
                     "org.apache.httpcomponents:httpcore:4.4.15",
@@ -590,8 +611,8 @@
                     "com.google.guava:failureaccess:1.0.3",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.grpc:grpc-context:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "commons-codec:commons-codec:1.21.0",
                     "com.google.guava:guava:33.4.8-android",
                     "org.apache.httpcomponents:httpclient:4.5.13",
@@ -616,21 +637,21 @@
                 "sha256": "88241573467ddca44ffd4d74aa04c2bbfd11bf7c17e0c342c94c9de7a70a7c64"
             },
             {
-                "coord": "com.google.protobuf:protobuf-java:3.25.8",
-                "file": "v1/https/repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.25.8/protobuf-java-3.25.8.jar",
+                "coord": "com.google.protobuf:protobuf-java:4.33.0",
+                "file": "v1/https/repo1.maven.org/maven2/com/google/protobuf/protobuf-java/4.33.0/protobuf-java-4.33.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.25.8/protobuf-java-3.25.8.jar",
+                "url": "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/4.33.0/protobuf-java-4.33.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.25.8/protobuf-java-3.25.8.jar"
+                    "https://repo1.maven.org/maven2/com/google/protobuf/protobuf-java/4.33.0/protobuf-java-4.33.0.jar"
                 ],
-                "sha256": "72bdb32eb38cafb7dcd288262c29a34d57cba2e19101af9685155ba8c0a56008"
+                "sha256": "6c50b4323a101dfd7b8aea209337ac49ecf5d8e33e0b210b196fc654291ed2cc"
             },
             {
                 "coord": "com.google.truth:truth:1.0.1",
                 "file": "v1/https/repo1.maven.org/maven2/com/google/truth/truth/1.0.1/truth-1.0.1.jar",
                 "directDependencies": [
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.googlecode.java-diff-utils:diffutils:1.3.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.auto.value:auto-value-annotations:1.10",
@@ -642,7 +663,7 @@
                     "org.jspecify:jspecify:1.0.0",
                     "org.hamcrest:hamcrest-core:1.3",
                     "com.google.guava:failureaccess:1.0.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.googlecode.java-diff-utils:diffutils:1.3.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.auto.value:auto-value-annotations:1.10",
@@ -904,7 +925,7 @@
                 "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-api/1.76.3/grpc-api-1.76.3.jar",
                 "directDependencies": [
                     "com.google.code.findbugs:jsr305:3.0.2",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android"
                 ],
                 "dependencies": [
@@ -912,7 +933,7 @@
                     "org.jspecify:jspecify:1.0.0",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "com.google.guava:failureaccess:1.0.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.j2objc:j2objc-annotations:3.0.0"
                 ],
@@ -941,25 +962,25 @@
                 "coord": "io.grpc:grpc-core:1.76.3",
                 "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-core/1.76.3/grpc-core-1.76.3.jar",
                 "directDependencies": [
-                    "com.google.code.gson:gson:2.11.0",
                     "io.grpc:grpc-api:1.76.3",
                     "com.google.android:annotations:4.1.1.4",
+                    "com.google.code.gson:gson:2.13.2",
                     "io.grpc:grpc-context:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "io.perfmark:perfmark-api:0.27.0",
                     "com.google.guava:guava:33.4.8-android",
                     "org.codehaus.mojo:animal-sniffer-annotations:1.24"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.code.gson:gson:2.11.0",
                     "org.jspecify:jspecify:1.0.0",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
                     "com.google.android:annotations:4.1.1.4",
                     "com.google.guava:failureaccess:1.0.3",
+                    "com.google.code.gson:gson:2.13.2",
                     "io.grpc:grpc-context:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "io.perfmark:perfmark-api:0.27.0",
                     "com.google.guava:guava:33.4.8-android",
                     "org.codehaus.mojo:animal-sniffer-annotations:1.24",
@@ -977,7 +998,7 @@
                 "directDependencies": [
                     "io.grpc:grpc-util:1.76.3",
                     "io.grpc:grpc-api:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "io.perfmark:perfmark-api:0.27.0",
                     "com.google.guava:guava:33.4.8-android",
                     "org.codehaus.mojo:animal-sniffer-annotations:1.24",
@@ -985,15 +1006,15 @@
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.code.gson:gson:2.11.0",
                     "org.jspecify:jspecify:1.0.0",
                     "io.grpc:grpc-util:1.76.3",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
                     "com.google.android:annotations:4.1.1.4",
                     "com.google.guava:failureaccess:1.0.3",
+                    "com.google.code.gson:gson:2.13.2",
                     "io.grpc:grpc-context:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "io.perfmark:perfmark-api:0.27.0",
                     "com.google.guava:guava:33.4.8-android",
                     "org.codehaus.mojo:animal-sniffer-annotations:1.24",
@@ -1020,7 +1041,7 @@
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
                     "com.google.guava:failureaccess:1.0.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.j2objc:j2objc-annotations:3.0.0"
                 ],
@@ -1037,24 +1058,24 @@
                 "coord": "io.grpc:grpc-protobuf:1.76.3",
                 "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-protobuf/1.76.3/grpc-protobuf-1.76.3.jar",
                 "directDependencies": [
+                    "com.google.protobuf:protobuf-java:4.33.0",
                     "io.grpc:grpc-protobuf-lite:1.76.3",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
                     "com.google.api.grpc:proto-google-common-protos:2.59.2",
-                    "com.google.guava:guava:33.4.8-android",
-                    "com.google.protobuf:protobuf-java:3.25.8"
+                    "com.google.guava:guava:33.4.8-android"
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
                     "org.jspecify:jspecify:1.0.0",
+                    "com.google.protobuf:protobuf-java:4.33.0",
                     "io.grpc:grpc-protobuf-lite:1.76.3",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
                     "com.google.guava:failureaccess:1.0.3",
                     "com.google.api.grpc:proto-google-common-protos:2.59.2",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android",
-                    "com.google.protobuf:protobuf-java:3.25.8",
                     "com.google.j2objc:j2objc-annotations:3.0.0"
                 ],
                 "url": "https://repo1.maven.org/maven2/io/grpc/grpc-protobuf/1.76.3/grpc-protobuf-1.76.3.jar",
@@ -1067,7 +1088,7 @@
                 "coord": "io.grpc:grpc-stub:1.76.3",
                 "file": "v1/https/repo1.maven.org/maven2/io/grpc/grpc-stub/1.76.3/grpc-stub-1.76.3.jar",
                 "directDependencies": [
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android",
                     "io.grpc:grpc-api:1.76.3",
                     "org.codehaus.mojo:animal-sniffer-annotations:1.24"
@@ -1078,7 +1099,7 @@
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
                     "com.google.guava:failureaccess:1.0.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android",
                     "org.codehaus.mojo:animal-sniffer-annotations:1.24",
                     "com.google.j2objc:j2objc-annotations:3.0.0"
@@ -1100,14 +1121,14 @@
                 ],
                 "dependencies": [
                     "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-                    "com.google.code.gson:gson:2.11.0",
                     "org.jspecify:jspecify:1.0.0",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
                     "com.google.android:annotations:4.1.1.4",
                     "com.google.guava:failureaccess:1.0.3",
+                    "com.google.code.gson:gson:2.13.2",
                     "io.grpc:grpc-context:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "io.perfmark:perfmark-api:0.27.0",
                     "com.google.guava:guava:33.4.8-android",
                     "org.codehaus.mojo:animal-sniffer-annotations:1.24",
@@ -1405,7 +1426,7 @@
                     "com.google.guava:failureaccess:1.0.3",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.grpc:grpc-context:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.j2objc:j2objc-annotations:3.0.0"
                 ],
@@ -1429,7 +1450,7 @@
                     "com.google.guava:failureaccess:1.0.3",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.grpc:grpc-context:1.76.3",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.j2objc:j2objc-annotations:3.0.0"
                 ],
@@ -1620,7 +1641,7 @@
                     "com.google.guava:failureaccess:1.0.3",
                     "org.opentest4j:opentest4j:1.2.0",
                     "org.objenesis:objenesis:2.6",
-                    "com.google.errorprone:error_prone_annotations:2.36.0",
+                    "com.google.errorprone:error_prone_annotations:2.41.0",
                     "org.apiguardian:apiguardian-api:1.1.0",
                     "org.junit.platform:junit-platform-commons:1.6.2",
                     "net.bytebuddy:byte-buddy:1.12.18",
@@ -2907,17 +2928,17 @@
                 "coord": "redis.clients:jedis:4.2.3",
                 "file": "v1/https/repo1.maven.org/maven2/redis/clients/jedis/4.2.3/jedis-4.2.3.jar",
                 "directDependencies": [
-                    "com.google.code.gson:gson:2.11.0",
+                    "com.google.code.gson:gson:2.13.2",
                     "org.apache.commons:commons-pool2:2.11.1",
                     "org.json:json:20211205",
                     "org.slf4j:slf4j-api:1.7.36"
                 ],
                 "dependencies": [
-                    "com.google.code.gson:gson:2.11.0",
                     "org.json:json:20211205",
                     "org.apache.commons:commons-pool2:2.11.1",
+                    "com.google.code.gson:gson:2.13.2",
                     "org.slf4j:slf4j-api:1.7.36",
-                    "com.google.errorprone:error_prone_annotations:2.36.0"
+                    "com.google.errorprone:error_prone_annotations:2.41.0"
                 ],
                 "url": "https://repo1.maven.org/maven2/redis/clients/jedis/4.2.3/jedis-4.2.3.jar",
                 "mirror_urls": [
@@ -2927,6 +2948,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": 965006214
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -1577907762
     }
 }

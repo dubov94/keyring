@@ -27,6 +27,8 @@ java_library(
     visibility = ["//server:internal"],
     deps = [
         ":arithmetic",
+        "//proto:cryptography_java_proto",
+        "@maven//:com_google_crypto_tink_tink",
         "@maven//:com_google_guava_guava",
         "@maven//:commons_codec_commons_codec",
     ],
@@ -38,6 +40,7 @@ junit5_test(
     test_package = "keyring.server.main",
     deps = [
         ":arithmetic",
+        "//proto:cryptography_java_proto",
         "//server/main:cryptography",
         "@maven//:name_falgout_jeffrey_testing_junit5_mockito_extension",
         "@maven//:org_mockito_mockito_core",
@@ -72,6 +75,7 @@ java_library(
         ":cryptography",
         ":environment",
         ":mail_validation",
+        "//proto:cryptography_java_proto",
         "//server/main/interceptors:agent_accessor",
         "//server/main/interceptors:agent_interceptor",
         "//server/main/interceptors:session_accessor",

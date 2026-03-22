@@ -48,6 +48,11 @@ spec:
             secretKeyRef:
               name: captcha-credentials
               key: turnstile-secret-key
+        - name: PEPPER_FOR_FAKE_SALT
+          valueFrom:
+            secretKeyRef:
+              name: server-user-credentials
+              key: pepper-for-fake-salt
       initContainers:
       - name: liquibase
         image: dubov94/keyring-liquibase:2e947c12daa9c395ff48316511314802d34f6ea6

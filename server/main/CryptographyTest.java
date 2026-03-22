@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 
 import java.security.SecureRandom;
 import java.util.Optional;
+import keyring.server.main.proto.constants.Argon2Config;
 import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,7 +21,13 @@ class CryptographyTest {
 
   @BeforeEach
   void beforeEach() {
-    cryptography = new Cryptography(mockSecureRandom, mockArithmetic, 2);
+    cryptography =
+        new Cryptography(
+            mockSecureRandom,
+            mockArithmetic,
+            2,
+            Argon2Config.getDefaultInstance(),
+            "pepper-for-fake-salt");
   }
 
   @Test

@@ -113,9 +113,8 @@ export default (Vue as VueConstructor<Vue & Mixins>).extend({
           [
             fn.pipe(
               error(this.authnViaApi as AuthnViaApi),
-              option.filter(isFailureOf([
-                ServiceLogInResponseError.INVALIDCREDENTIALS,
-                ServiceGetSaltResponseError.NOTFOUND
+              option.filter(isFailureOf<ServiceLogInResponseError | ServiceGetSaltResponseError>([
+                ServiceLogInResponseError.INVALIDCREDENTIALS
               ]))
             ),
             fn.pipe(

@@ -72,8 +72,14 @@ filegroup_copy(
     ],
 )
 
+filegroup_copy(
+    name = "cryptography_js_proto",
+    srcs = ["//proto:cryptography_js_proto"],
+)
+
 SOURCES = [
     ":configs",
+    ":cryptography_js_proto",
     ":package_json",
     ":public",
     ":src",
@@ -114,6 +120,8 @@ DEPENDENCIES = [
     "@pwa_npm//file-saver",
     "@pwa_npm//fp-ts",
     "@pwa_npm//fuse.js",
+    # For `js_proto_compile`.
+    "@pwa_npm//google-protobuf",
     "@pwa_npm//libsodium-wrappers-sumo",
     "@pwa_npm//lodash",
     "@pwa_npm//papaparse",

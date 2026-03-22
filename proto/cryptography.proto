@@ -1,0 +1,21 @@
+syntax = "proto2";
+
+package proto.constants;
+
+option java_multiple_files = true;
+option java_package = "keyring.server.main.proto.constants";
+
+// https://tools.ietf.org/html/draft-irtf-cfrg-argon2-12#section-4
+// https://libsodium.gitbook.io/doc/password_hashing/default_phf#guidelines-for-choosing-the-parameters
+// https://github.com/golang/crypto/blob/5ea612d1eb830b38bc4e914e37f55311eb58adce/argon2/argon2.go
+// https://www.rfc-editor.org/rfc/rfc9106.pdf
+// https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
+message Argon2Config {
+  optional string separator = 1 [default = "$"];
+  optional string type = 2 [default = "argon2id"];
+  optional int32 version = 3 [default = 0];
+  // 64 * 1024 * 1024
+  optional int64 memory_in_bytes = 4 [default = 67108864];
+  optional int32 iterations = 5 [default = 3];
+  optional int32 threads = 6 [default = 1];
+}

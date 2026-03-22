@@ -108,6 +108,7 @@ maven_install(
         "com.fasterxml.jackson.core:jackson-databind:2.19.4",
         "com.google.auto.value:auto-value:1.10",
         "com.google.auto.value:auto-value-annotations:1.10",
+        "com.google.crypto.tink:tink:1.20.0",
         "com.google.dagger:dagger:2.46.1",
         "com.google.dagger:dagger-compiler:2.46.1",
         "com.google.guava:guava:32.1.3-jre",
@@ -286,6 +287,19 @@ yarn_install(
     name = "pwa_npm",
     package_json = "//pwa:package.json",
     yarn_lock = "//pwa:yarn.lock",
+)
+
+# language_specific_dependencies.external_node_dependencies.rules_proto_grpc_dependencies
+
+load("@rules_proto_grpc//js:repositories.bzl", rules_proto_grpc_js_repos = "js_repos")
+
+rules_proto_grpc_js_repos()
+
+yarn_install(
+    # Expected by `deps_repo`.
+    name = "npm",
+    package_json = "@rules_proto_grpc//js:requirements/package.json",
+    yarn_lock = "@rules_proto_grpc//js:requirements/yarn.lock",
 )
 
 # packaging_dependencies

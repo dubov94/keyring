@@ -12,6 +12,7 @@ import keyring.server.main.interceptors.AgentAccessor;
 import keyring.server.main.interceptors.AgentInterceptor;
 import keyring.server.main.interceptors.SessionAccessor;
 import keyring.server.main.interceptors.VersionAccessor;
+import keyring.server.main.proto.constants.Argon2Config;
 import org.apache.commons.validator.routines.EmailValidator;
 
 @Module
@@ -26,8 +27,13 @@ class AppModule {
 
   @Provides
   @Singleton
-  static Cryptography provideCryptography(Arithmetic arithmetic) {
-    return new Cryptography(new SecureRandom(), arithmetic, UACS_LENGTH);
+  static Cryptography provideCryptography(Environment environment, Arithmetic arithmetic) {
+    return new Cryptography(
+        new SecureRandom(),
+        arithmetic,
+        UACS_LENGTH,
+        Argon2Config.getDefaultInstance(),
+        environment.isProduction() ? environment.getPepperForFakeSalt() : "pepper-for-fake-salt");
   }
 
   @Provides

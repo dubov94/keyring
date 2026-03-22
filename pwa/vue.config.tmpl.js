@@ -2,6 +2,7 @@ module.exports = {
   // https://github.com/vuejs/vue-cli/issues/2176#issuecomment-421354721
   parallel: false,
   transpileDependencies: [
+    'google-protobuf',
     'vuetify'
   ],
   devServer: {
@@ -17,6 +18,7 @@ module.exports = {
   },
   chainWebpack: config => {
     config.resolve.alias.set('canvas', 'lodash/noop')
+    config.resolve.alias.set('@proto', `${__dirname}/o`)
 
     config.module
       .rule('workerize')

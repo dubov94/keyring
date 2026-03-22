@@ -36,8 +36,9 @@ message GetSaltRequest {
 
 message GetSaltResponse {
     enum Error {
+        reserved 1;
+
         NONE = 0;
-        NOT_FOUND = 1;
     }
 
     Error error = 1;

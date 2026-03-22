@@ -25,9 +25,8 @@
       "webpack-env"
     ],
     "paths": {
-      "@/*": [
-        "src/*"
-      ]
+      "@/*": ["src/*"],
+      "@proto/*": ["o/*"]
     },
     "lib": [
       "esnext",
@@ -36,6 +35,8 @@
       "scripthost"
     ],
     "typeRoots": [
+      // From `js_proto_compile`.
+      "./o",
       "./node_modules/@types",
       "./src/types"
     ]

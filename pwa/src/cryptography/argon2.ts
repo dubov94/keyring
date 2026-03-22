@@ -1,5 +1,11 @@
+import { Argon2Config } from '@proto/cryptography_js_proto/proto/cryptography_pb'
+
+const ARGON2_CONFIG = new Argon2Config().toObject()
+
+export type Argon2Type = 'argon2i' | 'argon2d' | 'argon2id'
+
 export interface Argon2Settings {
-  type: 'argon2i' | 'argon2d' | 'argon2id';
+  type: Argon2Type;
   // https://tools.ietf.org/html/draft-irtf-cfrg-argon2-12#section-3.1
   // https://github.com/P-H-C/phc-winner-argon2#command-line-utility
   version: number | 'latest';
@@ -73,7 +79,7 @@ export const parseArgon2Parametrization = (parametrization: string): Argon2Param
   return <Argon2Parametrization>{
     separator: '$',
     settings: {
-      type: groups.type,
+      type: groups.type as Argon2Type,
       version: groups.version === undefined ? 'latest' : Number(groups.version),
       memoryInBytes: Number(groups.memoryInBytes),
       iterations: Number(groups.iterations),
@@ -83,15 +89,20 @@ export const parseArgon2Parametrization = (parametrization: string): Argon2Param
   }
 }
 
-// https://tools.ietf.org/html/draft-irtf-cfrg-argon2-12#section-4
-// https://libsodium.gitbook.io/doc/password_hashing/default_phf#guidelines-for-choosing-the-parameters
-// https://github.com/golang/crypto/blob/5ea612d1eb830b38bc4e914e37f55311eb58adce/argon2/argon2.go
-// https://www.rfc-editor.org/rfc/rfc9106.pdf
-// https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#argon2id
-export const recommendedArgon2Settings = (): Argon2Settings => ({
-  type: 'argon2id',
-  version: 'latest',
-  memoryInBytes: 64 * 1024 * 1024,
-  iterations: 3,
-  threads: 1
-})
+export const recommendedArgon2Settings = (): Argon2Settings => {
+  const {
+    type,
+    version,
+    memoryInBytes,
+    iterations,
+    threads
+  } = ARGON2_CONFIG
+
+  return {
+    type: type as Argon2Type,
+    version: version === 0 ? 'latest' : version,
+    memoryInBytes,
+    iterations,
+    threads
+  }
+}

@@ -64,4 +64,8 @@ public class Environment {
   public String getMrgnVersion() {
     return mrgnVersion;
   }
+
+  public String getPepperForFakeSalt() {
+    return getVariable("PEPPER_FOR_FAKE_SALT");
+  }
 }

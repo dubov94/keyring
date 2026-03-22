@@ -11,7 +11,7 @@ gateway_grpc_library(
 gateway_openapiv2_compile(
     name = "swagger_spec",
     visibility = ["//pwa/src/api/definitions:__pkg__"],
-    deps = ["//proto:service_proto"],
+    protos = ["//proto:service_proto"],
 )
 
 go_binary(

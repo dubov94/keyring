@@ -13,7 +13,7 @@ def _filegroup_copy_impl(context):
             outputs = [target],
             inputs = [item],
             arguments = [item.path, target.path],
-            command = "cp $1 $2",
+            command = "cp -r $1 $2",
         )
     return [
         DefaultInfo(

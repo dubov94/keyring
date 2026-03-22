@@ -167,10 +167,13 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
 
   @WithEntityManager
   private GetSaltResponse _getSalt(GetSaltRequest request) {
+    String username = request.getUsername();
     GetSaltResponse.Builder builder = GetSaltResponse.newBuilder();
-    Optional<User> maybeUser = accountOperationsInterface.getUserByName(request.getUsername());
+    Optional<User> maybeUser = accountOperationsInterface.getUserByName(username);
+    // Do it regardless to prevent time-based attack vectors.
+    String fakeSalt = cryptography.generateA2p(username);
     if (!maybeUser.isPresent()) {
-      return builder.setError(GetSaltResponse.Error.NOT_FOUND).build();
+      return builder.setSalt(fakeSalt).build();
     }
     return builder.setSalt(maybeUser.get().getSalt()).build();
   }

@@ -16,6 +16,7 @@ Secrets in italic are populated automatically by Helm charts.
 | email-service-credentials | mailgun-api-key |
 | geoipupdate-credentials | account-id |
 | geoipupdate-credentials | license-key |
+| server-user-credentials | pepper-for-fake-salt |
 | *redis* | |
 
 ### Deploy `helmfile.yaml`
