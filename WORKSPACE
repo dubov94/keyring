@@ -383,10 +383,10 @@ container_pull(
 
 container_pull(
     name = "io_ghcr_maxmindinc_geoipupdate",
-    digest = "sha256:7e774ec603b888a08f411f0a3fc3e760104d8fcdf890298072025721f627de6d",
+    digest = "sha256:45e15eb310528fd308c5c0abee9a8e6d580f1e2b1251e960dec2863dc7f0102f",
     registry = "ghcr.io",
     repository = "maxmind/geoipupdate",
-    tag = "v6.1",
+    tag = "v7.1.1",
 )
 
 # multirun_dependencies.external_multirun_dependencies
