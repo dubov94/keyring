@@ -28,6 +28,7 @@ java_library(
     deps = [
         ":arithmetic",
         "@maven//:com_google_guava_guava",
+        "@maven//:commons_codec_commons_codec",
     ],
 )
 

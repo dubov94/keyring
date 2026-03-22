@@ -7,10 +7,11 @@ import com.google.common.hash.Hashing;
 import com.google.common.io.BaseEncoding;
 import com.google.common.math.IntMath;
 import java.math.RoundingMode;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import org.apache.commons.codec.binary.StringUtils;
 
 public class Cryptography {
   private int uacsLength;
@@ -80,6 +81,7 @@ public class Cryptography {
   }
 
   public boolean doesDigestMatchHash(String digest, String hash) {
-    return Objects.equals(computeHash(digest), hash);
+    return MessageDigest.isEqual(
+        StringUtils.getBytesUtf8(computeHash(digest)), StringUtils.getBytesUtf8(hash));
   }
 }

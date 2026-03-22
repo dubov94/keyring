@@ -198,13 +198,13 @@
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
-                    "commons-codec:commons-codec:1.11",
                     "com.google.guava:failureaccess:1.0.3",
                     "com.fasterxml.jackson.core:jackson-core:2.19.4",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.grpc:grpc-context:1.76.3",
                     "com.google.errorprone:error_prone_annotations:2.36.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
+                    "commons-codec:commons-codec:1.21.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.http-client:google-http-client:1.42.3",
                     "com.google.auth:google-auth-library-credentials:0.22.0",
@@ -518,12 +518,12 @@
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
-                    "commons-codec:commons-codec:1.11",
                     "com.google.guava:failureaccess:1.0.3",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.grpc:grpc-context:1.76.3",
                     "com.google.errorprone:error_prone_annotations:2.36.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
+                    "commons-codec:commons-codec:1.21.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.http-client:google-http-client:1.42.3",
                     "org.apache.httpcomponents:httpclient:4.5.13",
@@ -549,13 +549,13 @@
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
-                    "commons-codec:commons-codec:1.11",
                     "com.google.guava:failureaccess:1.0.3",
                     "com.fasterxml.jackson.core:jackson-core:2.19.4",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.grpc:grpc-context:1.76.3",
                     "com.google.errorprone:error_prone_annotations:2.36.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
+                    "commons-codec:commons-codec:1.21.0",
                     "com.google.guava:guava:33.4.8-android",
                     "com.google.http-client:google-http-client:1.42.3",
                     "org.apache.httpcomponents:httpclient:4.5.13",
@@ -587,12 +587,12 @@
                     "commons-logging:commons-logging:1.2",
                     "com.google.code.findbugs:jsr305:3.0.2",
                     "io.grpc:grpc-api:1.76.3",
-                    "commons-codec:commons-codec:1.11",
                     "com.google.guava:failureaccess:1.0.3",
                     "io.opencensus:opencensus-api:0.31.1",
                     "io.grpc:grpc-context:1.76.3",
                     "com.google.errorprone:error_prone_annotations:2.36.0",
                     "io.opencensus:opencensus-contrib-http-util:0.31.1",
+                    "commons-codec:commons-codec:1.21.0",
                     "com.google.guava:guava:33.4.8-android",
                     "org.apache.httpcomponents:httpclient:4.5.13",
                     "org.apache.httpcomponents:httpcore:4.4.15",
@@ -769,13 +769,13 @@
                 "coord": "com.warrenstrange:googleauth:1.4.0",
                 "file": "v1/https/repo1.maven.org/maven2/com/warrenstrange/googleauth/1.4.0/googleauth-1.4.0.jar",
                 "directDependencies": [
-                    "commons-codec:commons-codec:1.11",
+                    "commons-codec:commons-codec:1.21.0",
                     "org.apache.httpcomponents:httpclient:4.5.13"
                 ],
                 "dependencies": [
                     "commons-logging:commons-logging:1.2",
+                    "commons-codec:commons-codec:1.21.0",
                     "org.apache.httpcomponents:httpclient:4.5.13",
-                    "commons-codec:commons-codec:1.11",
                     "org.apache.httpcomponents:httpcore:4.4.15"
                 ],
                 "url": "https://repo1.maven.org/maven2/com/warrenstrange/googleauth/1.4.0/googleauth-1.4.0.jar",
@@ -820,15 +820,15 @@
                 "sha256": "7d938c81789028045c08c065e94be75fc280527620d5bd62b519d5838532368a"
             },
             {
-                "coord": "commons-codec:commons-codec:1.11",
-                "file": "v1/https/repo1.maven.org/maven2/commons-codec/commons-codec/1.11/commons-codec-1.11.jar",
+                "coord": "commons-codec:commons-codec:1.21.0",
+                "file": "v1/https/repo1.maven.org/maven2/commons-codec/commons-codec/1.21.0/commons-codec-1.21.0.jar",
                 "directDependencies": [],
                 "dependencies": [],
-                "url": "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.11/commons-codec-1.11.jar",
+                "url": "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.21.0/commons-codec-1.21.0.jar",
                 "mirror_urls": [
-                    "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.11/commons-codec-1.11.jar"
+                    "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.21.0/commons-codec-1.21.0.jar"
                 ],
-                "sha256": "e599d5318e97aa48f42136a2927e6dfa4e8881dff0e6c8e3109ddbbff51d7b7d"
+                "sha256": "4da851cb6abfb98bfe9eb77c5e5fc47f5414fa28b94e21b7fd9a646705dc167f"
             },
             {
                 "coord": "commons-collections:commons-collections:3.2.2",
@@ -1761,13 +1761,13 @@
                 "coord": "org.apache.httpcomponents:httpclient:4.5.13",
                 "file": "v1/https/repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.5.13/httpclient-4.5.13.jar",
                 "directDependencies": [
-                    "commons-codec:commons-codec:1.11",
+                    "commons-codec:commons-codec:1.21.0",
                     "commons-logging:commons-logging:1.2",
                     "org.apache.httpcomponents:httpcore:4.4.15"
                 ],
                 "dependencies": [
                     "commons-logging:commons-logging:1.2",
-                    "commons-codec:commons-codec:1.11",
+                    "commons-codec:commons-codec:1.21.0",
                     "org.apache.httpcomponents:httpcore:4.4.15"
                 ],
                 "url": "https://repo1.maven.org/maven2/org/apache/httpcomponents/httpclient/4.5.13/httpclient-4.5.13.jar",
@@ -2927,6 +2927,6 @@
             }
         ],
         "version": "0.1.0",
-        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": -724240581
+        "__AUTOGENERATED_FILE_DO_NOT_MODIFY_THIS_FILE_MANUALLY": 965006214
     }
 }
