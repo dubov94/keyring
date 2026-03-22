@@ -185,14 +185,14 @@ class AuthenticationServiceTest {
   }
 
   @Test
-  void fetchSalt_invalidUsername_repliesWithError() {
+  void fetchSalt_invalidUsername_repliesWithFakeSalt() {
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
+    when(mockCryptography.generateA2p("username")).thenReturn("fake-salt");
 
     authenticationService.fetchSalt(
         GetSaltRequest.newBuilder().setUsername("username").build(), mockStreamObserver);
 
-    verify(mockStreamObserver)
-        .onNext(GetSaltResponse.newBuilder().setError(GetSaltResponse.Error.NOT_FOUND).build());
+    verify(mockStreamObserver).onNext(GetSaltResponse.newBuilder().setSalt("fake-salt").build());
   }
 
   @Test
