@@ -45,7 +45,7 @@ import keyring.server.main.proto.service.Password;
 
 public class AccountOperationsClient implements AccountOperationsInterface {
   private static final ImmutableMap<FeatureType, Consumer<FeaturePrompts>> FEATURE_PROMPT_ACKERS =
-      ImmutableMap.of();
+      ImmutableMap.of(FeatureType.PENTEST, featurePrompts -> featurePrompts.setPentest(false));
 
   private Chronometry chronometry;
   private Limiters limiters;
@@ -420,7 +420,8 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   public void acceptOtpParams(long userId, UUID otpParamsUid) {
     Optional<OtpParams> maybeOtpParams = getOtpParams(userId, otpParamsUid);
     if (!maybeOtpParams.isPresent()) {
-      throw new IllegalArgumentException(String.format("`OtpParams` %s do not exist", otpParamsUid));
+      throw new IllegalArgumentException(
+          String.format("`OtpParams` %s do not exist", otpParamsUid));
     }
     OtpParams otpParams = maybeOtpParams.get();
     User user = otpParams.getUser();

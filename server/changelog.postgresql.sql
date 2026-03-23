@@ -318,3 +318,8 @@ ALTER TABLE "public"."otp_params" ADD COLUMN "uuid" UUID DEFAULT gen_random_uuid
 -- changeset liquibase:47
 CREATE UNIQUE INDEX IF NOT EXISTS "otp_params_uuid_index" ON "public"."otp_params" ("uuid");
 
+-- changeset liquibase:48
+-- preconditions onFail:MARK_RAN
+-- precondition-sql-check expectedResult:0 select count(*) from information_schema.columns where table_schema = 'public' and table_name = 'feature_prompts' and column_name = 'pentest'
+ALTER TABLE "public"."feature_prompts" ADD COLUMN "pentest" BOOLEAN;
+UPDATE "public"."feature_prompts" SET "pentest" = TRUE;

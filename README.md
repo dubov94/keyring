@@ -49,3 +49,4 @@ Parolica *(pronounced [[pɐˈrolʲɪtsə]](https://en.wikipedia.org/wiki/Interna
 - Details of [the architecture](/docs/architecture.md)
 - [Development](/docs/development.md) instructions
 - [Deployment](/docs/deployment.md) of the service
+- Latest [pentest results](/docs/pentest-report-772.pdf)

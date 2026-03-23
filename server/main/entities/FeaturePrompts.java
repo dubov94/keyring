@@ -25,8 +25,19 @@ public class FeaturePrompts {
 
   @Version private long version;
 
+  @Column private boolean pentest;
+
   public FeaturePrompts setUser(User user) {
     this.user = user;
+    return this;
+  }
+
+  public boolean getPentest() {
+    return pentest;
+  }
+
+  public FeaturePrompts setPentest(boolean pentest) {
+    this.pentest = pentest;
     return this;
   }
 }

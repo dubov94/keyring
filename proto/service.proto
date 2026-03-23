@@ -54,6 +54,7 @@ enum FeatureType {
     reserved 1, 2, 3;
 
     UNKNOWN = 0;
+    PENTEST = 4;
 }
 
 message FeaturePrompt {

@@ -33,6 +33,12 @@
         <v-row v-if="anyFeaturePrompts">
           <v-col :cols="12">
             <!-- `<v-alert>`s are added here. -->
+            <v-alert :value="pentestPrompt" @input="ackPentestPrompt"
+              type="info" outlined dismissible border="left" class="mb-0">
+              🛡️ Parolica has undergone a
+              <external-link href="https://en.wikipedia.org/wiki/Penetration_test">penetration test</external-link>. See
+              <external-link href="https://github.com/dubov94/keyring/blob/master/docs/pentest-report-772.pdf">the full report</external-link>!
+            </v-alert>
           </v-col>
         </v-row>
         <v-row>
@@ -125,6 +131,7 @@ import { concatMap, filter, takeUntil, mapTo } from 'rxjs/operators'
 import { DeepReadonly } from 'ts-essentials'
 import { isActionOf } from 'typesafe-actions'
 import Vue, { VueConstructor } from 'vue'
+import { ServiceFeatureType } from '@/api/definitions'
 import Page from '@/components/Page.vue'
 import PasswordMasonry from '@/components/PasswordMasonry.vue'
 import UserMenu from '@/components/toolbar-with-menu/UserMenu.vue'
@@ -134,6 +141,7 @@ import { hasIndicator, data } from '@/redux/remote_data'
 import { backgroundAuthnError } from '@/redux/modules/authn/selectors'
 import { toggleDepot, toggleWebAuthn, webAuthnInterruption, WebAuthn } from '@/redux/modules/depot/actions'
 import { isDepotActive, webAuthnData, WebAuthnData } from '@/redux/modules/depot/selectors'
+import { ackFeaturePrompt } from '@/redux/modules/user/account/actions'
 import { canAccessApi, featurePrompts, isOtpEnabled } from '@/redux/modules/user/account/selectors'
 import { userKeysUpdate } from '@/redux/modules/user/keys/actions'
 import { Clique, cliques, getCliqueRepr } from '@/redux/modules/user/keys/selectors'
@@ -224,6 +232,10 @@ export default (Vue as VueConstructor<Vue>).extend({
     anyFeaturePrompts (): boolean {
       return this.featurePrompts.length > 0
     },
+    pentestPrompt (): boolean {
+      return this.featurePrompts.findIndex(
+        (fp) => fp.featureType === ServiceFeatureType.PENTEST) === 0
+    },
     toolbarIsExtended (): boolean {
       return this.$vuetify.breakpoint.xsOnly
     },
@@ -245,6 +257,9 @@ export default (Vue as VueConstructor<Vue>).extend({
   methods: {
     menuSwitch (value: boolean) {
       this.showMenu = value
+    },
+    ackPentestPrompt () {
+      this.dispatch(ackFeaturePrompt(ServiceFeatureType.PENTEST))
     },
     toggleDepot (value: boolean) {
       if (!value) {

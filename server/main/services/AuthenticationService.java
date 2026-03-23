@@ -54,7 +54,12 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   }
 
   private static final ImmutableList<Function<FeaturePrompts, Optional<FeaturePrompt>>>
-      FEATURE_PROMPT_MAPPERS = ImmutableList.of();
+      FEATURE_PROMPT_MAPPERS =
+          ImmutableList.of(
+              featurePrompts ->
+                  featurePrompts.getPentest()
+                      ? Optional.of(datalessFeaturePrompt(FeatureType.PENTEST))
+                      : Optional.empty());
 
   private AccountOperationsInterface accountOperationsInterface;
   private KeyOperationsInterface keyOperationsInterface;
