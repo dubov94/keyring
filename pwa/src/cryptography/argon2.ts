@@ -1,5 +1,6 @@
-import { Argon2Config } from '@proto/cryptography_js_proto/proto/cryptography_pb'
+import * as CryptographyPb from '@proto/cryptography_js_proto/proto/cryptography_pb'
 
+const { Argon2Config } = CryptographyPb.proto.constants
 const ARGON2_CONFIG = new Argon2Config().toObject()
 
 export type Argon2Type = 'argon2i' | 'argon2d' | 'argon2id'

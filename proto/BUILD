@@ -44,5 +44,6 @@ java_proto_library(
 
 js_proto_compile(
     name = "cryptography_js_proto",
+    options = {"//js:js_plugin": ["import_style=commonjs_strict"]},
     protos = [":cryptography_proto"],
 )
