@@ -2,7 +2,7 @@
 
 See [/k8s/README.md](/k8s/README.md) for detailed operating instructions.
 
-Infrastructurally the service uses (managed) Kubernetes on DigitalOcean and Google Cloud Storage (GCS) for backups.
+The service uses (managed) Kubernetes on DigitalOcean, Google Cloud Storage (GCS) for backups and Cloudflare.
 
 ## Stack
 
@@ -16,21 +16,12 @@ Infrastructurally the service uses (managed) Kubernetes on DigitalOcean and Goog
     * writes PG dumps to GCS
   * `restorer_cronjob`
     * `pg_restore` essentially
-* `monitoring/`
+* `monitoring/` (optional)
   * `kube-prometheus-stack` (KPS)
   * `loki-stack`
     * connected manually to Grafana from KPS
 
-## Reliability
-
-### Cloudflare
-
-* Caching for the frontends at 1 hour TTL.
-* Throttling for the backends (`/api/...`) at 80 QP10S for one IP.
-
-### Alerts
-
-All of them are installed manually at the moment, and Alertmanager hasn't been explored.
+## Alerts
 
 * **DigitalOcean**
   * `Memory Utilization` is above 90% for 5 min for any of the cluster nodes.
@@ -38,10 +29,6 @@ All of them are installed manually at the moment, and Alertmanager hasn't been e
   * 'The primary account holder will receive an e-mail notification when 50% and 75% of the limit [1k] has been crossed.'
 * **Google Cloud Storage**
   * `received_bytes_count` in the backup bucket is less than expected for at least 25 hours (the corresponding `CronJob` runs every day).
-
-### Security
-
-[aikido.dev](https://aikido.dev/)
 
 ## Referrals
 

@@ -76,9 +76,9 @@ From ['Storage on DigitalOcean'](https://digitalocean.github.io/navigators-guide
 
 ## Managing versions
 
-Client and server binaries contain the information about the earliest version still permitted to run built in.
+Client and server contain the information about the earliest version still permitted to run.
 
-* Newer service workers forcefully **reload** the pages with obsolete versions.
-  * In general service workers attempt to load `index.html` from network if they can within the allowed time window.
-  * It's important to remember about the Cloudflare cache, which may need to be invalidated in certain deployment scenarios.
-* Servers **reject** requests where the app version is obsolete (with `UNIMPLEMENTED`, 501).
+* Newer service workers forcefully **reload** pages with obsolete versions.
+  * In general the service worker attempts to load `index.html` from the network (with a time limit).
+  * It's important to remember about the Cloudflare cache (if enabled), which may need to be invalidated in certain deployment scenarios.
+* Servers **reject** requests if the app version is obsolete (with `UNIMPLEMENTED`, 501).
