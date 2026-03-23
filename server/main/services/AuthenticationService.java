@@ -66,6 +66,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   private IGoogleAuthenticator googleAuthenticator;
   private TurnstileValidator turnstileValidator;
   private MailValidation mailValidation;
+  private LogInLimiter logInLimiter;
 
   @Inject
   AuthenticationService(
@@ -78,7 +79,8 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
       VersionAccessor versionAccessor,
       IGoogleAuthenticator googleAuthenticator,
       TurnstileValidator turnstileValidator,
-      MailValidation mailValidation) {
+      MailValidation mailValidation,
+      LogInLimiter logInLimiter) {
     this.accountOperationsInterface = accountOperationsInterface;
     this.keyOperationsInterface = keyOperationsInterface;
     this.cryptography = cryptography;
@@ -89,6 +91,7 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
     this.googleAuthenticator = googleAuthenticator;
     this.turnstileValidator = turnstileValidator;
     this.mailValidation = mailValidation;
+    this.logInLimiter = logInLimiter;
   }
 
   private Optional<StatusException> validateRegisterRequest(RegisterRequest request) {
@@ -216,6 +219,9 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
   @WithEntityManager
   private LogInResponse _logIn(LogInRequest request) {
     LogInResponse.Builder builder = LogInResponse.newBuilder();
+    if (!logInLimiter.acquireAttempt(request.getUsername())) {
+      return builder.setError(LogInResponse.Error.RATE_LIMITED).build();
+    }
     Optional<User> maybeUser = accountOperationsInterface.getUserByName(request.getUsername());
     if (!maybeUser.isPresent()) {
       return builder.setError(LogInResponse.Error.INVALID_CREDENTIALS).build();

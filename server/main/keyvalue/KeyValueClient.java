@@ -38,7 +38,7 @@ public class KeyValueClient {
   }
 
   public String convertSessionTokenToKey(String sessionToken) {
-    return String.format("session:%s", sessionToken);
+    return String.format("session-token:%s", sessionToken);
   }
 
   public KvSession createSession(
@@ -104,7 +104,7 @@ public class KeyValueClient {
   }
 
   public String convertAuthnTokenToKey(String authnToken) {
-    return String.format("authn:%s", authnToken);
+    return String.format("authn-token:%s", authnToken);
   }
 
   public KvAuthn createAuthn(

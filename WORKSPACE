@@ -105,6 +105,8 @@ ASPECTJ_VERSION = "1.9.5"
 maven_install(
     artifacts = [
         "com.beust:jcommander:1.78",
+        "com.bucket4j:bucket4j_jdk11-core:8.14.0",
+        "com.bucket4j:bucket4j_jdk11-jedis:8.14.0",
         "com.fasterxml.jackson.core:jackson-databind:2.19.4",
         "com.google.auto.value:auto-value:1.10",
         "com.google.auto.value:auto-value-annotations:1.10",

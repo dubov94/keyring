@@ -186,6 +186,8 @@ const logInRpc = <T extends TypeConstant>(
               )
             )
           }
+          case ServiceLogInResponseError.RATELIMITED:
+            return of(signalCreator(exception('Rate limited')))
           default:
             return of(signalCreator(failure(logInResponse.error!)))
         }

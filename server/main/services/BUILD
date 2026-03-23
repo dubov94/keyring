@@ -75,10 +75,23 @@ woven_junit5_test(
 )
 
 java_library(
+    name = "log_in_limiter",
+    srcs = ["LogInLimiter.java"],
+    visibility = ["//server:internal"],
+    deps = [
+        "@maven//:com_bucket4j_bucket4j_jdk11_core",
+        "@maven//:com_bucket4j_bucket4j_jdk11_jedis",
+        "@maven//:javax_inject_javax_inject",
+        "@maven//:redis_clients_jedis",
+    ],
+)
+
+java_library(
     name = "authentication_service",
     srcs = ["AuthenticationService.java"],
     visibility = ["//server:internal"],
     deps = [
+        ":log_in_limiter",
         ":validators",
         "//proto:service_java_grpc",
         "//server/main:cryptography",
@@ -129,6 +142,7 @@ woven_junit5_test(
         "//server/main/keyvalue:values_java_proto",
         "//server/main/messagebroker:message_broker_client",
         "//server/main/services:authentication_service",
+        ":log_in_limiter",
         "//server/main/storage:account_operations_interface",
         "//server/main/storage:key_operations_interface",
         "//server/turnstile",

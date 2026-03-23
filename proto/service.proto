@@ -89,6 +89,7 @@ message LogInResponse {
     enum Error {
         NONE = 0;
         INVALID_CREDENTIALS = 1;
+        RATE_LIMITED = 2;
     }
 
     Error error = 1;

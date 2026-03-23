@@ -1,6 +1,7 @@
 package keyring.server.main.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -70,6 +71,7 @@ class AuthenticationServiceTest {
   @Mock private IGoogleAuthenticator mockGoogleAuthenticator;
   @Mock private TurnstileValidator mockTurnstileValidator;
   @Mock private MailValidation mockMailValidation;
+  @Mock private LogInLimiter mockLogInLimiter;
 
   private AuthenticationService authenticationService;
 
@@ -87,7 +89,8 @@ class AuthenticationServiceTest {
             mockVersionAccessor,
             mockGoogleAuthenticator,
             mockTurnstileValidator,
-            mockMailValidation);
+            mockMailValidation,
+            mockLogInLimiter);
     when(mockEntityManagerFactory.createEntityManager()).thenReturn(mockEntityManager);
     when(mockAgentAccessor.getIpAddress()).thenReturn(IP_ADDRESS);
     when(mockAgentAccessor.getUserAgent()).thenReturn(USER_AGENT);
@@ -208,7 +211,22 @@ class AuthenticationServiceTest {
   }
 
   @Test
+  void logIn_rateLimited_repliesWithError() {
+    when(mockLogInLimiter.acquireAttempt("username")).thenReturn(false);
+
+    authenticationService.logIn(
+        LogInRequest.newBuilder().setUsername("username").setDigest("digest").build(),
+        mockStreamObserver);
+
+    verify(mockStreamObserver)
+        .onNext(
+            LogInResponse.newBuilder().setError(LogInResponse.Error.RATE_LIMITED).build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
   void logIn_invalidUsername_repliesWithError() {
+    when(mockLogInLimiter.acquireAttempt("username")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username")).thenReturn(Optional.empty());
 
     authenticationService.logIn(
@@ -222,6 +240,7 @@ class AuthenticationServiceTest {
 
   @Test
   void logIn_invalidDigest_repliesWithError() {
+    when(mockLogInLimiter.acquireAttempt("username")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(
@@ -244,6 +263,7 @@ class AuthenticationServiceTest {
 
   @Test
   void logIn_deletedAccount_repliesWithError() {
+    when(mockLogInLimiter.acquireAttempt("username")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(
@@ -268,6 +288,7 @@ class AuthenticationServiceTest {
   @Test
   void logIn_validPair_repliesWithUserData() {
     UUID userUuid = UUID.randomUUID();
+    when(mockLogInLimiter.acquireAttempt("username")).thenReturn(true);
     when(mockAccountOperationsInterface.getUserByName("username"))
         .thenReturn(
             Optional.of(
