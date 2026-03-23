@@ -91,10 +91,10 @@ class KeyValueClientTest {
       String sessionToken = generateUniqueToken();
       keyValueClient.createSession(sessionToken, 1L, IP_ADDRESS, 7L);
       Thread.sleep(8 + 2);
-      long ttlBefore = jedis.pttl("session:" + sessionToken);
+      long ttlBefore = jedis.pttl("session-token:" + sessionToken);
 
       Optional<KvSession> storedKvSession = keyValueClient.getExKvSession(sessionToken, IP_ADDRESS);
-      long ttlAfter = jedis.pttl("session:" + sessionToken);
+      long ttlAfter = jedis.pttl("session-token:" + sessionToken);
 
       assertEquals(1L, storedKvSession.get().getUserId());
       assertTrue(ttlAfter > ttlBefore);
