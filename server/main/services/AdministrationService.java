@@ -206,6 +206,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
   }
 
   @Override
+  @ValidateUser(states = {UserState.USER_PENDING, UserState.USER_ACTIVE})
   public void keepAlive(KeepAliveRequest request, StreamObserver<KeepAliveResponse> response) {
     response.onNext(KeepAliveResponse.getDefaultInstance());
     response.onCompleted();
