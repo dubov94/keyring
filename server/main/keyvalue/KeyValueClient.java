@@ -76,14 +76,14 @@ public class KeyValueClient {
               string -> {
                 try {
                   if (DELETED_VALUE.equals(string)) {
-                    logger.warning(String.format("`KvSession` %s has been deleted", sessionToken));
+                    logger.warning(String.format("`KvSession` [%.4s] has been deleted", sessionToken));
                     return null;
                   }
                   KvSession kvSession = KvSession.parseFrom(base64Decoder.decode(string));
                   if (!Objects.equals(kvSession.getIpAddress(), ipAddress)) {
                     logger.warning(
                         String.format(
-                            "`KvSession` %s IP address is not %s", sessionToken, ipAddress));
+                            "`KvSession` [%.4s] IP address is not %s", sessionToken, ipAddress));
                     return null;
                   }
                   return kvSession;
@@ -138,13 +138,13 @@ public class KeyValueClient {
               string -> {
                 try {
                   if (DELETED_VALUE.equals(string)) {
-                    logger.warning(String.format("`KvAuthn` %s has been deleted", authnToken));
+                    logger.warning(String.format("`KvAuthn` [%.4s] has been deleted", authnToken));
                     return null;
                   }
                   KvAuthn kvAuthn = KvAuthn.parseFrom(base64Decoder.decode(string));
                   if (!Objects.equals(kvAuthn.getIpAddress(), ipAddress)) {
                     logger.warning(
-                        String.format("`KvAuthn` %s IP address is not %s", authnToken, ipAddress));
+                        String.format("`KvAuthn` [%.4s] IP address is not %s", authnToken, ipAddress));
                     return null;
                   }
                   return kvAuthn;
