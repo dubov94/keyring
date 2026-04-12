@@ -186,6 +186,7 @@ class AdministrationServiceTest {
             Tuple.of(
                 MtNudgeStatus.OK,
                 Optional.of(new MailToken().setUuid(mailTokenUuid).setCode("X"))));
+    when(mockCryptography.messageDigestIsEqual("X", "A")).thenReturn(false);
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder()
@@ -194,6 +195,7 @@ class AdministrationServiceTest {
             .build(),
         mockStreamObserver);
 
+    verify(mockCryptography).messageDigestIsEqual("X", "A");
     verify(mockStreamObserver)
         .onNext(
             ReleaseMailTokenResponse.newBuilder()
@@ -215,6 +217,7 @@ class AdministrationServiceTest {
                         .setUuid(mailTokenUuid)
                         .setCode("A")
                         .setMail("mail@example.com"))));
+    when(mockCryptography.messageDigestIsEqual("A", "A")).thenReturn(true);
 
     administrationService.releaseMailToken(
         ReleaseMailTokenRequest.newBuilder()

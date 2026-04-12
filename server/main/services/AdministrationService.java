@@ -189,7 +189,7 @@ public class AdministrationService extends AdministrationGrpc.AdministrationImpl
           String.format("`MailToken` is not present, `MtNudgeStatus` is %s", nudgeResult._1));
     }
     MailToken mailToken = nudgeResult._2.get();
-    if (!Objects.equals(mailToken.getCode(), request.getCode())) {
+    if (!cryptography.messageDigestIsEqual(mailToken.getCode(), request.getCode())) {
       return builder.setError(ReleaseMailTokenResponse.Error.INVALID_CODE).build();
     }
     accountOperationsInterface.releaseMailToken(userId, mailToken.getUuid());

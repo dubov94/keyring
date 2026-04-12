@@ -12,6 +12,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.function.Supplier;
 import javax.persistence.Persistence;
 import keyring.server.main.Arithmetic;
 import keyring.server.main.Chronometry;
+import keyring.server.main.Cryptography;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.entities.Key;
@@ -31,6 +33,7 @@ import keyring.server.main.entities.User;
 import keyring.server.main.entities.columns.MailTokenState;
 import keyring.server.main.entities.columns.SessionStage;
 import keyring.server.main.entities.columns.UserState;
+import keyring.server.main.proto.constants.Argon2Config;
 import keyring.server.main.proto.service.KeyAttrs;
 import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
@@ -59,9 +62,16 @@ class AccountOperationsClientTest {
             MailToken.APPROX_MAX_MAIL_TOKENS_PER_IP_ADDRESS,
             Session.APPROX_MAX_LAST_HOUR_SESSIONS_PER_USER,
             OtpParams.APPROX_MAX_OTP_PARAMS_PER_USER);
+    Arithmetic arithmetic = new Arithmetic();
     accountOperationsClient =
         new AccountOperationsClient(
-            new Chronometry(new Arithmetic(), () -> nowSupplier.get()),
+            new Cryptography(
+                new SecureRandom(),
+                arithmetic,
+                6,
+                Argon2Config.getDefaultInstance(),
+                "pepper-for-fake-salt"),
+            new Chronometry(arithmetic, () -> nowSupplier.get()),
             limiters,
             /* initialSpareAttempts */ 5);
     keyOperationsClient = new KeyOperationsClient(limiters);

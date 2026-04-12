@@ -41,7 +41,7 @@ public class Cryptography {
   private static final Pattern DIGEST_PATTERN =
       Pattern.compile(String.format("^[A-Za-z0-9-_]{%d}$", DIGEST_BASE64_LENGTH));
 
-  Cryptography(
+  public Cryptography(
       SecureRandom secureRandom,
       Arithmetic arithmetic,
       int uacsLength,
@@ -123,8 +123,11 @@ public class Cryptography {
     return Optional.empty();
   }
 
+  public boolean messageDigestIsEqual(String left, String right) {
+    return MessageDigest.isEqual(StringUtils.getBytesUtf8(left), StringUtils.getBytesUtf8(right));
+  }
+
   public boolean doesDigestMatchHash(String digest, String hash) {
-    return MessageDigest.isEqual(
-        StringUtils.getBytesUtf8(computeHash(digest)), StringUtils.getBytesUtf8(hash));
+    return messageDigestIsEqual(computeHash(digest), hash);
   }
 }

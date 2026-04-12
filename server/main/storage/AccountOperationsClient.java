@@ -20,6 +20,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import keyring.server.main.Chronometry;
+import keyring.server.main.Cryptography;
 import keyring.server.main.aspects.Annotations.ContextualEntityManager;
 import keyring.server.main.aspects.Annotations.LockEntity;
 import keyring.server.main.aspects.Annotations.WithEntityTransaction;
@@ -47,13 +48,19 @@ public class AccountOperationsClient implements AccountOperationsInterface {
   private static final ImmutableMap<FeatureType, Consumer<FeaturePrompts>> FEATURE_PROMPT_ACKERS =
       ImmutableMap.of(FeatureType.PENTEST, featurePrompts -> featurePrompts.setPentest(false));
 
+  private Cryptography cryptography;
   private Chronometry chronometry;
   private Limiters limiters;
   private final int initialSpareAttempts;
 
   @ContextualEntityManager private EntityManager entityManager;
 
-  AccountOperationsClient(Chronometry chronometry, Limiters limiters, int initialSpareAttempts) {
+  AccountOperationsClient(
+      Cryptography cryptography,
+      Chronometry chronometry,
+      Limiters limiters,
+      int initialSpareAttempts) {
+    this.cryptography = cryptography;
     this.chronometry = chronometry;
     this.limiters = limiters;
     this.initialSpareAttempts = initialSpareAttempts;
@@ -458,7 +465,7 @@ public class AccountOperationsClient implements AccountOperationsInterface {
     return Queries.findManyToOne(entityManager, OtpToken.class, OtpToken_.user, userId).stream()
         .filter(
             otpParams ->
-                Objects.equals(otpParams.getValue(), value)
+                cryptography.messageDigestIsEqual(otpParams.getValue(), value)
                     && (!mustBeInitial || otpParams.getIsInitial()))
         .findFirst();
   }
