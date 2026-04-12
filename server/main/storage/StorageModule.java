@@ -7,6 +7,7 @@ import javax.inject.Singleton;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import keyring.server.main.Chronometry;
+import keyring.server.main.Cryptography;
 import keyring.server.main.Environment;
 import keyring.server.main.entities.Key;
 import keyring.server.main.entities.MailToken;
@@ -24,9 +25,7 @@ public class StorageModule {
           ImmutableMap.of(
               "javax.persistence.jdbc.url", environment.getPostgresJdbcUri(),
               "javax.persistence.jdbc.user", environment.getPostgresUsername(),
-              "javax.persistence.jdbc.password", environment.getPostgresPassword()
-          )
-      );
+              "javax.persistence.jdbc.password", environment.getPostgresPassword()));
     }
     return Persistence.createEntityManagerFactory(
         "development", ImmutableMap.of("hibernate.hbm2ddl.auto", "create"));
@@ -45,8 +44,9 @@ public class StorageModule {
 
   @Provides
   static AccountOperationsInterface provideAccountOperationsInterface(
-      Chronometry chronometry, Limiters limiters) {
-    return new AccountOperationsClient(chronometry, limiters, /* initialSpareAttempts */ 5);
+      Cryptography cryptography, Chronometry chronometry, Limiters limiters) {
+    return new AccountOperationsClient(
+        cryptography, chronometry, limiters, /* initialSpareAttempts */ 5);
   }
 
   @Provides

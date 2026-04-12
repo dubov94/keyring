@@ -8,28 +8,35 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import io.vavr.Tuple2;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 import java.util.UUID;
 import javax.persistence.Persistence;
 import keyring.server.main.Arithmetic;
 import keyring.server.main.Chronometry;
+import keyring.server.main.Cryptography;
 import keyring.server.main.aspects.Annotations.WithEntityManager;
 import keyring.server.main.aspects.StorageManagerAspect;
 import keyring.server.main.entities.Key;
 import keyring.server.main.entities.User;
+import keyring.server.main.proto.constants.Argon2Config;
 import keyring.server.main.proto.service.KeyAttrs;
 import keyring.server.main.proto.service.KeyPatch;
 import keyring.server.main.proto.service.Password;
+import name.falgout.jeffrey.testing.junit5.MockitoExtension;
 import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 
+@ExtendWith(MockitoExtension.class)
 class KeyOperationsClientTest {
-  private static Random random = new Random();
+  @Mock private SecureRandom mockSecureRandom;
+
   private AccountOperationsClient accountOperationsClient;
   private KeyOperationsClient keyOperationsClient;
   private Instant now = Instant.EPOCH;
@@ -45,9 +52,18 @@ class KeyOperationsClientTest {
             /* approxMaxMailTokensPerAddress */ 2,
             /* approxMaxRecentSessionsPerUser */ 15,
             /* approxMaxOtpParamsPerUser */ 4);
+    Arithmetic arithmetic = new Arithmetic();
     accountOperationsClient =
         new AccountOperationsClient(
-            new Chronometry(new Arithmetic(), () -> now), limiters, /* initialSpareAttempts */ 5);
+            new Cryptography(
+                mockSecureRandom,
+                arithmetic,
+                6,
+                Argon2Config.getDefaultInstance(),
+                "pepper-for-fake-salt"),
+            new Chronometry(arithmetic, () -> now),
+            limiters,
+            /* initialSpareAttempts */ 5);
     keyOperationsClient = new KeyOperationsClient(limiters);
   }
 

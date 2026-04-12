@@ -42,10 +42,13 @@ import org.aspectj.lang.Aspects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 
 @ExtendWith(MockitoExtension.class)
 class AccountOperationsClientTest {
   private static final String IP_ADDRESS = "127.0.0.1";
+
+  @Mock private SecureRandom mockSecureRandom;
 
   private Supplier<Instant> nowSupplier = Instant::now;
   private AccountOperationsClient accountOperationsClient;
@@ -66,7 +69,7 @@ class AccountOperationsClientTest {
     accountOperationsClient =
         new AccountOperationsClient(
             new Cryptography(
-                new SecureRandom(),
+                mockSecureRandom,
                 arithmetic,
                 6,
                 Argon2Config.getDefaultInstance(),
