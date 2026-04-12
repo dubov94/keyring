@@ -40,6 +40,7 @@ Parolica *(pronounced [[pɐˈrolʲɪtsə]](https://en.wikipedia.org/wiki/Interna
 <div align="center">
   <kbd>
     <p align="center">getting_started.gif</p>
+    <!-- https://blog.pkh.me/p/21-high-quality-gif-with-ffmpeg.html -->
     <img src="/docs/getting_started.gif">
   </kbd>
 </div>
