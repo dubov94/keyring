@@ -223,8 +223,9 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
 
   @WithEntityManager
   private LogInResponse _logIn(LogInRequest request) {
+    String ipAddress = agentAccessor.getIpAddress();
     LogInResponse.Builder builder = LogInResponse.newBuilder();
-    if (!logInLimiter.acquireAttempt(request.getUsername())) {
+    if (!logInLimiter.acquireAttempt(request.getUsername(), ipAddress)) {
       return builder.setError(LogInResponse.Error.RATE_LIMITED).build();
     }
     Optional<User> maybeUser = accountOperationsInterface.getUserByName(request.getUsername());
@@ -236,7 +237,6 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
         || Objects.equals(user.getState(), UserState.USER_DELETED)) {
       return builder.setError(LogInResponse.Error.INVALID_CREDENTIALS).build();
     }
-    String ipAddress = agentAccessor.getIpAddress();
     long userId = user.getIdentifier();
     Session session =
         accountOperationsInterface.createSession(

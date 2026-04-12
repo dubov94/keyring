@@ -22,10 +22,10 @@ public class LogInLimiter {
         JedisBasedProxyManager.builderFor(jedisPool).withKeyMapper(Mapper.STRING).build();
   }
 
-  public boolean acquireAttempt(String username) {
+  public boolean acquireAttempt(String username, String ipAddress) {
     return proxyManager
         .builder()
-        .build(String.format("bucket4j:log-in:%s", username), () -> CONFIGURATION)
+        .build(String.format("bucket4j:log-in:%s@%s", username, ipAddress), () -> CONFIGURATION)
         .tryConsume(1);
   }
 }
