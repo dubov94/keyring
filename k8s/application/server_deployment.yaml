@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: dubov94/keyring-server:e7c13f4ac227467107f26d07c9365cfd20ced8b2
+        image: dubov94/keyring-server:b10890de011418ee3272814a8b85c424d52b7e3c
         resources:
           limits:
             memory: 320Mi
@@ -55,7 +55,7 @@ spec:
               key: pepper-for-fake-salt
       initContainers:
       - name: liquibase
-        image: dubov94/keyring-liquibase:e7c13f4ac227467107f26d07c9365cfd20ced8b2
+        image: dubov94/keyring-liquibase:b10890de011418ee3272814a8b85c424d52b7e3c
         imagePullPolicy: Always
         env:
         - name: POSTGRES_JDBC_URI
