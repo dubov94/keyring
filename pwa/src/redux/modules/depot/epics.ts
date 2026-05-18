@@ -129,13 +129,19 @@ export const masterKeyUpdateEpic: Epic<RootAction, RootAction, RootState> = (act
   })
 )
 
-export const userCredentialsEpic: Epic<RootAction, RootAction, RootState> = (action$) => action$.pipe(
-  switchMap((action) => {
+export const userCredentialsEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  withLatestFrom(state$),
+  switchMap(([action, state]) => {
     if (isActionSuccess(registrationSignal)(action)) {
       const { username, password } = action.payload.data
       return of(generateDepotKeys({ username, password }))
     }
     if (isActionOf(remoteAuthnComplete, action)) {
+      if (state.depot.credentials !== null) {
+        // Avoid rotating credentials in case WebAuthn is enabled but the user
+        // logged in with password, meaning the derivatives cannot be rewrapped.
+        return EMPTY
+      }
       const { username, authnInput } = action.payload
       if (authnInput.kind === AuthnInputKind.PASSWORD) {
         const { password } = authnInput
@@ -235,6 +241,17 @@ export const webAuthnLocalDerivativesEpic: Epic<RootAction, RootAction, RootStat
       map((encryptedWebAuthn) => newWebAuthnLocalDerivatives(encryptedWebAuthn)),
       catchError((error) => of(showToast({ message: errorToMessage(error) })))
     )
+  })
+)
+
+export const webAuthnInvalidationEpic: Epic<RootAction, RootAction, RootState> = (action$, state$) => action$.pipe(
+  filter(isActionOf(depotActivationData)),
+  withLatestFrom(state$),
+  switchMap(([, state]) => {
+    if (state.depot.webAuthnResult === null) {
+      return of(toggleWebAuthn(false))
+    }
+    return EMPTY
   })
 )
 
