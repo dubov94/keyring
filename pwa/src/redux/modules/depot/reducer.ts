@@ -68,7 +68,9 @@ export default createReducer<State>(
       const { username, userId, salt, hash } = action.payload
       state.userId = userId
       state.persisted = username !== null
-      state.credentials = { username, salt, hash }
+      if (username !== null) {
+        state.credentials = { username, salt, hash }
+      }
       state.vault = action.payload.vault
       state.encryptedOtpToken = action.payload.encryptedOtpToken
       const {
