@@ -13,7 +13,7 @@ export interface ReadCredentialResult {
 }
 
 export interface WebAuthnService {
-  createCredential(userId: string, userName: string): Promise<CreateCredentialResult>
+  createCredential(userId: string, userName: string, displayName: string): Promise<CreateCredentialResult>
   readCredential(credentialId: string, prfFirstSalt: string): Promise<ReadCredentialResult>
   deleteCredential(credentialId: string): Promise<void>
 }
@@ -38,7 +38,7 @@ export class NavigatorCredentialsService implements WebAuthnService {
   // https://blog.millerti.me/2023/01/22/encrypting-data-in-the-browser-using-webauthn/
   // https://github.com/w3c/webauthn/wiki/Explainer:-PRF-extension
   // https://corbado.com/blog/passkeys-prf-webauthn#7-webauthn-prf-vs-alternatives-choosing-the-right-tool
-  async createCredential (userId: string, userName: string): Promise<CreateCredentialResult> {
+  async createCredential (userId: string, userName: string, displayName: string): Promise<CreateCredentialResult> {
     const textEncoder = new TextEncoder()
     const salt = randomBytes(32)
     const credential = await navigator.credentials.create({
@@ -72,7 +72,7 @@ export class NavigatorCredentialsService implements WebAuthnService {
         user: {
           id: textEncoder.encode(userId),
           name: userName,
-          displayName: userName
+          displayName
         }
       }
     })

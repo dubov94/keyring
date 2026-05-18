@@ -3,7 +3,9 @@ import { Epic } from 'redux-observable'
 import { EMPTY, from, Observable, of, concat } from 'rxjs'
 import { filter, map, switchMap, withLatestFrom, catchError } from 'rxjs/operators'
 import { isActionOf } from 'typesafe-actions'
+import { UAParser } from 'ua-parser-js'
 import { getSodiumClient, MasterKeyDerivatives } from '@/cryptography/sodium_client'
+import { getUidService } from '@/cryptography/uid_service'
 import { getWebAuthn } from '@/cryptography/web_authn'
 import { createDisplayExceptionsEpic } from '@/redux/exceptions'
 import { cancel, errorToMessage, exception, indicator, isActionSuccess, success } from '@/redux/flow_signal'
@@ -166,9 +168,16 @@ export const webAuthnCreationEpic: Epic<RootAction, RootAction, RootState> = (ac
     if (username === null) {
       return of(webAuthnSignal(exception('Username is missing')))
     }
+    const parser = new UAParser(navigator.userAgent)
+    const browser = parser.getBrowser().name || 'Browser'
+    const os = parser.getOS().name || 'Unknown OS'
+    const deviceLabel = `${browser} on ${os}`
+    const date = new Date().toISOString().split('T')[0]
+    const randomId = getUidService().v4()
     return concat(
       of(webAuthnSignal(indicator(WebAuthnFlowIndicator.WORKING))),
-      from(getWebAuthn().createCredential(userId, username)).pipe(
+      // `randomId` to avoid credential overwriting on GPM.
+      from(getWebAuthn().createCredential(randomId, username, `${username} — ${deviceLabel} (${date})`)).pipe(
         switchMap(({ credentialId, prfFirstSalt, prfFirstResult }) => concat(
           of(webAuthnSignal(success({
             credentialId,

@@ -223,6 +223,9 @@ describe('webAuthnCreationEpic', () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     store.dispatch(remoteAuthnComplete(createRemoteAuthnCompleteResult({})))
     const { action$, actionSubject, state$ } = setUpEpicChannels(store)
+    container.register<UidService>(UID_SERVICE_TOKEN, {
+      useValue: new SequentialFakeUidService()
+    })
     container.register<WebAuthnService>(WEB_AUTHN_TOKEN, {
       useValue: new FakeWebAuthn()
     })
@@ -260,7 +263,7 @@ describe('webAuthnRetrievalEpic', () => {
   it('emits WebAuthn result', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const fakeWebAuthn = new FakeWebAuthn()
-    const credential = await fakeWebAuthn.createCredential('userId', 'John Doe')
+    const credential = await fakeWebAuthn.createCredential('userId', 'John Doe', 'Johnny')
     store.dispatch(webAuthnSignal(success({
       credentialId: credential.credentialId,
       salt: credential.prfFirstSalt
@@ -283,7 +286,7 @@ describe('webAuthnRetrievalEpic', () => {
   it('rejects on credential ID mismatch', async () => {
     const store: Store<RootState, RootAction> = createStore(reducer)
     const fakeWebAuthn = new FakeWebAuthn()
-    const credential = await fakeWebAuthn.createCredential('userId', 'John Doe')
+    const credential = await fakeWebAuthn.createCredential('userId', 'John Doe', 'Johnny')
     store.dispatch(webAuthnSignal(success({
       credentialId: credential.credentialId,
       salt: credential.prfFirstSalt

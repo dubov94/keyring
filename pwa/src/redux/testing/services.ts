@@ -56,6 +56,7 @@ export class FakeWebAuthn implements WebAuthnService {
     credentialId: string;
     userId: string;
     userName: string;
+    displayName: string;
   }[]
 
   constructor () {
@@ -63,13 +64,14 @@ export class FakeWebAuthn implements WebAuthnService {
     this._credentials = []
   }
 
-  async createCredential (userId: string, userName: string): Promise<CreateCredentialResult> {
+  async createCredential (userId: string, userName: string, displayName: string): Promise<CreateCredentialResult> {
     const counter = this._credentialCounter++
     const credentialId = `credential-${counter}`
     this._credentials.push({
       credentialId,
       userId,
-      userName
+      userName,
+      displayName
     })
     const salt = 'salt'
     return {
