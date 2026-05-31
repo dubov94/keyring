@@ -86,7 +86,7 @@ func main() {
 	defer glog.Flush()
 
 	if err := updateMmdb(); err != nil {
-		glog.Fatalf("unable to update the database: %w", err)
+		glog.Fatalf("unable to update the database: %v", err)
 	}
 
 	group, gCtx := errgroup.WithContext(context.Background())
