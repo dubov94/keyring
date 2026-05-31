@@ -3,7 +3,7 @@ import { map, pairwise, startWith, switchMap } from 'rxjs/operators'
 
 export const DEFAULT_ELEMENT = document
 // https://github.com/SupremeTechnopriest/react-idle-timer/blob/4ebf8894d7d6c2a9c3a601150523e15c74514898/src/utils/defaults.ts
-export const DEFAULT_ACITIVTY_EVENTS = [
+export const DEFAULT_ACTIVITY_EVENTS = [
   'mousemove',
   'keydown',
   'wheel',
@@ -21,7 +21,7 @@ export const DEFAULT_ACITIVTY_EVENTS = [
 export const createIdleDetector = (
   emitEveryMillis: number,
   element: Document | HTMLElement = DEFAULT_ELEMENT,
-  events = DEFAULT_ACITIVTY_EVENTS
+  events = DEFAULT_ACTIVITY_EVENTS
 ): Observable<number> => {
   const start = Date.now()
   return merge(
