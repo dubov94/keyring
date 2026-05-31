@@ -61,7 +61,7 @@ public class TurnstileValidator {
                       .map(TurnstileError::fromString)
                       .collect(Collectors.toList()))
           .setAction(action == null ? "" : action)
-          .setCdata(action == null ? "" : cdata)
+          .setCdata(cdata == null ? "" : cdata)
           .build();
     }
   }
