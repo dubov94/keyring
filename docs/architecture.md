@@ -56,7 +56,7 @@ graph LR;
   local_authn --> display_vault;
 ```
 
-Once local (depot-based) authentication succeeds, the remote authentication procedure is attempted automatically in the background to pick up latest updates and enable editing. If 2FA is enabled, a 128-bit temporary token is provided to `/provide-otp`. This token is initially obtained by specifying `yield_trusted_token` in `ProvideOtpRequest`; it's then encrypted with the local `encryption_key` and stored in the depot. All subsequent background requests to `/provide-otp` renew the token by specifying `yield_trusted_token` again.
+Once local (depot-based) authentication succeeds, the remote authentication procedure is attempted automatically in the background to pick up latest updates and enable editing. If 2FA is enabled, a 128-bit temporary token is provided to `/provide-otp`. This token is initially obtained by specifying `yield_trusted_token` in `ProvideOtpRequest`; it's then encrypted with the local `encryption_key` and stored in the depot. All subsequent background requests to `/provide-otp` renew the token by specifying `yield_trusted_token` again. Older tokens are not invalidated on use (otherwise a lost response locks the client out) and expire in 12 weeks instead. A stolen token implies a compromised vault as they share the encryption key, although its copy remains usable until expiry.
 
 ### Biometrics
 

@@ -311,7 +311,14 @@ public class AuthenticationService extends AuthenticationGrpc.AuthenticationImpl
                 .setAttemptsLeft(user.getOtpSpareAttempts())
                 .build());
       }
-      accountOperationsInterface.deleteOtpToken(userId, maybeOtpToken.get().getId());
+      OtpToken otpToken = maybeOtpToken.get();
+      // Only recovery codes are disposable. Deleting a trusted token would
+      // lock the client out if the response is lost, and a stolen one implies
+      // a compromised vault anyway (same key). The caveat is that its copy
+      // stays valid until `OtpTokenEviction`.
+      if (otpToken.getIsInitial()) {
+        accountOperationsInterface.deleteOtpToken(userId, otpToken.getId());
+      }
     }
     keyValueClient.deleteAuthn(authnKey);
     accountOperationsInterface.restoreOtpSpareAttempts(userId);

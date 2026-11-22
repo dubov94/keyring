@@ -1,6 +1,7 @@
 package keyring.server.main.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -451,7 +452,7 @@ class AuthenticationServiceTest {
   }
 
   @Test
-  void provideOtp_tokenPresent_deletesAndReplies() {
+  void provideOtp_recoveryCode_deletesAndReplies() {
     when(mockKeyValueClient.getKvAuthn("authn", IP_ADDRESS))
         .thenReturn(Optional.of(KvAuthn.newBuilder().setUserId(1L).setSessionEntityId(3L).build()));
     UUID userUuid = UUID.randomUUID();
@@ -459,7 +460,7 @@ class AuthenticationServiceTest {
         .thenReturn(Optional.of(new User().setIdentifier(1L).setUuid(userUuid)));
     when(mockCryptography.convertTotp("otp")).thenReturn(Optional.empty());
     when(mockAccountOperationsInterface.getOtpToken(1L, "otp", false))
-        .thenReturn(Optional.of(new OtpToken().setId(42L)));
+        .thenReturn(Optional.of(new OtpToken().setId(42L).setIsInitial(true)));
     when(mockCryptography.generateTts()).thenReturn("token");
     when(mockAgentAccessor.getIpAddress()).thenReturn(IP_ADDRESS);
     when(mockKeyValueClient.convertSessionTokenToKey("token")).thenReturn("key");
@@ -475,6 +476,51 @@ class AuthenticationServiceTest {
         mockStreamObserver);
 
     verify(mockAccountOperationsInterface).deleteOtpToken(1L, 42L);
+    verify(mockKeyValueClient).deleteAuthn("authn");
+    verify(mockAccountOperationsInterface).restoreOtpSpareAttempts(1L);
+    verify(mockKeyValueClient).createSession("token", 1L, IP_ADDRESS, 3L);
+    verify(mockAccountOperationsInterface).activateSession(1L, 3L, "key");
+    verify(mockAccountOperationsInterface).getFeaturePrompts(1L);
+    verify(mockStreamObserver)
+        .onNext(
+            ProvideOtpResponse.newBuilder()
+                .setUserData(
+                    UserData.newBuilder()
+                        .setUserUid(String.valueOf(userUuid))
+                        .setSessionKey("token")
+                        .setMailVerification(
+                            MailVerification.newBuilder()
+                                .setRequired(true)
+                                .setTokenUid(String.valueOf(mailTokenUuid))))
+                .build());
+    verify(mockStreamObserver).onCompleted();
+  }
+
+  @Test
+  void provideOtp_trustedToken_retainsAndReplies() {
+    when(mockKeyValueClient.getKvAuthn("authn", IP_ADDRESS))
+        .thenReturn(Optional.of(KvAuthn.newBuilder().setUserId(1L).setSessionEntityId(3L).build()));
+    UUID userUuid = UUID.randomUUID();
+    when(mockAccountOperationsInterface.getUserById(1L))
+        .thenReturn(Optional.of(new User().setIdentifier(1L).setUuid(userUuid)));
+    when(mockCryptography.convertTotp("otp")).thenReturn(Optional.empty());
+    when(mockAccountOperationsInterface.getOtpToken(1L, "otp", false))
+        .thenReturn(Optional.of(new OtpToken().setId(42L).setIsInitial(false)));
+    when(mockCryptography.generateTts()).thenReturn("token");
+    when(mockAgentAccessor.getIpAddress()).thenReturn(IP_ADDRESS);
+    when(mockKeyValueClient.convertSessionTokenToKey("token")).thenReturn("key");
+    when(mockKeyValueClient.createSession("token", 1L, IP_ADDRESS, 3L))
+        .thenReturn(KvSession.getDefaultInstance());
+    when(mockAccountOperationsInterface.getFeaturePrompts(1L)).thenReturn(new FeaturePrompts());
+    UUID mailTokenUuid = UUID.randomUUID();
+    when(mockAccountOperationsInterface.latestMailToken(1L))
+        .thenReturn(Optional.of(new MailToken().setUuid(mailTokenUuid)));
+
+    authenticationService.provideOtp(
+        ProvideOtpRequest.newBuilder().setAuthnKey("authn").setOtp("otp").build(),
+        mockStreamObserver);
+
+    verify(mockAccountOperationsInterface, never()).deleteOtpToken(1L, 42L);
     verify(mockKeyValueClient).deleteAuthn("authn");
     verify(mockAccountOperationsInterface).restoreOtpSpareAttempts(1L);
     verify(mockKeyValueClient).createSession("token", 1L, IP_ADDRESS, 3L);
