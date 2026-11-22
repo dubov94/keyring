@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: dubov94/keyring-server:71b0dd17ea9abd639778c7239775be436d3d3641
+        image: dubov94/keyring-server:9fd06927aa740c74e2bada892c31a4e8a85b105f
         resources:
           limits:
             memory: 320Mi
